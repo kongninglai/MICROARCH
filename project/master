@@ -1,0 +1,4 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time -v 
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib1 
+hdl/template/d_latch.v
+hvl/template/tb_d_latch.v
