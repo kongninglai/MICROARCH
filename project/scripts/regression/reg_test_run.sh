@@ -20,6 +20,7 @@ run_one_sim() {
     cd "$simdir"
 
     find . -mindepth 1 -delete
+    touch .gitkeep
 
     vcs -full64 -v2005 -debug_all -f ../master* > build.log 2>&1
     ./simv > sim.log 2>&1
