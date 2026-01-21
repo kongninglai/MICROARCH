@@ -1,5 +1,10 @@
 module  ze_tb;
 
+initial begin
+  $vcdplusfile("ze_tb.dump.vpd");
+  $vcdpluson(0, ze_tb); 
+end
+
 localparam INP_WIDTH = 16;
 localparam OUT_WIDTH = 32;
 
@@ -59,16 +64,10 @@ initial begin
   #1;
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
-  $display("SUCCESSSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
   $finish;
 
-end
-
-// Dump all waveforms to d_latch.dump.vpd
-initial begin
-  $vcdplusfile("ze_tb.dump.vpd");
-  $vcdpluson(0, ze_tb); 
 end
 
 endmodule

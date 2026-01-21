@@ -1,6 +1,5 @@
 module  lshf_var_32b_tb;
 
-// Dump all waveforms to d_latch.dump.vpd
 initial begin
   $vcdplusfile("lshf_var_32b_tb.dump.vpd");
   $vcdpluson(0, lshf_var_32b_tb); 
@@ -34,7 +33,7 @@ integer FAILURES  = 0;
 integer SUCCESSES = 0;
 
 task check;
-  input out, out_exp;
+  input [WIDTH-1:0] out, out_exp;
   if (out !== out_exp) begin
     FAILURES = FAILURES + 1;
     $display("FAILURE AT TIME %t. out_exp = %h, out = %h\n", 
@@ -45,11 +44,8 @@ task check;
 endtask
 
 initial begin
-  // All possible tests with truth table
   in_long = 0;
   repeat (1 << 20) begin
-    // PS2 version fails at 2.4, cascaded library muxes succeed
-    // library 442 fails at 1.4
     #5; 
     check(out, out_exp);
     in_long[WIDTH+SHF_WIDTH-1:32] = $random;
@@ -57,7 +53,7 @@ initial begin
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
-  $display("SUCCESSSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
   $finish;
 

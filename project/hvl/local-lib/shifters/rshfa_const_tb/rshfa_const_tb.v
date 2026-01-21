@@ -1,8 +1,8 @@
-module  lshf_const_tb;
+module  rshfa_const_tb;
 
 initial begin
-  $vcdplusfile("lshf_const_tb.dump.vpd");
-  $vcdpluson(0, lshf_const_tb); 
+  $vcdplusfile("rshfa_const_tb.dump.vpd");
+  $vcdpluson(0, rshfa_const_tb); 
 end
 
 localparam WIDTH = 32;
@@ -10,7 +10,7 @@ localparam WIDTH = 32;
 reg   [WIDTH-1:0]   in;
 wire  [WIDTH-1:0]   out, out_exp;
 
-lshf_const #(
+rshfa_const #(
   .WIDTH(32),
   .SHF_AMT(16)
 ) DUT (
@@ -18,7 +18,7 @@ lshf_const #(
   .out(out)
 );
 
-lshf_const_behav #(
+rshfa_const_behav #(
   .WIDTH(32),
   .SHF_AMT(16)
 ) REF (
@@ -42,7 +42,7 @@ endtask
 
 initial begin
   in = 0;
-  repeat (1 << 20) begin
+  repeat (1 << 10) begin
     #5; 
     check(out, out_exp);
     in = $random;

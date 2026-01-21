@@ -1,6 +1,5 @@
 module  mux16_tb;
 
-// Dump all waveforms to d_latch.dump.vpd
 initial begin
   $vcdplusfile("mux16_tb.dump.vpd");
   $vcdpluson(0, mux16_tb); 
@@ -51,15 +50,13 @@ initial begin
   // All possible tests with truth table
   in = 0;
   repeat (1 << IN_WIDTH) begin
-    // PS2 version fails at 2.4, cascaded library muxes succeed
-    // library 442 fails at 1.4
     #5; 
     check(out, out_exp);
     in = in + 1;
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
-  $display("SUCCESSSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
   $finish;
 

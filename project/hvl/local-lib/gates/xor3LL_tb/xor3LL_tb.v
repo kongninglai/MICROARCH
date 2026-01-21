@@ -1,6 +1,5 @@
 module  xor3LL_tb;
 
-// Dump all waveforms to d_latch.dump.vpd
 initial begin
   $vcdplusfile("xor3LL_tb.dump.vpd");
   $vcdpluson(0, xor3LL_tb); 
@@ -47,7 +46,7 @@ initial begin
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
-  $display("SUCCESSSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
   $finish;
 

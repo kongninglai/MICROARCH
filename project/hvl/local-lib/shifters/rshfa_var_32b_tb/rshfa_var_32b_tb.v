@@ -1,28 +1,31 @@
-module  lshf_const_tb;
+module  rshfa_var_32b_tb;
 
 initial begin
-  $vcdplusfile("lshf_const_tb.dump.vpd");
-  $vcdpluson(0, lshf_const_tb); 
+  $vcdplusfile("rshfa_var_32b_tb.dump.vpd");
+  $vcdpluson(0, rshfa_var_32b_tb); 
 end
 
 localparam WIDTH = 32;
+localparam SHF_WIDTH = 5;
 
-reg   [WIDTH-1:0]   in;
-wire  [WIDTH-1:0]   out, out_exp;
+reg   [WIDTH+SHF_WIDTH-1:0]   in_long;
+wire  [WIDTH-1:0]             out, out_exp;
 
-lshf_const #(
-  .WIDTH(32),
-  .SHF_AMT(16)
-) DUT (
+wire  [WIDTH-1:0]     in;
+wire  [SHF_WIDTH-1:0] shf_amt;
+
+assign in       = in_long[31:0];
+assign shf_amt  = in_long[WIDTH+SHF_WIDTH-1:32];
+
+rshfa_var_32b DUT (
   .in(in),
+  .shf_amt(shf_amt),
   .out(out)
 );
 
-lshf_const_behav #(
-  .WIDTH(32),
-  .SHF_AMT(16)
-) REF (
+rshfa_var_32b_behav REF (
   .in(in),
+  .shf_amt(shf_amt),
   .out(out_exp)
 );
 
@@ -41,11 +44,12 @@ task check;
 endtask
 
 initial begin
-  in = 0;
-  repeat (1 << 20) begin
+  in_long = 0;
+  repeat (1 << 10) begin
     #5; 
     check(out, out_exp);
-    in = $random;
+    in_long[WIDTH+SHF_WIDTH-1:32] = $random;
+    in_long[31:0] = $random;
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);

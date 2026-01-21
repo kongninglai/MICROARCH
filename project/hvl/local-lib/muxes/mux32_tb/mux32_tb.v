@@ -1,6 +1,5 @@
 module  mux32_tb;
 
-// Dump all waveforms to d_latch.dump.vpd
 initial begin
   $vcdplusfile("mux32_tb.dump.vpd");
   $vcdpluson(0, mux32_tb); 
@@ -84,11 +83,8 @@ task check;
 endtask
 
 initial begin
-  // All possible tests with truth table
   in = 0;
   repeat (1 << 21) begin
-    // PS2 version fails at 2.4, cascaded library muxes succeed
-    // library 442 fails at 1.4
     #4; 
     check(out, out_exp);
     in[36:32] = $random;
@@ -96,7 +92,7 @@ initial begin
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
-  $display("SUCCESSSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
   $finish;
 
