@@ -12,6 +12,7 @@ clean_one_sim() {
   (
     cd "$simdir"
     find . -mindepth 1 -delete
+    touch .gitkeep
     echo "Done"
   ) 2>&1 | sed "s/^/[$tb_name] /"
 }
