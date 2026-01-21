@@ -1,0 +1,49 @@
+module  PA_8b_tb;
+
+initial begin
+  $vcdplusfile("PA_8b_tb.dump.vpd");
+  $vcdpluson(0, PA_8b_tb); 
+end
+
+localparam WIDTH = 8;
+
+reg   [2*WIDTH-1:0] in_long;
+wire  [WIDTH-1:0]   out, out_exp;
+
+wire  [WIDTH-1:0]   in0   = in_long[WIDTH-1:0];
+wire  [WIDTH-1:0]   in1   = in_long[2*WIDTH-1:WIDTH];
+
+PA_8b DUT(.s(out), .in0(in0), .in1(in1));
+
+PA_8b_behav REF(.s(out_exp), .in0(in0), .in1(in1));
+
+integer FAILURES  = 0;
+integer SUCCESSES = 0;
+
+task check;
+  input [WIDTH-1:0] out, out_exp;
+  if (out !== out_exp) begin
+    FAILURES = FAILURES + 1;
+    $display("FAILURE AT TIME %t. out_exp = %h, out = %h\n", 
+              $time, out_exp, out);
+  end else begin
+    SUCCESSES = SUCCESSES + 1;
+  end
+endtask
+
+initial begin
+  in_long = 0;
+  repeat (1 << 2*WIDTH) begin
+    #5; 
+    check(out, out_exp);
+    in_long = in_long + 1;
+  end
+
+  $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+
+  $finish;
+
+end
+
+endmodule

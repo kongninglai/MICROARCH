@@ -1,6 +1,6 @@
 module xor3LL(
-  input   in0, in1, in2,
-  output  out
+  output  out,
+  input   in0, in1, in2
 );
 	wire    xor2$_0_out;
 	xor2$   xor2$_0(xor2$_0_out, in0, in1);
