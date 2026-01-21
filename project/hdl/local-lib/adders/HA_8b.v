@@ -1,7 +1,7 @@
-module HA_8b(s, cout, in0, in1);
-	
-	input		[7:0]	in0, in1;
-	output	[7:0]	s, cout;
+module HA_8b (
+  input		[7:0]	in0, in1,
+	output	[7:0]	s, cout
+);
 	
 	// Stage 0
 	

@@ -1,7 +1,7 @@
-module PA_32b(s, in0, in1);
-	
-	input		[31:0]	in0, in1;
-	output	[31:0]	s;
+module PA_32b (
+  input		[31:0]	  in0, in1,
+	output	[31:0]	  s
+);
 	
 	// Stage 0
 	

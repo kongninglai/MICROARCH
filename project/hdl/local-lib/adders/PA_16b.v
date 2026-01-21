@@ -1,7 +1,7 @@
-module PA_16b(s, in0, in1);
-	
-	input		[15:0]	in0, in1;
-	output	[15:0]	s;
+module PA_16b ( 
+  input		[15:0]	  in0, in1,
+	output	[15:0]	  s
+);
 	
 	// Stage 0
 	

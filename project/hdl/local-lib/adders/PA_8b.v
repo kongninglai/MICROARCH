@@ -1,7 +1,7 @@
-module PA_8b(s, in0, in1);
-	
-	input		[7:0]	in0, in1;
-	output	[7:0]	s;
+module PA_8b (
+  input		[7:0]	in0, in1,
+	output	[7:0]	s
+);
 	
 	// Stage 0
 	

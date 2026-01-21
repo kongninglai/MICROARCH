@@ -1,7 +1,7 @@
-module HA_32b(s, cout, in0, in1);
-	
-	input		[31:0]	in0, in1;
-	output	[31:0]	s, cout;
+module HA_32b (
+  input		[31:0]	  in0, in1,
+	output	[31:0]	  s, cout
+);
 	
 	// Stage 0
 	
