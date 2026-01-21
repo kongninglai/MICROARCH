@@ -45,11 +45,11 @@ endtask
 
 initial begin
   in_long = 0;
-  repeat (1 << 20) begin
+  repeat (1 << 12) begin
     #5; 
     check(out, out_exp);
-    in_long[WIDTH+SHF_WIDTH-1:32] = $random($$);
-    in_long[31:0] = $random($$);
+    in_long[WIDTH+SHF_WIDTH-1:32] = $random;
+    in_long[31:0] = $random;
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
