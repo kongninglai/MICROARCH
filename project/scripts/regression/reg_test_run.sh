@@ -8,19 +8,22 @@ RESULTS="$HOME/MICROARCH/project/scripts/regression/sim_results.txt"
 TMP_RESULTS="$(mktemp -d)"
 
 : > "$RESULTS"
+./clean_sim.sh
 
 pids=()
 
 run_one_sim() {
-  simdir="$1"
-  tb_name=$(basename "$(dirname "$simdir")")
+  leaf_dir="$1"
+  tb_name=$(basename "$leaf_dir")
+  simdir="$leaf_dir/sim"
   out="$TMP_RESULTS/$tb_name.result"
+
   echo "[$tb_name] Running..."
   (
+    mkdir -p "$simdir"
     cd "$simdir"
 
     find . -mindepth 1 -delete
-    touch .gitkeep
 
     vcs -full64 -v2005 -debug_all -f ../master* > build.log 2>&1
     ./simv > sim.log 2>&1
@@ -33,7 +36,7 @@ run_one_sim() {
 
     printf "%-30s FAILURES=%-6s SUCCESSES=%-6s\n" \
       "$tb_name" "$failures" "$successes" > "$out"
-    
+
     echo "Done"
   ) 2>&1 | sed "s/^/[$tb_name] /"
 }
@@ -41,10 +44,16 @@ run_one_sim() {
 export -f run_one_sim
 export TMP_RESULTS
 
-while read -r simdir; do
-  run_one_sim "$simdir" &
+while read -r leaf_dir; do
+  run_one_sim "$leaf_dir" &
   pids+=($!)
-done < <(find "$ROOT" -type d -name sim)
+done < <(
+  find "$ROOT" -type d -print | while read -r dir; do
+    if ! find "$dir" -mindepth 1 -type d | read; then
+      echo "$dir"
+    fi
+  done
+)
 
 for pid in "${pids[@]}"; do
   wait "$pid"
