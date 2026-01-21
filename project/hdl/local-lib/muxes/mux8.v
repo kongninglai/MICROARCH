@@ -1,6 +1,6 @@
 module mux8 (
-  input           in0,in1,in2,in3,in4,in5,in6,in7,s0,s1,s2,
-  output          outb
+  output          outb,
+  input           in0,in1,in2,in3,in4,in5,in6,in7,s0,s1,s2
 );
 
 wire    mux2$_0_out, mux2$_1_out, mux2$_2_out, mux2$_3_out;

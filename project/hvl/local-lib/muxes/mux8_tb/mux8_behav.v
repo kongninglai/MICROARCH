@@ -1,6 +1,6 @@
 module mux8_behav (
-  input           in0,in1,in2,in3,in4,in5,in6,in7,s0,s1,s2,
-  output  reg     outb
+  output  reg     outb,
+  input           in0,in1,in2,in3,in4,in5,in6,in7,s0,s1,s2
 );
 
 always @(*) begin

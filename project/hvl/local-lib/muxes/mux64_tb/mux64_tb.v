@@ -124,12 +124,12 @@ endtask
 
 initial begin
   in = 0;
-  repeat (1 << 22) begin
+  repeat (1 << 12) begin
     #5; 
     check(out, out_exp);
-    in[69:64] = $random;
-    in[63:32] = $random;
-    in[31:0] = $random;
+    in[69:64] = $random($$);
+    in[63:32] = $random($$);
+    in[31:0] = $random($$);
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);

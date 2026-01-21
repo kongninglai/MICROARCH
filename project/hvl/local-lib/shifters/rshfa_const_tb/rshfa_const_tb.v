@@ -45,7 +45,7 @@ initial begin
   repeat (1 << 10) begin
     #5; 
     check(out, out_exp);
-    in = $random;
+    in = $random($$);
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);

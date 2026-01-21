@@ -42,8 +42,8 @@ initial begin
   repeat (1 << 8) begin
     #40;
     check(out, out_exp);
-    in_long[WIDTH-1:0]        = $random;
-    in_long[2*WIDTH-1:WIDTH]  = $random;
+    in_long[WIDTH-1:0]        = $random($$);
+    in_long[2*WIDTH-1:WIDTH]  = $random($$);
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);

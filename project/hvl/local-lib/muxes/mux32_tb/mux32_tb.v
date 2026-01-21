@@ -87,8 +87,8 @@ initial begin
   repeat (1 << 21) begin
     #4; 
     check(out, out_exp);
-    in[36:32] = $random;
-    in[31:0] = $random;
+    in[36:32] = $random($$);
+    in[31:0] = $random($$);
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);

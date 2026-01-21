@@ -13,7 +13,7 @@ Structural Verilog modules belong in `project/hdl`.
   - Most `<module_name>_tb` directories will contain the following:
     - `sim` directory: this is for simulation data.
     - `<module_name>_behav.v`: behavioral implementation (if needed) of the module. This is often convenient for testing structural modules. We recommend creating a behavioral module whose port list exactly matches its structural counterpart.
-    - `<module_name>_tb.v`: testbench for this module. We recommend instantiating the structural and behavioral versions of the module, applying input patterns, and comparing the two modules' outputs. Whenever possible, exhaustively test the module (test all input patterns). If this is not possible (perhaps there are too many input combinations), a subset of input patterns may be tested. We recommend using the `$random` function of Verilog to generate patterns as well as manually applying special edge cases to the modules.
+    - `<module_name>_tb.v`: testbench for this module. We recommend instantiating the structural and behavioral versions of the module, applying input patterns, and comparing the two modules' outputs. Whenever possible, exhaustively test the module (test all input patterns). If this is not possible (perhaps there are too many input combinations), a subset of input patterns may be tested. We recommend using the `$random($$)` function of Verilog to generate patterns as well as manually applying special edge cases to the modules.
     - `master_<module_name>_tb`: this master file contains paths to every module that is needed for this testbench to run.
 
 Here is the general workflow:
