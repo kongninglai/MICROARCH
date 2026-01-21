@@ -1,21 +1,18 @@
-module  eq_5b_tb;
+module  gt9_4b_tb;
 
 initial begin
-  $vcdplusfile("eq_5b_tb.dump.vpd");
-  $vcdpluson(0, eq_5b_tb); 
+  $vcdplusfile("gt9_4b_tb.dump.vpd");
+  $vcdpluson(0, gt9_4b_tb); 
 end
 
-localparam WIDTH = 5;
+localparam WIDTH = 4;
 
-reg   [2*WIDTH-1:0] in_long;
-wire                out, out_exp;
+reg   [WIDTH-1:0] in;
+wire              out, out_exp;
 
-wire in0 = in_long[WIDTH-1:0];
-wire in1 = in_long[2*WIDTH-1:WIDTH];
+gt9_4b DUT(.in(in), .gt(out));
 
-eq_5b DUT(.in0(in0), .in1(in1), .eq(out));
-
-eq_5b_behav REF(.in0(in0), .in1(in1), .eq(out_exp));
+gt9_4b_behav REF(.in(in), .gt(out_exp));
 
 integer FAILURES  = 0;
 integer SUCCESSES = 0;
@@ -33,11 +30,11 @@ endtask
 
 initial begin
   
-  in_long = 0;
-  repeat (1 << (2*WIDTH)) begin
+  in = 0;
+  repeat (1 << WIDTH) begin
     #40;
     check(out, out_exp);
-    in_long = in_long + 1;
+    in  = in + 1;
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);

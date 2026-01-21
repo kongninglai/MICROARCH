@@ -1,4 +1,4 @@
 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
-~/MICROARCH/project/hdl/local-lib/comparators/eq_32b.v
-~/MICROARCH/project/hvl/local-lib/comparators/eq_32b_tb/eq_32b_behav.v
-~/MICROARCH/project/hvl/local-lib/comparators/eq_32b_tb/eq_32b_tb.v
+~/MICROARCH/project/hdl/local-lib/comparators/eq_5b.v
+~/MICROARCH/project/hvl/local-lib/comparators/eq_5b_tb/eq_5b_behav.v
+~/MICROARCH/project/hvl/local-lib/comparators/eq_5b_tb/eq_5b_tb.v

@@ -1,4 +1,4 @@
-module gt9_8b (
+module gt9_4b (
   input   [3:0] in,
   output        gt
 );

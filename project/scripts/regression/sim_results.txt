@@ -1,8 +1,10 @@
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
 eq_32b_tb                      FAILURES=0      SUCCESSES=262   
-eq_5b_tb                       FAILURES=0      SUCCESSES=262   
+eq_5b_tb                       FAILURES=0      SUCCESSES=1024  
 gen_prop_2_tb                  FAILURES=0      SUCCESSES=16    
 gen_prop_tb                    FAILURES=0      SUCCESSES=4     
+gt9_4b_tb                      FAILURES=0      SUCCESSES=16    
+gt99_8b_tb                     FAILURES=0      SUCCESSES=256   
 HA_32b_tb                      FAILURES=0      SUCCESSES=261   
 HA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 lshf_const_tb                  FAILURES=0      SUCCESSES=4096  

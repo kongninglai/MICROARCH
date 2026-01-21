@@ -1,5 +1,5 @@
 module eq_5b (
-  input   [4:0] in0, in1
+  input   [4:0] in0, in1,
   output        eq
 );
 	
