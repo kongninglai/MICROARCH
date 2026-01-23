@@ -1,0 +1,25 @@
+0:  04 01                   add    al,0x1
+2:  04 ff                   add    al,0xff
+4:  66 05 34 12             add    ax,0x1234
+8:  66 83 c0 ff             add    ax,0xffff
+c:  05 78 56 34 12          add    eax,0x12345678
+11: 83 c0 ff                add    eax,0xffffffff
+14: 66 83 c0 01             add    ax,0x1
+18: 66 83 c3 ff             add    bx,0xffff
+1c: 66 83 c1 7f             add    cx,0x7f
+20: 83 c0 01                add    eax,0x1
+23: 83 c3 ff                add    ebx,0xffffffff
+26: 83 c1 7f                add    ecx,0x7f
+29: 00 c8                   add    al,cl
+2b: 00 d1                   add    cl,dl
+2d: 00 da                   add    dl,bl
+2f: 66 01 d8                add    ax,bx
+32: 66 01 cb                add    bx,cx
+35: 66 01 d1                add    cx,dx
+38: 01 d8                   add    eax,ebx
+3a: 01 cb                   add    ebx,ecx
+3c: 01 d1                   add    ecx,edx
+
+Comments: 
+- only add Instruction
+- No sib byte

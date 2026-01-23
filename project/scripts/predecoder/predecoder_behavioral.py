@@ -28,21 +28,26 @@ def needs_modrm(opcode, ext_opcode):
         return opcode in modrm_list_single
 
 """Returns a boolean on whether a certain opcode uses the SIB byte"""
-def needs_sib(modrm):
+def needs_sib(modrm, reg0_mux):
     mod = (modrm >> 6) & 0b11      # bits [7:6]
     reg = (modrm >> 3) & 0b111     # bits [5:3]
     rm  = modrm & 0b111            # bits [2:0]
 
-    return (rm == 0b100) and (mod != 0b11) #indicates presence of SIB byte
+    if (rm == 0b100) and (mod != 0b11): #indicates presence of SIB byte
+        reg0_mux[0] = 0b10
+        return True
+    else:
+        return False
 
 """Returns displacement size in bytes (0, 1, 4) for a given modrm for some opcode"""
-def disp_bytes(modrm):
+def disp_bytes(modrm, sib_byte):
     mod = (modrm >> 6) & 0b11      # bits [7:6]
     rm  = modrm & 0b111            # bits [2:0]
+    sib = sib_byte & 0x07
 
     if mod == 0b01:
         return 1      # disp8
-    if mod == 0b10:
+    if mod == 0b10 or (mod == 0b00 and sib == 0b101) or (mod == 0b00 and rm == 0b101):
         return 4      # disp32
     if mod == 0b00 and rm == 0b101:
         return 4      # disp32
@@ -95,30 +100,36 @@ def imm_bytes(opcode, ext_opcode, operand_size_prefix, imm_type):
                 return 2 #cw next to opcode in instruction sheet
             else:
                 return 4 #cd next to opcode in instruction sheet
+        elif opcode in (0x9A, 0xEA): #double immediate instruction
+            imm_type[0] = IMM_DOUBLE
+            if (operand_size_prefix == 1 and opcode == 0xEA): #tells the size of the 2nd operand bc in all cases it is 16 bits for first operand
+                return 2
+            else: 
+                return 4
     
-def predecode(instr_str, eip):
+def predecode(instr_str, eip, instr_cnt, dump_file=None):
 
     #Initialize all Ouput Registers
     has_spaces = " " in instr_str
     instr = format_instr_in(instr_str, has_spaces) #Autodetect if test has spaces
-    print("instr_bytes (hex):", " ".join(f"{b:02X}" for b in instr)) #debug
+    #print("instr_bytes (hex):", " ".join(f"{b:02X}" for b in instr)) #debug
 
     prefix_mux = [0, 0, 0] 
     ext_opcode = 0
-    opcode = None #byte
-    modrm = None #byte
-    sib = None #byte
-    disp = None #4 bytes
+    opcode = 0x00 #byte
+    modrm = 0x00 #byte
+    sib = 0x00 #byte
+    disp = 0x0000 #4 bytes
     disp_size_mux = 0 #32 bit or all 0 if 0, 8 bit if 1
     imm = 0x0000 #4 bytes
     imm_size_mux = 0 #8, 16, 32, unused (2 bits)
-    eip = 0x0000 #4 bytes
-    eip_new = None #4 bytes
-    reg0_mux = 0; #zero val, modrm[2:0], sib[2:0], unused (2 bits)
+    eip_new = 0x00 #4 bytes
+    reg0_mux = [0b00]; #zero val, modrm[2:0], sib[2:0], unused (2 bits)
     imm_type = [0] #placeholder value will be modified in imm_bytes
 
     #Parse Prefixes
-    i = 0
+    i = eip #index to access current part of instruction
+    length = 1
     while (i < len(instr)):
         if (is_prefix(instr[i]) == False): #Iterate only as long as there are prefixes
             break
@@ -126,12 +137,14 @@ def predecode(instr_str, eip):
         if prefix in (0xF3,): prefix_mux[2] = 1 #rep
         if prefix in (0x66,): prefix_mux[1] = 1 #operand size override
         if prefix in (0x26, 0x2E, 0x36, 0x3E, 0x64, 0x65): prefix_mux[0] = 1 #segment register override
-        i += 1        
+        i += 1    
+        length += 1    
 
     #Parse Opcode
     if (instr[i] == 0x0F):
         ext_opcode = 1
         i += 1
+        length += 1
     opcode = instr[i]
     i += 1
 
@@ -139,36 +152,43 @@ def predecode(instr_str, eip):
     if (needs_modrm(opcode, ext_opcode)):
         modrm = instr[i]
         i += 1
+        length += 1
+        reg0_mux[0] = 0b01 #indicates modrm
     else:  
         modrm = 0x0
 
     #Parse SIB
-    if (needs_sib(modrm)):
+    if (needs_sib(modrm, reg0_mux)):
         sib = instr[i]
         i += 1
+        length += 1
     else:
         sib = 0x0
 
     #Parse Displacement
-    disp_size = disp_bytes(modrm)
+    disp_size = disp_bytes(modrm, sib)
     if (disp_size == 1):
         disp_size_mux = 1
         b0 = instr[i]
         disp = b0 & 0xFF
         i += 1
+        length += 1
     elif (disp_size == 4):
         b0 = instr[i]
         i += 1
+        length += 1
         b1 = instr[i]
         i += 1
+        length += 1
         b2 = instr[i]
         i += 1
+        length += 1
         b3 = instr[i]
         i += 1
+        length += 1
         disp = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24) #little endian
 
     #Parse Immediate
-    
     imm_size = imm_bytes(opcode, ext_opcode, prefix_mux[1], imm_type)
     if (imm_size == 0):
         imm = 0x0
@@ -176,30 +196,61 @@ def predecode(instr_str, eip):
         imm_size_mux = 0b00 #1 byte
         b0 = instr[i]
         imm = b0 & 0xFF
+        i += 1
+        length += 1
     elif (imm_size == 2):
         imm_size_mux = 0b01 #2 bytes
         b0 = instr[i]
         i += 1
+        length += 1
         b1 = instr[i]
         i +=1
+        length += 1
         imm = b0 | (b1 << 8)
     elif (imm_size == 4):
         imm_size_mux = 0b10 #4 bytes
         b0 = instr[i]
         i += 1
+        length += 1
         b1 = instr[i]
         i += 1
+        length += 1
         b2 = instr[i]
         i += 1
+        length += 1
         b3 = instr[i]
         i += 1
+        length += 1
         imm = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24) #little endian
     
 
     #New EIP
-    eip_new = eip + i + 1 #add length of instruction + 1 to pc to jump to start of next instruction
+    #print("i value: ", i)
+    eip_new = i #add length of instruction + 1 to pc to jump to start of next instruction
+    instr_cnt[0] += 1
+
+    #Print to dumpfile 
+    if dump_file is not None:
+        with open(dump_file, "a") as f:  # append mode
+            f.write("=== Predecode Output ===\n")
+            f.write(f"Instruction count: {instr_cnt[0]}\n")
+            f.write(f"prefix_mux       : {prefix_mux}\n")
+            f.write(f"ext_opcode       : {ext_opcode}\n")
+            f.write(f"opcode           : {hex(opcode)}\n")
+            f.write(f"modrm            : {hex(modrm)}\n")
+            f.write(f"sib              : {hex(sib)}\n")
+            f.write(f"disp             : {hex(disp)}\n")
+            f.write(f"disp_size_mux    : {disp_size_mux}\n")
+            f.write(f"imm              : {hex(imm)}\n")
+            f.write(f"imm_size_mux     : {imm_size_mux}\n")
+            f.write(f"eip              : {hex(eip)}\n")
+            f.write(f"eip_new          : {hex(eip_new)}\n")
+            f.write(f"reg0_mux         : {reg0_mux[0]}\n")
+            f.write(f"imm_type         : {imm_type[0]:02b}\n")
+            f.write("========================\n")
 
     #Print All register Values
+    '''
     print("=== Predecode Output ===")
     print(f"prefix_mux       : {prefix_mux}")           # list of 3 prefix flags
     print(f"ext_opcode       : {ext_opcode}")         # 0 or 1
@@ -215,13 +266,19 @@ def predecode(instr_str, eip):
     print(f"reg0_mux         : {reg0_mux}")           # 0, modrm[2:0], sib[2:0], etc.
     print(f"imm_type         : {imm_type[0]:02b}")    # 2-bit value (00,01,10,11)
     print("========================")
+    '''
 
+    return length
 
 
 
 def main():
-    test_name = "test1" #CHANGE BEFORE RUNNING
+    test_name = "test5" #CHANGE BEFORE RUNNING
     test_path = f"tests_predecoder_behavioral/{test_name}"
+    
+    #Dumpfile
+    dump_file = "dumpfile.txt"
+    open(dump_file, "w").close() # Clear previous dump
 
     with open(test_path, "r") as f:
         instr_str = f.read().strip()
@@ -230,7 +287,21 @@ def main():
     print(f"Input string: {instr_str}")
 
     eip = 0x0
-    predecode(instr_str, eip)
+    instr_cnt = [0]
+    while eip < len(instr_str):
+        instr_len = predecode(instr_str, eip, instr_cnt, dump_file=dump_file)
+        print("INSTRUCTION COUNT: ", instr_cnt, "length: ", instr_len)
+
+        if instr_len <= 0:
+            print(f"Error decoding at position {eip}")
+            break
+            
+        eip += instr_len
+        #print(" new eip: ", hex(eip))
+
 
 if __name__ == "__main__":
     main()
+
+
+

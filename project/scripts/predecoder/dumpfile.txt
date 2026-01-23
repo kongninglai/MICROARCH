@@ -1,0 +1,2304 @@
+=== Predecode Output ===
+Instruction count: 1
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x4
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0x0
+eip_new          : 0x2
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 2
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x5
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x1234
+imm_size_mux     : 1
+eip              : 0x2
+eip_new          : 0x6
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 3
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x5
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12345678
+imm_size_mux     : 2
+eip              : 0x6
+eip_new          : 0xb
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 4
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x80
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0xb
+eip_new          : 0xe
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 5
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x81
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x1234
+imm_size_mux     : 1
+eip              : 0xe
+eip_new          : 0x13
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 6
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x81
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12345678
+imm_size_mux     : 2
+eip              : 0x13
+eip_new          : 0x19
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 7
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x83
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0x19
+eip_new          : 0x1d
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 8
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x83
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0x1d
+eip_new          : 0x20
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 9
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x0
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x20
+eip_new          : 0x22
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 10
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x1
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x22
+eip_new          : 0x25
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 11
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x1
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x25
+eip_new          : 0x27
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 12
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x2
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x27
+eip_new          : 0x29
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 13
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x3
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x29
+eip_new          : 0x2c
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 14
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x3
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x2c
+eip_new          : 0x2e
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 15
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x24
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0x2e
+eip_new          : 0x30
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 16
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x25
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x1234
+imm_size_mux     : 1
+eip              : 0x30
+eip_new          : 0x34
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 17
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x25
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12345678
+imm_size_mux     : 2
+eip              : 0x34
+eip_new          : 0x39
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 18
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x80
+modrm            : 0x20
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0xff
+imm_size_mux     : 0
+eip              : 0x39
+eip_new          : 0x3c
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 19
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x81
+modrm            : 0x20
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x1234
+imm_size_mux     : 1
+eip              : 0x3c
+eip_new          : 0x41
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 20
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x81
+modrm            : 0x20
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12345678
+imm_size_mux     : 2
+eip              : 0x41
+eip_new          : 0x47
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 21
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x83
+modrm            : 0x20
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x81
+imm_size_mux     : 0
+eip              : 0x47
+eip_new          : 0x4b
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 22
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x83
+modrm            : 0x20
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x4b
+eip_new          : 0x4e
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 23
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x20
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x4e
+eip_new          : 0x50
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 24
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x21
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x50
+eip_new          : 0x53
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 25
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x21
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x53
+eip_new          : 0x55
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 26
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x22
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x55
+eip_new          : 0x57
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 27
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x23
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x57
+eip_new          : 0x5a
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 28
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x23
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x5a
+eip_new          : 0x5c
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 29
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 1
+opcode           : 0xbc
+modrm            : 0xc3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x5c
+eip_new          : 0x60
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 30
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0xbc
+modrm            : 0xc3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x60
+eip_new          : 0x63
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 31
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0xbc
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x63
+eip_new          : 0x66
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 32
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xe8
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0xfffffffc
+imm_size_mux     : 2
+eip              : 0x66
+eip_new          : 0x6b
+reg0_mux         : 0
+imm_type         : 01
+========================
+=== Predecode Output ===
+Instruction count: 33
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xe8
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0xfffffffc
+imm_size_mux     : 2
+eip              : 0x6b
+eip_new          : 0x70
+reg0_mux         : 0
+imm_type         : 01
+========================
+=== Predecode Output ===
+Instruction count: 34
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xff
+modrm            : 0xd3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x70
+eip_new          : 0x73
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 35
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xff
+modrm            : 0xd3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x73
+eip_new          : 0x75
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 36
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xff
+modrm            : 0x15
+sib              : 0x0
+disp             : 0xff06
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x75
+eip_new          : 0x7b
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 37
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xfc
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x7b
+eip_new          : 0x7c
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 38
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 1
+opcode           : 0x42
+modrm            : 0xc3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x7c
+eip_new          : 0x80
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 39
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x42
+modrm            : 0xc3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x80
+eip_new          : 0x83
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 40
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0xb0
+modrm            : 0xcb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x83
+eip_new          : 0x86
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 41
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 1
+opcode           : 0xb1
+modrm            : 0xcb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x86
+eip_new          : 0x8a
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 42
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0xb1
+modrm            : 0xcb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x8a
+eip_new          : 0x8d
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 43
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x27
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x8d
+eip_new          : 0x8e
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 44
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xf4
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x8e
+eip_new          : 0x8f
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 45
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xcf
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x8f
+eip_new          : 0x90
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 46
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x87
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0xfffffffc
+imm_size_mux     : 2
+eip              : 0x90
+eip_new          : 0x96
+reg0_mux         : 0
+imm_type         : 01
+========================
+=== Predecode Output ===
+Instruction count: 47
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x85
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0xfffffffc
+imm_size_mux     : 2
+eip              : 0x96
+eip_new          : 0x9c
+reg0_mux         : 0
+imm_type         : 01
+========================
+=== Predecode Output ===
+Instruction count: 48
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x87
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0xfffffffc
+imm_size_mux     : 2
+eip              : 0x9c
+eip_new          : 0xa2
+reg0_mux         : 0
+imm_type         : 01
+========================
+=== Predecode Output ===
+Instruction count: 49
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x85
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0xfffffffc
+imm_size_mux     : 2
+eip              : 0xa2
+eip_new          : 0xa8
+reg0_mux         : 0
+imm_type         : 01
+========================
+=== Predecode Output ===
+Instruction count: 50
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x88
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xa8
+eip_new          : 0xaa
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 51
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x89
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xaa
+eip_new          : 0xad
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 52
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x89
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xad
+eip_new          : 0xaf
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 53
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x8a
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xaf
+eip_new          : 0xb1
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 54
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x8b
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xb1
+eip_new          : 0xb4
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 55
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x8b
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xb4
+eip_new          : 0xb6
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 56
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x8c
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xb6
+eip_new          : 0xb8
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 57
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x8e
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xb8
+eip_new          : 0xba
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 58
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xb0
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x82
+imm_size_mux     : 0
+eip              : 0xba
+eip_new          : 0xbc
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 59
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xb8
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x8234
+imm_size_mux     : 1
+eip              : 0xbc
+eip_new          : 0xc0
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 60
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xb8
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x82345678
+imm_size_mux     : 2
+eip              : 0xc0
+eip_new          : 0xc5
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 61
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xc6
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0xc5
+eip_new          : 0xc8
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 62
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xc7
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x1234
+imm_size_mux     : 1
+eip              : 0xc8
+eip_new          : 0xcd
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 63
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xc7
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12345678
+imm_size_mux     : 2
+eip              : 0xcd
+eip_new          : 0xd3
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 64
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x6f
+modrm            : 0xc1
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xd3
+eip_new          : 0xd6
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 65
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x7f
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xd6
+eip_new          : 0xd9
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 66
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xa4
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xd9
+eip_new          : 0xda
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 67
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xa5
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xda
+eip_new          : 0xdc
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 68
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xa5
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xdc
+eip_new          : 0xdd
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 69
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xf6
+modrm            : 0xd3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xdd
+eip_new          : 0xdf
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 70
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xf7
+modrm            : 0xd3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xdf
+eip_new          : 0xe2
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 71
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xf7
+modrm            : 0xd3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0xe2
+eip_new          : 0xe4
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 72
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xc
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0xe4
+eip_new          : 0xe6
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 73
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xd
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x1234
+imm_size_mux     : 1
+eip              : 0xe6
+eip_new          : 0xea
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 74
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xd
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12345678
+imm_size_mux     : 2
+eip              : 0xea
+eip_new          : 0xef
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 75
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x80
+modrm            : 0x8
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0xef
+eip_new          : 0xf2
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 76
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x81
+modrm            : 0x8
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x1234
+imm_size_mux     : 1
+eip              : 0xf2
+eip_new          : 0xf7
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 77
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x81
+modrm            : 0x8
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12345678
+imm_size_mux     : 2
+eip              : 0xf7
+eip_new          : 0xfd
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 78
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x83
+modrm            : 0x8
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0xfd
+eip_new          : 0x101
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 79
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x83
+modrm            : 0x8
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0x101
+eip_new          : 0x104
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 80
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x8
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x104
+eip_new          : 0x106
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 81
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x9
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x106
+eip_new          : 0x109
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 82
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x9
+modrm            : 0x18
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x109
+eip_new          : 0x10b
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 83
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xa
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x10b
+eip_new          : 0x10d
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 84
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xb
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x10d
+eip_new          : 0x110
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 85
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xb
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x110
+eip_new          : 0x112
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 86
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0xfd
+modrm            : 0xc1
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x112
+eip_new          : 0x115
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 87
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0xfe
+modrm            : 0xc1
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x115
+eip_new          : 0x118
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 88
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x63
+modrm            : 0xc1
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x118
+eip_new          : 0x11b
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 89
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x6b
+modrm            : 0xc1
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x11b
+eip_new          : 0x11e
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 90
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x68
+modrm            : 0xc1
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x11e
+eip_new          : 0x121
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 91
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0x69
+modrm            : 0xc1
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x121
+eip_new          : 0x124
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 92
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x8f
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x124
+eip_new          : 0x127
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 93
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x8f
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x127
+eip_new          : 0x129
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 94
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x58
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x129
+eip_new          : 0x12b
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 95
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x58
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x12b
+eip_new          : 0x12c
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 96
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x1f
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x12c
+eip_new          : 0x12d
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 97
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x7
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x12d
+eip_new          : 0x12e
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 98
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x17
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x12e
+eip_new          : 0x12f
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 99
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0xa1
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x12f
+eip_new          : 0x131
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 100
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0xa9
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x131
+eip_new          : 0x133
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 101
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xff
+modrm            : 0x30
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x133
+eip_new          : 0x136
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 102
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xff
+modrm            : 0x30
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x136
+eip_new          : 0x138
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 103
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x50
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x138
+eip_new          : 0x13a
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 104
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x50
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x13a
+eip_new          : 0x13b
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 105
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x6a
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 0
+eip              : 0x13b
+eip_new          : 0x13d
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 106
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x68
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x1234
+imm_size_mux     : 2
+eip              : 0x13d
+eip_new          : 0x142
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 107
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x68
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12345678
+imm_size_mux     : 2
+eip              : 0x142
+eip_new          : 0x147
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 108
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xe
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x147
+eip_new          : 0x148
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 109
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x16
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x148
+eip_new          : 0x149
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 110
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x1e
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x149
+eip_new          : 0x14a
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 111
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x6
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x14a
+eip_new          : 0x14b
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 112
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0xa0
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x14b
+eip_new          : 0x14d
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 113
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 1
+opcode           : 0xa8
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x14d
+eip_new          : 0x14f
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 114
+prefix_mux       : [0, 0, 1]
+ext_opcode       : 0
+opcode           : 0xa4
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x14f
+eip_new          : 0x151
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 115
+prefix_mux       : [0, 1, 1]
+ext_opcode       : 0
+opcode           : 0xa5
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x151
+eip_new          : 0x154
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 116
+prefix_mux       : [0, 0, 1]
+ext_opcode       : 0
+opcode           : 0xa5
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x154
+eip_new          : 0x156
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 117
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xc3
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x156
+eip_new          : 0x157
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 118
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xcb
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x157
+eip_new          : 0x158
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 119
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xc2
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x12
+imm_size_mux     : 1
+eip              : 0x158
+eip_new          : 0x15b
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 120
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xca
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0xc
+imm_size_mux     : 1
+eip              : 0x15b
+eip_new          : 0x15e
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 121
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xd0
+modrm            : 0xe3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x15e
+eip_new          : 0x160
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 122
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xd2
+modrm            : 0xe3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x160
+eip_new          : 0x162
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 123
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xc0
+modrm            : 0xe3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x3
+imm_size_mux     : 0
+eip              : 0x162
+eip_new          : 0x165
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 124
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xd1
+modrm            : 0xe3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x165
+eip_new          : 0x168
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 125
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xd3
+modrm            : 0xe3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x168
+eip_new          : 0x16b
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 126
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xc1
+modrm            : 0xe3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x3
+imm_size_mux     : 0
+eip              : 0x16b
+eip_new          : 0x16f
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 127
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xd1
+modrm            : 0xe3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x16f
+eip_new          : 0x171
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 128
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xd3
+modrm            : 0xe3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x171
+eip_new          : 0x173
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 129
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xc1
+modrm            : 0xe3
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x3
+imm_size_mux     : 0
+eip              : 0x173
+eip_new          : 0x176
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 130
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xd0
+modrm            : 0xfb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x176
+eip_new          : 0x178
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 131
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xd2
+modrm            : 0xfb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x178
+eip_new          : 0x17a
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 132
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xc0
+modrm            : 0xfb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x3
+imm_size_mux     : 0
+eip              : 0x17a
+eip_new          : 0x17d
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 133
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xd1
+modrm            : 0xfb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x17d
+eip_new          : 0x180
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 134
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xd3
+modrm            : 0xfb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x180
+eip_new          : 0x183
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 135
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0xc1
+modrm            : 0xfb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x3
+imm_size_mux     : 0
+eip              : 0x183
+eip_new          : 0x187
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 136
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xd1
+modrm            : 0xfb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x187
+eip_new          : 0x189
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 137
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xd3
+modrm            : 0xfb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x189
+eip_new          : 0x18b
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 138
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xc1
+modrm            : 0xfb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x3
+imm_size_mux     : 0
+eip              : 0x18b
+eip_new          : 0x18e
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 139
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0xfd
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x18e
+eip_new          : 0x18f
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 140
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x93
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x18f
+eip_new          : 0x191
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 141
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x93
+modrm            : 0x0
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x191
+eip_new          : 0x192
+reg0_mux         : 0
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 142
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x86
+modrm            : 0xcb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x192
+eip_new          : 0x194
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 143
+prefix_mux       : [0, 1, 0]
+ext_opcode       : 0
+opcode           : 0x87
+modrm            : 0xcb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x194
+eip_new          : 0x197
+reg0_mux         : 1
+imm_type         : 00
+========================
+=== Predecode Output ===
+Instruction count: 144
+prefix_mux       : [0, 0, 0]
+ext_opcode       : 0
+opcode           : 0x87
+modrm            : 0xcb
+sib              : 0x0
+disp             : 0x0
+disp_size_mux    : 0
+imm              : 0x0
+imm_size_mux     : 0
+eip              : 0x197
+eip_new          : 0x199
+reg0_mux         : 1
+imm_type         : 00
+========================
