@@ -1,0 +1,50 @@
+module  PA_32b_tb;
+
+initial begin
+  $vcdplusfile("PA_32b_tb.dump.vpd");
+  $vcdpluson(0, PA_32b_tb); 
+end
+
+localparam WIDTH = 32;
+
+reg   [2*WIDTH-1:0] in_long;
+wire  [WIDTH-1:0]   out, out_exp;
+
+wire  [WIDTH-1:0]   in0   = in_long[WIDTH-1:0];
+wire  [WIDTH-1:0]   in1   = in_long[2*WIDTH-1:WIDTH];
+
+PA_32b DUT(.s(out), .in0(in0), .in1(in1));
+
+PA_32b_behav REF(.s(out_exp), .in0(in0), .in1(in1));
+
+integer FAILURES  = 0;
+integer SUCCESSES = 0;
+
+task check;
+  input [WIDTH-1:0] out, out_exp;
+  if (out !== out_exp) begin
+    FAILURES = FAILURES + 1;
+    $display("FAILURE AT TIME %t. out_exp = %h, out = %h\n", 
+              $time, out_exp, out);
+  end else begin
+    SUCCESSES = SUCCESSES + 1;
+  end
+endtask
+
+initial begin
+  in_long = 0;
+  repeat (1 << 10) begin
+    #5; 
+    check(out, out_exp);
+    in_long[63:32] = $random;
+    in_long[31:0] = $random;
+  end
+
+  $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+
+  $finish;
+
+end
+
+endmodule
