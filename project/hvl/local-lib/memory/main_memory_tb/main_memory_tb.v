@@ -4,6 +4,10 @@ initial begin
   $vcdplusfile("main_memory_tb.dump.vpd");
   $vcdpluson(0, main_memory_tb); 
   $vcdpluson(0, main_memory_tb.REF.memory); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_generation[0].rank_inst.chip_generation[1].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_generation[0].rank_inst.chip_generation[2].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_generation[0].rank_inst.chip_generation[3].sram128x8$_inst.mem); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;
@@ -30,13 +34,15 @@ wire  [RANK_BIT_WIDTH-1:0]  DIO_exp = DIO_driver_enable ? DIO_driver : {RANK_BIT
 
 integer i;
 
-main_memory  DUT(
+main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT 
+(
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
   .DIO(DIO)
 );
 
-main_memory_behav  REF(
+main_memory_behav #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) REF 
+(
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
   .DIO(DIO_exp)
@@ -56,7 +62,7 @@ task check;
   end
 endtask
 
-localparam CYCLE_TIME = 500;
+localparam CYCLE_TIME = 150;
 
 reg clk;
 initial begin

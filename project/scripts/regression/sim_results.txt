@@ -24,7 +24,7 @@ neq_6b_tb                      FAILURES=0      SUCCESSES=4096
 PA_16b_tb                      FAILURES=0      SUCCESSES=1024  
 PA_32b_tb                      FAILURES=0      SUCCESSES=1024  
 PA_8b_tb                       FAILURES=0      SUCCESSES=65536 
-rank_tb                        FAILURES=0      SUCCESSES=256   
+rank_tb                        FAILURES=0      SUCCESSES=8192  
 rshfa_const_tb                 FAILURES=0      SUCCESSES=1024  
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
 se_tb                          FAILURES=0      SUCCESSES=258   

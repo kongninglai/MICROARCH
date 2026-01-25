@@ -31,7 +31,8 @@ module main_memory #(
     for (rank_idx = 0; rank_idx < RANK_COUNT; rank_idx = rank_idx + 1) begin : rank_generation
       wire   [RANK_IDX_WIDTH-1:0] RANK_IDX_WIRE;
       assign                      RANK_IDX_WIRE = rank_idx;
-      rank rank_inst  ( 
+      rank #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) 
+          rank_inst   ( 
                         .A(A),
                         .DIO(DIO),
                         .OE(OE),

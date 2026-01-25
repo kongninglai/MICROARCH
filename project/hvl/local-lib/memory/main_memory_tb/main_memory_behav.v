@@ -28,20 +28,20 @@ module main_memory_behav #(
 
   always @(*) begin
     if ((CE == 1'b0) & (WR == 1'b0)) begin
-      memory[{A[9:2], 2'b00}] <= DIO[7:0];
-      memory[{A[9:2], 2'b01}] <= DIO[15:8];
-      memory[{A[9:2], 2'b10}] <= DIO[23:16];
-      memory[{A[9:2], 2'b11}] <= DIO[31:24];
+      memory[{A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)], 2'b00}] <= DIO[7:0];
+      memory[{A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)], 2'b01}] <= DIO[15:8];
+      memory[{A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)], 2'b10}] <= DIO[23:16];
+      memory[{A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)], 2'b11}] <= DIO[31:24];
     end
   end
 
   assign DIO =
   ((CE == 1'b0) && (WR == 1'b1) && (OE == 1'b0))
     ? {
-        memory[{A[9:2], 2'b11}], 
-        memory[{A[9:2], 2'b10}], 
-        memory[{A[9:2], 2'b01}], 
-        memory[{A[9:2], 2'b00}] 
+        memory[{A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)], 2'b11}], 
+        memory[{A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)], 2'b10}], 
+        memory[{A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)], 2'b01}], 
+        memory[{A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)], 2'b00}] 
       }
     : {RANK_BIT_WIDTH{1'bz}};
 

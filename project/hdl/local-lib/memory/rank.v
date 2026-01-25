@@ -29,7 +29,7 @@ module rank #(
       xor2$   xor2$_0(inactive_rank, RANK_IDX, A[$clog2(CHIPS_PER_RANK)+$clog2(RANK_COUNT)-1:$clog2(CHIPS_PER_RANK)]);
     end else begin
       // Assume 6-bit rank index width otherwise (need 64 ranks for project)
-      neq_6b  neq_6b_0(inactive_rank, RANK_IDX, A[$clog2(CHIPS_PER_RANK)+$clog2(RANK_COUNT)-1:$clog2(CHIPS_PER_RANK)]);
+      neq_6b  neq_6b_0(RANK_IDX, A[$clog2(CHIPS_PER_RANK)+$clog2(RANK_COUNT)-1:$clog2(CHIPS_PER_RANK)], inactive_rank);
     end
   endgenerate
 

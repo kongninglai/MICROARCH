@@ -4,9 +4,13 @@ initial begin
   $vcdplusfile("rank_tb.dump.vpd");
   $vcdpluson(0, rank_tb); 
   $vcdpluson(0, rank_tb.REF.rank_mem); 
+  $vcdpluson(0, rank_tb.DUT.chip_generation[0].sram128x8$_inst.mem); 
+  $vcdpluson(0, rank_tb.DUT.chip_generation[1].sram128x8$_inst.mem); 
+  $vcdpluson(0, rank_tb.DUT.chip_generation[2].sram128x8$_inst.mem); 
+  $vcdpluson(0, rank_tb.DUT.chip_generation[3].sram128x8$_inst.mem); 
 end
 
-localparam MEM_BYTE_CAPACITY=1024;
+localparam MEM_BYTE_CAPACITY=32768;
 localparam MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY);
 localparam CHIP_BIT_WIDTH=8;
 localparam CHIP_BYTE_WIDTH=CHIP_BIT_WIDTH/8;
@@ -21,7 +25,7 @@ localparam RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RA
 
 reg   [MEM_ADDR_WIDTH-1:0]  A;
 reg                         WR, OE, CE;
-reg   [RANK_IDX_WIDTH-1:0]  RANK_IDX = 0;
+reg   [RANK_IDX_WIDTH-1:0]  RANK_IDX = 1;
 reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
 reg                         DIO_driver_enable;
 reg   [7:0]                 byte_val;
@@ -31,14 +35,14 @@ wire  [RANK_BIT_WIDTH-1:0]  DIO_exp = DIO_driver_enable ? DIO_driver : {RANK_BIT
 
 integer i;
 
-rank  DUT(
+rank #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT(
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
   .RANK_IDX(RANK_IDX),
   .DIO(DIO)
 );
 
-rank_behav  REF(
+rank_behav #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) REF(
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
   .RANK_IDX(RANK_IDX),
