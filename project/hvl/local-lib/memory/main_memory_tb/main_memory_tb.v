@@ -3,11 +3,8 @@ module  main_memory_tb;
 initial begin
   $vcdplusfile("main_memory_tb.dump.vpd");
   $vcdpluson(0, main_memory_tb); 
-  $vcdpluson(0, main_memory_tb.REF.memory); 
-  $vcdpluson(0, main_memory_tb.DUT.rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem); 
-  $vcdpluson(0, main_memory_tb.DUT.rank_generation[0].rank_inst.chip_generation[1].sram128x8$_inst.mem); 
-  $vcdpluson(0, main_memory_tb.DUT.rank_generation[0].rank_inst.chip_generation[2].sram128x8$_inst.mem); 
-  $vcdpluson(0, main_memory_tb.DUT.rank_generation[0].rank_inst.chip_generation[3].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.REF.memory);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem);  
 end
 
 localparam MEM_BYTE_CAPACITY=32768;
@@ -24,7 +21,7 @@ localparam RANK_COUNT=MEM_BYTE_CAPACITY/RANK_BYTE_CAPACITY;
 localparam RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK);
 
 reg   [MEM_ADDR_WIDTH-1:0]  A;
-reg                         WR, OE, CE;
+reg                         WR, OE, CE, clk, rst;
 reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
 reg                         DIO_driver_enable;
 reg   [7:0]                 byte_val;
@@ -32,10 +29,12 @@ reg   [7:0]                 byte_val;
 wire  [RANK_BIT_WIDTH-1:0]  DIO     = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
 wire  [RANK_BIT_WIDTH-1:0]  DIO_exp = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
 
+
 integer i;
 
 main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT 
 (
+  .clk(clk), .rst(rst),
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
   .DIO(DIO)
@@ -43,6 +42,7 @@ main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT
 
 main_memory_behav #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) REF 
 (
+  .clk(clk), .rst(rst),
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
   .DIO(DIO_exp)
@@ -62,9 +62,8 @@ task check;
   end
 endtask
 
-localparam CYCLE_TIME = 150;
+localparam CYCLE_TIME = 300;
 
-reg clk;
 initial begin
   clk = 0;
   forever begin
@@ -73,6 +72,7 @@ initial begin
 end
 
 initial begin
+  rst = 1'b1;
   
   // Apply test vectors (active low WR, OE, CE)
   // Do a write phase (sequential) and then a read back phase to check
@@ -111,6 +111,9 @@ initial begin
     WR <= 1'b1;
     CE <= 1'b1;
 
+    #(CYCLE_TIME);
+    #(CYCLE_TIME);
+
   end
 
 
@@ -131,9 +134,24 @@ initial begin
     WR <= 1'b1;
     OE <= 1'b0;
 
-    #(CYCLE_TIME/2);
-    check(DIO, DIO_exp);
-    #(CYCLE_TIME/2);
+    if ((i >> 2) % 4 == 0) begin
+      #(CYCLE_TIME/2);
+      check(DIO, DIO_exp);
+      #(CYCLE_TIME/2);
+
+      CE <= 1'b1;
+      WR <= 1'b1;
+      OE <= 1'b1;
+    end else begin
+      #(CYCLE_TIME);
+      CE <= 1'b1;
+      WR <= 1'b1;
+      OE <= 1'b1;
+      #(CYCLE_TIME/2 + (((i >> 2) % 4)-1)*(CYCLE_TIME));
+      check(DIO, DIO_exp);
+      #(CYCLE_TIME/2);
+    end
+    #(CYCLE_TIME*4);
   end
 
   #(CYCLE_TIME);

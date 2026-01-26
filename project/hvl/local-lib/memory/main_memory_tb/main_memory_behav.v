@@ -14,15 +14,29 @@ module main_memory_behav #(
   parameter RANK_BYTE_CAPACITY=CHIP_BYTE_CAPACITY*CHIPS_PER_RANK,
 
   parameter RANK_COUNT=MEM_BYTE_CAPACITY/RANK_BYTE_CAPACITY,
+  parameter BURST_SIZE=4,
 
   parameter RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK)
 ) (
-
+  input                       clk, rst,
   input [MEM_ADDR_WIDTH-1:0]  A,
 	input                       WR, OE, CE,
 
   inout [RANK_BIT_WIDTH-1:0]  DIO
 );
+
+  wire [0:(BURST_SIZE-1)] OE_P, CE_P;
+
+  assign OE_P[0] = OE;
+  assign CE_P[0] = CE;
+
+  genvar delay_idx;
+  generate
+    for (delay_idx = 1; delay_idx < BURST_SIZE; delay_idx = delay_idx + 1) begin : DELAY_GEN
+      dff$    OE_P_delays(clk, OE_P[delay_idx-1], OE_P[delay_idx], , rst, 1'b1);
+      dff$    CE_P_delays(clk, CE_P[delay_idx-1], CE_P[delay_idx], , rst, 1'b1);
+    end
+  endgenerate
 
   reg [CHIP_BIT_WIDTH-1:0] memory [0:MEM_BYTE_CAPACITY-1];
 
@@ -36,7 +50,7 @@ module main_memory_behav #(
   end
 
   assign DIO =
-  ((CE == 1'b0) && (WR == 1'b1) && (OE == 1'b0))
+  ((~&CE_P) && (WR == 1'b1) && (~&OE_P))
     ? {
         memory[{A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)], 2'b11}], 
         memory[{A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)], 2'b10}], 

@@ -1,0 +1,17 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time -v 
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib1 
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib6
+~/MICROARCH/project/hdl/local-lib/comparators/neq_2b.v
+~/MICROARCH/project/hdl/local-lib/comparators/neq_4b.v
+~/MICROARCH/project/hdl/local-lib/comparators/eq_6b.v
+~/MICROARCH/project/hdl/local-lib/comparators/neq_6b.v
+~/MICROARCH/project/hdl/local-lib/gates/xor3LL.v
+~/MICROARCH/project/hdl/local-lib/adders/gen_prop.v
+~/MICROARCH/project/hdl/local-lib/adders/gen_prop_2.v
+~/MICROARCH/project/hdl/local-lib/adders/PA_8b.v
+~/MICROARCH/project/hdl/local-lib/memory/rank.v
+~/MICROARCH/project/hdl/local-lib/memory/main_memory.v
+~/MICROARCH/project/hdl/local-lib/memory/mmu.v
+~/MICROARCH/project/hvl/local-lib/memory/mmu_tb/mmu_tb.v

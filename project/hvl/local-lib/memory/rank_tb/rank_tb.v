@@ -25,7 +25,6 @@ localparam RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RA
 
 reg   [MEM_ADDR_WIDTH-1:0]  A;
 reg                         WR, OE, CE;
-reg   [RANK_IDX_WIDTH-1:0]  RANK_IDX = 1;
 reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
 reg                         DIO_driver_enable;
 reg   [7:0]                 byte_val;
@@ -38,14 +37,12 @@ integer i;
 rank #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT(
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
-  .RANK_IDX(RANK_IDX),
   .DIO(DIO)
 );
 
 rank_behav #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) REF(
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
-  .RANK_IDX(RANK_IDX),
   .DIO(DIO_exp)
 );
 

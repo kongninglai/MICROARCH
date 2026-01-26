@@ -16,24 +16,23 @@ module rank_behav #(
 
   parameter RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK)
 ) (
-  input [MEM_ADDR_WIDTH-1:0]  A,
-	input                       WR, OE, CE,
-  input [RANK_IDX_WIDTH-1:0]  RANK_IDX,
-	inout [RANK_BIT_WIDTH-1:0]  DIO 
+  input [RANK_ADDR_WIDTH-1:0]   A,
+	input                         WR, OE, CE,
+	inout [RANK_BIT_WIDTH-1:0]    DIO 
 );
   
   reg [RANK_BIT_WIDTH-1:0] rank_mem [0:CHIP_ROW_COUNT];
 
   always @(*) begin
-    if ((CE == 1'b0) && (WR == 1'b0) && (A[$clog2(CHIPS_PER_RANK)+$clog2(RANK_COUNT)-1:$clog2(CHIPS_PER_RANK)] == RANK_IDX)) begin
-      rank_mem[A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)+$clog2(RANK_COUNT)]] <= DIO;
+    if ((CE == 1'b0) && (WR == 1'b0)) begin
+      rank_mem[A] <= DIO;
     end
   end
 
   assign DIO =
-  ((CE == 1'b0) && (WR == 1'b1) && (OE == 1'b0) && (A[$clog2(CHIPS_PER_RANK)+$clog2(RANK_COUNT)-1:$clog2(CHIPS_PER_RANK)] == RANK_IDX))
+  ((CE == 1'b0) && (WR == 1'b1) && (OE == 1'b0))
     ? {
-        rank_mem[A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)+$clog2(RANK_COUNT)]]
+        rank_mem[A]
       }
     : {RANK_BIT_WIDTH{1'bz}};
 
