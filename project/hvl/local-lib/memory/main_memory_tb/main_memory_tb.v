@@ -24,7 +24,6 @@ reg   [MEM_ADDR_WIDTH-1:0]  A;
 reg                         WR, OE, CE, clk, rst;
 reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
 reg                         DIO_driver_enable;
-reg   [7:0]                 byte_val;
 
 wire  [RANK_BIT_WIDTH-1:0]  DIO     = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
 wire  [RANK_BIT_WIDTH-1:0]  DIO_exp = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
@@ -62,7 +61,7 @@ task check;
   end
 endtask
 
-localparam CYCLE_TIME = 300;
+localparam CYCLE_TIME = 130;
 
 initial begin
   clk = 0;
@@ -84,8 +83,6 @@ initial begin
   DIO_driver_enable   = 1'b0;
   DIO_driver          = {RANK_BIT_WIDTH{1'bz}};
 
-  byte_val = 8'h00;
-
   #(1.5*CYCLE_TIME);
 
   // Write phase
@@ -93,14 +90,9 @@ initial begin
     
     #(CYCLE_TIME);
     A = i;
-    // A = i[MEM_ADDR_WIDTH-1:0];
+
     DIO_driver_enable = 1'b1;
     DIO_driver = i;
-    // DIO_driver[31:24] = byte_val + 3;
-    // DIO_driver[23:16] = byte_val + 2;
-    // DIO_driver[15:8] = byte_val + 1;
-    // DIO_driver[7:0] = byte_val + 0;
-    byte_val = byte_val + 4;
 
     #(CYCLE_TIME);
     CE <= 1'b0;
@@ -111,9 +103,6 @@ initial begin
     WR <= 1'b1;
     CE <= 1'b1;
 
-    #(CYCLE_TIME);
-    #(CYCLE_TIME);
-
   end
 
 
@@ -123,10 +112,10 @@ initial begin
   CE          <= 1'b1;
   DIO_driver_enable <= 1'b0;
   DIO_driver  <= {RANK_BIT_WIDTH{1'bz}};
+  #(CYCLE_TIME);
 
   // Read back
   for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 1) begin
-    #(CYCLE_TIME);
 
     // A  <= i[MEM_ADDR_WIDTH-1:0];
     A  <= i;
@@ -142,6 +131,7 @@ initial begin
       CE <= 1'b1;
       WR <= 1'b1;
       OE <= 1'b1;
+      #(3*CYCLE_TIME);
     end else begin
       #(CYCLE_TIME);
       CE <= 1'b1;
@@ -150,8 +140,8 @@ initial begin
       #(CYCLE_TIME/2 + (((i >> 2) % 4)-1)*(CYCLE_TIME));
       check(DIO, DIO_exp);
       #(CYCLE_TIME/2);
+      #(CYCLE_TIME*(3-((i >> 2) % 4)));
     end
-    #(CYCLE_TIME*4);
   end
 
   #(CYCLE_TIME);

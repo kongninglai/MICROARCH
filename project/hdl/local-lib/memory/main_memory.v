@@ -53,7 +53,6 @@ module main_memory #(
       if (RANK_GROUP_WIDTH==1) begin
         assign inactive_rank_group = A[4] ^ RANK_GROUP_WIRE;
       end else begin
-        // Assume 16 rank groups, RANK_GROUP_WIDTH=4
         neq_4b   neq_4b_0(RANK_GROUP_WIRE,
                           A[$clog2(CHIPS_PER_RANK)+RANK_IDX_WIDTH-1:$clog2(CHIPS_PER_RANK)+$clog2(BURST_SIZE)],
                           inactive_rank_group);
