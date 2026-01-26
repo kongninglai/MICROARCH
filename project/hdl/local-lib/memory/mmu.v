@@ -1,8 +1,10 @@
-module mmu(rst,clk,RD,WR,RD_out,WR_out,OE_out,V);
+module mmu(
+  input           rst, clk, RD, WR,
+  inout   [31:0]  DATA_BUS,
+  inout   [14:0]  ADDR_BUS
+);
 
-/* I/Os */
-input rst,clk,RD,WR;
-output RD_out,WR_out,OE_out,V;
+wire RD_out,WR_out,OE_out,V;
 wire Q1,Q0;
 wire D1,D0;
 

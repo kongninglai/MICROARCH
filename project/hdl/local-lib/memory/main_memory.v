@@ -1,44 +1,40 @@
 module main_memory #(
-  parameter MEM_BYTE_CAPACITY=4096,
+  parameter MEM_BYTE_CAPACITY=32768,
   parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
 
   parameter CHIP_BIT_WIDTH=8,
   parameter CHIP_BYTE_WIDTH=CHIP_BIT_WIDTH/8,
   parameter CHIP_ROW_COUNT=128,
   parameter CHIP_BYTE_CAPACITY=CHIP_ROW_COUNT*CHIP_BYTE_WIDTH,
-
   parameter CHIP_COUNT=MEM_BYTE_CAPACITY/CHIP_BYTE_CAPACITY,
 
   parameter RANK_BIT_WIDTH=32,
   parameter CHIPS_PER_RANK=RANK_BIT_WIDTH/CHIP_BIT_WIDTH,
   parameter RANK_BYTE_CAPACITY=CHIP_BYTE_CAPACITY*CHIPS_PER_RANK,
-
   parameter RANK_COUNT=MEM_BYTE_CAPACITY/RANK_BYTE_CAPACITY,
   parameter RANK_IDX_WIDTH=$clog2(RANK_COUNT),
+  parameter RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK),
 
   parameter BURST_SIZE=4,
   parameter RANK_GROUP_COUNT=RANK_COUNT/BURST_SIZE,
-  parameter RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT),
+  parameter RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT)
 
-  parameter RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK)
 ) (
-  input                       clk, rst,
+  input                       mem_clk, rst,
   input [MEM_ADDR_WIDTH-1:0]  A,
 	input                       WR, OE, CE,
   inout [RANK_BIT_WIDTH-1:0]  DIO
 );
 
 
-  wire [0:(BURST_SIZE-1)] OE_P, CE_P;
+  wire [0:(BURST_SIZE-1)] OE_P;
 
   assign OE_P[0] = OE;
-  assign CE_P[0] = CE;
 
   genvar delay_idx;
   generate
     for (delay_idx = 1; delay_idx < BURST_SIZE; delay_idx = delay_idx + 1) begin : DELAY_GEN
-      dff$    OE_P_delays(clk, OE_P[delay_idx-1], OE_P[delay_idx], , rst, 1'b1);
-      dff$    CE_P_delays(clk, CE_P[delay_idx-1], CE_P[delay_idx], , rst, 1'b1);
+      dff$    OE_P_delays(mem_clk, OE_P[delay_idx-1], OE_P[delay_idx], , rst, 1'b1);
     end
   endgenerate
 
@@ -60,8 +56,8 @@ module main_memory #(
 
 
       for (rank_idx = 0; rank_idx < BURST_SIZE; rank_idx = rank_idx + 1) begin : rank_generation
-        wire   [RANK_IDX_WIDTH-1:0] RANK_IDX_WIRE;
-        assign                      RANK_IDX_WIRE = rank_idx;
+        wire   [$clog2(BURST_SIZE)-1:0] RANK_IDX_WIRE;
+        assign                          RANK_IDX_WIRE = rank_idx;
 
         
         wire    WR_gated, CE_gated, inactive_rank, inactive_rank_pos;
@@ -70,17 +66,17 @@ module main_memory #(
 
         or2$ or2$(inactive_rank, inactive_rank_pos, inactive_rank_group);
 
-        or2$  or2$_rank[1:0]({WR_gated, CE_gated},
-                        {WR,       CE      },
-                        {2{inactive_rank}});
+        or2$  or2$_rank(  WR_gated,
+                          WR,
+                          inactive_rank);
 
-        wire OE_group_gated, CE_group_gated;
-        or2$  or2$_0[1:0]({OE_group_gated,                                CE_group_gated},
-                          {OE_P[RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0]],   CE_P[RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0]]},
-                          {2{inactive_rank_group}});
+        wire OE_group_gated;
+      or2$  or2$_0(     OE_group_gated,
+                        OE_P[RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0]],
+                        inactive_rank_group);
 
         wire CE_final;
-        mux2$ mux2$_CE_final(CE_final, CE_gated, CE_group_gated, WR);
+        xnor2$ xnor2$_CE_final(CE_final, OE_group_gated, WR_gated);
 
         rank #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) 
             rank_inst   ( 

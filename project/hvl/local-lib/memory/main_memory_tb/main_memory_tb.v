@@ -21,7 +21,7 @@ localparam RANK_COUNT=MEM_BYTE_CAPACITY/RANK_BYTE_CAPACITY;
 localparam RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK);
 
 reg   [MEM_ADDR_WIDTH-1:0]  A;
-reg                         WR, OE, CE, clk, rst;
+reg                         WR, OE, CE, mem_clk, rst;
 reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
 reg                         DIO_driver_enable;
 
@@ -33,7 +33,7 @@ integer i;
 
 main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT 
 (
-  .clk(clk), .rst(rst),
+  .mem_clk(mem_clk), .rst(rst),
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
   .DIO(DIO)
@@ -41,7 +41,7 @@ main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT
 
 main_memory_behav #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) REF 
 (
-  .clk(clk), .rst(rst),
+  .mem_clk(mem_clk), .rst(rst),
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
   .DIO(DIO_exp)
@@ -61,12 +61,13 @@ task check;
   end
 endtask
 
-localparam CYCLE_TIME = 130;
+localparam CYCLE_TIME = 64.000;
+localparam CYCLE_TIME_DIV = 1000;
 
 initial begin
-  clk = 0;
+  mem_clk = 0;
   forever begin
-    #(CYCLE_TIME / 2) clk = ~clk;
+    #(CYCLE_TIME / 2) mem_clk = ~mem_clk;
   end
 end
 
@@ -124,9 +125,9 @@ initial begin
     OE <= 1'b0;
 
     if ((i >> 2) % 4 == 0) begin
-      #(CYCLE_TIME/2);
+      #((CYCLE_TIME_DIV-1)*CYCLE_TIME/CYCLE_TIME_DIV);
       check(DIO, DIO_exp);
-      #(CYCLE_TIME/2);
+      #(CYCLE_TIME/CYCLE_TIME_DIV);
 
       CE <= 1'b1;
       WR <= 1'b1;
@@ -137,9 +138,9 @@ initial begin
       CE <= 1'b1;
       WR <= 1'b1;
       OE <= 1'b1;
-      #(CYCLE_TIME/2 + (((i >> 2) % 4)-1)*(CYCLE_TIME));
+      #((CYCLE_TIME_DIV-1)*CYCLE_TIME/CYCLE_TIME_DIV + (((i >> 2) % 4)-1)*(CYCLE_TIME));
       check(DIO, DIO_exp);
-      #(CYCLE_TIME/2);
+      #(CYCLE_TIME/CYCLE_TIME_DIV);
       #(CYCLE_TIME*(3-((i >> 2) % 4)));
     end
   end
