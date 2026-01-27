@@ -1,11 +1,11 @@
-module  regfile_2r1w_tb;
+module  regfile_mmx_tb;
 
 initial begin
-  $vcdplusfile("regfile_2r1w_tb.dump.vpd");
-  $vcdpluson(0, regfile_2r1w_tb); 
+  $vcdplusfile("regfile_mmx_tb.dump.vpd");
+  $vcdpluson(0, regfile_mmx_tb); 
 end
 
-localparam WIDTH = 16;
+localparam WIDTH = 64;
 localparam DEPTH = 8;
 localparam IDX_SIZE = 3;
 reg clk;
@@ -24,7 +24,7 @@ reg  [IDX_SIZE-1:0] wr_reg0_idx;
 reg  [WIDTH-1:0]    wr_reg0_data;
 reg                 wr0_en;
 
-regfile_2r1w_bh #(
+regfile_mmx_bh #(
   .WIDTH(WIDTH),
   .DEPTH(DEPTH),
   .IDX_SIZE(IDX_SIZE)
@@ -42,7 +42,7 @@ regfile_2r1w_bh #(
     .wr0_en(wr0_en)
 );
 
-regfile_2r1w #(
+regfile_mmx #(
   .WIDTH(WIDTH)
 ) dut (
     .clk(clk),

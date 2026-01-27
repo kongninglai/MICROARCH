@@ -1,8 +1,8 @@
-module  regfile_2r1w_tb;
+module  regfile_seg_tb;
 
 initial begin
-  $vcdplusfile("regfile_2r1w_tb.dump.vpd");
-  $vcdpluson(0, regfile_2r1w_tb); 
+  $vcdplusfile("regfile_seg_tb.dump.vpd");
+  $vcdpluson(0, regfile_seg_tb); 
 end
 
 localparam WIDTH = 16;
@@ -16,15 +16,17 @@ reg  [IDX_SIZE-1:0] rd_reg1_idx;
 
 wire [WIDTH-1:0]    rd_reg0_data_bh;
 wire [WIDTH-1:0]    rd_reg1_data_bh;
+wire [WIDTH-1:0]    cs_bh;
 
 wire [WIDTH-1:0]    rd_reg0_data;
 wire [WIDTH-1:0]    rd_reg1_data;
+wire [WIDTH-1:0]    cs;
 
 reg  [IDX_SIZE-1:0] wr_reg0_idx;
 reg  [WIDTH-1:0]    wr_reg0_data;
 reg                 wr0_en;
 
-regfile_2r1w_bh #(
+regfile_seg_bh #(
   .WIDTH(WIDTH),
   .DEPTH(DEPTH),
   .IDX_SIZE(IDX_SIZE)
@@ -39,10 +41,11 @@ regfile_2r1w_bh #(
 
     .wr_reg0_idx(wr_reg0_idx),
     .wr_reg0_data(wr_reg0_data),
-    .wr0_en(wr0_en)
+    .wr0_en(wr0_en),
+    .cs(cs_bh)
 );
 
-regfile_2r1w #(
+regfile_seg #(
   .WIDTH(WIDTH)
 ) dut (
     .clk(clk),
@@ -55,7 +58,8 @@ regfile_2r1w #(
 
     .wr_reg0_idx(wr_reg0_idx),
     .wr_reg0_data(wr_reg0_data),
-    .wr0_en(wr0_en)
+    .wr0_en(wr0_en),
+    .cs(cs)
 );
 
 initial begin
@@ -105,6 +109,10 @@ task single_write_test;
     #1;
     check(rd_reg0_data_bh, 64'h1111_1111_1111_1111, "single write to register 1 and read behavioral check");
     check(rd_reg0_data, rd_reg0_data_bh, "single write to register 1 and read");
+
+    check(cs_bh, 64'h1111_1111_1111_1111, "single write to register 1 and read cs behavioral check");
+    check(cs, cs_bh, "single write to register 1 and read cs");
+
     @(posedge clk);
   end
 endtask
@@ -165,6 +173,7 @@ initial begin
     @(negedge clk);
     check(rd_reg0_data, rd_reg0_data_bh, "Random test register 0");
     check(rd_reg1_data, rd_reg1_data_bh, "Random test register 1");
+    check(cs, cs_bh, "Random test register cs");
 
     @(negedge clk);
     wr0_en       = 0;
