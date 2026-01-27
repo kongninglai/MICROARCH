@@ -8,9 +8,10 @@ module mmu #(
   parameter   WR_DUR_CMP        = 16 - 1,
   parameter   WR_TOTAL_CMP      = 23 - 1   
 ) (
-  input               rst, clk, RD, WR, A_valid,
+  input               rst, clk, RD, WR,
   inout     [31:0]    DATA_BUS,
-  inout     [14:0]    ADDR_BUS
+  inout     [14:0]    ADDR_BUS,
+  input               A_valid
 );
 
 wire    [5:0]   RD_CMP_WIRE, BRST_CMP_WIRE, WR_CMP_WIRE, WR_DUR_WIRE, WR_TOTAL_CMP_WIRE;

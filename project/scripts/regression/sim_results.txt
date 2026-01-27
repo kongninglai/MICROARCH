@@ -21,7 +21,9 @@ mux32_tb                       FAILURES=0      SUCCESSES=256
 mux64_tb                       FAILURES=0      SUCCESSES=256   
 mux8_tb                        FAILURES=0      SUCCESSES=2048  
 negate_32b_tb                  FAILURES=0      SUCCESSES=258   
+neq_2b_a_tb                    FAILURES=0      SUCCESSES=32    
 neq_2b_tb                      FAILURES=0      SUCCESSES=16    
+neq_4b_a_tb                    FAILURES=0      SUCCESSES=512   
 neq_4b_tb                      FAILURES=0      SUCCESSES=256   
 neq_6b_tb                      FAILURES=0      SUCCESSES=4096  
 PA_16b_tb                      FAILURES=0      SUCCESSES=1024  

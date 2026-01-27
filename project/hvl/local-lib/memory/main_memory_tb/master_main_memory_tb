@@ -2,8 +2,8 @@
 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
 /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
 /home/projects/courses/spring_22/ee382n19_16785/lib/lib6
-~/MICROARCH/project/hdl/local-lib/comparators/neq_2b.v
-~/MICROARCH/project/hdl/local-lib/comparators/neq_4b.v
+~/MICROARCH/project/hdl/local-lib/comparators/neq_2b_a.v
+~/MICROARCH/project/hdl/local-lib/comparators/neq_4b_a.v
 ~/MICROARCH/project/hdl/local-lib/comparators/neq_6b.v
 ~/MICROARCH/project/hdl/local-lib/memory/rank.v
 ~/MICROARCH/project/hdl/local-lib/memory/main_memory.v

@@ -7,7 +7,7 @@ initial begin
   $vcdpluson(0, mmu_tb.DUT.mem_module.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem); 
 end
 
-reg     rst, clk, RD, WR, A_valid;
+reg     rst, clk, RD, WR;
 
 reg   [31:0]  DATA_driver;
 reg           DATA_driver_enable;
@@ -19,11 +19,12 @@ wire   [14:0]  ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {15{1'bz}};
 
 wire  [2:0]   STATE = {mmu_tb.DUT.Q2, mmu_tb.DUT.Q1, mmu_tb.DUT.Q0};
 
+wire A_valid = ADDR_driver_enable;
+
 mmu DUT (
   .rst(rst), .clk(clk), .RD(RD), .WR(WR),
   .DATA_BUS(DATA_BUS),
-  .ADDR_BUS(ADDR_BUS),
-  .A_valid(A_valid)
+  .ADDR_BUS(ADDR_BUS), .A_valid(A_valid)
 );
 
 integer SUCCESSES = 0;
@@ -57,7 +58,6 @@ task read;
   input [14:0]  ADDR;
   begin
     DATA_driver_enable    <= 1'b0;
-    A_valid               <= 1'b1;
     ADDR_driver_enable    <= 1'b1;
     ADDR_driver           <= ADDR;
     RD <= 0;
@@ -72,7 +72,6 @@ task read;
     check_read(ADDR+8);
     #(3*CYCLE_TIME);
     check_read(ADDR+12);
-    A_valid               <= 1'b0;
     ADDR_driver_enable    <= 1'b0;
   end
 endtask
@@ -81,7 +80,6 @@ task write;
   input [14:0] ADDR;
   input [31:0] DATA;
   begin
-    A_valid               <= 1'b1;
     ADDR_driver_enable    <= 1'b1;
     ADDR_driver           <= ADDR;
     RD                    <= 1'b1;
@@ -108,7 +106,6 @@ task write;
     #(CYCLE_TIME);
     DATA_driver_enable    <= 1'b0;
     #(CYCLE_TIME);
-    A_valid               <= 1'b0;
     ADDR_driver_enable    <= 1'b0;
     ADDR_driver           <= 15'bz;
   end
@@ -116,7 +113,6 @@ endtask
 
 initial begin
   rst = 1'b1;
-  A_valid               <= 1'b1;
   ADDR_driver_enable    <= 1'b1;
   ADDR_driver           <= 15'd0;
   WR                    <= 1'b1;
@@ -131,6 +127,8 @@ initial begin
 
   for (i = 0; i < 32768; i = i + 16) begin
     write(i, i);
+  end
+  for (i = 0; i < 32768; i = i + 16) begin
     read(i);
   end
   #(10*CYCLE_TIME);

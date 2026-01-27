@@ -178,7 +178,7 @@ initial begin
 
   #(CYCLE_TIME);
   
-  for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 16) begin
+  for (i = 0; i < 32768; i = i + 16) begin
     write(i, i);
     read(i);
   end
