@@ -26,7 +26,8 @@ module main_memory #(
   input                       mem_clk, rst,
   input [MEM_ADDR_WIDTH-1:0]  A,
 	input                       WR, OE, CE,
-  inout [RANK_BIT_WIDTH-1:0]  DIO
+  inout [RANK_BIT_WIDTH-1:0]  DIO,
+  input                       A_valid
 );
 
 
@@ -52,7 +53,7 @@ module main_memory #(
       wire      [RANK_GROUP_WIDTH-1:0] RANK_GROUP_WIRE;
       assign                           RANK_GROUP_WIRE = rank_group;
 
-      wire    inactive_rank_group;
+      wire    inactive_rank_group, inactive_rank_group_valid;
 
       if (RANK_GROUP_WIDTH==1) begin
         assign inactive_rank_group = A[4] ^ RANK_GROUP_WIRE;
@@ -62,17 +63,21 @@ module main_memory #(
                           inactive_rank_group);
       end
 
+      mux2$ inactive_rank_group_valid_mux(inactive_rank_group_valid, 1'b1, inactive_rank_group, A_valid);
+
 
       for (rank_idx = 0; rank_idx < BURST_SIZE; rank_idx = rank_idx + 1) begin : rank_generation
         wire   [$clog2(BURST_SIZE)-1:0] RANK_IDX_WIRE;
         assign                          RANK_IDX_WIRE = rank_idx;
 
         
-        wire    WR_gated, CE_gated, inactive_rank, inactive_rank_pos;
+        wire    WR_gated, CE_gated, inactive_rank, inactive_rank_pos, inactive_rank_pos_valid;
 
         neq_2b  neq_2b_0(RANK_IDX_WIRE, A[$clog2(CHIPS_PER_RANK)+$clog2(BURST_SIZE)-1:$clog2(CHIPS_PER_RANK)], inactive_rank_pos);
 
-        or2$ or2$(inactive_rank, inactive_rank_pos, inactive_rank_group);
+        mux2$ inactive_rank_pos_valid_mux(inactive_rank_pos_valid, 1'b1, inactive_rank_pos, A_valid);
+
+        or2$ or2$(inactive_rank, inactive_rank_pos_valid, inactive_rank_group_valid);
 
         or2$  or2$_rank(  WR_gated,
                           WR_P[WR_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
@@ -81,7 +86,7 @@ module main_memory #(
         wire OE_group_gated;
         or2$  or2$_0(     OE_group_gated,
                           OE_P[RD_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
-                          inactive_rank_group);
+                          inactive_rank_group_valid);
 
         wire CE_final;
         xnor2$ xnor2$_CE_final(CE_final, OE_group_gated, WR_gated);

@@ -7,7 +7,7 @@ initial begin
   $vcdpluson(0, mmu_tb.DUT.mem_module.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem); 
 end
 
-reg     rst, clk, RD, WR;
+reg     rst, clk, RD, WR, A_valid;
 
 reg   [31:0]  DATA_driver;
 reg           DATA_driver_enable;
@@ -22,7 +22,8 @@ wire  [2:0]   STATE = {mmu_tb.DUT.Q2, mmu_tb.DUT.Q1, mmu_tb.DUT.Q0};
 mmu DUT (
   .rst(rst), .clk(clk), .RD(RD), .WR(WR),
   .DATA_BUS(DATA_BUS),
-  .ADDR_BUS(ADDR_BUS)
+  .ADDR_BUS(ADDR_BUS),
+  .A_valid(A_valid)
 );
 
 integer SUCCESSES = 0;
@@ -55,13 +56,14 @@ endtask
 task read;
   input [14:0]  ADDR;
   begin
-    DATA_driver_enable    = 1'b0;
-    ADDR_driver_enable    = 1'b1;
-    ADDR_driver           = ADDR;
-    RD = 0;
-    WR = 1;
+    DATA_driver_enable    <= 1'b0;
+    A_valid               <= 1'b1;
+    ADDR_driver_enable    <= 1'b1;
+    ADDR_driver           <= ADDR;
+    RD <= 0;
+    WR <= 1;
     #(CYCLE_TIME);
-    RD = 1;
+    RD <= 1;
     #(8*CYCLE_TIME);
     check_read(ADDR);
     #(3*CYCLE_TIME);
@@ -70,7 +72,8 @@ task read;
     check_read(ADDR+8);
     #(3*CYCLE_TIME);
     check_read(ADDR+12);
-    #(CYCLE_TIME);
+    A_valid               <= 1'b0;
+    ADDR_driver_enable    <= 1'b0;
   end
 endtask
 
@@ -78,47 +81,59 @@ task write;
   input [14:0] ADDR;
   input [31:0] DATA;
   begin
-    DATA_driver_enable    = 1'b1;
-    DATA_driver           = DATA;
-    ADDR_driver_enable    = 1'b1;
-    ADDR_driver           = ADDR;
-    RD                    = 1'b1;
-    WR                    = 1'b1;
-    #(2*CYCLE_TIME);
-    WR                    = 1'b0;
-    #(9*CYCLE_TIME);
-    DATA_driver           = DATA+4;
-    ADDR_driver           = ADDR+4;
-    #(9*CYCLE_TIME);
-    DATA_driver           = DATA+8;
-    ADDR_driver           = ADDR+8;
-    #(9*CYCLE_TIME);
-    DATA_driver           = DATA+12;
-    ADDR_driver           = ADDR+12;
+    A_valid               <= 1'b1;
+    ADDR_driver_enable    <= 1'b1;
+    ADDR_driver           <= ADDR;
+    RD                    <= 1'b1;
+    WR                    <= 1'b0;
     #(CYCLE_TIME);
-    WR                    = 1'b1;
-    #(8*CYCLE_TIME);
+    DATA_driver_enable    <= 1'b1;
+    DATA_driver           <= DATA;
+    WR                    <= 1'b0;
+    #(6*CYCLE_TIME);
+    ADDR_driver           <= ADDR+4;
+    #(CYCLE_TIME);
+    DATA_driver           <= DATA+4;
+    #(4*CYCLE_TIME);
+    ADDR_driver           <= ADDR+8;
+    #(CYCLE_TIME);
+    DATA_driver           <= DATA+8;
+    #(4*CYCLE_TIME);
+    ADDR_driver           <= ADDR+12;
+    WR                    <= 1'b1;
+    #(CYCLE_TIME);
+    DATA_driver           <= DATA+12;
+    #(4*CYCLE_TIME);
+    ADDR_driver           <= ADDR;
+    #(CYCLE_TIME);
+    DATA_driver_enable    <= 1'b0;
+    #(CYCLE_TIME);
+    A_valid               <= 1'b0;
+    ADDR_driver_enable    <= 1'b0;
+    ADDR_driver           <= 15'bz;
   end
 endtask
 
 initial begin
   rst = 1'b1;
-  ADDR_driver_enable    = 1'b1;
-  ADDR_driver           = 15'd0;
-  WR                    = 1'b1;
-  RD                    = 1'b1;
-  DATA_driver_enable    = 1'b0;
-  DATA_driver           = {32{1'bz}};
+  A_valid               <= 1'b1;
+  ADDR_driver_enable    <= 1'b1;
+  ADDR_driver           <= 15'd0;
+  WR                    <= 1'b1;
+  RD                    <= 1'b1;
+  DATA_driver_enable    <= 1'b0;
+  DATA_driver           <= {32{1'bz}};
   #(CYCLE_TIME);
-  rst = 1'b0;
+  rst <= 1'b0;
   #(CYCLE_TIME);
-  rst = 1'b1;
+  rst <= 1'b1;
   #(0.5*CYCLE_TIME);
 
   for (i = 0; i < 32768; i = i + 16) begin
     write(i, i);
     read(i);
   end
+  #(10*CYCLE_TIME);
 
 
 

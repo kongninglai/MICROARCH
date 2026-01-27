@@ -61,15 +61,16 @@ reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
 reg                         DIO_driver_enable;
 
 wire  [RANK_BIT_WIDTH-1:0]  DIO     = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
-
 integer i;
+
+wire A_valid = 1'b1;
 
 main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT 
 (
   .mem_clk(mem_clk), .rst(rst),
   .A(A),
 	.WR(WR), .OE(OE), .CE(CE),
-  .DIO(DIO)
+  .DIO(DIO), .A_valid(A_valid)
 );
 
 integer FAILURES  = 0;
