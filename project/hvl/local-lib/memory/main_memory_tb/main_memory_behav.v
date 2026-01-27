@@ -17,7 +17,9 @@ module main_memory_behav #(
 
   parameter BURST_SIZE=4,
   parameter RANK_GROUP_COUNT=RANK_COUNT/BURST_SIZE,
-  parameter RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT)
+  parameter RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT),
+
+  parameter CLK_SPACING=3
 
 ) (
   input                       mem_clk, rst,
@@ -27,13 +29,13 @@ module main_memory_behav #(
   inout [RANK_BIT_WIDTH-1:0]  DIO
 );
 
-  wire [0:(BURST_SIZE-1)] OE_P, CE_P;
+  wire [0:(CLK_SPACING*BURST_SIZE-1)] OE_P, CE_P;
 
   assign OE_P[0] = OE;
 
   genvar delay_idx;
   generate
-    for (delay_idx = 1; delay_idx < BURST_SIZE; delay_idx = delay_idx + 1) begin : DELAY_GEN
+    for (delay_idx = 1; delay_idx < CLK_SPACING*BURST_SIZE; delay_idx = delay_idx + 1) begin : DELAY_GEN
       dff$    OE_P_delays(mem_clk, OE_P[delay_idx-1], OE_P[delay_idx], , rst, 1'b1);
     end
   endgenerate

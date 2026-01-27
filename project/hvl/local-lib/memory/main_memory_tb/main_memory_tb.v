@@ -18,7 +18,12 @@ localparam RANK_BIT_WIDTH=32;
 localparam CHIPS_PER_RANK=RANK_BIT_WIDTH/CHIP_BIT_WIDTH;
 localparam RANK_BYTE_CAPACITY=CHIP_BYTE_CAPACITY*CHIPS_PER_RANK;
 localparam RANK_COUNT=MEM_BYTE_CAPACITY/RANK_BYTE_CAPACITY;
+localparam RANK_IDX_WIDTH=$clog2(RANK_COUNT);
 localparam RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK);
+localparam BURST_SIZE=4;
+localparam RANK_GROUP_COUNT=RANK_COUNT/BURST_SIZE;
+localparam RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT);
+localparam CLK_SPACING=3;
 
 reg   [MEM_ADDR_WIDTH-1:0]  A;
 reg                         WR, OE, CE, mem_clk, rst;
@@ -61,13 +66,14 @@ task check;
   end
 endtask
 
-localparam CYCLE_TIME = 64.000;
+localparam CLK_TIME = 10.000;
+localparam CYCLE_TIME = 70.000;
 localparam CYCLE_TIME_DIV = 1000;
 
 initial begin
   mem_clk = 0;
   forever begin
-    #(CYCLE_TIME / 2) mem_clk = ~mem_clk;
+    #(CLK_TIME / 2) mem_clk = ~mem_clk;
   end
 end
 
@@ -84,7 +90,7 @@ initial begin
   DIO_driver_enable   = 1'b0;
   DIO_driver          = {RANK_BIT_WIDTH{1'bz}};
 
-  #(1.5*CYCLE_TIME);
+  #(1.5*CLK_TIME);
 
   // Write phase
   for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 1) begin
@@ -123,25 +129,18 @@ initial begin
     CE <= 1'b0;
     WR <= 1'b1;
     OE <= 1'b0;
+    #(CYCLE_TIME);
+    CE <= 1'b1;
+    WR <= 1'b1;
+    OE <= 1'b1;
 
-    if ((i >> 2) % 4 == 0) begin
-      #((CYCLE_TIME_DIV-1)*CYCLE_TIME/CYCLE_TIME_DIV);
+    if ((i >> $clog2(CHIPS_PER_RANK)) % (RANK_GROUP_WIDTH) == 0) begin
       check(DIO, DIO_exp);
-      #(CYCLE_TIME/CYCLE_TIME_DIV);
-
-      CE <= 1'b1;
-      WR <= 1'b1;
-      OE <= 1'b1;
-      #(3*CYCLE_TIME);
+      #((BURST_SIZE*CLK_SPACING)*CLK_TIME);
     end else begin
-      #(CYCLE_TIME);
-      CE <= 1'b1;
-      WR <= 1'b1;
-      OE <= 1'b1;
-      #((CYCLE_TIME_DIV-1)*CYCLE_TIME/CYCLE_TIME_DIV + (((i >> 2) % 4)-1)*(CYCLE_TIME));
+      #(CLK_SPACING*CLK_TIME*(((i >> $clog2(CHIPS_PER_RANK)) % (RANK_GROUP_WIDTH))));
       check(DIO, DIO_exp);
-      #(CYCLE_TIME/CYCLE_TIME_DIV);
-      #(CYCLE_TIME*(3-((i >> 2) % 4)));
+      #(((BURST_SIZE*CLK_SPACING)-(CLK_SPACING*(((i >> $clog2(CHIPS_PER_RANK)) % (RANK_GROUP_WIDTH)))))*CLK_TIME);
     end
   end
 
