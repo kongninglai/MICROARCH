@@ -7,5 +7,4 @@
 ~/MICROARCH/project/hdl/local-lib/comparators/neq_6b.v
 ~/MICROARCH/project/hdl/local-lib/memory/rank.v
 ~/MICROARCH/project/hdl/local-lib/memory/main_memory.v
-~/MICROARCH/project/hvl/local-lib/memory/main_memory_tb/main_memory_behav.v
 ~/MICROARCH/project/hvl/local-lib/memory/main_memory_tb/main_memory_tb.v

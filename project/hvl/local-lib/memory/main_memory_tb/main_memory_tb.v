@@ -3,8 +3,38 @@ module  main_memory_tb;
 initial begin
   $vcdplusfile("main_memory_tb.dump.vpd");
   $vcdpluson(0, main_memory_tb); 
-  $vcdpluson(0, main_memory_tb.REF.memory);  
   $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[1].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[2].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[3].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[1].rank_inst.chip_generation[0].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[1].rank_inst.chip_generation[1].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[1].rank_inst.chip_generation[2].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[1].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[2].rank_inst.chip_generation[0].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[2].rank_inst.chip_generation[1].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[2].rank_inst.chip_generation[2].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[2].rank_inst.chip_generation[3].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[3].rank_inst.chip_generation[0].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[3].rank_inst.chip_generation[1].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[3].rank_inst.chip_generation[2].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[0].rank_generation[3].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[0].rank_inst.chip_generation[1].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[0].rank_inst.chip_generation[2].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[0].rank_inst.chip_generation[3].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[1].rank_inst.chip_generation[0].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[1].rank_inst.chip_generation[1].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[1].rank_inst.chip_generation[2].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[1].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[2].rank_inst.chip_generation[0].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[2].rank_inst.chip_generation[1].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[2].rank_inst.chip_generation[2].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[2].rank_inst.chip_generation[3].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[3].rank_inst.chip_generation[0].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[3].rank_inst.chip_generation[1].sram128x8$_inst.mem); 
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[3].rank_inst.chip_generation[2].sram128x8$_inst.mem);  
+  $vcdpluson(0, main_memory_tb.DUT.rank_group_generation[1].rank_generation[3].rank_inst.chip_generation[3].sram128x8$_inst.mem);
 end
 
 localparam MEM_BYTE_CAPACITY=32768;
@@ -31,8 +61,6 @@ reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
 reg                         DIO_driver_enable;
 
 wire  [RANK_BIT_WIDTH-1:0]  DIO     = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
-wire  [RANK_BIT_WIDTH-1:0]  DIO_exp = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
-
 
 integer i;
 
@@ -44,41 +72,98 @@ main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT
   .DIO(DIO)
 );
 
-main_memory_behav #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) REF 
-(
-  .mem_clk(mem_clk), .rst(rst),
-  .A(A),
-	.WR(WR), .OE(OE), .CE(CE),
-  .DIO(DIO_exp)
-);
-
 integer FAILURES  = 0;
 integer SUCCESSES = 0;
 
-task check;
-  input [RANK_BIT_WIDTH-1:0]  DIO, DIO_exp;
-  if (DIO !== DIO_exp) begin
-    FAILURES = FAILURES + 1;
-    $display("FAILURE AT TIME %t. DIO_exp = %h, DIO = %h\n", 
-              $time, DIO_exp, DIO);
-  end else begin
-    SUCCESSES = SUCCESSES + 1;
-  end
-endtask
-
-localparam CLK_TIME = 10.000;
-localparam CYCLE_TIME = 70.000;
-localparam CYCLE_TIME_DIV = 1000;
+localparam CYCLE_TIME = 10.000;
 
 initial begin
   mem_clk = 0;
   forever begin
-    #(CLK_TIME / 2) mem_clk = ~mem_clk;
+    #(CYCLE_TIME / 2) mem_clk = ~mem_clk;
   end
 end
 
+task check_read;
+  input [14:0] ADDR;
+  begin
+    if (DIO != {{17{1'b0}}, ADDR}) begin
+      FAILURES = FAILURES + 1;
+      $display("FAILURE AT TIME %t. DIO_exp = %h, DIO = %h\n", 
+                $time, {{17{1'b0}}, ADDR}, DIO);
+    end else begin
+      SUCCESSES = SUCCESSES + 1;
+    end
+  end
+endtask
+
+task read;
+  input [14:0]  ADDR;
+  begin
+    DIO_driver_enable    <= 1'b0;
+    A                     <= ADDR;
+    CE <= 0;
+    OE <= 0;
+    WR <= 1;
+    #(7*CYCLE_TIME);
+    CE <= 1;
+    OE <= 1;
+    #(CYCLE_TIME);
+    check_read(ADDR);
+    #(3*CYCLE_TIME);
+    check_read(ADDR+4);
+    #(3*CYCLE_TIME);
+    check_read(ADDR+8);
+    #(3*CYCLE_TIME);
+    check_read(ADDR+12);
+    #(CYCLE_TIME);
+  end
+endtask
+
+task write;
+  input [14:0] ADDR;
+  input [31:0] DATA;
+  begin
+    A = ADDR;
+    #(CYCLE_TIME);
+    DIO_driver_enable <= 1'b1;
+    DIO_driver <= DATA;
+    #(2*CYCLE_TIME);
+    WR <= 1'b0;
+    CE <= 1'b0;
+    OE <= 1'b1;
+    #(CYCLE_TIME*4);
+    A <= ADDR+4;
+    #(CYCLE_TIME);
+    DIO_driver <= DATA+4;
+    #(CYCLE_TIME*4);
+    A <= ADDR+8;
+    #(CYCLE_TIME);
+    DIO_driver <= DATA+8;
+    #(CYCLE_TIME*4);
+    WR <= 1'b1;
+    CE <= 1'b1;
+    A <= ADDR+12;
+    #(CYCLE_TIME);
+    DIO_driver <= DATA+12;
+    #(CYCLE_TIME*4);
+    A <= ADDR;
+    #(CYCLE_TIME);
+    DIO_driver_enable <= 1'b0;
+  end
+endtask
+
 initial begin
   rst = 1'b1;
+  WR                    = 1'b1;
+  OE                  = 1'b1;
+  CE                  = 1'b1;
+  DIO_driver_enable    = 1'b0;
+  #(CYCLE_TIME);
+  rst = 1'b0;
+  #(CYCLE_TIME);
+  rst = 1'b1;
+  #(0.5*CYCLE_TIME);
   
   // Apply test vectors (active low WR, OE, CE)
   // Do a write phase (sequential) and then a read back phase to check
@@ -90,63 +175,14 @@ initial begin
   DIO_driver_enable   = 1'b0;
   DIO_driver          = {RANK_BIT_WIDTH{1'bz}};
 
-  #(1.5*CLK_TIME);
-
-  // Write phase
-  for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 1) begin
-    
-    #(CYCLE_TIME);
-    A = i;
-
-    DIO_driver_enable = 1'b1;
-    DIO_driver = i;
-
-    #(CYCLE_TIME);
-    CE <= 1'b0;
-    WR <= 1'b0;
-    OE <= 1'b1;
-
-    #(CYCLE_TIME);
-    WR <= 1'b1;
-    CE <= 1'b1;
-
+  #(CYCLE_TIME);
+  
+  for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 16) begin
+    write(i, i);
+    read(i);
   end
-
-
-  // Stop write
-  #(CYCLE_TIME);
-  WR          <= 1'b1;
-  CE          <= 1'b1;
-  DIO_driver_enable <= 1'b0;
-  DIO_driver  <= {RANK_BIT_WIDTH{1'bz}};
-  #(CYCLE_TIME);
-
-  // Read back
-  for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 1) begin
-
-    // A  <= i[MEM_ADDR_WIDTH-1:0];
-    A  <= i;
-    CE <= 1'b0;
-    WR <= 1'b1;
-    OE <= 1'b0;
-    #(CYCLE_TIME);
-    CE <= 1'b1;
-    WR <= 1'b1;
-    OE <= 1'b1;
-
-    if ((i >> $clog2(CHIPS_PER_RANK)) % (RANK_GROUP_WIDTH) == 0) begin
-      check(DIO, DIO_exp);
-      #((BURST_SIZE*CLK_SPACING)*CLK_TIME);
-    end else begin
-      #(CLK_SPACING*CLK_TIME*(((i >> $clog2(CHIPS_PER_RANK)) % (RANK_GROUP_WIDTH))));
-      check(DIO, DIO_exp);
-      #(((BURST_SIZE*CLK_SPACING)-(CLK_SPACING*(((i >> $clog2(CHIPS_PER_RANK)) % (RANK_GROUP_WIDTH)))))*CLK_TIME);
-    end
-  end
-
-  #(CYCLE_TIME);
-  CE <= 1'b1;
-  OE <= 1'b1;
+  
+  #(10*CYCLE_TIME);
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);

@@ -19,7 +19,8 @@ module main_memory #(
   parameter RANK_GROUP_COUNT=RANK_COUNT/BURST_SIZE,
   parameter RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT),
 
-  parameter CLK_SPACING=3
+  parameter RD_CLK_SPACING=3,
+  parameter WR_CLK_SPACING=4
 
 ) (
   input                       mem_clk, rst,
@@ -29,14 +30,19 @@ module main_memory #(
 );
 
 
-  wire [0:(CLK_SPACING*BURST_SIZE-1)] OE_P;
+  wire [0:(RD_CLK_SPACING*BURST_SIZE-1)] OE_P;
+  wire [0:(WR_CLK_SPACING*BURST_SIZE-1)] WR_P;
 
   assign OE_P[0] = OE;
+  assign WR_P[0] = WR;
 
   genvar delay_idx;
   generate
-    for (delay_idx = 1; delay_idx < CLK_SPACING*BURST_SIZE; delay_idx = delay_idx + 1) begin : DELAY_GEN
+    for (delay_idx = 1; delay_idx < RD_CLK_SPACING*BURST_SIZE; delay_idx = delay_idx + 1) begin : DELAY_GEN_RD
       dff$    OE_P_delays(mem_clk, OE_P[delay_idx-1], OE_P[delay_idx], , 1'b1, rst);
+    end
+    for (delay_idx = 1; delay_idx < WR_CLK_SPACING*BURST_SIZE; delay_idx = delay_idx + 1) begin : DELAY_GEN_WR
+      dff$    WR_P_delays(mem_clk, WR_P[delay_idx-1], WR_P[delay_idx], , 1'b1, rst);
     end
   endgenerate
 
@@ -69,12 +75,12 @@ module main_memory #(
         or2$ or2$(inactive_rank, inactive_rank_pos, inactive_rank_group);
 
         or2$  or2$_rank(  WR_gated,
-                          WR,
+                          WR_P[WR_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
                           inactive_rank);
 
         wire OE_group_gated;
         or2$  or2$_0(     OE_group_gated,
-                          OE_P[CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
+                          OE_P[RD_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
                           inactive_rank_group);
 
         wire CE_final;
