@@ -23,11 +23,10 @@ module main_memory #(
   parameter WR_CLK_SPACING=4
 
 ) (
-  input                       mem_clk, rst,
+  input                       clk, rst,
   input [MEM_ADDR_WIDTH-1:0]  A,
-	input                       WR, OE, CE,
-  inout [RANK_BIT_WIDTH-1:0]  DIO,
-  input A_valid
+	input                       WR, OE,
+  inout [RANK_BIT_WIDTH-1:0]  DIO
 );
 
 
@@ -40,10 +39,10 @@ module main_memory #(
   genvar delay_idx;
   generate
     for (delay_idx = 1; delay_idx < RD_CLK_SPACING*BURST_SIZE; delay_idx = delay_idx + 1) begin : DELAY_GEN_RD
-      dff$    OE_P_delays(mem_clk, OE_P[delay_idx-1], OE_P[delay_idx], , 1'b1, rst);
+      dff$    OE_P_delays(clk, OE_P[delay_idx-1], OE_P[delay_idx], , 1'b1, rst);
     end
     for (delay_idx = 1; delay_idx < WR_CLK_SPACING*BURST_SIZE; delay_idx = delay_idx + 1) begin : DELAY_GEN_WR
-      dff$    WR_P_delays(mem_clk, WR_P[delay_idx-1], WR_P[delay_idx], , 1'b1, rst);
+      dff$    WR_P_delays(clk, WR_P[delay_idx-1], WR_P[delay_idx], , 1'b1, rst);
     end
   endgenerate
 
@@ -58,43 +57,37 @@ module main_memory #(
       if (RANK_GROUP_WIDTH==1) begin
         assign inactive_rank_group = A[4] ^ RANK_GROUP_WIRE;
       end else begin
-        neq_4b_a   neq_4b_0(RANK_GROUP_WIRE,
-                          A[$clog2(CHIPS_PER_RANK)+RANK_IDX_WIDTH-1:$clog2(CHIPS_PER_RANK)+$clog2(BURST_SIZE)], A_valid,
-                          inactive_rank_group);
+        neq_4b    neq_4b_inactive_rank_group
+                  (
+                    RANK_GROUP_WIRE,
+                    A[$clog2(CHIPS_PER_RANK)+RANK_IDX_WIDTH-1:$clog2(CHIPS_PER_RANK)+$clog2(BURST_SIZE)],
+                    inactive_rank_group
+                  );
       end
-
 
       for (rank_idx = 0; rank_idx < BURST_SIZE; rank_idx = rank_idx + 1) begin : rank_generation
         wire   [$clog2(BURST_SIZE)-1:0] RANK_IDX_WIRE;
         assign                          RANK_IDX_WIRE = rank_idx;
 
-        
-        wire    WR_gated, CE_gated, inactive_rank, inactive_rank_pos;
+        wire    WR_gated, OE_gated, CE_gated;
+        or2$    or2$_WR_gated(  WR_gated,
+                                WR_P[WR_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
+                                inactive_rank_group);
+        or2$    or2$_OE_gated(  OE_gated,
+                                OE_P[RD_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
+                                inactive_rank_group);
+        xnor2$ xnor2$_CE_gated( CE_gated, 
+                                OE_gated, 
+                                WR_gated);
 
-        neq_2b_a  neq_2b_0(RANK_IDX_WIRE, A[$clog2(CHIPS_PER_RANK)+$clog2(BURST_SIZE)-1:$clog2(CHIPS_PER_RANK)], A_valid, inactive_rank_pos);
-
-        or2$ or2$(inactive_rank, inactive_rank_pos, inactive_rank_group);
-
-        or2$  or2$_rank(  WR_gated,
-                          WR_P[WR_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
-                          inactive_rank);
-
-        wire OE_group_gated;
-        or2$  or2$_0(     OE_group_gated,
-                          OE_P[RD_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
-                          inactive_rank_group);
-
-        wire CE_final;
-        xnor2$ xnor2$_CE_final(CE_final, OE_group_gated, WR_gated);
-
-        rank #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) 
-            rank_inst   ( 
-                          .A(A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)+$clog2(RANK_COUNT)]),
-                          .DIO(DIO),
-                          .OE(OE_group_gated),
-                          .WR(WR_gated),
-                          .CE(CE_final)
-                        );
+        rank #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) rank_inst
+        ( 
+          .A(A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)+$clog2(RANK_COUNT)]),
+          .DIO(DIO),
+          .OE(OE_gated),
+          .WR(WR_gated),
+          .CE(CE_gated)
+        );
       end
     end
   endgenerate

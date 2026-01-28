@@ -56,21 +56,20 @@ localparam RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT);
 localparam CLK_SPACING=3;
 
 reg   [MEM_ADDR_WIDTH-1:0]  A;
-reg                         WR, OE, CE, mem_clk, rst;
+reg                         WR, OE, CE, clk, rst;
 reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
 reg                         DIO_driver_enable;
 
 wire  [RANK_BIT_WIDTH-1:0]  DIO     = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
 integer i;
 
-wire A_valid = 1'b1;
 
 main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT 
 (
-  .mem_clk(mem_clk), .rst(rst),
+  .clk(clk), .rst(rst),
   .A(A),
-	.WR(WR), .OE(OE), .CE(CE),
-  .DIO(DIO), .A_valid(A_valid)
+	.WR(WR), .OE(OE),
+  .DIO(DIO)
 );
 
 integer FAILURES  = 0;
@@ -79,9 +78,9 @@ integer SUCCESSES = 0;
 localparam CYCLE_TIME = 10.000;
 
 initial begin
-  mem_clk = 0;
+  clk = 0;
   forever begin
-    #(CYCLE_TIME / 2) mem_clk = ~mem_clk;
+    #(CYCLE_TIME / 2) clk = ~clk;
   end
 end
 
@@ -101,8 +100,9 @@ endtask
 task read;
   input [14:0]  ADDR;
   begin
-    DIO_driver_enable    <= 1'b0;
+    DIO_driver_enable     <= 1'b0;
     A                     <= ADDR;
+    #(CYCLE_TIME);
     CE <= 0;
     OE <= 0;
     WR <= 1;
@@ -117,7 +117,8 @@ task read;
     check_read(ADDR+8);
     #(3*CYCLE_TIME);
     check_read(ADDR+12);
-    #(CYCLE_TIME);
+    A                     <= 15'dz;
+    #(CYCLE_TIME); // Needed due to tHz
   end
 endtask
 
@@ -125,32 +126,22 @@ task write;
   input [14:0] ADDR;
   input [31:0] DATA;
   begin
-    A = ADDR;
-    #(CYCLE_TIME);
-    DIO_driver_enable <= 1'b1;
-    DIO_driver <= DATA;
-    #(2*CYCLE_TIME);
-    WR <= 1'b0;
-    CE <= 1'b0;
-    OE <= 1'b1;
-    #(CYCLE_TIME*4);
-    A <= ADDR+4;
-    #(CYCLE_TIME);
-    DIO_driver <= DATA+4;
-    #(CYCLE_TIME*4);
-    A <= ADDR+8;
-    #(CYCLE_TIME);
-    DIO_driver <= DATA+8;
-    #(CYCLE_TIME*4);
-    WR <= 1'b1;
-    CE <= 1'b1;
-    A <= ADDR+12;
-    #(CYCLE_TIME);
-    DIO_driver <= DATA+12;
-    #(CYCLE_TIME*4);
-    A <= ADDR;
-    #(CYCLE_TIME);
-    DIO_driver_enable <= 1'b0;
+    A                     <= ADDR;
+    DIO_driver_enable     <= 1'b1;
+    DIO_driver            <= DATA;
+    #(3*CYCLE_TIME);
+    WR                    <= 1'b0;
+    CE                    <= 1'b0;
+    OE                    <= 1'b1;
+    #(4*CYCLE_TIME);
+    WR                    <= 1'b1;
+    CE                    <= 1'b1;
+    #(CYCLE_TIME);    
+    DIO_driver  <= DATA+4;  #(4*CYCLE_TIME);
+    DIO_driver  <= DATA+8;  #(4*CYCLE_TIME);
+    DIO_driver  <= DATA+12; #(4*CYCLE_TIME);
+    A                     <= 15'dz;
+    DIO_driver_enable     <= 1'b0;
   end
 endtask
 
