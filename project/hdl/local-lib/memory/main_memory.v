@@ -19,8 +19,29 @@ module main_memory #(
   parameter RANK_GROUP_COUNT=RANK_COUNT/BURST_SIZE,
   parameter RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT),
 
-  parameter RD_CLK_SPACING=3,
-  parameter WR_CLK_SPACING=4
+  // Next few parameters are in units of ns
+  parameter DELAY_ADJ         = 7,
+  parameter ADDR_SETUP        = 25 + DELAY_ADJ,
+  parameter DATA_SETUP        = 25 + DELAY_ADJ,
+  parameter CE_SETUP          = 35 + DELAY_ADJ,
+  parameter DOE_TIME          = 63 + DELAY_ADJ,
+  parameter HZ_TIME           = 18 + DELAY_ADJ,
+
+  parameter CYCLE_TIME        = 10,
+
+  // Next few parameters are in units of cycles
+  parameter RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1),
+  parameter RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 0, // This will fail miserably if you have a bad cycle time (>= 18 ns)
+
+  // Yes, the extra + 1 should be there below in RD_CLK_SPACING
+  // Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ
+  parameter RD_CLK_SPACING    = ((HZ_TIME     / CYCLE_TIME)   + 1) + 1,
+
+  parameter WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1),
+
+  parameter ADDR_EN_TO_WR_EN  = ((ADDR_SETUP  / CYCLE_TIME)   + 1),
+  parameter DATA_EN_TO_WR_DIS = ((DATA_SETUP  / CYCLE_TIME)   + 1),
+  parameter WR_EN_TO_DATA_EN  = WR_CLK_SPACING - DATA_EN_TO_WR_DIS
 
 ) (
   input                       clk, rst,

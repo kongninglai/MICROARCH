@@ -50,10 +50,32 @@ localparam RANK_BYTE_CAPACITY=CHIP_BYTE_CAPACITY*CHIPS_PER_RANK;
 localparam RANK_COUNT=MEM_BYTE_CAPACITY/RANK_BYTE_CAPACITY;
 localparam RANK_IDX_WIDTH=$clog2(RANK_COUNT);
 localparam RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK);
+
 localparam BURST_SIZE=4;
 localparam RANK_GROUP_COUNT=RANK_COUNT/BURST_SIZE;
 localparam RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT);
-localparam CLK_SPACING=3;
+
+// Next few parameters are in units of ns
+localparam DELAY_ADJ         = 7;
+localparam ADDR_SETUP        = 25 + DELAY_ADJ;
+localparam DATA_SETUP        = 25 + DELAY_ADJ;
+localparam CE_SETUP          = 35 + DELAY_ADJ;
+localparam DOE_TIME          = 63 + DELAY_ADJ;
+localparam HZ_TIME           = 18 + DELAY_ADJ;
+
+localparam CYCLE_TIME        = 10;
+
+// Next few parameters are in units of cycles
+localparam RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1);
+localparam RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 0; // This will fail miserably if you have a bad cycle time (>= 18 ns)
+
+// Yes, the extra + 1 should be there below in RD_CLK_SPACING
+// Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ
+localparam RD_CLK_SPACING    = ((HZ_TIME     / CYCLE_TIME)   + 1) + 1;
+localparam WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1);
+localparam ADDR_EN_TO_WR_EN  = ((ADDR_SETUP  / CYCLE_TIME)   + 1);
+localparam DATA_EN_TO_WR_DIS = ((DATA_SETUP  / CYCLE_TIME)   + 1);
+localparam WR_EN_TO_DATA_EN  = WR_CLK_SPACING - DATA_EN_TO_WR_DIS;
 
 reg   [MEM_ADDR_WIDTH-1:0]  A;
 reg                         WR, OE, CE, clk, rst;
@@ -64,7 +86,7 @@ wire  [RANK_BIT_WIDTH-1:0]  DIO     = DIO_driver_enable ? DIO_driver : {RANK_BIT
 integer i;
 
 
-main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT 
+main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT 
 (
   .clk(clk), .rst(rst),
   .A(A),
@@ -74,8 +96,6 @@ main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT
 
 integer FAILURES  = 0;
 integer SUCCESSES = 0;
-
-localparam CYCLE_TIME = 10.000;
 
 initial begin
   clk = 0;
@@ -93,6 +113,8 @@ task check_read;
                 $time, {{17{1'b0}}, ADDR}, DIO);
     end else begin
       SUCCESSES = SUCCESSES + 1;
+      // $display("SUCCESS AT TIME %t. DIO_exp = %h, DIO = %h\n", 
+      //           $time, {{17{1'b0}}, ADDR}, DIO);
     end
   end
 endtask
@@ -106,16 +128,16 @@ task read;
     CE <= 0;
     OE <= 0;
     WR <= 1;
-    #(7*CYCLE_TIME);
+    #(RD_EN_DURATION*CYCLE_TIME);
     CE <= 1;
     OE <= 1;
-    #(CYCLE_TIME);
+    #(RD_DIS_TO_DATA_V*CYCLE_TIME);
     check_read(ADDR);
-    #(3*CYCLE_TIME);
+    #(RD_CLK_SPACING*CYCLE_TIME);
     check_read(ADDR+4);
-    #(3*CYCLE_TIME);
+    #(RD_CLK_SPACING*CYCLE_TIME);
     check_read(ADDR+8);
-    #(3*CYCLE_TIME);
+    #(RD_CLK_SPACING*CYCLE_TIME);
     check_read(ADDR+12);
     A                     <= 15'dz;
     #(CYCLE_TIME); // Needed due to tHz
@@ -129,17 +151,17 @@ task write;
     A                     <= ADDR;
     DIO_driver_enable     <= 1'b1;
     DIO_driver            <= DATA;
-    #(3*CYCLE_TIME);
+    #(ADDR_EN_TO_WR_EN*CYCLE_TIME);
     WR                    <= 1'b0;
     CE                    <= 1'b0;
     OE                    <= 1'b1;
-    #(4*CYCLE_TIME);
+    #(WR_CLK_SPACING*CYCLE_TIME);
     WR                    <= 1'b1;
     CE                    <= 1'b1;
-    #(CYCLE_TIME);    
-    DIO_driver  <= DATA+4;  #(4*CYCLE_TIME);
-    DIO_driver  <= DATA+8;  #(4*CYCLE_TIME);
-    DIO_driver  <= DATA+12; #(4*CYCLE_TIME);
+    #(WR_EN_TO_DATA_EN*CYCLE_TIME);    
+    DIO_driver  <= DATA+4;  #(WR_CLK_SPACING*CYCLE_TIME);
+    DIO_driver  <= DATA+8;  #(WR_CLK_SPACING*CYCLE_TIME);
+    DIO_driver  <= DATA+12; #(WR_CLK_SPACING*CYCLE_TIME);
     A                     <= 15'dz;
     DIO_driver_enable     <= 1'b0;
   end
