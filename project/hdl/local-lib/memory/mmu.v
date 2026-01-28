@@ -1,115 +1,184 @@
 module mmu #(
-  parameter   CLK_PERIOD        = 10,
-  parameter   MEM_LATENCY       = 64,
-  parameter   RD_PERIODS        = ((MEM_LATENCY + CLK_PERIOD - 1) / CLK_PERIOD),
-  parameter   RD_CMP            = RD_PERIODS - 2,
-  parameter   BRST_CMP          = 10 - 1, // Depends on t_Hz and CLK_PERIOD
-  parameter   WR_CMP            = 2 - 1,  // Depends on write_pulse_low and CLK_PERIOD
-  parameter   WR_DUR_CMP        = 16 - 1,
-  parameter   WR_TOTAL_CMP      = 23 - 1   
+  parameter MEM_BYTE_CAPACITY = 32768,
+  parameter BURST_SIZE=4,
+  /* IMPORTANT: All parameters assume DELAY_ADJ < CYCLE_TIME <= 17 */
+  // Next few parameters are in units of ns
+  parameter DELAY_ADJ         = 7,
+  parameter ADDR_SETUP        = 25 + DELAY_ADJ,
+  parameter DATA_SETUP        = 25 + DELAY_ADJ,
+  parameter CE_SETUP          = 35,
+  parameter DOE_TIME          = 64,
+  parameter HZ_TIME           = 18,
+
+  parameter CYCLE_TIME        = 10,
+
+  // Next few parameters are in units of cycles
+  parameter ADDR_HIZ_PROT     = 1, // Don't enable RD when ADDR comparator can still be HiZ after clock edge
+  parameter RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1),
+  parameter RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 1, // This will fail miserably if you have a bad cycle time (>= 18 ns)
+  parameter RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1, // Needed due to tHz
+
+  // Yes, the extra + 1 should be there below in RD_CLK_SPACING
+  // Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ
+  parameter RD_CLK_SPACING    = ((HZ_TIME     / CYCLE_TIME)   + 1) + 1,
+
+  parameter WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1),
+
+  parameter ADDR_EN_TO_WR_EN  = ((ADDR_SETUP  / CYCLE_TIME)   + 1),
+  parameter DATA_EN_TO_WR_DIS = ((DATA_SETUP  / CYCLE_TIME)   + 1),
+  parameter WR_DIS_TO_DATA_EN = 1, // Protect against DIO -> posedge WR violations   
+
+
+  parameter V_CT_HIZ_PROT     = ADDR_HIZ_PROT - 1,
+  parameter V_CT_RD_EN        = RD_EN_DURATION - 1,
+  parameter V_CT_RD_BRST      = (RD_DIS_TO_DATA_V + ((BURST_SIZE-1) * RD_CLK_SPACING)) - 1,
+  parameter V_CT_BUS_FREE     = RD_TO_BUS_FREE - 1,
+  parameter V_CT_WR_ADDR      = ADDR_EN_TO_WR_EN - 1,
+  parameter V_CT_WR_EN        = WR_CLK_SPACING - 1,
+  parameter V_CT_WR_BRST      = (WR_DIS_TO_DATA_EN + ((BURST_SIZE-1) * WR_CLK_SPACING)) - 1
 ) (
   input               rst, clk, RD, WR,
   inout     [31:0]    DATA_BUS,
-  inout     [14:0]    ADDR_BUS,
-  input               A_valid
+  inout     [14:0]    ADDR_BUS
 );
 
-wire    [5:0]   RD_CMP_WIRE, BRST_CMP_WIRE, WR_CMP_WIRE, WR_DUR_WIRE, WR_TOTAL_CMP_WIRE;
-assign          RD_CMP_WIRE         = RD_CMP;
-assign          BRST_CMP_WIRE       = BRST_CMP;
-assign          WR_CMP_WIRE         = WR_CMP;
-assign          WR_DUR_WIRE         = WR_DUR_CMP;
-assign          WR_TOTAL_CMP_WIRE   = WR_TOTAL_CMP;
+wire    [0:0]   CT_HIZ_PROT,CT_RD_EN,CT_RD_BRST,CT_BUS_FREE,CT_WR_ADDR,CT_WR_EN,CT_WR_BRST;
+
+wire    [5:0]   W_CT_HIZ_PROT,W_CT_RD_EN,W_CT_RD_BRST,W_CT_BUS_FREE,W_CT_WR_ADDR,W_CT_WR_EN,W_CT_WR_BRST;
+assign          W_CT_HIZ_PROT = V_CT_HIZ_PROT;     
+assign          W_CT_RD_EN    = V_CT_RD_EN   ;     
+assign          W_CT_RD_BRST  = V_CT_RD_BRST ;     
+assign          W_CT_BUS_FREE = V_CT_BUS_FREE;     
+assign          W_CT_WR_ADDR  = V_CT_WR_ADDR ;     
+assign          W_CT_WR_EN    = V_CT_WR_EN   ;     
+assign          W_CT_WR_BRST  = V_CT_WR_BRST ;    
 
 wire    Q2,Q1,Q0;
 wire    D2,D1,D0;
-wire    MAX_RD,MAX_BRST,MAX_WR,MAX_WRDUR,MAX_WRTOT,CE,OE,WR_out,CT,DATAN;
+wire    OE_out,WR_out,DATA_EN_BAR;
 
-wire    [7:0] counter, next_counter;
-PA_8b   inc_adder(.in0(counter), .in1(8'd1), .s(next_counter));
-dff8$   dff_counter(clk, next_counter, counter, , CT, 1'b1);
+wire    [7:0] counter, inc_counter, next_counter;
+PA_8b   inc_adder(.in0(counter), .in1(8'd1), .s(inc_counter));
 
-eq_6b   done_reading(.in0(counter[5:0]), .in1(RD_CMP_WIRE),        .eq(MAX_RD));
-eq_6b   done_readbst(.in0(counter[5:0]), .in1(BRST_CMP_WIRE),      .eq(MAX_BRST));
-eq_6b   done_waiting(.in0(counter[5:0]), .in1(WR_CMP_WIRE),        .eq(MAX_WR));
-eq_6b   done_writing(.in0(counter[5:0]), .in1(WR_DUR_WIRE),        .eq(MAX_WRDUR));
-eq_6b   done_cooling(.in0(counter[5:0]), .in1(WR_TOTAL_CMP_WIRE),  .eq(MAX_WRTOT));
+wire    state_change;
+neq_3b  neq_3b_state_change(.in0({Q2,Q1,Q0}), .in1({D2,D1,D0}), .neq(state_change));
 
-main_memory #(.MEM_BYTE_CAPACITY(32768)) mem_module (
-  .mem_clk(clk), .rst(rst),
+mux2$   mux2$_next_counter[7:0](next_counter, inc_counter, 8'd0, state_change);
+
+dff8$   dff_counter(clk, next_counter, counter, , rst, 1'b1);
+
+eq_6b   done_HIZ_PROT     (.in0(counter[5:0]), .in1(W_CT_HIZ_PROT), .eq(CT_HIZ_PROT));
+eq_6b   done_RD_EN        (.in0(counter[5:0]), .in1(W_CT_RD_EN   ), .eq(CT_RD_EN   ));
+eq_6b   done_RD_BRST      (.in0(counter[5:0]), .in1(W_CT_RD_BRST ), .eq(CT_RD_BRST ));
+eq_6b   done_BUS_FREE     (.in0(counter[5:0]), .in1(W_CT_BUS_FREE), .eq(CT_BUS_FREE));
+eq_6b   done_WR_ADDR      (.in0(counter[5:0]), .in1(W_CT_WR_ADDR ), .eq(CT_WR_ADDR ));
+eq_6b   done_WR_EN        (.in0(counter[5:0]), .in1(W_CT_WR_EN   ), .eq(CT_WR_EN   ));
+eq_6b   done_WR_BRST      (.in0(counter[5:0]), .in1(W_CT_WR_BRST ), .eq(CT_WR_BRST ));
+
+main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) mem_module 
+(
+  .clk(clk), .rst(rst),
   .A(ADDR_BUS),
-	.WR(WR_out), .OE(OE), .CE(CE),
-  .DIO(DATA_BUS), .A_valid(A_valid)
+	.WR(WR_out), .OE(OE_out),
+  .DIO(DATA_BUS)
 );
 
 /* Inverters */
-wire Q0_bar;
-wire RD_bar;
-inv1$ inv_1(RD_bar, RD);
-wire Q2_bar;
-wire WR_bar;
-inv1$ inv_3(WR_bar, WR);
-wire MAX_RD_bar;
-inv1$ inv_4(MAX_RD_bar, MAX_RD);
-wire MAX_BRST_bar;
-inv1$ inv_5(MAX_BRST_bar, MAX_BRST);
-wire MAX_WRDUR_bar;
-inv1$ inv_6(MAX_WRDUR_bar, MAX_WRDUR);
 wire Q1_bar;
-wire MAX_WRTOT_bar;
-inv1$ inv_8(MAX_WRTOT_bar, MAX_WRTOT);
+wire CT_WR_BRST_bar;
+inv1$ inv_1(CT_WR_BRST_bar, CT_WR_BRST);
+wire CT_BUS_FREE_bar;
+inv1$ inv_2(CT_BUS_FREE_bar, CT_BUS_FREE);
+wire Q0_bar;
+wire CT_WR_ADDR_bar;
+inv1$ inv_4(CT_WR_ADDR_bar, CT_WR_ADDR);
+wire CT_HIZ_PROT_bar;
+inv1$ inv_5(CT_HIZ_PROT_bar, CT_HIZ_PROT);
+wire Q2_bar;
+wire CT_RD_BRST_bar;
+inv1$ inv_7(CT_RD_BRST_bar, CT_RD_BRST);
+wire WR_bar;
+inv1$ inv_8(WR_bar, WR);
+wire RD_bar;
+inv1$ inv_9(RD_bar, RD);
 
 /* Product Expressions */
 wire and_0_0_out;
-and4$ and_0_0(and_0_0_out,Q1_bar,Q0_bar,RD,WR_bar);
+wire and_0_1_out;
+and4$ and_0_0(and_0_0_out,and_0_1_out,Q1_bar,Q0_bar,RD_bar);
+and2$ and_0_1(and_0_1_out,WR,CT_BUS_FREE);
 wire and_1_0_out;
-and4$ and_1_0(and_1_0_out,Q2_bar,Q0_bar,RD_bar,WR);
+wire and_1_1_out;
+and4$ and_1_0(and_1_0_out,and_1_1_out,Q2_bar,Q1_bar,Q0_bar);
+and2$ and_1_1(and_1_1_out,RD_bar,WR);
 wire and_2_0_out;
-and4$ and_2_0(and_2_0_out,Q2,Q1,Q0_bar,MAX_WRTOT_bar);
+wire and_2_1_out;
+and4$ and_2_0(and_2_0_out,and_2_1_out,Q2,Q1,Q0);
+and2$ and_2_1(and_2_1_out,RD_bar,WR);
 wire and_3_0_out;
-and4$ and_3_0(and_3_0_out,Q2,Q1_bar,Q0_bar,MAX_WR);
+wire and_3_1_out;
+and4$ and_3_0(and_3_0_out,and_3_1_out,Q1_bar,Q0_bar,RD);
+and2$ and_3_1(and_3_1_out,WR_bar,CT_BUS_FREE);
 wire and_4_0_out;
-and3$ and_4_0(and_4_0_out,Q2_bar,Q1,MAX_BRST_bar);
+wire and_4_1_out;
+and4$ and_4_0(and_4_0_out,and_4_1_out,Q2_bar,Q1_bar,Q0_bar);
+and2$ and_4_1(and_4_1_out,RD,WR_bar);
 wire and_5_0_out;
-and4$ and_5_0(and_5_0_out,Q2,Q1_bar,Q0,MAX_WRDUR);
+and4$ and_5_0(and_5_0_out,Q2_bar,Q1_bar,Q0,CT_HIZ_PROT);
 wire and_6_0_out;
-and4$ and_6_0(and_6_0_out,Q2,Q1_bar,Q0,MAX_WRDUR_bar);
+wire and_6_1_out;
+and4$ and_6_0(and_6_0_out,and_6_1_out,Q2,Q1,Q0);
+and2$ and_6_1(and_6_1_out,RD,WR_bar);
 wire and_7_0_out;
-and4$ and_7_0(and_7_0_out,Q2_bar,Q1_bar,Q0,MAX_RD);
+and4$ and_7_0(and_7_0_out,Q2_bar,Q1,Q0_bar,CT_RD_EN);
 wire and_8_0_out;
-and4$ and_8_0(and_8_0_out,Q2_bar,Q1_bar,Q0,MAX_RD_bar);
+and4$ and_8_0(and_8_0_out,Q2,Q1,Q0_bar,CT_WR_EN);
 wire and_9_0_out;
-and2$ and_9_0(and_9_0_out,Q2,Q1_bar);
+and4$ and_9_0(and_9_0_out,Q2_bar,Q1_bar,Q0,CT_HIZ_PROT_bar);
 wire and_10_0_out;
-and3$ and_10_0(and_10_0_out,Q2_bar,Q1,Q0_bar);
+and4$ and_10_0(and_10_0_out,Q2,Q1_bar,Q0,CT_WR_ADDR);
 wire and_11_0_out;
-and3$ and_11_0(and_11_0_out,Q2_bar,Q1,Q0);
+and4$ and_11_0(and_11_0_out,Q2_bar,Q1,Q0,CT_RD_BRST);
 wire and_12_0_out;
-and2$ and_12_0(and_12_0_out,Q1_bar,Q0_bar);
+and3$ and_12_0(and_12_0_out,Q2,Q1_bar,CT_BUS_FREE_bar);
 wire and_13_0_out;
-and2$ and_13_0(and_13_0_out,Q2,Q0_bar);
+and4$ and_13_0(and_13_0_out,Q2,Q1_bar,Q0,CT_WR_ADDR_bar);
+wire and_14_0_out;
+and4$ and_14_0(and_14_0_out,Q2,Q1,Q0,CT_WR_BRST_bar);
+wire and_15_0_out;
+and4$ and_15_0(and_15_0_out,Q2_bar,Q1,Q0,CT_RD_BRST_bar);
+wire and_16_0_out;
+and3$ and_16_0(and_16_0_out,Q2_bar,Q1,Q0_bar);
+wire and_17_0_out;
+and3$ and_17_0(and_17_0_out,Q2,Q1,Q0_bar);
+wire and_18_0_out;
+and2$ and_18_0(and_18_0_out,Q2,Q0);
+wire and_19_0_out;
+buffer$ buffer_and_19_0(and_19_0_out,Q1_bar);
 
 /* Sum Expressions */
-or3$ or_0_0(D2,and_0_0_out,and_2_0_out,and_9_0_out);
+wire or_0_1_out;
+wire or_0_2_out;
+or4$ or_0_0(D2,or_0_1_out,or_0_2_out,and_3_0_out,and_4_0_out);
+or4$ or_0_1(or_0_1_out,and_6_0_out,and_10_0_out,and_11_0_out,and_12_0_out);
+or3$ or_0_2(or_0_2_out,and_13_0_out,and_14_0_out,and_17_0_out);
 wire or_1_1_out;
-or4$ or_1_0(D1,or_1_1_out,and_2_0_out,and_4_0_out,and_5_0_out);
-or2$ or_1_1(or_1_1_out,and_7_0_out,and_10_0_out);
+or4$ or_1_0(D1,or_1_1_out,and_5_0_out,and_10_0_out,and_14_0_out);
+or3$ or_1_1(or_1_1_out,and_15_0_out,and_16_0_out,and_17_0_out);
 wire or_2_1_out;
-or4$ or_2_0(D0,or_2_1_out,and_1_0_out,and_3_0_out,and_4_0_out);
-or3$ or_2_1(or_2_1_out,and_6_0_out,and_8_0_out,and_10_0_out);
-or3$ or_3_0(CE,and_11_0_out,and_12_0_out,and_13_0_out);
+wire or_2_2_out;
+wire or_2_3_out;
+or4$ or_2_0(D0,or_2_1_out,or_2_2_out,or_2_3_out,and_0_0_out);
+or4$ or_2_1(or_2_1_out,and_1_0_out,and_2_0_out,and_3_0_out,and_4_0_out);
+or4$ or_2_2(or_2_2_out,and_6_0_out,and_7_0_out,and_8_0_out,and_9_0_out);
+or3$ or_2_3(or_2_3_out,and_13_0_out,and_14_0_out,and_15_0_out);
+wire or_3_1_out;
+or4$ or_3_0(OE_out,or_3_1_out,and_11_0_out,and_15_0_out,and_17_0_out);
+or2$ or_3_1(or_3_1_out,and_18_0_out,and_19_0_out);
 wire or_4_1_out;
-or4$ or_4_0(OE,or_4_1_out,and_5_0_out,and_6_0_out,and_11_0_out);
-or2$ or_4_1(or_4_1_out,and_12_0_out,and_13_0_out);
-wire or_5_1_out;
-or4$ or_5_0(WR_out,or_5_1_out,and_7_0_out,and_8_0_out,and_10_0_out);
-or3$ or_5_1(or_5_1_out,and_11_0_out,and_12_0_out,and_13_0_out);
-wire or_6_1_out;
-or4$ or_6_0(CT,or_6_1_out,and_5_0_out,and_6_0_out,and_7_0_out);
-or3$ or_6_1(or_6_1_out,and_8_0_out,and_11_0_out,and_13_0_out);
-wire or_7_1_out;
-or4$ or_7_0(DATAN,or_7_1_out,and_5_0_out,and_6_0_out,and_7_0_out);
-or3$ or_7_1(or_7_1_out,and_8_0_out,and_12_0_out,and_13_0_out);
+or4$ or_4_0(WR_out,or_4_1_out,and_11_0_out,and_15_0_out,and_16_0_out);
+or2$ or_4_1(or_4_1_out,and_18_0_out,and_19_0_out);
+or4$ or_5_0(DATA_EN_BAR,and_16_0_out,and_17_0_out,and_18_0_out,and_19_0_out);
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0, Q0_bar, rst, 1'b1);
