@@ -60,7 +60,7 @@ localparam RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT);
 localparam DELAY_ADJ         = 7;
 localparam ADDR_SETUP        = 25 + DELAY_ADJ;
 localparam DATA_SETUP        = 25 + DELAY_ADJ;
-localparam CE_SETUP          = 35;
+localparam CE_SETUP          = 35 + DELAY_ADJ;
 localparam DOE_TIME          = 64;
 localparam HZ_TIME           = 18;
 
@@ -75,10 +75,10 @@ localparam RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1; // Needed due to tHz
 // Yes, the extra + 1 should be there below in RD_CLK_SPACING
 // Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ
 localparam RD_CLK_SPACING    = ((HZ_TIME     / CYCLE_TIME)   + 1) + 1;
-localparam WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1);
 localparam ADDR_EN_TO_WR_EN  = ((ADDR_SETUP  / CYCLE_TIME)   + 1);
 localparam DATA_EN_TO_WR_DIS = ((DATA_SETUP  / CYCLE_TIME)   + 1);
 localparam WR_DIS_TO_DATA_EN = 1; // Protect against DIO -> posedge WR violations
+localparam WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1) + WR_DIS_TO_DATA_EN;
 
 reg   [MEM_ADDR_WIDTH-1:0]  A;
 reg                         WR, OE, clk, rst;

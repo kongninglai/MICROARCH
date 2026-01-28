@@ -14,14 +14,14 @@ localparam BURST_SIZE=4;
 localparam DELAY_ADJ         = 7;
 localparam ADDR_SETUP        = 25 + DELAY_ADJ;
 localparam DATA_SETUP        = 25 + DELAY_ADJ;
-localparam CE_SETUP          = 35;
+localparam CE_SETUP          = 35 + DELAY_ADJ;
 localparam DOE_TIME          = 64;
 localparam HZ_TIME           = 18;
 
 localparam CYCLE_TIME        = 15;
 
 // Next few parameters are in units of cycles
-localparam ADDR_HIZ_PROT     = 1; // Don't enable RD when ADDR comparator can still be HiZ after clock edge
+localparam ADDR_HIZ_PROT     = 2; // Don't enable RD when ADDR comparator can still be HiZ after clock edge
 localparam RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1);
 localparam RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 1; // This will fail miserably if you have a bad cycle time (>= 18 ns)
 localparam RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1; // Needed due to tHz
@@ -29,10 +29,10 @@ localparam RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1; // Needed due to tHz
 // Yes, the extra + 1 should be there below in RD_CLK_SPACING
 // Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ
 localparam RD_CLK_SPACING    = ((HZ_TIME     / CYCLE_TIME)   + 1) + 1;
-localparam WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1);
 localparam ADDR_EN_TO_WR_EN  = ((ADDR_SETUP  / CYCLE_TIME)   + 1);
 localparam DATA_EN_TO_WR_DIS = ((DATA_SETUP  / CYCLE_TIME)   + 1);
-localparam WR_DIS_TO_DATA_EN = 1; // Protect against DIO -> posedge WR violations   
+localparam WR_DIS_TO_DATA_EN = 1; // Protect against DIO -> posedge WR violations
+localparam WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1) + WR_DIS_TO_DATA_EN;  
 localparam V_CT_HIZ_PROT     = ADDR_HIZ_PROT - 1;
 localparam V_CT_RD_EN        = RD_EN_DURATION - 1;
 localparam V_CT_RD_BRST      = (RD_DIS_TO_DATA_V + ((BURST_SIZE-1) * RD_CLK_SPACING)) - 1;
@@ -55,7 +55,7 @@ wire  [2:0]   STATE = {mmu_tb.DUT.Q2, mmu_tb.DUT.Q1, mmu_tb.DUT.Q0};
 wire  [2:0]   NEXT_STATE = {mmu_tb.DUT.D2, mmu_tb.DUT.D1, mmu_tb.DUT.D0};
 
 
-mmu #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT (
+mmu #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ), .ADDR_HIZ_PROT(ADDR_HIZ_PROT)) DUT (
   .rst(rst), .clk(clk), .RD(RD), .WR(WR),
   .DATA_BUS(DATA_BUS),
   .ADDR_BUS(ADDR_BUS)
@@ -114,24 +114,26 @@ endtask
 task read_addr_data;
   input [14:0] ADDR;
   begin
-    #(CYCLE_TIME);                        // Wait for transition to [001]
-    DATA_driver_enable    <= 1'b0;        // Release data bus
-    ADDR_driver_enable    <= 1'b1;        // Take address bus
-    ADDR_driver           <= ADDR;        // Drive address value
-    #((V_CT_HIZ_PROT + 1) * CYCLE_TIME);  // Wait for transition to [010]
-    #((V_CT_RD_EN + 1) * CYCLE_TIME);     // Wait for transition to [011]
-    #((RD_DIS_TO_DATA_V) * CYCLE_TIME);   // Wait for data to become valid
-    check_read(ADDR);                     // Check D0
-    #((RD_CLK_SPACING) * CYCLE_TIME);     // Wait for data to become valid
-    check_read(ADDR+4);                   // Check D1
-    #((RD_CLK_SPACING) * CYCLE_TIME);     // Wait for data to become valid
-    check_read(ADDR+8);                   // Check D2
-    #((RD_CLK_SPACING-1) * CYCLE_TIME);   // Wait for deasserting address
-    ADDR_driver_enable    <= 1'b0;        // Release address bus
-    ADDR_driver           <= 'bz;         // Release address bus
-    #(CYCLE_TIME);                        // Wait for data to become valid
-    check_read(ADDR+12);                  // Check D3
-    #((RD_TO_BUS_FREE) * CYCLE_TIME);     // Wait for data bus to release
+    #(CYCLE_TIME);                                    // Wait for transition to [001]
+    #(DELAY_ADJ);                                     // Simulate tristate bus driver delay
+    DATA_driver_enable    <= 1'b0;                    // Release data bus
+    ADDR_driver_enable    <= 1'b1;                    // Take address bus
+    ADDR_driver           <= ADDR;                    // Drive address value
+    #((V_CT_HIZ_PROT + 1) * CYCLE_TIME);              // Wait for transition to [010]
+    #((V_CT_RD_EN + 1) * CYCLE_TIME);                 // Wait for transition to [011]
+    #(((RD_DIS_TO_DATA_V) * CYCLE_TIME) - DELAY_ADJ); // Wait for data to become valid
+    check_read(ADDR);                                 // Check D0
+    #((RD_CLK_SPACING) * CYCLE_TIME);                 // Wait for data to become valid
+    check_read(ADDR+4);                               // Check D1
+    #((RD_CLK_SPACING) * CYCLE_TIME);                 // Wait for data to become valid
+    check_read(ADDR+8);                               // Check D2
+    #((RD_CLK_SPACING-1) * CYCLE_TIME);               // Wait for deasserting address
+    #(DELAY_ADJ);           
+    ADDR_driver_enable    <= 1'b0;                    // Release address bus
+    ADDR_driver           <= 'bz;                     // Release address bus
+    #((CYCLE_TIME) - DELAY_ADJ);                      // Wait for data to become valid
+    check_read(ADDR+12);                              // Check D3
+    #((RD_TO_BUS_FREE) * CYCLE_TIME);                 // Wait for data bus to release
   end
 endtask
 
@@ -161,6 +163,7 @@ task write_addr_data;
   input [31:0] DATA;
   begin
     #(CYCLE_TIME);                        // Wait for transition to [101]
+    #(DELAY_ADJ);                         // Simulate tristate bus driver delay
     DATA_driver_enable    <= 1'b1;        // Take data bus
     DATA_driver           <= DATA;        // Drive D0 value
     ADDR_driver_enable    <= 1'b1;        // Take address bus
@@ -179,6 +182,7 @@ task write_addr_data;
     DATA_driver           <= 'bz;         // Release data bus
     ADDR_driver_enable    <= 1'b1;        // Release address bus
     ADDR_driver           <= 'bz;         // Release address bus
+    #(CYCLE_TIME-DELAY_ADJ);
   end
 endtask
 
