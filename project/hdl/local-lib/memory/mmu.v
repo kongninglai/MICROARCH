@@ -52,6 +52,30 @@ assign          W_CT_WR_ADDR  = V_CT_WR_ADDR ;
 assign          W_CT_WR_EN    = V_CT_WR_EN   ;     
 assign          W_CT_WR_BRST  = V_CT_WR_BRST ;    
 
+wire    [31:0]  DIO;
+wire    not_writing, not_wr_addr, not_wr_en, not_wr_brst;
+
+
+neq_3b  neq_3b_not_wr_addr(.in0(3'b101), .in1({Q2,Q1,Q0}), .neq(not_wr_addr));
+neq_3b  neq_3b_not_wr_en  (.in0(3'b110), .in1({Q2,Q1,Q0}), .neq(not_wr_en));
+neq_3b  neq_3b_not_wr_brst(.in0(3'b111), .in1({Q2,Q1,Q0}), .neq(not_wr_brst));
+
+and3$   and3$_not_writing(not_writing, not_wr_addr, not_wr_en, not_wr_brst);
+
+// If we need to use tristate_bus_driver16$ even for the internal memory bus, it still works, last I checked
+// tristate_bus_driver16$  DIO_BUS_DRIVER_H(.enbar(not_writing), .in(DATA_BUS[31:16]), .out(DIO[31:16]));
+// tristate_bus_driver16$  DIO_BUS_DRIVER_L(.enbar(not_writing), .in(DATA_BUS[15:0]),  .out(DIO[15:0]));
+
+tristate16L$  DIO_DRIVER_H(.enbar(not_writing), .in(DATA_BUS[31:16]), .out(DIO[31:16]));
+tristate16L$  DIO_DRIVER_L(.enbar(not_writing), .in(DATA_BUS[15:0]), .out(DIO[15:0]));
+
+wire    not_reading;
+
+neq_3b  neq_3b_not_reading(.in0(3'b011), .in1({Q2,Q1,Q0}), .neq(not_reading));
+
+tristate_bus_driver16$  DATA_BUS_DRIVER_H(.enbar(not_reading), .in(DIO[31:16]), .out(DATA_BUS[31:16]));
+tristate_bus_driver16$  DATA_BUS_DRIVER_L(.enbar(not_reading), .in(DIO[15:0]),  .out(DATA_BUS[15:0]));
+
 wire    Q2,Q1,Q0;
 wire    D2,D1,D0;
 wire    OE_out,WR_out,DATA_EN_BAR;
@@ -86,7 +110,7 @@ main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .D
   .clk(clk), .rst(rst),
   .A(ADDR_BUS),
 	.WR(WR_out), .OE(OE_out),
-  .DIO(DATA_BUS)
+  .DIO(DIO)
 );
 
 /* Inverters */

@@ -11,20 +11,20 @@ localparam MEM_BYTE_CAPACITY = 32768;
 localparam BURST_SIZE=4;
 /* IMPORTANT: All parameters assume DELAY_ADJ < CYCLE_TIME <= 17 */
 // Next few parameters are in units of ns
-localparam DELAY_ADJ         = 8;
+localparam DELAY_ADJ         = 7;
 localparam ADDR_SETUP        = 25 + DELAY_ADJ;
 localparam DATA_SETUP        = 25 + DELAY_ADJ;
 localparam CE_SETUP          = 35 + DELAY_ADJ;
 localparam DOE_TIME          = 64;
 localparam HZ_TIME           = 18;
 
-localparam CYCLE_TIME        = 13;
+localparam CYCLE_TIME        = 10;
 
 // Next few parameters are in units of cycles
 localparam ADDR_HIZ_PROT     = 1; // Don't enable RD when ADDR comparator can still be HiZ after clock edge
 localparam RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1);
 localparam RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 1; // This will fail miserably if you have a bad cycle time (>= 18 ns)
-localparam RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1; // Needed due to tHz
+localparam RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 3 : 2; // Needed due to tHz
 
 // Yes, the extra + 1 should be there below in RD_CLK_SPACING
 // Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ
@@ -76,7 +76,7 @@ end
 task check_read;
   input [14:0] ADDR;
   begin
-    if (DATA_BUS != {{17{1'b0}}, ADDR}) begin
+    if (DATA_BUS !== {{17{1'b0}}, ADDR}) begin
       FAILURES = FAILURES + 1;
       $display("FAILURE AT TIME %t. DATA_BUS_exp = %h, DATA_BUS = %h\n", 
                 $time, {{17{1'b0}}, ADDR}, DATA_BUS);
@@ -130,9 +130,9 @@ task read_addr_data;
     #(DELAY_ADJ);           
     ADDR_driver_enable    <= 1'b0;                    // Release address bus
     ADDR_driver           <= 'bz;                     // Release address bus
-    #((CYCLE_TIME));                                  // Wait for data to become valid
+    #((CYCLE_TIME)-DELAY_ADJ);                        // Wait for data to become valid
     check_read(ADDR+12);                              // Check D3
-    #(((RD_TO_BUS_FREE) * CYCLE_TIME)-DELAY_ADJ);     // Wait for data bus to release
+    #(((RD_TO_BUS_FREE) * CYCLE_TIME));     // Wait for data bus to release
   end
 endtask
 
