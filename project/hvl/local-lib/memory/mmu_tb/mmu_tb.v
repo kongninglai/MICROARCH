@@ -11,17 +11,17 @@ localparam MEM_BYTE_CAPACITY = 32768;
 localparam BURST_SIZE=4;
 /* IMPORTANT: All parameters assume DELAY_ADJ < CYCLE_TIME <= 17 */
 // Next few parameters are in units of ns
-localparam DELAY_ADJ         = 7;
+localparam DELAY_ADJ         = 8;
 localparam ADDR_SETUP        = 25 + DELAY_ADJ;
 localparam DATA_SETUP        = 25 + DELAY_ADJ;
 localparam CE_SETUP          = 35 + DELAY_ADJ;
 localparam DOE_TIME          = 64;
 localparam HZ_TIME           = 18;
 
-localparam CYCLE_TIME        = 15;
+localparam CYCLE_TIME        = 13;
 
 // Next few parameters are in units of cycles
-localparam ADDR_HIZ_PROT     = 2; // Don't enable RD when ADDR comparator can still be HiZ after clock edge
+localparam ADDR_HIZ_PROT     = 1; // Don't enable RD when ADDR comparator can still be HiZ after clock edge
 localparam RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1);
 localparam RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 1; // This will fail miserably if you have a bad cycle time (>= 18 ns)
 localparam RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1; // Needed due to tHz
@@ -55,7 +55,7 @@ wire  [2:0]   STATE = {mmu_tb.DUT.Q2, mmu_tb.DUT.Q1, mmu_tb.DUT.Q0};
 wire  [2:0]   NEXT_STATE = {mmu_tb.DUT.D2, mmu_tb.DUT.D1, mmu_tb.DUT.D0};
 
 
-mmu #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ), .ADDR_HIZ_PROT(ADDR_HIZ_PROT)) DUT (
+mmu #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT (
   .rst(rst), .clk(clk), .RD(RD), .WR(WR),
   .DATA_BUS(DATA_BUS),
   .ADDR_BUS(ADDR_BUS)
@@ -107,7 +107,7 @@ task read;
     #((V_CT_RD_BRST + 1) * CYCLE_TIME);
 
     // Currently in [100]
-    #((V_CT_BUS_FREE + 1) * CYCLE_TIME);
+    #(((V_CT_BUS_FREE + 1) * CYCLE_TIME) - DELAY_ADJ);
   end
 endtask
 
@@ -115,7 +115,6 @@ task read_addr_data;
   input [14:0] ADDR;
   begin
     #(CYCLE_TIME);                                    // Wait for transition to [001]
-    #(DELAY_ADJ);                                     // Simulate tristate bus driver delay
     DATA_driver_enable    <= 1'b0;                    // Release data bus
     ADDR_driver_enable    <= 1'b1;                    // Take address bus
     ADDR_driver           <= ADDR;                    // Drive address value
@@ -131,15 +130,16 @@ task read_addr_data;
     #(DELAY_ADJ);           
     ADDR_driver_enable    <= 1'b0;                    // Release address bus
     ADDR_driver           <= 'bz;                     // Release address bus
-    #((CYCLE_TIME) - DELAY_ADJ);                      // Wait for data to become valid
+    #((CYCLE_TIME));                                  // Wait for data to become valid
     check_read(ADDR+12);                              // Check D3
-    #((RD_TO_BUS_FREE) * CYCLE_TIME);                 // Wait for data bus to release
+    #(((RD_TO_BUS_FREE) * CYCLE_TIME)-DELAY_ADJ);     // Wait for data bus to release
   end
 endtask
 
 task write;
   begin
     // Currently in IDLE [000]
+    #(DELAY_ADJ);                                     // Simulate tristate bus driver delay
 
     // Force transition to [101]
     RD                    <= 1'b1;
@@ -153,7 +153,7 @@ task write;
     #((V_CT_WR_EN + 1) * CYCLE_TIME);
 
     // Currently in [111]
-    #((V_CT_WR_BRST + 1) * CYCLE_TIME);
+    #(((V_CT_WR_BRST + 1) * CYCLE_TIME));
   end
 endtask
 
@@ -178,11 +178,10 @@ task write_addr_data;
     #((WR_CLK_SPACING) * CYCLE_TIME);     // Wait for chance to change data
     DATA_driver           <= DATA+12;     // Drive D3 value
     #((WR_CLK_SPACING) * CYCLE_TIME);     // Wait for chance to change data
-    DATA_driver_enable    <= 1'b1;        // Release data bus
+    DATA_driver_enable    <= 1'b0;        // Release data bus
     DATA_driver           <= 'bz;         // Release data bus
-    ADDR_driver_enable    <= 1'b1;        // Release address bus
+    ADDR_driver_enable    <= 1'b0;        // Release address bus
     ADDR_driver           <= 'bz;         // Release address bus
-    #(CYCLE_TIME-DELAY_ADJ);
   end
 endtask
 
