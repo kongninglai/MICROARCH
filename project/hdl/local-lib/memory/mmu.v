@@ -6,7 +6,7 @@ module mmu #(
   parameter DELAY_ADJ         = 7,
   parameter ADDR_SETUP        = 25 + DELAY_ADJ,
   parameter DATA_SETUP        = 25 + DELAY_ADJ,
-  parameter CE_SETUP          = 35 + DELAY_ADJ,
+  parameter CE_SETUP          = 35,
   parameter DOE_TIME          = 64,
   parameter HZ_TIME           = 18,
 
@@ -55,6 +55,9 @@ assign          W_CT_WR_BRST  = V_CT_WR_BRST ;
 wire    [31:0]  DIO;
 wire    not_writing, not_wr_addr, not_wr_en, not_wr_brst;
 
+wire    Q2,Q1,Q0;
+wire    D2,D1,D0;
+wire    OE_out,WR_out,DATA_EN_BAR;
 
 neq_3b  neq_3b_not_wr_addr(.in0(3'b101), .in1({Q2,Q1,Q0}), .neq(not_wr_addr));
 neq_3b  neq_3b_not_wr_en  (.in0(3'b110), .in1({Q2,Q1,Q0}), .neq(not_wr_en));
@@ -75,10 +78,6 @@ neq_3b  neq_3b_not_reading(.in0(3'b011), .in1({Q2,Q1,Q0}), .neq(not_reading));
 
 tristate_bus_driver16$  DATA_BUS_DRIVER_H(.enbar(not_reading), .in(DIO[31:16]), .out(DATA_BUS[31:16]));
 tristate_bus_driver16$  DATA_BUS_DRIVER_L(.enbar(not_reading), .in(DIO[15:0]),  .out(DATA_BUS[15:0]));
-
-wire    Q2,Q1,Q0;
-wire    D2,D1,D0;
-wire    OE_out,WR_out,DATA_EN_BAR;
 
 wire    idling;
 

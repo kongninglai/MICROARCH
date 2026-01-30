@@ -24,7 +24,7 @@ module main_memory #(
   parameter DELAY_ADJ         = 7,
   parameter ADDR_SETUP        = 25 + DELAY_ADJ,
   parameter DATA_SETUP        = 25 + DELAY_ADJ,
-  parameter CE_SETUP          = 35 + DELAY_ADJ,
+  parameter CE_SETUP          = 35,
   parameter DOE_TIME          = 64,
   parameter HZ_TIME           = 18,
 
@@ -34,7 +34,7 @@ module main_memory #(
   parameter ADDR_HIZ_PROT     = 1, // Don't enable RD when ADDR comparator can still be HiZ after clock edge
   parameter RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1),
   parameter RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 1, // This will fail miserably if you have a bad cycle time (>= 18 ns)
-  parameter RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 3 : 2, // Needed due to tHz = 17.5 ns
+  parameter RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1, // Needed due to tHz = 17.5 ns
 
   // Yes, the extra + 1 should be there below in RD_CLK_SPACING
   // Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ

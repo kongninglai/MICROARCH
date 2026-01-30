@@ -60,7 +60,7 @@ localparam RANK_GROUP_WIDTH=$clog2(RANK_GROUP_COUNT);
 localparam DELAY_ADJ         = 7;
 localparam ADDR_SETUP        = 25 + DELAY_ADJ;
 localparam DATA_SETUP        = 25 + DELAY_ADJ;
-localparam CE_SETUP          = 35 + DELAY_ADJ;
+localparam CE_SETUP          = 35;
 localparam DOE_TIME          = 64;
 localparam HZ_TIME           = 18;
 

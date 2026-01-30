@@ -14,7 +14,7 @@ localparam BURST_SIZE=4;
 localparam DELAY_ADJ         = 7;
 localparam ADDR_SETUP        = 25 + DELAY_ADJ;
 localparam DATA_SETUP        = 25 + DELAY_ADJ;
-localparam CE_SETUP          = 35 + DELAY_ADJ;
+localparam CE_SETUP          = 35;
 localparam DOE_TIME          = 64;
 localparam HZ_TIME           = 18;
 
@@ -24,7 +24,7 @@ localparam CYCLE_TIME        = 10;
 localparam ADDR_HIZ_PROT     = 1; // Don't enable RD when ADDR comparator can still be HiZ after clock edge
 localparam RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1);
 localparam RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 1; // This will fail miserably if you have a bad cycle time (>= 18 ns)
-localparam RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 3 : 2; // Needed due to tHz
+localparam RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1; // Needed due to tHz
 
 // Yes, the extra + 1 should be there below in RD_CLK_SPACING
 // Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ
@@ -32,7 +32,7 @@ localparam RD_CLK_SPACING    = ((HZ_TIME     / CYCLE_TIME)   + 1) + 1;
 localparam ADDR_EN_TO_WR_EN  = ((ADDR_SETUP  / CYCLE_TIME)   + 1);
 localparam DATA_EN_TO_WR_DIS = ((DATA_SETUP  / CYCLE_TIME)   + 1);
 localparam WR_DIS_TO_DATA_EN = 1; // Protect against DIO -> posedge WR violations
-localparam WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1) + WR_DIS_TO_DATA_EN;  
+localparam WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1) + WR_DIS_TO_DATA_EN; // again to protect DIO -> posedge WR for ALL ranks
 localparam V_CT_HIZ_PROT     = ADDR_HIZ_PROT - 1;
 localparam V_CT_RD_EN        = RD_EN_DURATION - 1;
 localparam V_CT_RD_BRST      = (RD_DIS_TO_DATA_V + ((BURST_SIZE-1) * RD_CLK_SPACING)) - 1;
