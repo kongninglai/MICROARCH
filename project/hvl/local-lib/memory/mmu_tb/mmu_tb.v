@@ -18,7 +18,7 @@ localparam CE_SETUP          = 35;
 localparam DOE_TIME          = 64;
 localparam HZ_TIME           = 18;
 
-localparam CYCLE_TIME        = 10;
+localparam CYCLE_TIME        = 12;
 
 // Next few parameters are in units of cycles
 localparam ADDR_HIZ_PROT     = 1; // Don't enable RD when ADDR comparator can still be HiZ after clock edge
