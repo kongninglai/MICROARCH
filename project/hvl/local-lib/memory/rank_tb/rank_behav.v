@@ -15,20 +15,30 @@ module rank_behav #(
 
 ) (
   input [RANK_ADDR_WIDTH-1:0]   A,
-	input                         WR, OE, CE,
+  input [CHIPS_PER_RANK-1:0]    WR,
+	input                         OE, CE,
 	inout [RANK_BIT_WIDTH-1:0]    DIO 
 );
   
   reg [RANK_BIT_WIDTH-1:0] rank_mem [0:CHIP_ROW_COUNT];
 
   always @(*) begin
-    if ((CE == 1'b0) && (WR == 1'b0)) begin
-      rank_mem[A] <= DIO;
+    if ((CE == 1'b0) && (WR[3] == 1'b0)) begin
+      rank_mem[A][31:24] <= DIO[31:24];
+    end
+    if ((CE == 1'b0) && (WR[2] == 1'b0)) begin
+      rank_mem[A][23:16] <= DIO[23:16];
+    end
+    if ((CE == 1'b0) && (WR[1] == 1'b0)) begin
+      rank_mem[A][15:8] <= DIO[15:8];
+    end
+    if ((CE == 1'b0) && (WR[0] == 1'b0)) begin
+      rank_mem[A][7:0] <= DIO[7:0];
     end
   end
 
   assign DIO =
-  ((CE == 1'b0) && (WR == 1'b1) && (OE == 1'b0))
+  ((CE == 1'b0) && (WR == 4'hF) && (OE == 1'b0))
     ? {
         rank_mem[A]
       }

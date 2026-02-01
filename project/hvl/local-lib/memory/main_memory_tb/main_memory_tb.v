@@ -81,6 +81,7 @@ localparam WR_DIS_TO_DATA_EN = 1; // Protect against DIO -> posedge WR violation
 localparam WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1) + WR_DIS_TO_DATA_EN;
 
 reg   [MEM_ADDR_WIDTH-1:0]  A;
+reg   [15:0]                WR_mask;
 reg                         WR, OE, clk, rst;
 reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
 reg                         DIO_driver_enable;
@@ -88,11 +89,13 @@ reg                         DIO_driver_enable;
 wire  [RANK_BIT_WIDTH-1:0]  DIO     = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
 integer i;
 
+reg   [15:0]                WR_mask_val;
+
 
 main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT 
 (
   .clk(clk), .rst(rst),
-  .A(A),
+  .A(A), .WR_mask(WR_mask),
 	.WR(WR), .OE(OE),
   .DIO(DIO)
 );
@@ -108,12 +111,18 @@ initial begin
 end
 
 task check_read;
-  input [14:0] ADDR;
+  input [14:0]  ADDR;
+  input integer mask_low;
+  reg   [31:0]  DIO_exp;
   begin
-    if (DIO !== {{17{1'b0}}, ADDR}) begin
+    DIO_exp[7:0]    = WR_mask_val[mask_low]   ? 8'hXX : ADDR[7:0];
+    DIO_exp[15:8]   = WR_mask_val[mask_low+1] ? 8'hXX : {1'b0, ADDR[14:8]};
+    DIO_exp[23:16]  = WR_mask_val[mask_low+2] ? 8'hXX : 8'h00;
+    DIO_exp[31:24]  = WR_mask_val[mask_low+3] ? 8'hXX : 8'h00;
+    if (DIO !== DIO_exp) begin
       FAILURES = FAILURES + 1;
       $display("FAILURE AT TIME %t. DIO_exp = %h, DIO = %h\n", 
-                $time, {{17{1'b0}}, ADDR}, DIO);
+                $time, DIO_exp, DIO);
     end else begin
       SUCCESSES = SUCCESSES + 1;
       // $display("SUCCESS AT TIME %t. DIO_exp = %h, DIO = %h\n", 
@@ -130,16 +139,17 @@ task read;
     #(ADDR_HIZ_PROT*CYCLE_TIME);
     OE <= 0;
     WR <= 1;
+    WR_mask <= 16'hFFFF;
     #(RD_EN_DURATION*CYCLE_TIME);
     OE <= 1;
     #(RD_DIS_TO_DATA_V*CYCLE_TIME);
-    check_read(ADDR); 
+    check_read(ADDR, 0); 
     #(RD_CLK_SPACING*CYCLE_TIME);
-    check_read(ADDR+4);
+    check_read(ADDR+4, 4);
     #(RD_CLK_SPACING*CYCLE_TIME);
-    check_read(ADDR+8);
+    check_read(ADDR+8, 8);
     #(RD_CLK_SPACING*CYCLE_TIME);
-    check_read(ADDR+12);
+    check_read(ADDR+12, 12);
     A                     <= 15'dz;
     #(RD_TO_BUS_FREE*CYCLE_TIME);
   end
@@ -154,9 +164,11 @@ task write;
     DIO_driver            <= DATA;
     #(ADDR_EN_TO_WR_EN*CYCLE_TIME);
     WR                    <= 1'b0;
+    WR_mask               <= WR_mask_val;
     OE                    <= 1'b1;
     #(WR_CLK_SPACING*CYCLE_TIME);
     WR                    <= 1'b1;
+    WR_mask               <= 16'hFFFF;
     #(WR_DIS_TO_DATA_EN*CYCLE_TIME);    
     DIO_driver  <= DATA+4;  #(WR_CLK_SPACING*CYCLE_TIME);
     DIO_driver  <= DATA+8;  #(WR_CLK_SPACING*CYCLE_TIME);
@@ -167,10 +179,12 @@ task write;
 endtask
 
 initial begin
+  WR_mask_val           = 16'h0000;
   rst = 1'b1;
   WR                    = 1'b1;
-  OE                  = 1'b1;
-  DIO_driver_enable    = 1'b0;
+  WR_mask               = 16'hFFFF;
+  OE                    = 1'b1;
+  DIO_driver_enable     = 1'b0;
   #(CYCLE_TIME);
   rst = 1'b0;
   #(CYCLE_TIME);
@@ -182,6 +196,7 @@ initial begin
 
   A                   = {MEM_ADDR_WIDTH{1'b0}};
   WR                  = 1'b1;
+  WR_mask             = 16'hFFFF;
   OE                  = 1'b1;
   DIO_driver_enable   = 1'b0;
   DIO_driver          = {RANK_BIT_WIDTH{1'bz}};

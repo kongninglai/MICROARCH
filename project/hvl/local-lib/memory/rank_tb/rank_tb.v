@@ -23,8 +23,9 @@ localparam RANK_COUNT=MEM_BYTE_CAPACITY/RANK_BYTE_CAPACITY;
 localparam RANK_IDX_WIDTH=$clog2(RANK_COUNT);
 localparam RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK);
 
-reg   [MEM_ADDR_WIDTH-1:0]  A;
-reg                         WR, OE, CE;
+reg   [RANK_ADDR_WIDTH-1:0] A;
+reg   [CHIPS_PER_RANK-1:0]  WR;
+reg                         OE, CE;
 reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
 reg                         DIO_driver_enable;
 reg   [7:0]                 byte_val;
@@ -76,7 +77,7 @@ initial begin
   // Do a write phase (sequential) and then a read back phase to check
 
   A                   = {MEM_ADDR_WIDTH{1'b0}};
-  WR                  = 1'b1;
+  WR                  = 4'hF;
   OE                  = 1'b1;
   CE                  = 1'b1;
   DIO_driver_enable   = 1'b0;
@@ -100,11 +101,11 @@ initial begin
 
     #(CYCLE_TIME);
     CE <= 1'b0;
-    WR <= 1'b0;
+    WR <= 4'h0;
     OE <= 1'b1;
 
     #(CYCLE_TIME);
-    WR <= 1'b1;
+    WR <= 4'hF;
     CE <= 1'b1;
 
   end
@@ -112,7 +113,7 @@ initial begin
 
   // Stop write
   #(CYCLE_TIME);
-  WR          <= 1'b1;
+  WR          <= 4'hF;
   CE          <= 1'b1;
   DIO_driver_enable <= 1'b0;
   DIO_driver  <= {RANK_BIT_WIDTH{1'bz}};
@@ -123,7 +124,7 @@ initial begin
 
     A  <= i[MEM_ADDR_WIDTH-1:0];
     CE <= 1'b0;
-    WR <= 1'b1;
+    WR <= 4'hF;
     OE <= 1'b0;
 
     #(CYCLE_TIME/2);

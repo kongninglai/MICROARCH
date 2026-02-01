@@ -18,7 +18,7 @@ localparam CE_SETUP          = 35;
 localparam DOE_TIME          = 64;
 localparam HZ_TIME           = 18;
 
-localparam CYCLE_TIME        = 12;
+localparam CYCLE_TIME        = 9;
 
 // Next few parameters are in units of cycles
 localparam ADDR_HIZ_PROT     = 1; // Don't enable RD when ADDR comparator can still be HiZ after clock edge
@@ -43,6 +43,8 @@ localparam V_CT_WR_BRST      = (WR_DIS_TO_DATA_EN + ((BURST_SIZE-1) * WR_CLK_SPA
 
 reg     rst, clk, RD, WR;
 
+reg   [15:0]  WR_mask, WR_mask_val;
+
 reg   [31:0]  DATA_driver;
 reg           DATA_driver_enable;
 reg   [14:0]  ADDR_driver;
@@ -56,7 +58,7 @@ wire  [2:0]   NEXT_STATE = {mmu_tb.DUT.D2, mmu_tb.DUT.D1, mmu_tb.DUT.D0};
 
 
 mmu #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT (
-  .rst(rst), .clk(clk), .RD(RD), .WR(WR),
+  .rst(rst), .clk(clk), .RD(RD), .WR(WR), .WR_mask(WR_mask),
   .DATA_BUS(DATA_BUS),
   .ADDR_BUS(ADDR_BUS)
 );
@@ -74,16 +76,22 @@ initial begin
 end
 
 task check_read;
-  input [14:0] ADDR;
+  input [14:0]  ADDR;
+  input integer mask_low;
+  reg   [31:0]  DIO_exp;
   begin
-    if (DATA_BUS !== {{17{1'b0}}, ADDR}) begin
+    DIO_exp[7:0]    = WR_mask_val[mask_low]   ? 8'hXX : ADDR[7:0];
+    DIO_exp[15:8]   = WR_mask_val[mask_low+1] ? 8'hXX : {1'b0, ADDR[14:8]};
+    DIO_exp[23:16]  = WR_mask_val[mask_low+2] ? 8'hXX : 8'h00;
+    DIO_exp[31:24]  = WR_mask_val[mask_low+3] ? 8'hXX : 8'h00;
+    if (DATA_BUS !== DIO_exp) begin
       FAILURES = FAILURES + 1;
-      $display("FAILURE AT TIME %t. DATA_BUS_exp = %h, DATA_BUS = %h\n", 
-                $time, {{17{1'b0}}, ADDR}, DATA_BUS);
+      $display("FAILURE AT TIME %t. DIO_exp = %h, DATA_BUS = %h\n", 
+                $time, DIO_exp, DATA_BUS);
     end else begin
       SUCCESSES = SUCCESSES + 1;
-      // $display("SUCCESS AT TIME %t. DATA_BUS_exp = %h, DATA_BUS = %h\n", 
-      //           $time, {{17{1'b0}}, ADDR}, DATA_BUS);
+      // $display("SUCCESS AT TIME %t. DIO_exp = %h, DATA_BUS = %h\n", 
+      //           $time, DIO_exp, DATA_BUS);
     end
   end
 endtask
@@ -94,6 +102,7 @@ task read;
     // Force transition to [001]
     RD <= 0;
     WR <= 1;
+    // WR_mask               <= 16'hFFFF;
     #(CYCLE_TIME);
 
     // Currently in [001]
@@ -121,17 +130,17 @@ task read_addr_data;
     #((V_CT_HIZ_PROT + 1) * CYCLE_TIME);              // Wait for transition to [010]
     #((V_CT_RD_EN + 1) * CYCLE_TIME);                 // Wait for transition to [011]
     #(((RD_DIS_TO_DATA_V) * CYCLE_TIME) - DELAY_ADJ); // Wait for data to become valid
-    check_read(ADDR);                                 // Check D0
+    check_read(ADDR,0);                               // Check D0
     #((RD_CLK_SPACING) * CYCLE_TIME);                 // Wait for data to become valid
-    check_read(ADDR+4);                               // Check D1
+    check_read(ADDR+4,4);                             // Check D1
     #((RD_CLK_SPACING) * CYCLE_TIME);                 // Wait for data to become valid
-    check_read(ADDR+8);                               // Check D2
+    check_read(ADDR+8,8);                             // Check D2
     #((RD_CLK_SPACING-1) * CYCLE_TIME);               // Wait for deasserting address
     #(DELAY_ADJ);           
     ADDR_driver_enable    <= 1'b0;                    // Release address bus
     ADDR_driver           <= 'bz;                     // Release address bus
     #((CYCLE_TIME)-DELAY_ADJ);                        // Wait for data to become valid
-    check_read(ADDR+12);                              // Check D3
+    check_read(ADDR+12,12);                           // Check D3
     #(((RD_TO_BUS_FREE) * CYCLE_TIME));     // Wait for data bus to release
   end
 endtask
@@ -144,9 +153,11 @@ task write;
     // Force transition to [101]
     RD                    <= 1'b1;
     WR                    <= 1'b0;
+    WR_mask               <= WR_mask_val;
     #(CYCLE_TIME);
     // Currently in [101]
     WR                    <= 1'b1;
+    // WR_mask               <= 16'hFFFF;
     #((V_CT_WR_ADDR + 1) * CYCLE_TIME);
 
     // Currently in [110]
@@ -186,10 +197,13 @@ task write_addr_data;
 endtask
 
 initial begin
+  WR_mask_val           = 16'h0000;
+  WR_mask               <= WR_mask_val;
   rst = 1'b1;
   ADDR_driver_enable    <= 1'b1;
   ADDR_driver           <= 15'd0;
   WR                    <= 1'b1;
+  // WR_mask               <= 16'hFFFF;
   RD                    <= 1'b1;
   DATA_driver_enable    <= 1'b0;
   DATA_driver           <= {32{1'bz}};

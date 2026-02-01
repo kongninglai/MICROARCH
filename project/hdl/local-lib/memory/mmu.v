@@ -37,6 +37,7 @@ module mmu #(
   parameter V_CT_WR_BRST      = (WR_DIS_TO_DATA_EN + ((BURST_SIZE-1) * WR_CLK_SPACING)) - 1
 ) (
   input               rst, clk, RD, WR,
+  input     [15:0]    WR_mask,
   inout     [31:0]    DATA_BUS,
   inout     [14:0]    ADDR_BUS
 );
@@ -58,6 +59,9 @@ wire    not_writing, not_wr_addr, not_wr_en, not_wr_brst;
 wire    Q2,Q1,Q0;
 wire    D2,D1,D0;
 wire    OE_out,WR_out,DATA_EN_BAR;
+
+wire    [15:0]  WR_mask_out;
+or2$    or2$_WR_mask_out[15:0](WR_mask_out, WR_mask, {16{WR_out}});
 
 neq_3b  neq_3b_not_wr_addr(.in0(3'b101), .in1({Q2,Q1,Q0}), .neq(not_wr_addr));
 neq_3b  neq_3b_not_wr_en  (.in0(3'b110), .in1({Q2,Q1,Q0}), .neq(not_wr_en));
@@ -107,7 +111,7 @@ eq_6b   done_WR_BRST      (.in0(counter[5:0]), .in1(W_CT_WR_BRST ), .eq(CT_WR_BR
 main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) mem_module 
 (
   .clk(clk), .rst(rst),
-  .A(ADDR_BUS),
+  .A(ADDR_BUS), .WR_mask(WR_mask_out),
 	.WR(WR_out), .OE(OE_out),
   .DIO(DIO)
 );

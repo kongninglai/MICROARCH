@@ -48,16 +48,21 @@ module main_memory #(
 ) (
   input                       clk, rst,
   input [MEM_ADDR_WIDTH-1:0]  A,
+  input [15:0]                WR_mask,
 	input                       WR, OE,
   inout [RANK_BIT_WIDTH-1:0]  DIO
 );
 
 
   wire [0:(RD_CLK_SPACING*BURST_SIZE-1)] OE_P;
+  
   wire [0:(WR_CLK_SPACING*BURST_SIZE-1)] WR_P;
+  
+  wire [15:0] WR_mask_P [0:(WR_CLK_SPACING*BURST_SIZE-1)] ;
 
-  assign OE_P[0] = OE;
-  assign WR_P[0] = WR;
+  assign OE_P[0]      = OE;
+  assign WR_P[0]      = WR;
+  assign WR_mask_P[0] = WR_mask;
 
   genvar delay_idx;
   generate
@@ -65,6 +70,7 @@ module main_memory #(
       dff$    OE_P_delays(clk, OE_P[delay_idx-1], OE_P[delay_idx], , 1'b1, rst);
     end
     for (delay_idx = 1; delay_idx < WR_CLK_SPACING*BURST_SIZE; delay_idx = delay_idx + 1) begin : DELAY_GEN_WR
+      dff$    WR_mask_P_delays[15:0](clk, WR_mask_P[delay_idx-1], WR_mask_P[delay_idx], , 1'b1, rst);
       dff$    WR_P_delays(clk, WR_P[delay_idx-1], WR_P[delay_idx], , 1'b1, rst);
     end
   endgenerate
@@ -92,13 +98,22 @@ module main_memory #(
         wire   [$clog2(BURST_SIZE)-1:0] RANK_IDX_WIRE;
         assign                          RANK_IDX_WIRE = rank_idx;
 
+        wire    [15:0] WR_mask_gated;
+
         wire    WR_gated, OE_gated, CE_gated;
+
+        or2$    or2$_WR_mask_gated[15:0](   WR_mask_gated,
+                                            WR_mask_P[WR_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
+                                            inactive_rank_group);
+
         or2$    or2$_WR_gated(  WR_gated,
                                 WR_P[WR_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
                                 inactive_rank_group);
+
         or2$    or2$_OE_gated(  OE_gated,
                                 OE_P[RD_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])],
                                 inactive_rank_group);
+
         xnor2$ xnor2$_CE_gated( CE_gated, 
                                 OE_gated, 
                                 WR_gated);
@@ -108,7 +123,7 @@ module main_memory #(
           .A(A[MEM_ADDR_WIDTH-1:$clog2(CHIPS_PER_RANK)+$clog2(RANK_COUNT)]),
           .DIO(DIO),
           .OE(OE_gated),
-          .WR(WR_gated),
+          .WR(WR_mask_gated[(4*(rank_idx) + 3):(4*rank_idx)]),
           .CE(CE_gated)
         );
       end

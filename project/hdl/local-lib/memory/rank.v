@@ -15,7 +15,8 @@ module rank #(
 
 ) (
   input [RANK_ADDR_WIDTH-1:0]   A,
-	input                         WR, OE, CE,
+  input [CHIPS_PER_RANK-1:0]    WR,
+	input                         OE, CE,
 	inout [RANK_BIT_WIDTH-1:0]    DIO 
 );
 
@@ -26,7 +27,7 @@ module rank #(
                                   .A(A),
                                   .DIO(DIO[CHIP_BIT_WIDTH*(chip_idx+1)-1:CHIP_BIT_WIDTH*chip_idx]),
                                   .OE(OE),
-                                  .WR(WR),
+                                  .WR(WR[chip_idx]),
                                   .CE(CE)
                                 );
     end
