@@ -1,3 +1,4 @@
+arbiter_tb                     FAILURES=0      SUCCESSES=19    
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
 decoder4_16_tb                 FAILURES=0      SUCCESSES=16    
 decoder6_64_tb                 FAILURES=0      SUCCESSES=64    
