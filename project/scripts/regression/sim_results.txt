@@ -2,6 +2,7 @@ arbiter_tb                     FAILURES=0      SUCCESSES=19
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
 decoder4_16_tb                 FAILURES=0      SUCCESSES=16    
 decoder6_64_tb                 FAILURES=0      SUCCESSES=64    
+dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
 eq_1b_tb                       FAILURES=0      SUCCESSES=4     
 eq_2b_tb                       FAILURES=0      SUCCESSES=16    
 eq_32b_tb                      FAILURES=0      SUCCESSES=262   
