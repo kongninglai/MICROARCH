@@ -3,8 +3,8 @@ module  mmu_tb;
 initial begin
   $vcdplusfile("mmu_tb.dump.vpd");
   $vcdpluson(0, mmu_tb); 
-  $vcdpluson(0, mmu_tb.DUT); 
-  $vcdpluson(0, mmu_tb.DUT.mem_module.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem); 
+  // $vcdpluson(0, mmu_tb.DUT); 
+  // $vcdpluson(0, mmu_tb.DUT.mem_module.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem); 
 end
 
 localparam MEM_BYTE_CAPACITY = 32768;
