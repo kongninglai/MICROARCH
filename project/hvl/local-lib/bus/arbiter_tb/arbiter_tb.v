@@ -42,17 +42,17 @@ localparam V_CT_WR_BRST      = (WR_DIS_TO_DATA_EN + ((BURST_SIZE-1) * WR_CLK_SPA
 localparam V_CT_WR_DIS       = (V_CT_WR_ADDR + 1) + (V_CT_WR_EN + 1) + (V_CT_WR_BRST + 1) - 1;
 localparam V_CT_RD_DIS       = (V_CT_HIZ_PROT + 1) + (V_CT_RD_EN + 1) + (V_CT_RD_BRST + 1) + (V_CT_BUS_FREE + 1) - 1;
 
-reg   rst, clk, DC_MEM_WR_RQ, DC_DMA_WR_RQ, DC_MEM_RD_RQ, DC_DMA_RD_RQ, DC_KB_RD_RQ, IC_MEM_RD_RQ, DMA_MEM_WR_RQ;
+reg   rst, clk, DC_MEM_WR_RQ, DC_DMA_WR_RQ, DC_MEM_RD_RQ, DC_DMA_RD_RQ, DC_KB_RD_KBDR_RQ, DC_KB_RD_KBSR_RQ, IC_MEM_RD_RQ, DMA_MEM_WR_RQ;
 wire  DC_WR_ACK, DC_RD_ACK, IC_RD_ACK, DMA_WR_ACK, 
-                      MEM_WR, MEM_RD, DMA_WR, DMA_RD, KB_RD;
+                      MEM_WR, MEM_RD, DMA_WR, DMA_RD, KB_RD_KBDR, KB_RD_KBSR;
 
 arbiter #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT (
   .rst(rst), .clk(clk),
   .DC_MEM_WR_RQ(DC_MEM_WR_RQ), .DC_DMA_WR_RQ(DC_DMA_WR_RQ), 
   .DC_MEM_RD_RQ(DC_MEM_RD_RQ), .DC_DMA_RD_RQ(DC_DMA_RD_RQ), 
-  .DC_KB_RD_RQ(DC_KB_RD_RQ)  , .IC_MEM_RD_RQ(IC_MEM_RD_RQ), .DMA_MEM_WR_RQ(DMA_MEM_WR_RQ),
+  .DC_KB_RD_KBDR_RQ(DC_KB_RD_KBDR_RQ)  , .DC_KB_RD_KBSR_RQ(DC_KB_RD_KBSR_RQ), .IC_MEM_RD_RQ(IC_MEM_RD_RQ), .DMA_MEM_WR_RQ(DMA_MEM_WR_RQ),
   .DC_WR_ACK(DC_WR_ACK), .DC_RD_ACK(DC_RD_ACK), .IC_RD_ACK(IC_RD_ACK), .DMA_WR_ACK(DMA_WR_ACK), 
-  .MEM_WR(MEM_WR), .MEM_RD(MEM_RD), .DMA_WR(DMA_WR), .DMA_RD(DMA_RD), .KB_RD(KB_RD)
+  .MEM_WR(MEM_WR), .MEM_RD(MEM_RD), .DMA_WR(DMA_WR), .DMA_RD(DMA_RD), .KB_RD_KBDR(KB_RD_KBDR), .KB_RD_KBSR(KB_RD_KBSR)
 );
 
 integer FAILURES  = 0;
@@ -69,14 +69,18 @@ task assertSig;
   input integer idx;
   begin
     case(idx)
-      0: DC_MEM_WR_RQ  = 1'b1;
-      1: DC_DMA_WR_RQ  = 1'b1;
-      2: DC_MEM_RD_RQ  = 1'b1;
-      3: DC_DMA_RD_RQ  = 1'b1;
-      4: DC_KB_RD_RQ   = 1'b1;
-      5: IC_MEM_RD_RQ  = 1'b1;
-      6: DMA_MEM_WR_RQ = 1'b1;
-      default: ;
+      0: DC_MEM_WR_RQ         = 1'b1;
+      1: DC_DMA_WR_RQ         = 1'b1;
+      2: DC_MEM_RD_RQ         = 1'b1;
+      3: DC_DMA_RD_RQ         = 1'b1;
+      4: DC_KB_RD_KBDR_RQ     = 1'b1;
+      5: DC_KB_RD_KBSR_RQ     = 1'b1;
+      6: IC_MEM_RD_RQ         = 1'b1;
+      7: DMA_MEM_WR_RQ        = 1'b1;
+      8: begin
+        DC_KB_RD_KBDR_RQ      = 1'b1;
+        DC_KB_RD_KBSR_RQ      = 1'b1;
+      end
     endcase
   end
 endtask
@@ -85,14 +89,18 @@ task deassertSig;
   input integer idx;
   begin
     case(idx)
-      0: DC_MEM_WR_RQ  = 1'b0;
-      1: DC_DMA_WR_RQ  = 1'b0;
-      2: DC_MEM_RD_RQ  = 1'b0;
-      3: DC_DMA_RD_RQ  = 1'b0;
-      4: DC_KB_RD_RQ   = 1'b0;
-      5: IC_MEM_RD_RQ  = 1'b0;
-      6: DMA_MEM_WR_RQ = 1'b0;
-      default: ;
+      0: DC_MEM_WR_RQ         = 1'b0;
+      1: DC_DMA_WR_RQ         = 1'b0;
+      2: DC_MEM_RD_RQ         = 1'b0;
+      3: DC_DMA_RD_RQ         = 1'b0;
+      4: DC_KB_RD_KBDR_RQ     = 1'b0;
+      5: DC_KB_RD_KBSR_RQ     = 1'b0;
+      6: IC_MEM_RD_RQ         = 1'b0;
+      7: DMA_MEM_WR_RQ        = 1'b0;
+      8: begin
+        DC_KB_RD_KBDR_RQ      = 1'b0;
+        DC_KB_RD_KBSR_RQ      = 1'b0;
+      end
     endcase
   end
 endtask
@@ -100,48 +108,56 @@ endtask
 task checkOutputs;
   input integer idx;
   reg   [3:0]   ACK_EXP;
-  reg   [4:0]   RD_WR_EXP;
+  reg   [5:0]   RD_WR_EXP;
   begin
     case(idx)
       0: begin 
         ACK_EXP     = 1 << 3;
-        RD_WR_EXP   = ~(1 << 4);
+        RD_WR_EXP   = ~(1 << 5);
       end
       1: begin 
         ACK_EXP     = 1 << 3;
-        RD_WR_EXP   = ~(1 << 2);
+        RD_WR_EXP   = ~(1 << 3);
       end
       2: begin 
         ACK_EXP     = 1 << 2;
-        RD_WR_EXP   = ~(1 << 3);
+        RD_WR_EXP   = ~(1 << 4);
       end
       3: begin 
         ACK_EXP     = 1 << 2;
-        RD_WR_EXP   = ~(1 << 1);
+        RD_WR_EXP   = ~(1 << 2);
       end
       4: begin 
         ACK_EXP     = 1 << 2;
-        RD_WR_EXP   = ~(1 << 0);
+        RD_WR_EXP   = ~(1 << 1);
       end
       5: begin 
-        ACK_EXP     = 1 << 1;
-        RD_WR_EXP   = ~(1 << 3);
+        ACK_EXP     = 1 << 2;
+        RD_WR_EXP   = ~(1 << 0);
       end
       6: begin 
-        ACK_EXP     = 1 << 0;
+        ACK_EXP     = 1 << 1;
         RD_WR_EXP   = ~(1 << 4);
+      end
+      7: begin 
+        ACK_EXP     = 1 << 0;
+        RD_WR_EXP   = ~(1 << 5);
+      end
+      8: begin 
+        ACK_EXP     = 1 << 2;
+        RD_WR_EXP   = ~((1 << 0) | (1 << 1));
       end
     endcase
 
     if (({DC_WR_ACK,DC_RD_ACK,IC_RD_ACK,DMA_WR_ACK} !== ACK_EXP) ||
-        ({MEM_WR, MEM_RD, DMA_WR, DMA_RD, KB_RD} !== RD_WR_EXP)) begin
+        ({MEM_WR, MEM_RD, DMA_WR, DMA_RD, KB_RD_KBDR, KB_RD_KBSR} !== RD_WR_EXP)) begin
       FAILURES = FAILURES + 1;
       $display("FAILURE AT TIME %t. ACK_EXP = %b, ACK = %b, RD_WR_EXP = %b, RD_WR = %b\n", 
-                $time, ACK_EXP, {DC_WR_ACK,DC_RD_ACK,IC_RD_ACK,DMA_WR_ACK}, RD_WR_EXP, {MEM_WR, MEM_RD, DMA_WR, DMA_RD, KB_RD});
+                $time, ACK_EXP, {DC_WR_ACK,DC_RD_ACK,IC_RD_ACK,DMA_WR_ACK}, RD_WR_EXP, {MEM_WR, MEM_RD, DMA_WR, DMA_RD, KB_RD_KBDR, KB_RD_KBSR});
     end else begin
       SUCCESSES = SUCCESSES + 1;
       // $display("SUCCESS AT TIME %t. ACK_EXP = %b, ACK = %b, RD_WR_EXP = %b, RD_WR = %b\n", 
-      //           $time, ACK_EXP, {DC_WR_ACK,DC_RD_ACK,IC_RD_ACK,DMA_WR_ACK}, RD_WR_EXP, {MEM_WR, MEM_RD, DMA_WR, DMA_RD, KB_RD});
+      //           $time, ACK_EXP, {DC_WR_ACK,DC_RD_ACK,IC_RD_ACK,DMA_WR_ACK}, RD_WR_EXP, {MEM_WR, MEM_RD, DMA_WR, DMA_RD, KB_RD_KBDR, KB_RD_KBSR});
     end
   end
 endtask
@@ -183,7 +199,7 @@ endtask
 task assertAll;
   integer i;
   begin
-    for (i = 0; i < 7; i = i + 1) begin
+    for (i = 0; i < 8; i = i + 1) begin
       assertSig(i);
     end
   end
@@ -192,7 +208,7 @@ endtask
 task deassertAll;
   integer i;
   begin
-    for (i = 0; i < 7; i = i + 1) begin
+    for (i = 0; i < 8; i = i + 1) begin
       deassertSig(i);
     end
   end
@@ -215,42 +231,56 @@ initial begin
 
   testWrite(0);
   testWrite(1);
-  testWrite(6);
+  testWrite(7);
 
   testRead(2);
   testRead(3);
   testRead(4);
   testRead(5);
+  testRead(6);
+  testRead(8);
+
 
   // Now test multiple requests
 
   assertAll();
   deassertSig(1); // 0 and 1 are never simultaneously requested (D$ writes)
-  deassertSig(3); // 2, 3, and 4 are never simultaneously requested (D$ reads)
-  deassertSig(4); // 2, 3, and 4 are never simultaneously requested (D$ reads)
+  deassertSig(3); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
+  deassertSig(4); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
+  deassertSig(5); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
   testWrite(0);
   testRead(2);
-  testRead(5);
-  testWrite(6);
+  testRead(6);
+  testWrite(7);
 
   assertAll();
   deassertSig(0); // 0 and 1 are never simultaneously requested (D$ writes)
-  deassertSig(2); // 2, 3, and 4 are never simultaneously requested (D$ reads)
-  deassertSig(4); // 2, 3, and 4 are never simultaneously requested (D$ reads)
+  deassertSig(2); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
+  deassertSig(4); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
+  deassertSig(5); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
   testWrite(1);
   testRead(3);
-  testRead(5);
-  testWrite(6);
+  testRead(6);
+  testWrite(7);
 
   assertAll();
   deassertSig(0); // 0 and 1 are never simultaneously requested (D$ writes)
-  deassertSig(2); // 2, 3, and 4 are never simultaneously requested (D$ reads)
-  deassertSig(3); // 2, 3, and 4 are never simultaneously requested (D$ reads)
+  deassertSig(2); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
+  deassertSig(3); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
+  deassertSig(5); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
   testWrite(1);
   testRead(4);
-  testRead(5);
-  testWrite(6);
-  
+  testRead(6);
+  testWrite(7);
+
+  assertAll();
+  deassertSig(0); // 0 and 1 are never simultaneously requested (D$ writes)
+  deassertSig(2); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
+  deassertSig(3); // 2, 3, and 4/5 are never simultaneously requested (D$ reads)
+  testWrite(1);
+  testRead(8);
+  testRead(6);
+  testWrite(7);
 
   #(8*CYCLE_TIME);
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
