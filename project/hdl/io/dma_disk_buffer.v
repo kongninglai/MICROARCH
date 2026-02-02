@@ -1,6 +1,6 @@
 module dma_disk_buffer (
   input              clk, rst, start_xfer,
-  input      [31:0]  disk_addr,
+  input      [31:0]  disk_addr, start_mem_addr,
   input      [7:0]   buf_addr,
 
   output reg         buf_valid,
@@ -35,8 +35,13 @@ always @(posedge clk) begin
     busy      <= 1'b1;
     buf_valid <= 1'b0;
     #(750);
-    for (idx = 0; idx < 4096; idx = idx + 1)
-      buffer[idx] = disk_read_byte(disk_addr, idx[11:0]);
+    for (idx = 0; idx < 4096; idx = idx + 1) begin
+      if ((start_mem_addr[3:0] !== 4'b0000) && (idx[31:0] < {{27{1'b0}},start_mem_addr[3:0]})) begin
+        buffer[idx] = 0;
+      end else begin
+        buffer[idx] = disk_read_byte(disk_addr, (idx[11:0] - start_mem_addr[3:0]));
+      end
+    end
     buf_valid <= 1'b1;
     busy      <= 1'b0;
   end
