@@ -2,6 +2,8 @@ arbiter_tb                     FAILURES=0      SUCCESSES=19
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
 decoder4_16_tb                 FAILURES=0      SUCCESSES=16    
 decoder6_64_tb                 FAILURES=0      SUCCESSES=64    
+dff32_tb                       FAILURES=0      SUCCESSES=160   
+dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
 eq_1b_tb                       FAILURES=0      SUCCESSES=4     
 eq_2b_tb                       FAILURES=0      SUCCESSES=16    
 eq_32b_tb                      FAILURES=0      SUCCESSES=262   
@@ -13,6 +15,8 @@ gt9_4b_tb                      FAILURES=0      SUCCESSES=16
 gt99_8b_tb                     FAILURES=0      SUCCESSES=256   
 HA_32b_tb                      FAILURES=0      SUCCESSES=261   
 HA_8b_tb                       FAILURES=0      SUCCESSES=65536 
+ioreg32_tb                     FAILURES=0      SUCCESSES=160   
+kmu_tb                         FAILURES=0      SUCCESSES=6     
 lshf_const_tb                  FAILURES=0      SUCCESSES=4096  
 lshf_var_32b_tb                FAILURES=0      SUCCESSES=4096  
 main_memory_tb                 FAILURES=0      SUCCESSES=8192  

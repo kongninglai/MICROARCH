@@ -3,7 +3,7 @@ set -euo pipefail
 
 COMMIT_MSG="${1:-}"
 
-ROOT="$HOME/MICROARCH/project/hvl/local-lib"
+ROOT="$HOME/MICROARCH/project/hvl/"
 RESULTS="$HOME/MICROARCH/project/scripts/regression/sim_results.txt"
 TMP_RESULTS="$(mktemp -d)"
 
@@ -66,7 +66,7 @@ while read -r leaf_dir; do
   run_one_sim "$leaf_dir" &
   pids+=($!)
 done < <(
-  find "$ROOT" -type d -print | while read -r dir; do
+  find "$ROOT" -mindepth 1 -type d -print | while read -r dir; do
     if ! find "$dir" -mindepth 1 -type d | read; then
       echo "$dir"
     fi
