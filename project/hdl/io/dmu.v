@@ -37,8 +37,7 @@ module dmu #(
 ) (
   input               rst, clk, RD, WR,
   input     [15:0]    WR_mask,
-  inout     [31:0]    DATA_BUS,
-  inout     [14:0]    ADDR_BUS
+  inout     [31:0]    DATA_BUS
 );
 
 wire    [0:0]   CT_HIZ_PROT,CT_RD_BRST,CT_BUS_FREE,CT_WR_ADDR,CT_WR_EN,CT_WR_BRST;

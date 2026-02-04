@@ -46,11 +46,8 @@ reg   [15:0]  WR_mask, WR_mask_val;
 
 reg   [31:0]  DATA_driver;
 reg           DATA_driver_enable;
-reg   [14:0]  ADDR_driver;
-reg           ADDR_driver_enable;
 
 wire  [31:0]  DATA_BUS = DATA_driver_enable ? DATA_driver : {32{1'bz}};
-wire   [14:0]  ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {15{1'bz}};
 
 wire  [2:0]   STATE = {dmu_tb.DUT.Q2, dmu_tb.DUT.Q1, dmu_tb.DUT.Q0};
 wire  [2:0]   NEXT_STATE = {dmu_tb.DUT.D2, dmu_tb.DUT.D1, dmu_tb.DUT.D0};
@@ -58,8 +55,7 @@ wire  [2:0]   NEXT_STATE = {dmu_tb.DUT.D2, dmu_tb.DUT.D1, dmu_tb.DUT.D0};
 
 dmu #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT (
   .rst(rst), .clk(clk), .RD(RD), .WR(WR), .WR_mask(WR_mask),
-  .DATA_BUS(DATA_BUS),
-  .ADDR_BUS(ADDR_BUS)
+  .DATA_BUS(DATA_BUS)
 );
 
 integer SUCCESSES = 0;
@@ -124,8 +120,6 @@ task read_addr_data;
   begin
     #(CYCLE_TIME);                                    // Wait for transition to [001]
     DATA_driver_enable    <= 1'b0;                    // Release data bus
-    ADDR_driver_enable    <= 1'b1;                    // Take address bus
-    ADDR_driver           <= ADDR;                    // Drive address value
     #((V_CT_HIZ_PROT + 1) * CYCLE_TIME);              // Wait for transition to [010]
     #((V_CT_RD_EN + 1) * CYCLE_TIME);                 // Wait for transition to [011]
     #(((RD_DIS_TO_DATA_V) * CYCLE_TIME) - DELAY_ADJ); // Wait for data to become valid
@@ -136,8 +130,6 @@ task read_addr_data;
     check_read(ADDR+8,8);                             // Check D2
     #((RD_CLK_SPACING-1) * CYCLE_TIME);               // Wait for deasserting address
     #(DELAY_ADJ);           
-    ADDR_driver_enable    <= 1'b0;                    // Release address bus
-    ADDR_driver           <= 'bz;                     // Release address bus
     #((CYCLE_TIME)-DELAY_ADJ);                        // Wait for data to become valid
     check_read(ADDR+12,12);                           // Check D3
     #(((RD_TO_BUS_FREE) * CYCLE_TIME));     // Wait for data bus to release
@@ -176,8 +168,6 @@ task write_addr_data;
     #(DELAY_ADJ);                         // Simulate tristate bus driver delay
     DATA_driver_enable    <= 1'b1;        // Take data bus
     DATA_driver           <= DATA;        // Drive D0 value
-    ADDR_driver_enable    <= 1'b1;        // Take address bus
-    ADDR_driver           <= ADDR;        // Drive address value
     #((V_CT_WR_ADDR + 1) * CYCLE_TIME);   // Wait for transition to [110]
     #((V_CT_WR_EN + 1) * CYCLE_TIME);     // Wait for transition to [111]
 
@@ -190,8 +180,6 @@ task write_addr_data;
     #((WR_CLK_SPACING) * CYCLE_TIME);     // Wait for chance to change data
     DATA_driver_enable    <= 1'b0;        // Release data bus
     DATA_driver           <= 'bz;         // Release data bus
-    ADDR_driver_enable    <= 1'b0;        // Release address bus
-    ADDR_driver           <= 'bz;         // Release address bus
   end
 endtask
 
@@ -199,8 +187,6 @@ initial begin
   WR_mask_val           = 16'h0000;
   WR_mask               <= WR_mask_val;
   rst = 1'b1;
-  ADDR_driver_enable    <= 1'b1;
-  ADDR_driver           <= 15'd0;
   WR                    <= 1'b1;
   // WR_mask               <= 16'hFFFF;
   RD                    <= 1'b1;
