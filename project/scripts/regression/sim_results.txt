@@ -6,6 +6,7 @@ dff32_tb                       FAILURES=0      SUCCESSES=160
 disk_rank_tb                   FAILURES=0      SUCCESSES=1     
 disk_regs_tb                   FAILURES=0      SUCCESSES=4     
 dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
+dmu_tb                         FAILURES=0      SUCCESSES=8192  
 eq_1b_tb                       FAILURES=0      SUCCESSES=4     
 eq_2b_tb                       FAILURES=0      SUCCESSES=16    
 eq_32b_tb                      FAILURES=0      SUCCESSES=262   
