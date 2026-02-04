@@ -52,10 +52,12 @@ wire  [31:0]  DATA_BUS = DATA_driver_enable ? DATA_driver : {32{1'bz}};
 wire  [2:0]   STATE = {dmu_tb.DUT.Q2, dmu_tb.DUT.Q1, dmu_tb.DUT.Q0};
 wire  [2:0]   NEXT_STATE = {dmu_tb.DUT.D2, dmu_tb.DUT.D1, dmu_tb.DUT.D0};
 
+wire  [127:0] DMA_config;
+
 
 dmu #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT (
   .rst(rst), .clk(clk), .RD(RD), .WR(WR), .WR_mask(WR_mask),
-  .DATA_BUS(DATA_BUS)
+  .DATA_BUS(DATA_BUS), .DMA_config(DMA_config)
 );
 
 integer SUCCESSES = 0;

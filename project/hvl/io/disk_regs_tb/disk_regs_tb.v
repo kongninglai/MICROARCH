@@ -58,13 +58,15 @@ integer i;
 
 reg   [15:0]                WR_mask_val;
 
+wire  [127:0]  DMA_config;
+
 
 disk_regs #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT 
 (
   .clk(clk), .rst(rst),
   .WR_mask(WR_mask),
 	.WR(WR), .OE(OE),
-  .DIO(DIO)
+  .DIO(DIO), .DMA_config(DMA_config)
 );
 
 integer FAILURES  = 0;

@@ -3,10 +3,12 @@ module disk_rank_behav #(
 ) (
   input [3:0]     WR,
 	input           OE,
-	inout [31:0]    DIO
+	inout [31:0]    DIO,
+  output [31:0]  DMA_config
 );
-  
+
   reg [31:0] disk_rank_mem;
+  assign DMA_config = disk_rank_mem;
 
   always @(*) begin
     if ((WR[3] == 1'b0)) begin

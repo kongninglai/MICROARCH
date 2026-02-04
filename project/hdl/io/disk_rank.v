@@ -3,10 +3,13 @@ module disk_rank #(
 ) (
   input [3:0]     WR,
 	input           OE,
-	inout [31:0]    DIO 
+	inout [31:0]    DIO,
+  output  [31:0]  DMA_config
 );
 
+
 wire    [31:0]    DATA_OUT;
+assign DMA_config = DATA_OUT;
 
 dff32         dma_register( .WE(WR), .CLR(4'hF), .D(DIO),
                             .PRE(1'b1), .Q(DATA_OUT), .QBAR());

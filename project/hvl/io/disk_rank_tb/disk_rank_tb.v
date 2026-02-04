@@ -16,16 +16,18 @@ reg   [7:0]                 byte_val;
 wire  [31:0]  DIO     = DIO_driver_enable ? DIO_driver : {32{1'bz}};
 wire  [31:0]  DIO_exp = DIO_driver_enable ? DIO_driver : {32{1'bz}};
 
+wire  [31:0]  DMA_config, DMA_config_exp;
+
 integer i;
 
 disk_rank DUT(
 	.WR(WR), .OE(OE),
-  .DIO(DIO)
+  .DIO(DIO), .DMA_config(DMA_config)
 );
 
 disk_rank_behav REF(
 	.WR(WR), .OE(OE),
-  .DIO(DIO_exp)
+  .DIO(DIO_exp), .DMA_config(DMA_config_exp)
 );
 
 integer FAILURES  = 0;
@@ -33,10 +35,10 @@ integer SUCCESSES = 0;
 
 task check;
   input [31:0]  DIO, DIO_exp;
-  if (DIO !== DIO_exp) begin
+  if (DIO !== DIO_exp || DMA_config !== DMA_config_exp) begin
     FAILURES = FAILURES + 1;
-    $display("FAILURE AT TIME %t. DIO_exp = %h, DIO = %h\n", 
-              $time, DIO_exp, DIO);
+    $display("FAILURE AT TIME %t. DIO_exp = %h, DIO = %h, DMA_config_exp = %h, DMA_config = %h\n", 
+              $time, DIO_exp, DIO, DMA_config_exp, DMA_config);
   end else begin
     SUCCESSES = SUCCESSES + 1;
   end

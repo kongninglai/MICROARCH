@@ -37,7 +37,8 @@ module dmu #(
 ) (
   input               rst, clk, RD, WR,
   input     [15:0]    WR_mask,
-  inout     [31:0]    DATA_BUS
+  inout     [31:0]    DATA_BUS,
+  output    [127:0]   DMA_config    
 );
 
 wire    [0:0]   CT_HIZ_PROT,CT_RD_BRST,CT_BUS_FREE,CT_WR_ADDR,CT_WR_EN,CT_WR_BRST;
@@ -109,7 +110,7 @@ disk_regs #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DEL
   .clk(clk), .rst(rst),
   .WR_mask(WR_mask_out),
 	.WR(WR_out), .OE(OE_out),
-  .DIO(DIO)
+  .DIO(DIO), .DMA_config(DMA_config)
 );
 
 /* Inverters */
