@@ -1,16 +1,16 @@
-module  dmu_tb;
+module  dmac_tb;
 
 initial begin
-  $vcdplusfile("dmu_tb.dump.vpd");
-  $vcdpluson(0, dmu_tb); 
-  $vcdpluson(0, dmu_tb.DUT); 
+  $vcdplusfile("dmac_tb.dump.vpd");
+  $vcdpluson(0, dmac_tb); 
+  $vcdpluson(0, dmac_tb.DUT); 
 end
 
 localparam MEM_BYTE_CAPACITY = 32768;
 localparam BURST_SIZE=4;
 /* IMPORTANT: All parameters assume DELAY_ADJ < CYCLE_TIME <= 17 */
 // Next few parameters are in units of ns
-localparam DELAY_ADJ         = 7;
+localparam DELAY_ADJ         = 0;
 localparam ADDR_SETUP        = 25 + DELAY_ADJ;
 localparam DATA_SETUP        = 25 + DELAY_ADJ;
 localparam CE_SETUP          = 35;
@@ -39,25 +39,30 @@ localparam V_CT_BUS_FREE     = RD_TO_BUS_FREE - 1;
 localparam V_CT_WR_ADDR      = ADDR_EN_TO_WR_EN - 1;
 localparam V_CT_WR_EN        = WR_CLK_SPACING - 1;
 localparam V_CT_WR_BRST      = (WR_DIS_TO_DATA_EN + ((BURST_SIZE-1) * WR_CLK_SPACING)) - 1;
+localparam V_CT_WR_ACK       = ADDR_EN_TO_WR_EN + WR_CLK_SPACING + WR_DIS_TO_DATA_EN - 1;
 
-reg     rst, clk, RD, WR;
+reg     rst, clk, DMA_RD, DMA_WR, DMA_WR_ACK;
 
-reg   [15:0]  WR_mask, WR_mask_val;
+reg   [15:0]  WR_mask_driver, WR_mask_val;
+reg           WR_mask_driver_enable;
 
 reg   [31:0]  DATA_driver;
 reg           DATA_driver_enable;
+reg   [14:0]  ADDR_driver;
+reg           ADDR_driver_enable;
 
+wire  [15:0]  WR_mask  = WR_mask_driver_enable ? WR_mask_driver : {16{1'bz}};
 wire  [31:0]  DATA_BUS = DATA_driver_enable ? DATA_driver : {32{1'bz}};
+wire  [14:0]  ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {15{1'bz}};
 
-wire  [2:0]   STATE = {dmu_tb.DUT.Q2, dmu_tb.DUT.Q1, dmu_tb.DUT.Q0};
-wire  [2:0]   NEXT_STATE = {dmu_tb.DUT.D2, dmu_tb.DUT.D1, dmu_tb.DUT.D0};
+wire  [2:0]   STATE = {dmac_tb.DUT.Q2, dmac_tb.DUT.Q1, dmac_tb.DUT.Q0};
+wire  [2:0]   NEXT_STATE = {dmac_tb.DUT.D2, dmac_tb.DUT.D1, dmac_tb.DUT.D0};
 
-wire  [127:0] DMA_config;
+wire          DMA_MEM_WR_RQ, DMA_INT;
 
-
-dmu #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT (
-  .rst(rst), .clk(clk), .RD(RD), .WR(WR), .WR_mask(WR_mask),
-  .DATA_BUS(DATA_BUS), .DMA_config(DMA_config)
+dmac #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT (
+  .rst(rst), .clk(clk), .DMA_RD(DMA_RD), .DMA_WR(DMA_WR), .WR_mask(WR_mask),
+  .DATA_BUS(DATA_BUS), .ADDR_BUS(ADDR_BUS), .DMA_WR_ACK(DMA_WR_ACK), .DMA_MEM_WR_RQ(DMA_MEM_WR_RQ), .DMA_INT(DMA_INT)
 );
 
 integer SUCCESSES = 0;
@@ -77,10 +82,16 @@ task check_read;
   input integer mask_low;
   reg   [31:0]  DIO_exp;
   begin
-    DIO_exp[7:0]    = WR_mask_val[mask_low]   ? 8'h00 : ADDR[7:0];
-    DIO_exp[15:8]   = WR_mask_val[mask_low+1] ? 8'h00 : {1'b0, ADDR[14:8]};
-    DIO_exp[23:16]  = WR_mask_val[mask_low+2] ? 8'h00 : 8'h00;
-    DIO_exp[31:24]  = WR_mask_val[mask_low+3] ? 8'h00 : 8'h00;
+    if (ADDR == 12)
+      DIO_exp = 1;
+    else if (ADDR == 8)
+      DIO_exp = 200;
+    else begin
+      DIO_exp[7:0]    = WR_mask_val[mask_low]   ? 8'h00 : ADDR[7:0];
+      DIO_exp[15:8]   = WR_mask_val[mask_low+1] ? 8'h00 : {1'b0, ADDR[14:8]};
+      DIO_exp[23:16]  = WR_mask_val[mask_low+2] ? 8'h00 : 8'h00;
+      DIO_exp[31:24]  = WR_mask_val[mask_low+3] ? 8'h00 : 8'h00;
+    end
     if (DATA_BUS !== DIO_exp) begin
       FAILURES = FAILURES + 1;
       $display("FAILURE AT TIME %t. DIO_exp = %h, DATA_BUS = %h\n", 
@@ -97,13 +108,13 @@ task read;
   begin
     // Currently in IDLE [000]
     // Force transition to [001]
-    RD <= 0;
-    WR <= 1;
+    DMA_RD <= 0;
+    DMA_WR <= 1;
     // WR_mask               <= 16'hFFFF;
     #(CYCLE_TIME);
 
     // Currently in [001]
-    RD <= 1;
+    DMA_RD <= 1;
     #((V_CT_HIZ_PROT + 1) * CYCLE_TIME);
 
     // Currently in [010]
@@ -144,12 +155,13 @@ task write;
     #(DELAY_ADJ);                                     // Simulate tristate bus driver delay
 
     // Force transition to [101]
-    RD                    <= 1'b1;
-    WR                    <= 1'b0;
-    WR_mask               <= WR_mask_val;
+    DMA_RD                    <= 1'b1;
+    DMA_WR                    <= 1'b0;
+    WR_mask_driver            <= WR_mask_val;
+    WR_mask_driver_enable     <= 1'b1;
     #(CYCLE_TIME);
     // Currently in [101]
-    WR                    <= 1'b1;
+    DMA_WR                    <= 1'b1;
     // WR_mask               <= 16'hFFFF;
     #((V_CT_WR_ADDR + 1) * CYCLE_TIME);
 
@@ -176,9 +188,9 @@ task write_addr_data;
     #((WR_DIS_TO_DATA_EN) * CYCLE_TIME);  // Wait for chance to change data
     DATA_driver           <= DATA+4;      // Drive D1 value
     #((WR_CLK_SPACING) * CYCLE_TIME);     // Wait for chance to change data
-    DATA_driver           <= DATA+8;      // Drive D2 value
+    DATA_driver           <= 200;      // Drive D2 value
     #((WR_CLK_SPACING) * CYCLE_TIME);     // Wait for chance to change data
-    DATA_driver           <= DATA+12;     // Drive D3 value
+    DATA_driver           <= 1;           // Drive D3 value
     #((WR_CLK_SPACING) * CYCLE_TIME);     // Wait for chance to change data
     DATA_driver_enable    <= 1'b0;        // Release data bus
     DATA_driver           <= 'bz;         // Release data bus
@@ -187,11 +199,13 @@ endtask
 
 initial begin
   WR_mask_val           = 16'h0000;
-  WR_mask               <= WR_mask_val;
+  WR_mask_driver        <= WR_mask_val;
+  DMA_WR_ACK            <= 0;
+  ADDR_driver_enable    <= 0;
   rst = 1'b1;
-  WR                    <= 1'b1;
+  DMA_WR                    <= 1'b1;
   // WR_mask               <= 16'hFFFF;
-  RD                    <= 1'b1;
+  DMA_RD                    <= 1'b1;
   DATA_driver_enable    <= 1'b0;
   DATA_driver           <= {32{1'bz}};
   #(CYCLE_TIME);
@@ -201,7 +215,7 @@ initial begin
   #(0.5*CYCLE_TIME);
 
 
-  for (i = 0; i < 32768; i = i + 16) begin
+  for (i = 0; i < 16; i = i + 16) begin
     
     fork
       write();
@@ -212,7 +226,13 @@ initial begin
       read_addr_data(i);
     join
   end
-  #(10*CYCLE_TIME);
+  #(80*CYCLE_TIME);
+  DMA_WR_ACK <= 1;
+  #(CYCLE_TIME);
+  // DMA_WR_ACK <= 0;
+  WR_mask_driver_enable     <= 1'b0;
+
+  #(400*CYCLE_TIME);
 
 
 

@@ -2,7 +2,7 @@ module disk_rank_behav #(
   parameter CHIP_BIT_WIDTH=8
 ) (
   input [3:0]     WR,
-	input           OE,
+	input           rst, OE,
 	inout [31:0]    DIO,
   output [31:0]  DMA_config
 );

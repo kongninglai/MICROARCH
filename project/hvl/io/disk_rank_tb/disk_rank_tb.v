@@ -7,6 +7,7 @@ end
 
 localparam CHIP_BIT_WIDTH=8;
 
+reg          rst;
 reg   [3:0]  WR;
 reg                         OE;
 reg   [31:0]  DIO_driver;
@@ -21,12 +22,12 @@ wire  [31:0]  DMA_config, DMA_config_exp;
 integer i;
 
 disk_rank DUT(
-	.WR(WR), .OE(OE),
+	.WR(WR), .rst(rst), .OE(OE),
   .DIO(DIO), .DMA_config(DMA_config)
 );
 
 disk_rank_behav REF(
-	.WR(WR), .OE(OE),
+	.WR(WR), .rst(rst), .OE(OE),
   .DIO(DIO_exp), .DMA_config(DMA_config_exp)
 );
 
@@ -55,6 +56,7 @@ initial begin
 end
 
 initial begin
+  rst                 = 1;
   WR                  = 4'hF;
   OE                  = 1'b1;
   DIO_driver_enable   = 1'b0;

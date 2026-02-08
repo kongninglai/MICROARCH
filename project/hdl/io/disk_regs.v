@@ -76,7 +76,7 @@ for (rank_idx = 0; rank_idx < BURST_SIZE; rank_idx = rank_idx + 1) begin : rank_
   assign WR_mask_gated  = WR_mask_P[WR_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])];
   assign OE_gated       = OE_P[(RD_EN_DURATION)+RD_CLK_SPACING*(RANK_IDX_WIRE[$clog2(BURST_SIZE)-1:0])];
 
-  disk_rank one_disk_reg(.WR(WR_mask_gated[(4*(rank_idx) + 3):(4*rank_idx)]), .OE(OE_gated), .DIO(DIO),
+  disk_rank one_disk_reg(.WR(WR_mask_gated[(4*(rank_idx) + 3):(4*rank_idx)]), .rst(rst), .OE(OE_gated), .DIO(DIO),
                          .DMA_config(DMA_config[(32*(rank_idx) + 31):(32*rank_idx)]));
 end
   
