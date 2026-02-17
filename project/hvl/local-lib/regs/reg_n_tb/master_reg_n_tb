@@ -1,0 +1,6 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+~/MICROARCH/project/hdl/local-lib/regs/reg_n.v
+~/MICROARCH/project/hvl/local-lib/regs/reg_n_tb/reg_n_behav.v
+~/MICROARCH/project/hvl/local-lib/regs/reg_n_tb/reg_n_tb.v
