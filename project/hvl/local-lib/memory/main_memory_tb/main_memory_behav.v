@@ -1,4 +1,4 @@
-module main_memory #(
+module main_memory_behav #(
   parameter MEM_BYTE_CAPACITY=32768,
   parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
 
@@ -46,9 +46,9 @@ module main_memory #(
 
 genvar rank_idx;
 generate
-  for (rank_idx = 0; rank_idx < RANK_COUNT; rank_idx = rank_idx + 1) begin : rank_generation
-    rank #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) rank_inst
-    ( 
+  for (rank_idx = 0; rank_idx < RANK_COUNT; rank_idx = rank_idx + 1) begin : GEN_BEHAV_RANKS
+    rank_behav #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) rank_behav_inst
+    (
       .A  
       (
         A 

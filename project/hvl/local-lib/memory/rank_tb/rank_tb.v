@@ -16,24 +16,26 @@ localparam CHIP_BIT_WIDTH=8;
 localparam CHIP_BYTE_WIDTH=CHIP_BIT_WIDTH/8;
 localparam CHIP_ROW_COUNT=128;
 localparam CHIP_BYTE_CAPACITY=CHIP_ROW_COUNT*CHIP_BYTE_WIDTH;
-localparam RANK_BIT_WIDTH=32;
+localparam CHIP_COUNT=MEM_BYTE_CAPACITY/CHIP_BYTE_CAPACITY;
+localparam BUS_BIT_WIDTH=32;
+localparam RANK_BIT_WIDTH=128;
+localparam RANK_BURST_SIZE=RANK_BIT_WIDTH/BUS_BIT_WIDTH;
 localparam CHIPS_PER_RANK=RANK_BIT_WIDTH/CHIP_BIT_WIDTH;
 localparam RANK_BYTE_CAPACITY=CHIP_BYTE_CAPACITY*CHIPS_PER_RANK;
 localparam RANK_COUNT=MEM_BYTE_CAPACITY/RANK_BYTE_CAPACITY;
 localparam RANK_IDX_WIDTH=$clog2(RANK_COUNT);
 localparam RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK);
 
-reg   [RANK_ADDR_WIDTH-1:0] A;
-reg   [CHIPS_PER_RANK-1:0]  WR;
-reg                         OE, CE;
-reg   [RANK_BIT_WIDTH-1:0]  DIO_driver;
-reg                         DIO_driver_enable;
-reg   [7:0]                 byte_val;
+reg   [CHIPS_PER_RANK*RANK_ADDR_WIDTH-1:0]  A;
+reg   [CHIPS_PER_RANK-1:0]                  WR;
+reg   [CHIPS_PER_RANK-1:0]                  OE, CE;
+reg   [RANK_BIT_WIDTH-1:0]                  DIO_driver;
+reg                                         DIO_driver_enable;
 
 wire  [RANK_BIT_WIDTH-1:0]  DIO     = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
 wire  [RANK_BIT_WIDTH-1:0]  DIO_exp = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
 
-integer i;
+integer i, j;
 
 rank #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT(
   .A(A),
@@ -51,7 +53,6 @@ integer FAILURES  = 0;
 integer SUCCESSES = 0;
 
 task check;
-  input [RANK_BIT_WIDTH-1:0]  DIO, DIO_exp;
   if (DIO !== DIO_exp) begin
     FAILURES = FAILURES + 1;
     $display("FAILURE AT TIME %t. DIO_exp = %h, DIO = %h\n", 
@@ -61,7 +62,7 @@ task check;
   end
 endtask
 
-localparam CYCLE_TIME = 500;
+localparam CYCLE_TIME = 200;
 
 reg clk;
 initial begin
@@ -76,65 +77,65 @@ initial begin
   // Apply test vectors (active low WR, OE, CE)
   // Do a write phase (sequential) and then a read back phase to check
 
-  A                   = {MEM_ADDR_WIDTH{1'b0}};
-  WR                  = 4'hF;
-  OE                  = 1'b1;
-  CE                  = 1'b1;
-  DIO_driver_enable   = 1'b0;
-  DIO_driver          = {RANK_BIT_WIDTH{1'bz}};
-
-  byte_val = 8'h00;
+  A                   <= 0;
+  WR                  <= {CHIPS_PER_RANK{1'b1}};
+  OE                  <= {CHIPS_PER_RANK{1'b1}};
+  CE                  <= {CHIPS_PER_RANK{1'b1}};
+  DIO_driver_enable   <= 1'b0;
+  DIO_driver          <= {RANK_BIT_WIDTH{1'bz}};
 
   #(1.5*CYCLE_TIME);
 
   // Write phase
-  for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 4) begin
+  for (i = 0; i < CHIP_ROW_COUNT; i = i + 1) begin
     
     #(CYCLE_TIME);
-    A = i[MEM_ADDR_WIDTH-1:0];
-    DIO_driver_enable = 1'b1;
-    DIO_driver[31:24] = byte_val + 3;
-    DIO_driver[23:16] = byte_val + 2;
-    DIO_driver[15:8] = byte_val + 1;
-    DIO_driver[7:0] = byte_val + 0;
-    byte_val = byte_val + 4;
+    for (j = 0; j < CHIPS_PER_RANK; j = j + 1) begin
+      A[j*RANK_ADDR_WIDTH +: RANK_ADDR_WIDTH] 
+          <= i[RANK_ADDR_WIDTH-1:0];
+    end
+    DIO_driver_enable <= 1'b1;
+    DIO_driver        <= {4{$random}};
 
     #(CYCLE_TIME);
-    CE <= 1'b0;
-    WR <= 4'h0;
-    OE <= 1'b1;
+    CE      <= 0;
+    WR      <= $random;
+    OE      <= {CHIPS_PER_RANK{1'b1}};
 
     #(CYCLE_TIME);
-    WR <= 4'hF;
-    CE <= 1'b1;
+    WR      <= {CHIPS_PER_RANK{1'b1}};
+    CE      <= {CHIPS_PER_RANK{1'b1}};
 
   end
 
 
   // Stop write
   #(CYCLE_TIME);
-  WR          <= 4'hF;
-  CE          <= 1'b1;
+  WR                <= {CHIPS_PER_RANK{1'b1}};
+  CE                <= {CHIPS_PER_RANK{1'b1}};
   DIO_driver_enable <= 1'b0;
-  DIO_driver  <= {RANK_BIT_WIDTH{1'bz}};
+  DIO_driver        <= {RANK_BIT_WIDTH{1'bz}};
 
   // Read back
-  for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 4) begin
+  for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 16) begin
     #(CYCLE_TIME);
 
-    A  <= i[MEM_ADDR_WIDTH-1:0];
-    CE <= 1'b0;
-    WR <= 4'hF;
-    OE <= 1'b0;
+    for (j = 0; j < CHIPS_PER_RANK; j = j + 1) begin
+      A[j*RANK_ADDR_WIDTH +: RANK_ADDR_WIDTH] 
+          <= i[RANK_ADDR_WIDTH-1:0];
+    end
+    CE      <= 0;
+    WR      <= {CHIPS_PER_RANK{1'b1}};
+    OE      <= 0;
 
     #(CYCLE_TIME/2);
-    check(DIO, DIO_exp);
+    check();
     #(CYCLE_TIME/2);
   end
 
   #(CYCLE_TIME);
-  CE <= 1'b1;
-  OE <= 1'b1;
+  CE  <= {CHIPS_PER_RANK{1'b1}};
+  OE  <= {CHIPS_PER_RANK{1'b1}};
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
