@@ -66,11 +66,7 @@ while read -r leaf_dir; do
   run_one_sim "$leaf_dir" &
   pids+=($!)
 done < <(
-  find "$ROOT" -mindepth 1 -type d -print | while read -r dir; do
-    if ! find "$dir" -mindepth 1 -type d | read; then
-      echo "$dir"
-    fi
-  done
+  find "$ROOT" -type d -links 2
 )
 
 for pid in "${pids[@]}"; do

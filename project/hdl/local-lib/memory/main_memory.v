@@ -22,20 +22,16 @@ module main_memory #(
       The point of multiplying by 10 is to allow cycle time to have increments of 0.1 ns 
       while still using integer math.
   */
-  parameter ADDR_SETUP_X10        = 251,  /* Add 0.1 ns for dff output delay */
-  parameter DATA_SETUP_X10        = 251,  /* Add 0.1 ns for dff output delay */
-  parameter CE_SETUP_X10          = 351,  /* Add 0.1 ns for dff output delay */
-  parameter DOE_TIME_X10          = 600,
-  parameter MUX16_TIME_X10        = 12,   /* Add 0.2 ns for dff setup time */
-  parameter HZ_TIME_X10           = 175,
-
-  parameter CYCLE_TIME_X10        = 100,
+  parameter ADDR_SETUP_X10            = 270,  /* Add 2 ns for state transition comb logic delay */
+  parameter CE_SETUP_X10              = 370,  /* Add 2 ns for state transition comb logic delay */
+  parameter DOE_TIME_X10              = 620,  /* Add 2 ns for state transition comb logic delay */
+  parameter HZ_TIME_X10               = 175,
+  parameter CYCLE_TIME_X10            = 100,
 
   /* Next few parameters are in units of cycles */
-  parameter RD_EN_CYCLES      = (((DOE_TIME_X10 + MUX16_TIME_X10) / CYCLE_TIME_X10)   + 1),
-
-  parameter ADDR_EN_TO_WR_EN_CYCLES     = ((ADDR_SETUP_X10  / CYCLE_TIME_X10)   + 1),
-  parameter WR_AND_DATA_EN_CYCLES       = ((CE_SETUP_X10  / CYCLE_TIME_X10)   + 1)
+  parameter RD_EN_CYCLES              = ((DOE_TIME_X10 / CYCLE_TIME_X10)   + 1),
+  parameter ADDR_EN_TO_WR_EN_CYCLES   = ((ADDR_SETUP_X10  / CYCLE_TIME_X10)   + 1),
+  parameter WR_AND_DATA_EN_CYCLES     = ((CE_SETUP_X10  / CYCLE_TIME_X10)   + 1)
 
 ) (
   input                                                     clk, rst,

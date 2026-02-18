@@ -1,0 +1,6 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+~/MICROARCH/project/hdl/local-lib/gates/big_and.v
+~/MICROARCH/project/hdl/local-lib/adders/increment_32b.v
+~/MICROARCH/project/hvl/local-lib/adders/increment_32b_tb/increment_32b_behav.v
+~/MICROARCH/project/hvl/local-lib/adders/increment_32b_tb/increment_32b_tb.v
