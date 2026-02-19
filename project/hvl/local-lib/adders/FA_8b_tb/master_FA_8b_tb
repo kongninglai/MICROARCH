@@ -4,6 +4,6 @@
 ~/MICROARCH/project/hdl/local-lib/gates/xor3LL.v
 ~/MICROARCH/project/hdl/local-lib/adders/gen_prop.v
 ~/MICROARCH/project/hdl/local-lib/adders/gen_prop_2.v
-~/MICROARCH/project/hdl/local-lib/adders/HA_8b.v
-~/MICROARCH/project/hvl/local-lib/adders/HA_8b_tb/HA_8b_behav.v
-~/MICROARCH/project/hvl/local-lib/adders/HA_8b_tb/HA_8b_tb.v
+~/MICROARCH/project/hdl/local-lib/adders/FA_8b.v
+~/MICROARCH/project/hvl/local-lib/adders/FA_8b_tb/FA_8b_behav.v
+~/MICROARCH/project/hvl/local-lib/adders/FA_8b_tb/FA_8b_tb.v

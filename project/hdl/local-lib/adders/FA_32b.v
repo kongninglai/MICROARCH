@@ -1,6 +1,7 @@
-module PA_32b (
+module FA_32b (
   input		[31:0]	  in0, in1,
-	output	[31:0]	  s
+  input             cin,
+	output	[31:0]	  s, cout
 );
 	
 	// Stage 0
@@ -9,7 +10,7 @@ module PA_32b (
 
 	wire	[30:-1]  Pi_i;
 			
-	assign Gi_i[-1] = 1'b0;
+	assign Gi_i[-1] = cin;
 	assign Pi_i[-1] = 1'b0;
 	
 	// gen_prop(gen, prop, in0, in1);
@@ -338,5 +339,46 @@ module PA_32b (
 	xor3LL xor3LL_29(s[2], Gi_im2[0], in0[2], in1[2]);
 	xor3LL xor3LL_30(s[1], Gi_im1[0], in0[1], in1[1]);
 	xor3LL xor3LL_31(s[0], Gi_i[-1], in0[0], in1[0]);
+	
+	assign cout[0]  =  Gi_im1[0];
+	assign cout[1]  =  Gi_im2[0];
+	assign cout[2]  =  Gi_im3_buf16[0];
+	assign cout[3]  =  Gi_im4[0];
+	assign cout[4]  =  Gi_im5[0];
+	assign cout[5]  =  Gi_im6[0];
+	assign cout[6]  =  Gi_im7_buf16[0];
+	assign cout[7]  =  Gi_im8[0];
 
+	assign cout[8]  =   Gi_im9[0];
+	assign cout[9]  =   Gi_im10[0];
+	assign cout[10] =   Gi_im11[0];
+	assign cout[11] =   Gi_im12[0];
+	assign cout[12] =   Gi_im13[0];
+	assign cout[13] =   Gi_im14[0];
+	assign cout[14] =   Gi_im15_buf64[0];
+
+	assign cout[15] = G15_m1;
+	assign cout[16] = G16_m1;
+	assign cout[17] = G17_m1;
+	assign cout[18] = G18_m1;
+	assign cout[19] = G19_m1;
+	assign cout[20] = G20_m1;
+	assign cout[21] = G21_m1;
+	assign cout[22] = G22_m1;
+	assign cout[23] = G23_m1;
+
+	assign cout[24] = G24_m1;
+	assign cout[25] = G25_m1;
+	assign cout[26] = G26_m1;
+	assign cout[27] = G27_m1;
+	assign cout[28] = G28_m1;
+	assign cout[29] = G29_m1;
+	assign cout[30] = G30_m1;
+
+	wire last_bit_xor_out, last_bit_and_out, last_bit_and_out_1;
+	xor2$	last_bit_xor(last_bit_xor_out, in0[31], in1[31]);
+	and2$ last_bit_and(last_bit_and_out, last_bit_xor_out, G30_m1);
+	and2$ last_bit_and_1(last_bit_and_out_1, in0[31], in1[31]);
+	or2$  last_bit_or(cout[31], last_bit_and_out, last_bit_and_out_1);
+	
 endmodule

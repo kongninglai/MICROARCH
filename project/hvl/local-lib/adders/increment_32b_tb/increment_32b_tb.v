@@ -29,6 +29,7 @@ task check;
 endtask
 
 initial begin
+  in = 0; #5; check(out, out_exp);
   in = {32{1'b1}};
   repeat (1 << 12) begin
     #5; 

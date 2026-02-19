@@ -1,6 +1,6 @@
-module PA_16b ( 
+module HA_16b (
   input		[15:0]	  in0, in1,
-	output	[15:0]	  s
+	output	[15:0]	  s, cout
 );
 	
 	// Stage 0
@@ -280,5 +280,29 @@ module PA_16b (
 	xor3LL xor3LL_29(s[2], Gi_im2[0], in0[2], in1[2]);
 	xor3LL xor3LL_30(s[1], Gi_im1[0], in0[1], in1[1]);
 	xor3LL xor3LL_31(s[0], Gi_i[-1], in0[0], in1[0]);
+	
+	assign cout[0]  =  Gi_im1[0];
+	assign cout[1]  =  Gi_im2[0];
+	assign cout[2]  =  Gi_im3_buf16[0];
+	assign cout[3]  =  Gi_im4[0];
+	assign cout[4]  =  Gi_im5[0];
+	assign cout[5]  =  Gi_im6[0];
+	assign cout[6]  =  Gi_im7_buf16[0];
+	assign cout[7]  =  Gi_im8[0];
+
+	assign cout[8]  =   Gi_im9[0];
+	assign cout[9]  =   Gi_im10[0];
+	assign cout[10] =   Gi_im11[0];
+	assign cout[11] =   Gi_im12[0];
+	assign cout[12] =   Gi_im13[0];
+	assign cout[13] =   Gi_im14[0];
+	assign cout[14] =   Gi_im15[0];
+
+
+	wire last_bit_xor_out, last_bit_and_out, last_bit_and_out_1;
+	xor2$	last_bit_xor(last_bit_xor_out, in0[15], in1[15]);
+	and2$ last_bit_and(last_bit_and_out, last_bit_xor_out, Gi_im15[0]);
+	and2$ last_bit_and_1(last_bit_and_out_1, in0[15], in1[15]);
+	or2$  last_bit_or(cout[15], last_bit_and_out, last_bit_and_out_1);
 	
 endmodule

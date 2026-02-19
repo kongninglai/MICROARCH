@@ -1,5 +1,6 @@
-module HA_8b (
+module FA_8b (
   input		[7:0]	in0, in1,
+  input         cin,
 	output	[7:0]	s, cout
 );
 	
@@ -9,7 +10,7 @@ module HA_8b (
 
 	wire	[6:-1]   Pi_i;
 			
-	assign Gi_i[-1] = 1'b0;
+	assign Gi_i[-1] = cin;
 	assign Pi_i[-1] = 1'b0;
 	
 	// gen_prop(gen, prop, in0, in1);
