@@ -15,11 +15,15 @@ eq_32b_tb                      FAILURES=0      SUCCESSES=262
 eq_5b_tb                       FAILURES=0      SUCCESSES=1024  
 eq_6b_tb                       FAILURES=0      SUCCESSES=4096  
 eq_8b_tb                       FAILURES=0      SUCCESSES=65536 
+FA_16b_tb                      FAILURES=0      SUCCESSES=4096  
+FA_32b_tb                      FAILURES=0      SUCCESSES=518   
+FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 gen_prop_2_tb                  FAILURES=0      SUCCESSES=16    
 gen_prop_tb                    FAILURES=0      SUCCESSES=4     
 gt9_4b_tb                      FAILURES=0      SUCCESSES=16    
 gt99_8b_tb                     FAILURES=0      SUCCESSES=256   
-HA_32b_tb                      FAILURES=0      SUCCESSES=261   
+HA_16b_tb                      FAILURES=0      SUCCESSES=1024  
+HA_32b_tb                      FAILURES=0      SUCCESSES=262   
 HA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 increment_32b_tb               FAILURES=0      SUCCESSES=4096  
 ioreg32_tb                     FAILURES=0      SUCCESSES=160   
@@ -41,7 +45,7 @@ neq_4b_a_tb                    FAILURES=0      SUCCESSES=512
 neq_4b_tb                      FAILURES=0      SUCCESSES=256   
 neq_6b_tb                      FAILURES=0      SUCCESSES=4096  
 PA_16b_tb                      FAILURES=0      SUCCESSES=1024  
-PA_32b_tb                      FAILURES=0      SUCCESSES=1024  
+PA_32b_tb                      FAILURES=0      SUCCESSES=1030  
 PA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 rank_tb                        FAILURES=0      SUCCESSES=2048  
 reg_n_tb                       FAILURES=0      SUCCESSES=1000  
