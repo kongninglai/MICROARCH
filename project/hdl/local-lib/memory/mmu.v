@@ -60,9 +60,6 @@ assign          W_CT_WRITE_DONE       = V_CT_WRITE_DONE     ;
 assign          W_CT_RD_EN_DONE       = V_CT_RD_EN_DONE     ;  
 assign          W_CT_SHORT_BRST_DONE  = V_CT_SHORT_BRST_DONE;
 
-/*** DATA TO MAIN MEMORY ***/
-wire    [RANK_BIT_WIDTH-1:0]  DIO;
-
 /*** STATE BITS + COUNTER ***/
 wire  [3:0] STATE, NEXT_STATE;
 wire        Q3,Q2,Q1,Q0;
@@ -86,9 +83,9 @@ bufferH1024$  bufferH1024$_STORE_BUF_LD_EN_buf1024(STORE_BUF_LD_EN_buf1024, STOR
 bufferH1024$  bufferH1024$_LOAD_BUF_LD_EN_buf1024 (LOAD_BUF_LD_EN_buf1024,  LOAD_BUF_LD_EN);
 bufferH1024$  bufferH1024$_LOAD_ADDR_LD_EN_buf1024(LOAD_ADDR_LD_EN_buf1024, LOAD_ADDR_LD_EN);
 
-wire    MEM_ADDR_GATE_ST,
-        MEM_ADDR_GATE_LD,
-        MEM_DIO_GATE,
+wire    MEM_ADDR_GATE_ST, MEM_ADDR_GATE_ST_buf16,
+        MEM_ADDR_GATE_LD, MEM_ADDR_GATE_LD_buf16,
+        MEM_DIO_GATE, MEM_DIO_GATE_buf256,
         DATA_BUS_GATE;
 
 or4$    or4$_MEM_BUSY(MEM_BUSY, Q3, Q2, Q1, Q0);
@@ -221,11 +218,54 @@ reg_n #(
   .q(LOAD_BUFFER_A_OTHERS)
 );
 
+/* LOAD BUFFER DATA (SERIALIZER) */
+
+wire    [RANK_BIT_WIDTH-1:0]  LOAD_BUFFER_DATA;
+wire    [RANK_BIT_WIDTH-1:0]  DIO;
+wire    [BUS_BIT_WIDTH-1:0]   DATA_BUS_DRIVER_VALUE;
+
+mux4$   mux4$_DATA_BUS_DRIVER_VALUE[BUS_BIT_WIDTH-1:0] (DATA_BUS_DRIVER_VALUE,
+                                                        LOAD_BUFFER_DATA[BUS_BIT_WIDTH-1:0],
+                                                        LOAD_BUFFER_DATA[2*BUS_BIT_WIDTH-1:BUS_BIT_WIDTH],
+                                                        LOAD_BUFFER_DATA[3*BUS_BIT_WIDTH-1:2*BUS_BIT_WIDTH],
+                                                        LOAD_BUFFER_DATA[4*BUS_BIT_WIDTH-1:3*BUS_BIT_WIDTH],
+                                                        counter_buf1024[0],
+                                                        counter_buf1024[1]);
+
+reg_n #(
+  .WIDTH(RANK_BIT_WIDTH),
+  .USE_EN_BAR(0)
+) reg_n_LOAD_BUFFER_DATA (
+  .clk(clk), .rst(rst),
+  .en({RANK_BIT_WIDTH{LOAD_BUF_LD_EN_buf1024}}), .d(DIO),
+  .q(LOAD_BUFFER_DATA)
+);
+
 /* "State Done" Counter Comparators */
 
 big_eq  #(.WIDTH(3)) done_WRITE_DONE         (.in0(counter_buf1024), .in1(W_CT_WRITE_DONE     ), .eq(WRITE_DONE     ));
 big_eq  #(.WIDTH(3)) done_RD_EN_DONE         (.in0(counter_buf1024), .in1(W_CT_RD_EN_DONE     ), .eq(RD_EN_DONE     ));
 big_eq  #(.WIDTH(3)) done_SHORT_BRST_DONE    (.in0(counter_buf1024), .in1(W_CT_SHORT_BRST_DONE), .eq(SHORT_BRST_DONE));
+
+/*** DATA TO MAIN MEMORY (DIO declared above) ***/
+wire    [RANK_ADDR_WIDTH-1:0]           A_RANK0, A_OTHERS;
+wire    [RANK_COUNT*CHIPS_PER_RANK-1:0] WR, OE, CE;
+
+tristate_bus_driver16$  tristate_bus_driver16$_DATA_BUS_H[BUS_BIT_WIDTH-1:16](.enbar(DATA_BUS_GATE), 
+                                                                              .in(DATA_BUS_DRIVER_VALUE[BUS_BIT_WIDTH-1:16]), 
+                                                                              .out(DATA_BUS[BUS_BIT_WIDTH-1:16]));
+                                                                              
+tristate_bus_driver16$  tristate_bus_driver16$_DATA_BUS_L[15:0]              (.enbar(DATA_BUS_GATE), 
+                                                                              .in(DATA_BUS_DRIVER_VALUE[15:0]), 
+                                                                              .out(DATA_BUS[15:0]));
+
+tristate_bus_driver1$  tristate_bus_driver1$_DIO[RANK_BIT_WIDTH-1:0](.enbar(MEM_DIO_GATE), .in(STORE_BUFFER_DATA), .out(DIO));
+
+tristateL$  tristateL$_LOAD_BUFFER_A_RANK0 [RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD), .in(LOAD_BUFFER_A_RANK0),  .out(A_RANK0));
+tristateL$  tristateL$_LOAD_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD), .in(LOAD_BUFFER_A_OTHERS), .out(A_OTHERS));
+
+tristateL$  tristateL$_STORE_BUFFER_A_RANK0 [RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_ST), .in(STORE_BUFFER_A_RANK0),  .out(A_RANK0));
+tristateL$  tristateL$_STORE_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_ST), .in(STORE_BUFFER_A_OTHERS), .out(A_OTHERS));
 
 /*** BEGIN AUTO-GENERATED CODE ***/
 
