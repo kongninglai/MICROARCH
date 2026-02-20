@@ -2,9 +2,8 @@ arbiter_tb                     COMPILE_ERROR
 big_and_tb                     FAILURES=0      SUCCESSES=4096  
 big_eq_tb                      FAILURES=0      SUCCESSES=264   
 big_neq_tb                     FAILURES=0      SUCCESSES=264   
+big_or_tb                      FAILURES=0      SUCCESSES=4096  
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
-decoder4_16_tb                 FAILURES=0      SUCCESSES=16    
-decoder6_64_tb                 FAILURES=0      SUCCESSES=64    
 dff32_tb                       FAILURES=0      SUCCESSES=160   
 disk_rank_tb                   FAILURES=0      SUCCESSES=1     
 disk_regs_tb                   FAILURES=0      SUCCESSES=4     

@@ -6,6 +6,10 @@ module lshf_var_16b (
 
 wire [15:0] lshf_out [15:1];
 
+wire  [3:0] shf_amt_buf16;
+
+bufferH16$    bufferH16$_shf_amt_buf16[3:0](shf_amt_buf16, shf_amt);
+
 genvar i;
 generate
   for (i = 1; i < 16; i = i + 1) begin : LSHF_INST
@@ -36,10 +40,10 @@ mux16 mux16_0[15:0] (
   .in13(lshf_out[13]),
   .in14(lshf_out[14]),
   .in15(lshf_out[15]),
-  .s0(shf_amt[0]),
-  .s1(shf_amt[1]),
-  .s2(shf_amt[2]),
-  .s3(shf_amt[3]),
+  .s0(shf_amt_buf16[0]),
+  .s1(shf_amt_buf16[1]),
+  .s2(shf_amt_buf16[2]),
+  .s3(shf_amt_buf16[3]),
   .outb(out)
 );
 

@@ -6,6 +6,10 @@ module lshf_var_32b (
 
 wire [31:0] lshf_out [31:1];
 
+wire  [4:0] shf_amt_buf64;
+
+bufferH16$    bufferH16$_shf_amt_buf64[4:0](shf_amt_buf64, shf_amt);
+
 genvar i;
 generate
   for (i = 1; i < 32; i = i + 1) begin : LSHF_INST
@@ -52,11 +56,11 @@ mux32 mux32_0[31:0] (
   .in29(lshf_out[29]),
   .in30(lshf_out[30]),
   .in31(lshf_out[31]),
-  .s0(shf_amt[0]),
-  .s1(shf_amt[1]),
-  .s2(shf_amt[2]),
-  .s3(shf_amt[3]),
-  .s4(shf_amt[4]),
+  .s0(shf_amt_buf64[0]),
+  .s1(shf_amt_buf64[1]),
+  .s2(shf_amt_buf64[2]),
+  .s3(shf_amt_buf64[3]),
+  .s4(shf_amt_buf64[4]),
   .outb(out)
 );
 

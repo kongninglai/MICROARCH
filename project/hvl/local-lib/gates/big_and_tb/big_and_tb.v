@@ -8,7 +8,7 @@ end
 reg   [31:0]  in;
 wire          out, out_exp;
 
-localparam WIDTH = 31;
+localparam WIDTH = 32;
 
 big_and #(.WIDTH(WIDTH)) DUT(
   .out(out), .in(in)
@@ -34,9 +34,9 @@ endtask
 
 initial begin
   // All possible tests with truth table
-  in = 3'd0;
+  in = 32'hFFFFFFFF;
   repeat (1 << 12) begin
-    #1; 
+    #10; 
     check(out, out_exp);
     in = $random;
   end
