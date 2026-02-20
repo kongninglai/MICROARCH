@@ -76,8 +76,8 @@ wire        Q3_prebuf,Q2_prebuf,Q1_prebuf,Q0_prebuf;
 wire        Q3_bar_prebuf,Q2_bar_prebuf,Q1_bar_prebuf,Q0_bar_prebuf;
 wire        D3,D2,D1,D0;
 
-assign STATE  = {Q3, Q2, Q1, Q0};
-assign NEXT_STATE  = {D3, D2, D1, D0};
+assign STATE        = {Q3, Q2, Q1, Q0};
+assign NEXT_STATE   = {D3, D2, D1, D0};
 
 bufferH1024$  bufferH1024$_Q3(Q3, Q3_prebuf);
 bufferH1024$  bufferH1024$_Q2(Q2, Q2_prebuf);
