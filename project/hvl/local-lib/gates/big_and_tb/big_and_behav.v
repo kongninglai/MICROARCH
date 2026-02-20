@@ -2,7 +2,7 @@ module big_and_behav #(
   parameter WIDTH = 32
 ) (
   output reg       out,
-  input  [31:0]    in
+  input  [WIDTH-1:0]    in
 );
 
 integer i;

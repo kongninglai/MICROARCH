@@ -1,14 +1,14 @@
 module big_neq #(
   parameter WIDTH=32
 ) (
-  input   [31:0]  in0, in1,
-  output          neq
+  input   [WIDTH-1:0]   in0, in1,
+  output                neq
 );
 	
-wire		[31:0]	in;
+wire		[WIDTH-1:0]	in;
 	
 // xor2$(out, in0, in1);
-xor2$	xor2$_0[31:0](in, in0, in1);
+xor2$	xor2$_0[WIDTH-1:0](in, in0, in1);
 	
 generate
   case (WIDTH)

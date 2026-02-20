@@ -1,18 +1,18 @@
-module  increment_32b_tb;
+module  big_increment_tb;
 
 initial begin
-  $vcdplusfile("increment_32b_tb.dump.vpd");
-  $vcdpluson(0, increment_32b_tb); 
+  $vcdplusfile("big_increment_tb.dump.vpd");
+  $vcdpluson(0, big_increment_tb); 
 end
 
-localparam WIDTH = 32;
+localparam WIDTH = 3;
 
 reg   [WIDTH-1:0]   in;
 wire  [WIDTH-1:0]   out, out_exp;
 
-increment_32b DUT(.s(out), .a(in));
+big_increment #(.WIDTH(WIDTH)) DUT(.s(out), .a(in));
 
-increment_32b_behav REF(.s(out_exp), .a(in));
+big_increment_behav #(.WIDTH(WIDTH)) REF(.s(out_exp), .a(in));
 
 integer FAILURES  = 0;
 integer SUCCESSES = 0;
@@ -30,7 +30,7 @@ endtask
 
 initial begin
   in = 0; #5; check(out, out_exp);
-  in = {32{1'b1}};
+  in = {WIDTH{1'b1}};
   repeat (1 << 12) begin
     #5; 
     check(out, out_exp);

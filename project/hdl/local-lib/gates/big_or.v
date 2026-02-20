@@ -1,8 +1,8 @@
 module big_or #(
   parameter WIDTH=32
 ) (
-  output            out,
-  input     [31:0]  in
+  output                out,
+  input     [WIDTH-1:0] in
 );
 
 generate

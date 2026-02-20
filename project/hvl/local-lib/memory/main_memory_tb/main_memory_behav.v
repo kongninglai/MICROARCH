@@ -22,7 +22,7 @@ module main_memory_behav #(
       The point of multiplying by 10 is to allow cycle time to have increments of 0.1 ns 
       while still using integer math.
   */
-  parameter ADDR_SETUP_X10            = 270,  /* Add 2 ns for state transition comb logic delay */
+  parameter ADDR_SETUP_X10            = 280,  /* Add 3 ns for state transition comb logic delay + buf256 */
   parameter CE_SETUP_X10              = 370,  /* Add 2 ns for state transition comb logic delay */
   parameter DOE_TIME_X10              = 620,  /* Add 2 ns for state transition comb logic delay */
   parameter HZ_TIME_X10               = 175,
@@ -35,10 +35,14 @@ module main_memory_behav #(
 
 ) (
   input                                                     clk, rst,
-  input   [RANK_COUNT*CHIPS_PER_RANK*RANK_ADDR_WIDTH-1:0]   A,
+  input   [RANK_ADDR_WIDTH-1:0]                             A_RANK0, A_OTHERS,
   input   [RANK_COUNT*CHIPS_PER_RANK-1:0]                   WR, OE, CE,
   inout   [RANK_BIT_WIDTH-1:0]                              DIO
 );
+
+wire   [RANK_COUNT*CHIPS_PER_RANK*RANK_ADDR_WIDTH-1:0]  A;
+
+assign A = {{CHIPS_PER_RANK*(RANK_COUNT-1){A_OTHERS}}, {CHIPS_PER_RANK{A_RANK0}}};
 
 genvar rank_idx;
 generate

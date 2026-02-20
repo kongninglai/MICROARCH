@@ -5,10 +5,10 @@ initial begin
   $vcdpluson(0, big_and_tb); 
 end
 
-reg   [31:0]  in;
-wire          out, out_exp;
-
 localparam WIDTH = 32;
+reg   [WIDTH-1:0]   in;
+wire                out, out_exp;
+
 
 big_and #(.WIDTH(WIDTH)) DUT(
   .out(out), .in(in)
@@ -34,7 +34,7 @@ endtask
 
 initial begin
   // All possible tests with truth table
-  in = 32'hFFFFFFFF;
+  in = {WIDTH{1'b1}};
   repeat (1 << 12) begin
     #10; 
     check(out, out_exp);

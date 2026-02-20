@@ -1,14 +1,14 @@
 module big_eq #(
   parameter WIDTH=32
 ) (
-  input     [31:0]    in0, in1,
-  output              eq
+  input     [WIDTH-1:0]   in0, in1,
+  output                  eq
 );
 
-wire		[31:0]	in;
+wire		[WIDTH-1:0]	in;
 	
 // xnor2$(out, in0, in1);
-xnor2$	xnor2$_0[31:0](in, in0, in1);
+xnor2$	xnor2$_0[WIDTH-1:0](in, in0, in1);
 
 generate
   case (WIDTH)
