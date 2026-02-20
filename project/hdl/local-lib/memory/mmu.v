@@ -74,10 +74,14 @@ wire    [RANK_BIT_WIDTH-1:0]  DIO;
 /*** STATE BITS + COUNTER ***/
 wire        Q3,Q2,Q1,Q0;
 wire        D3,D2,D1,D0;
-wire  [2:0] counter;
+wire  [2:0] counter, counter_buf1024;
+wire        L2B_CTR;
+
+bufferH1024$  bufferH1024$[2:0](counter_buf1024, counter);
+
+and2$   and2$_L2B_CTR(L2B_CTR, counter_buf1024[1], counter_buf1024[0]);
 
 nor4$   nor4$_MEM_BUSY(MEM_BUSY, Q3, Q2, Q1, Q0);
-
 
 /*** STORE BUFFER ***/
 
@@ -126,9 +130,6 @@ mux2$   mux2$_STORE_BUFFER_A_RANK0_CALC[RANK_ADDR_WIDTH-1:0]( STORE_BUFFER_A_RAN
 
 wire    [RANK_ADDR_WIDTH-1:0]  STORE_BUFFER_A_OTHERS;
 
-wire            STORE_BUF_LD_EN_buf1024;
-bufferH1024$    bufferH16$_STORE_BUF_LD_EN_buf1024(STORE_BUF_LD_EN_buf1024, STORE_BUF_LD_EN);
-
 reg_n #(
   .WIDTH(RANK_ADDR_WIDTH),
   .USE_EN_BAR(0)
@@ -138,26 +139,60 @@ reg_n #(
   .q(STORE_BUFFER_A_OTHERS)
 );
 
-/* STORE BUFFER WRITE MASK */
+/* STORE BUFFER MEM CTRL (WR, OE, CE) */
 
-wire    [RANK_COUNT*CHIPS_PER_RANK-1:0]  STORE_BUFFER_WR_CALC, STORE_BUFFER_WR;
+wire    [RANK_COUNT*CHIPS_PER_RANK-1:0]  STORE_BUFFER_WR_CALC, STORE_BUFFER_WR, STORE_BUFFER_CE, STORE_BUFFER_OE;
+
+lshf_chunks_var_256b lshf_chunks_var_256b_STORE_BUFFER_WR_CALC (
+  .in({{(RANK_COUNT-1)*CHIPS_PER_RANK{1'b1}}, WR_mask}),
+  .shf_amt(ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]),
+  .out(STORE_BUFFER_WR_CALC)
+);
 
 reg_n #(
   .WIDTH(RANK_COUNT*CHIPS_PER_RANK),
   .USE_EN_BAR(0)
 ) reg_n_STORE_BUFFER_WR (
   .clk(clk), .rst(rst),
-  .en(STORE_BUF_LD_EN), .d(STORE_BUFFER_WR_CALC),
+  .en({RANK_COUNT*CHIPS_PER_RANK{STORE_BUF_LD_EN_buf1024}}), .d(STORE_BUFFER_WR_CALC),
   .q(STORE_BUFFER_WR)
+);
+
+assign STORE_BUFFER_CE = STORE_BUFFER_WR;
+assign STORE_BUFFER_OE = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
+
+/* STORE BUFFER DATA (DESERIALIZER) */
+
+wire    [RANK_BIT_WIDTH-1:0]  STORE_BUFFER_DATA, STORE_BUFFER_DATA_WR_EN, STORE_BUFFER_DATA_WR_EN_GATED;
+
+mux4$   mux4$_STORE_BUFFER_DATA_WR_EN[RANK_BIT_WIDTH-1:0](STORE_BUFFER_DATA_WR_EN,
+                                                          {{96{1'b0}}, {32{1'b1}}},
+                                                          {{64{1'b0}}, {32{1'b1}}, {32{1'b0}}},
+                                                          {{32{1'b0}}, {32{1'b1}}, {64{1'b0}}},
+                                                          {{32{1'b1}}, {96{1'b0}}},
+                                                          counter_buf1024[0],
+                                                          counter_buf1024[1]);
+
+and2$   and2$_STORE_BUFFER_DATA_WR_EN_GATED[RANK_BIT_WIDTH-1:0](STORE_BUFFER_DATA_WR_EN_GATED,
+                                                                STORE_BUFFER_DATA_WR_EN,
+                                                                {RANK_BIT_WIDTH{STORE_BUF_LD_EN_buf1024}});
+
+reg_n #(
+  .WIDTH(RANK_BIT_WIDTH),
+  .USE_EN_BAR(0)
+) reg_n_STORE_BUFFER_DATA (
+  .clk(clk), .rst(rst),
+  .en(STORE_BUFFER_DATA_WR_EN_GATED), .d(DATA_BUS),
+  .q(STORE_BUFFER_DATA)
 );
 
 /* "State Done" Counter Comparators */
 
-big_eq  #(.WIDTH(3)) done_ADDR_DATA    (.in0(counter), .in1(W_CT_ADDR_DATA  ), .eq(CT_HIZ_PROT));
-big_eq  #(.WIDTH(3)) done_WR_EN        (.in0(counter), .in1(W_CT_WR_EN      ), .eq(CT_RD_EN   ));
-big_eq  #(.WIDTH(3)) done_RD_EN        (.in0(counter), .in1(W_CT_RD_EN      ), .eq(CT_RD_BRST ));
-big_eq  #(.WIDTH(3)) done_SHORT_RD_EN  (.in0(counter), .in1(W_CT_SHORT_RD_EN), .eq(CT_BUS_FREE));
-big_eq  #(.WIDTH(3)) done_SHORT_BRST   (.in0(counter), .in1(W_CT_SHORT_BRST ), .eq(CT_WR_ADDR ));
+big_eq  #(.WIDTH(3)) done_ADDR_DATA    (.in0(counter_buf1024), .in1(W_CT_ADDR_DATA  ), .eq(CT_HIZ_PROT));
+big_eq  #(.WIDTH(3)) done_WR_EN        (.in0(counter_buf1024), .in1(W_CT_WR_EN      ), .eq(CT_RD_EN   ));
+big_eq  #(.WIDTH(3)) done_RD_EN        (.in0(counter_buf1024), .in1(W_CT_RD_EN      ), .eq(CT_RD_BRST ));
+big_eq  #(.WIDTH(3)) done_SHORT_RD_EN  (.in0(counter_buf1024), .in1(W_CT_SHORT_RD_EN), .eq(CT_BUS_FREE));
+big_eq  #(.WIDTH(3)) done_SHORT_BRST   (.in0(counter_buf1024), .in1(W_CT_SHORT_BRST ), .eq(CT_WR_ADDR ));
 
 /*** BEGIN AUTO-GENERATED CODE ***/
 

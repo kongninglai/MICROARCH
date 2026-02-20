@@ -1,6 +1,7 @@
 module  reg_n #(
   parameter   WIDTH=8,
-  parameter   USE_EN_BAR=0
+  parameter   USE_EN_BAR=0,
+  parameter   RESET_TO_ONES=0
 ) (
   input               clk, rst,
   input   [WIDTH-1:0] en, d,
@@ -18,8 +19,13 @@ generate
     else
       mux2$     mux2$_in_enbar(in[i], d[i], q[i], en[i]);
   end
+
+  if (RESET_TO_ONES == 0)
+    dff$      dff$_q[WIDTH-1:0](clk, in, q, , rst, 1'b1);
+  else
+    dff$      dff$_q[WIDTH-1:0](clk, in, q, , 1'b1, rst);
+
 endgenerate
 
-dff$      dff$_q[WIDTH-1:0](clk, in, q, , rst, 1'b1);
 
 endmodule

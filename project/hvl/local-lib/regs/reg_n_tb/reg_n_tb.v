@@ -17,7 +17,8 @@ wire  [7:0] d   = in[17:10];
 
 reg_n #(
   .WIDTH(8),
-  .USE_EN_BAR(0)
+  .USE_EN_BAR(0),
+  .RESET_TO_ONES(1)
 ) DUT (
   .clk(clk),
   .rst(rst),
@@ -28,7 +29,8 @@ reg_n #(
 
 reg_n_behav #(
   .WIDTH(8),
-  .USE_EN_BAR(0)
+  .USE_EN_BAR(0),
+  .RESET_TO_ONES(1)
 ) REF (
   .clk(clk),
   .rst(rst),
