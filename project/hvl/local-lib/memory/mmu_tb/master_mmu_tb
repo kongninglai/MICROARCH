@@ -3,6 +3,7 @@
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib6
+~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_256b.v
@@ -18,5 +19,6 @@
 ~/MICROARCH/project/hdl/local-lib/adders/big_increment.v
 ~/MICROARCH/project/hdl/local-lib/memory/rank.v
 ~/MICROARCH/project/hdl/local-lib/memory/main_memory.v
+~/MICROARCH/project/hdl/local-lib/memory/mmu_ctrl.v
 ~/MICROARCH/project/hdl/local-lib/memory/mmu.v
 ~/MICROARCH/project/hvl/local-lib/memory/mmu_tb/mmu_tb.v

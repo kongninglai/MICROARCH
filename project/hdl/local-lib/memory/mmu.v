@@ -218,6 +218,88 @@ reg_n #(
   .q(LOAD_BUFFER_A_OTHERS)
 );
 
+/* LOAD BUFFER MEM CTRL (WR, OE, CE) */
+
+wire    [RANK_COUNT*CHIPS_PER_RANK-1:0]   LOAD_BUFFER_OE_DEMAND_CALC, LOAD_BUFFER_OE_DEMAND, 
+                                          LOAD_BUFFER_OE_DEMAND_AND_PREFETCH_CALC, LOAD_BUFFER_OE_DEMAND_AND_PREFETCH, 
+                                          LOAD_BUFFER_OE_PREFETCH_CALC, LOAD_BUFFER_OE_PREFETCH;
+
+wire    [RANK_COUNT*CHIPS_PER_RANK-1:0]   LOAD_BUFFER_CE_DEMAND_CALC, LOAD_BUFFER_CE_DEMAND, 
+                                          LOAD_BUFFER_CE_DEMAND_AND_PREFETCH_CALC, LOAD_BUFFER_CE_DEMAND_AND_PREFETCH, 
+                                          LOAD_BUFFER_CE_PREFETCH_CALC, LOAD_BUFFER_CE_PREFETCH;
+
+wire    [RANK_COUNT*CHIPS_PER_RANK-1:0]   LOAD_BUFFER_WR_DEMAND_CALC, LOAD_BUFFER_WR_DEMAND, 
+                                          LOAD_BUFFER_WR_DEMAND_AND_PREFETCH_CALC, LOAD_BUFFER_WR_DEMAND_AND_PREFETCH, 
+                                          LOAD_BUFFER_WR_PREFETCH_CALC, LOAD_BUFFER_WR_PREFETCH;
+
+lshf_chunks_var_256b lshf_chunks_var_256b_LOAD_BUFFER_OE_DEMAND_CALC (
+  .in({{(RANK_COUNT-1)*CHIPS_PER_RANK{1'b1}}, {CHIPS_PER_RANK{1'b0}}}),
+  .shf_amt(ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]),
+  .out(LOAD_BUFFER_OE_DEMAND_CALC)
+);
+
+wire    [RANK_IDX_WIDTH-1:0]   INCREMENTED_RANK_NUMBER;
+
+big_increment #(
+  .WIDTH(RANK_IDX_WIDTH)
+) big_increment_INCREMENTED_RANK_NUMBER (
+  .a(ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]),
+  .s(INCREMENTED_RANK_NUMBER)
+);
+
+lshf_chunks_var_256b lshf_chunks_var_256b_LOAD_BUFFER_OE_PREFETCH_CALC (
+  .in({{(RANK_COUNT-1)*CHIPS_PER_RANK{1'b1}}, {CHIPS_PER_RANK{1'b0}}}),
+  .shf_amt(INCREMENTED_RANK_NUMBER),
+  .out(LOAD_BUFFER_OE_PREFETCH_CALC)
+);
+
+and2$ and2$_LOAD_BUFFER_OE_DEMAND_AND_PREFETCH_CALC[RANK_COUNT*CHIPS_PER_RANK-1:0]( LOAD_BUFFER_OE_DEMAND_AND_PREFETCH_CALC,
+                                                                                    LOAD_BUFFER_OE_DEMAND_CALC,
+                                                                                    LOAD_BUFFER_OE_PREFETCH_CALC);
+
+reg_n #(
+  .WIDTH(RANK_COUNT*CHIPS_PER_RANK),
+  .USE_EN_BAR(0)
+) reg_n_LOAD_BUFFER_OE_DEMAND (
+  .clk(clk), .rst(rst),
+  .en({RANK_COUNT*CHIPS_PER_RANK{LOAD_ADDR_LD_EN_buf1024}}), .d(LOAD_BUFFER_OE_DEMAND_CALC),
+  .q(LOAD_BUFFER_OE_DEMAND)
+);
+
+reg_n #(
+  .WIDTH(RANK_COUNT*CHIPS_PER_RANK),
+  .USE_EN_BAR(0)
+) reg_n_LOAD_BUFFER_OE_DEMAND_AND_PREFETCH (
+  .clk(clk), .rst(rst),
+  .en({RANK_COUNT*CHIPS_PER_RANK{LOAD_ADDR_LD_EN_buf1024}}), .d(LOAD_BUFFER_OE_DEMAND_AND_PREFETCH_CALC),
+  .q(LOAD_BUFFER_OE_DEMAND_AND_PREFETCH)
+);
+
+reg_n #(
+  .WIDTH(RANK_COUNT*CHIPS_PER_RANK),
+  .USE_EN_BAR(0)
+) reg_n_LOAD_BUFFER_OE_PREFETCH (
+  .clk(clk), .rst(rst),
+  .en({RANK_COUNT*CHIPS_PER_RANK{LOAD_ADDR_LD_EN_buf1024}}), .d(LOAD_BUFFER_OE_PREFETCH_CALC),
+  .q(LOAD_BUFFER_OE_PREFETCH)
+);
+
+assign LOAD_BUFFER_CE_DEMAND_CALC = LOAD_BUFFER_OE_DEMAND_CALC;
+assign LOAD_BUFFER_CE_DEMAND_AND_PREFETCH_CALC = LOAD_BUFFER_OE_DEMAND_AND_PREFETCH_CALC;
+assign LOAD_BUFFER_CE_PREFETCH_CALC = LOAD_BUFFER_OE_PREFETCH_CALC;
+
+assign LOAD_BUFFER_CE_DEMAND = LOAD_BUFFER_OE_DEMAND;
+assign LOAD_BUFFER_CE_DEMAND_AND_PREFETCH = LOAD_BUFFER_OE_DEMAND_AND_PREFETCH;
+assign LOAD_BUFFER_CE_PREFETCH = LOAD_BUFFER_OE_PREFETCH;
+
+assign LOAD_BUFFER_WR_DEMAND_CALC = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
+assign LOAD_BUFFER_WR_DEMAND_AND_PREFETCH_CALC = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
+assign LOAD_BUFFER_WR_PREFETCH_CALC = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
+
+assign LOAD_BUFFER_WR_DEMAND = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
+assign LOAD_BUFFER_WR_DEMAND_AND_PREFETCH = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
+assign LOAD_BUFFER_WR_PREFETCH = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
+
 /* LOAD BUFFER DATA (SERIALIZER) */
 
 wire    [RANK_BIT_WIDTH-1:0]  LOAD_BUFFER_DATA;
@@ -239,6 +321,20 @@ reg_n #(
   .clk(clk), .rst(rst),
   .en({RANK_BIT_WIDTH{LOAD_BUF_LD_EN_buf1024}}), .d(DIO),
   .q(LOAD_BUFFER_DATA)
+);
+
+/* mmu_ctrl determines which OE, CE, and WR gets picked */
+
+wire  [2:0] MEM_CTRL_Q_MUX;
+
+mmu_ctrl #(
+  .MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY),
+  .CYCLE_TIME_X10(CYCLE_TIME_X10)
+) mmu_ctrl_inst (
+  .rst(rst), .clk(clk), 
+  .DC_MEM_WR_ACK(DC_MEM_WR_ACK), .DMA_MEM_WR_ACK(DMA_MEM_WR_ACK),
+  .DC_MEM_RD_ACK(DC_MEM_RD_ACK), .IC_MEM_RD_ACK(IC_MEM_RD_ACK),
+  .MEM_CTRL_Q_MUX(MEM_CTRL_Q_MUX)
 );
 
 /* "State Done" Counter Comparators */
@@ -267,9 +363,59 @@ tristateL$  tristateL$_LOAD_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR
 tristateL$  tristateL$_STORE_BUFFER_A_RANK0 [RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_ST), .in(STORE_BUFFER_A_RANK0),  .out(A_RANK0));
 tristateL$  tristateL$_STORE_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_ST), .in(STORE_BUFFER_A_OTHERS), .out(A_OTHERS));
 
+/* Now, pick which OE, CE, and WR goes to memory */
+
+mux8   mux8_OE[RANK_COUNT*CHIPS_PER_RANK-1:0]
+                                              ( 
+                                                OE,
+
+                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
+                                                LOAD_BUFFER_OE_DEMAND_CALC,
+                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
+                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
+                                                STORE_BUFFER_OE,
+                                                LOAD_BUFFER_OE_DEMAND,
+                                                LOAD_BUFFER_OE_DEMAND_AND_PREFETCH,
+                                                LOAD_BUFFER_OE_PREFETCH,    
+
+                                                MEM_CTRL_Q_MUX[0], MEM_CTRL_Q_MUX[1], MEM_CTRL_Q_MUX[2]
+                                              );
+
+mux8   mux8_CE[RANK_COUNT*CHIPS_PER_RANK-1:0]
+                                              ( 
+                                                CE,
+
+                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
+                                                LOAD_BUFFER_CE_DEMAND_CALC,
+                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
+                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
+                                                STORE_BUFFER_CE,
+                                                LOAD_BUFFER_CE_DEMAND,
+                                                LOAD_BUFFER_CE_DEMAND_AND_PREFETCH,
+                                                LOAD_BUFFER_CE_PREFETCH,    
+
+                                                MEM_CTRL_Q_MUX[0], MEM_CTRL_Q_MUX[1], MEM_CTRL_Q_MUX[2]
+                                              );
+
+mux8   mux8_WR[RANK_COUNT*CHIPS_PER_RANK-1:0]
+                                              ( 
+                                                WR,
+
+                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
+                                                LOAD_BUFFER_WR_DEMAND_CALC,
+                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
+                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
+                                                STORE_BUFFER_WR,
+                                                LOAD_BUFFER_WR_DEMAND,
+                                                LOAD_BUFFER_WR_DEMAND_AND_PREFETCH,
+                                                LOAD_BUFFER_WR_PREFETCH,    
+
+                                                MEM_CTRL_Q_MUX[0], MEM_CTRL_Q_MUX[1], MEM_CTRL_Q_MUX[2]
+                                              );
+
 /*** BEGIN AUTO-GENERATED CODE ***/
 
- /* Inverters */
+/* Inverters */
 wire L2B_CTR_bar;
 inv1$ inv_0(L2B_CTR_bar, L2B_CTR);
 wire Q1_bar;
