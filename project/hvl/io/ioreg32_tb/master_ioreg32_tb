@@ -1,4 +1,4 @@
-/home/projects/courses/spring_22/ee382n19_16785/lib/time -v 
-/home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
 ~/MICROARCH/project/hdl/io/ioreg32.v
 ~/MICROARCH/project/hvl/io/ioreg32_tb/ioreg32_tb.v

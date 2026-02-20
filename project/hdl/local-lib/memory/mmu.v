@@ -48,6 +48,8 @@ module mmu #(
   output                            MEM_BUSY
 );
 
+/*** REWRITE COUNTER VALUES AS WIRES ***/
+
 wire    [0:0]   ADDR_DATA_DONE,
                 WR_EN_DONE,
                 RD_EN_DONE,
@@ -66,8 +68,10 @@ assign          W_CT_RD_EN       = V_CT_RD_EN       ;
 assign          W_CT_SHORT_RD_EN = V_CT_SHORT_RD_EN ;  
 assign          W_CT_SHORT_BRST  = V_CT_SHORT_BRST  ;
 
+/*** DATA TO MAIN MEMORY ***/
 wire    [RANK_BIT_WIDTH-1:0]  DIO;
 
+/*** STATE BITS + COUNTER ***/
 wire        Q3,Q2,Q1,Q0;
 wire        D3,D2,D1,D0;
 wire  [2:0] counter;
@@ -75,37 +79,66 @@ wire  [2:0] counter;
 nor4$   nor4$_MEM_BUSY(MEM_BUSY, Q3, Q2, Q1, Q0);
 
 
-/* STORE BUFFER */
+/*** STORE BUFFER ***/
 
-wire    [RANK_COUNT*CHIPS_PER_RANK*RANK_ADDR_WIDTH-1:0]  STORE_BUFFER_ADDR_CALC, STORE_BUFFER_ADDR;
+/* STORE BUFFER ADDRESS FOR RANK 0 */
 
-wire    STORE_BUF_LD_EN_buf16;
-bufferH16$    bufferH16$_STORE_BUF_LD_EN_buf16(STORE_BUF_LD_EN_buf16, STORE_BUF_LD_EN);
+wire    [RANK_ADDR_WIDTH-1:0]  STORE_BUFFER_A_RANK0, STORE_BUFFER_A_RANK0_CALC;
+
+wire            STORE_BUF_LD_EN_buf1024;
+bufferH1024$    bufferH16$_STORE_BUF_LD_EN_buf1024(STORE_BUF_LD_EN_buf1024, STORE_BUF_LD_EN);
 
 reg_n #(
-  .WIDTH(RANK_COUNT*CHIPS_PER_RANK*RANK_ADDR_WIDTH),
+  .WIDTH(RANK_ADDR_WIDTH),
   .USE_EN_BAR(0)
-) reg_n_STORE_BUFFER_ADDR (
+) reg_n_STORE_BUFFER_A_RANK0 (
   .clk(clk), .rst(rst),
-  .en({RANK_COUNT*CHIPS_PER_RANK*RANK_ADDR_WIDTH{STORE_BUF_LD_EN_buf16}}), .d(STORE_BUFFER_ADDR_CALC),
-  .q(STORE_BUFFER_ADDR)
+  .en({RANK_ADDR_WIDTH{STORE_BUF_LD_EN_buf1024}}), .d(STORE_BUFFER_A_RANK0_CALC),
+  .q(STORE_BUFFER_A_RANK0)
 );
 
-wire    [RANK_COUNT*CHIPS_PER_RANK*RANK_ADDR_WIDTH-1:0]  STORE_BUFFER_ADDR_CALC_IDENTICAL, STORE_BUFFER_ADDR_CALC_DIFFERENT;
-
-assign STORE_BUFFER_ADDR_CALC_IDENTICAL = {RANK_COUNT*CHIPS_PER_RANK{ADDR_BUS[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH]}};
-
-wire    [RANK_ADDR_WIDTH-1:0]   INCREMENTED_RANK_ADDR;
+wire    [RANK_ADDR_WIDTH-1:0]   INCREMENTED_A_RANK0;
 
 big_increment #(
   .WIDTH(RANK_ADDR_WIDTH)
 ) big_increment_INCREMENTED_RANK_ADDR (
   .a(ADDR_BUS[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH]),
-  .s(INCREMENTED_RANK_ADDR)
+  .s(INCREMENTED_A_RANK0)
 );
 
-assign  STORE_BUFFER_ADDR_CALC_DIFFERENT = {{((RANK_COUNT-1)*CHIPS_PER_RANK){ADDR_BUS[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH]}},
-                                            {CHIPS_PER_RANK{INCREMENTED_RANK_ADDR}}};
+wire    LAST_RANK_ACTIVE;
+
+and4$   and4$_LAST_RANK_ACTIVE(LAST_RANK_ACTIVE,  ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1],
+                                                  ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-2],
+                                                  ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-3],
+                                                  ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]);
+
+wire    LAST_RANK_ACTIVE_buf16;
+
+bufferH16$  bufferH16$_LAST_RANK_ACTIVE_buf16(LAST_RANK_ACTIVE_buf16, LAST_RANK_ACTIVE);
+
+mux2$   mux2$_STORE_BUFFER_A_RANK0_CALC[RANK_ADDR_WIDTH-1:0]( STORE_BUFFER_A_RANK0_CALC,
+                                                              ADDR_BUS[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH],
+                                                              INCREMENTED_A_RANK0,
+                                                              LAST_RANK_ACTIVE_buf16);
+
+/* STORE BUFFER ADDRESS FOR OTHER RANKS */
+
+wire    [RANK_ADDR_WIDTH-1:0]  STORE_BUFFER_A_OTHERS;
+
+wire            STORE_BUF_LD_EN_buf1024;
+bufferH1024$    bufferH16$_STORE_BUF_LD_EN_buf1024(STORE_BUF_LD_EN_buf1024, STORE_BUF_LD_EN);
+
+reg_n #(
+  .WIDTH(RANK_ADDR_WIDTH),
+  .USE_EN_BAR(0)
+) reg_n_STORE_BUFFER_A_OTHERS (
+  .clk(clk), .rst(rst),
+  .en({RANK_ADDR_WIDTH{STORE_BUF_LD_EN_buf1024}}), .d(ADDR_BUS[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH]),
+  .q(STORE_BUFFER_A_OTHERS)
+);
+
+/* STORE BUFFER WRITE MASK */
 
 wire    [RANK_COUNT*CHIPS_PER_RANK-1:0]  STORE_BUFFER_WR_CALC, STORE_BUFFER_WR;
 
@@ -118,11 +151,15 @@ reg_n #(
   .q(STORE_BUFFER_WR)
 );
 
+/* "State Done" Counter Comparators */
+
 big_eq  #(.WIDTH(3)) done_ADDR_DATA    (.in0(counter), .in1(W_CT_ADDR_DATA  ), .eq(CT_HIZ_PROT));
 big_eq  #(.WIDTH(3)) done_WR_EN        (.in0(counter), .in1(W_CT_WR_EN      ), .eq(CT_RD_EN   ));
 big_eq  #(.WIDTH(3)) done_RD_EN        (.in0(counter), .in1(W_CT_RD_EN      ), .eq(CT_RD_BRST ));
 big_eq  #(.WIDTH(3)) done_SHORT_RD_EN  (.in0(counter), .in1(W_CT_SHORT_RD_EN), .eq(CT_BUS_FREE));
 big_eq  #(.WIDTH(3)) done_SHORT_BRST   (.in0(counter), .in1(W_CT_SHORT_BRST ), .eq(CT_WR_ADDR ));
+
+/*** BEGIN AUTO-GENERATED CODE ***/
 
 /* Inverters */
 wire Q2_bar;

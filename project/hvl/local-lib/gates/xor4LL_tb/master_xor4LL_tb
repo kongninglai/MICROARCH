@@ -1,5 +1,5 @@
-/home/projects/courses/spring_22/ee382n19_16785/lib/time -v 
-/home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
 ~/MICROARCH/project/hdl/local-lib/gates/xor4LL.v
 ~/MICROARCH/project/hvl/local-lib/gates/xor4LL_tb/xor4LL_behav.v
 ~/MICROARCH/project/hvl/local-lib/gates/xor4LL_tb/xor4LL_tb.v

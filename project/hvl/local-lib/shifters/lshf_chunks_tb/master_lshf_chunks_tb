@@ -1,0 +1,5 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks.v
+~/MICROARCH/project/hvl/local-lib/shifters/lshf_chunks_tb/lshf_chunks_behav.v
+~/MICROARCH/project/hvl/local-lib/shifters/lshf_chunks_tb/lshf_chunks_tb.v
