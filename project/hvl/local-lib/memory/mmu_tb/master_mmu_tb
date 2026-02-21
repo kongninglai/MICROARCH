@@ -7,8 +7,6 @@
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_256b.v
-~/MICROARCH/project/hvl/local-lib/shifters/lshf_chunks_var_256b_tb/lshf_chunks_var_256b_behav.v
-~/MICROARCH/project/hvl/local-lib/shifters/lshf_chunks_var_256b_tb/lshf_chunks_var_256b_tb.v
 ~/MICROARCH/project/hdl/local-lib/gates/big_and.v
 ~/MICROARCH/project/hdl/local-lib/regs/reg_n.v
 ~/MICROARCH/project/hdl/local-lib/comparators/big_eq.v
