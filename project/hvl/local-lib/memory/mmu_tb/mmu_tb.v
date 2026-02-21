@@ -34,6 +34,8 @@ localparam V_CT_WRITE_DONE           = WR_AND_DATA_EN_CYCLES - 1;
 localparam V_CT_RD_EN_DONE           = RD_EN_CYCLES - 1;
 localparam V_CT_SHORT_BRST_DONE      = (RANK_BURST_SIZE - 1) - 1;
 
+localparam DELAY_ADJ = 7;
+
 reg     rst, clk, DC_MEM_WR_ACK, DMA_MEM_WR_ACK, DC_MEM_RD_ACK, IC_MEM_RD_ACK;
 
 reg   [15:0]  WR_mask_driver;
@@ -119,18 +121,21 @@ task driveWRmaskWRaddr;
   input [15:0]  WR_mask_val;
   input [14:0]  MEM_ADDR;
   begin
+    #(DELAY_ADJ);
     WR_mask_driver          <= WR_mask_val;
     WR_mask_driver_enable   <= 1'b1;
     ADDR_driver             <= MEM_ADDR;
     ADDR_driver_enable      <= 1'b1;
     #(RANK_BURST_SIZE * CYCLE_TIME);
     stopAllDrivers();
+    #(CYCLE_TIME - DELAY_ADJ);
   end
 endtask
 
 task driveWRdata;
   input [RANK_BIT_WIDTH-1:0] WR_DATA;
   begin
+    #(DELAY_ADJ);
     DATA_driver             <= WR_DATA[BUS_BIT_WIDTH-1:0];
     DATA_driver_enable      <= 1'b1;    
     #(CYCLE_TIME);
@@ -141,26 +146,31 @@ task driveWRdata;
     DATA_driver             <= WR_DATA[4*BUS_BIT_WIDTH-1:3*BUS_BIT_WIDTH];
     #(CYCLE_TIME);
     stopAllDrivers();
+    #(CYCLE_TIME - DELAY_ADJ);
   end
 endtask
 
 task driveRDaddr;
   input [MEM_ADDR_WIDTH-1:0]  MEM_ADDR;
   begin
+    #(DELAY_ADJ);
     ADDR_driver             <= MEM_ADDR;
     ADDR_driver_enable      <= 1'b1;
     #(1 * CYCLE_TIME);
     stopAllDrivers();
+    #(CYCLE_TIME - DELAY_ADJ);
   end
 endtask
 
 task driveRDaddrICACHE;
   input [MEM_ADDR_WIDTH-1:0]  MEM_ADDR;
   begin
+    #(DELAY_ADJ);
     ADDR_driver             <= MEM_ADDR;
     ADDR_driver_enable      <= 1'b1;
     #(1 * CYCLE_TIME);
     stopAllDrivers();
+    #(CYCLE_TIME - DELAY_ADJ);
   end
 endtask
 
@@ -169,31 +179,38 @@ initial begin
   deassertAll();
   stopAllDrivers();
   #(1.5 * CYCLE_TIME);
+
+  // for (i = 0; i < 2048; i = i + 2)
+  // {
+
+  // }
+
+
   rst               <= 1'b1;
   assertOneCycle(0);
 
   fork
-    driveWRmaskWRaddr(16'd0, 15'h4320);
+    driveWRmaskWRaddr(16'h0000, 15'h43F0);
     driveWRdata(128'hFEDCBA98765432100123456789ABCDEF);
   join
 
   #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
 
   assertOneCycle(2);
-  driveRDaddr(15'h4321);
+  driveRDaddr(15'h43F0);
 
-  #(20 * CYCLE_TIME);
+  #((RD_EN_CYCLES + RANK_BURST_SIZE) * CYCLE_TIME);
   assertOneCycle(1);
   fork
-    driveWRmaskWRaddr(16'd0, 15'h4331);
+    driveWRmaskWRaddr(16'h0000, 15'h4400);
     driveWRdata(128'hbeefbeeffeedfeedbeefbeeffeedfeed);
   join
 
   #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
 
   assertOneCycle(3);
-  driveRDaddrICACHE(15'h4321);
-  #(25 * CYCLE_TIME);
+  driveRDaddrICACHE(15'h43F0);
+  #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);

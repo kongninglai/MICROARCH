@@ -50,7 +50,7 @@ assign A = {{CHIPS_PER_RANK*(RANK_COUNT-1){A_OTHERS_buf256}}, {CHIPS_PER_RANK{A_
 
 genvar rank_idx;
 generate
-  for (rank_idx = 1; rank_idx < RANK_COUNT; rank_idx = rank_idx + 1) begin : rank_generation
+  for (rank_idx = 0; rank_idx < RANK_COUNT; rank_idx = rank_idx + 1) begin : rank_generation
     rank #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) rank_inst
     ( 
       .A  

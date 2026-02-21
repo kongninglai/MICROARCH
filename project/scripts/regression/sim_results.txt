@@ -29,7 +29,7 @@ lshf_chunks_var_256b_tb        FAILURES=0      SUCCESSES=4096
 lshf_const_tb                  FAILURES=0      SUCCESSES=4096  
 lshf_var_16b_tb                FAILURES=0      SUCCESSES=4096  
 lshf_var_32b_tb                FAILURES=0      SUCCESSES=4096  
-main_memory_tb                 FAILURES=0      SUCCESSES=2048  
+main_memory_tb                 FAILURES=0      SUCCESSES=32768 
 mmu_ctrl_tb                    FAILURES=0      SUCCESSES=0     
 mmu_tb                         FAILURES=0      SUCCESSES=0     
 mux16_tb                       FAILURES=0      SUCCESSES=1048576

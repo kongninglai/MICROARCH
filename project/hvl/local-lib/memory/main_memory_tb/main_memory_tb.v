@@ -127,52 +127,50 @@ initial begin
   #(1.5*CYCLE_TIME);
 
   // Write phase
-  for (i = 0; i < CHIP_ROW_COUNT; i = i + 1) begin
-    
-    #(CYCLE_TIME);
-    for (j = 0; j < CHIP_COUNT; j = j + 1) begin
+  for (j = 0; j < 16; j = j + 1) begin
+    for (i = 0; i < CHIP_ROW_COUNT; i = i + 1) begin
+      
+      #(CYCLE_TIME);
       A_RANK0             <= i[RANK_ADDR_WIDTH-1:0];
+      DIO_driver_enable <= 1'b1;
+      DIO_driver        <= {4{$random}};
+
+      #(CYCLE_TIME);
+      CE      = ~(256'd65535 << (16*j));
+      WR      = CE | {8{$random}};
+      OE      <= {CHIP_COUNT{1'b1}};
+
+      #(CYCLE_TIME);
+      WR      <= {CHIP_COUNT{1'b1}};
+      CE      <= {CHIP_COUNT{1'b1}};
+
     end
-    DIO_driver_enable <= 1'b1;
-    DIO_driver        <= {4{$random}};
 
+    // Stop write
     #(CYCLE_TIME);
-    CE      <= 0;
-    WR      <= {8{$random}};
-    OE      <= {CHIP_COUNT{1'b1}};
+    WR                <= {CHIP_COUNT{1'b1}};
+    CE                <= {CHIP_COUNT{1'b1}};
+    DIO_driver_enable <= 1'b0;
+    DIO_driver        <= {RANK_BIT_WIDTH{1'bz}};
 
-    #(CYCLE_TIME);
-    WR      <= {CHIP_COUNT{1'b1}};
-    CE      <= {CHIP_COUNT{1'b1}};
-
-  end
-
-  // Stop write
-  #(CYCLE_TIME);
-  WR                <= {CHIP_COUNT{1'b1}};
-  CE                <= {CHIP_COUNT{1'b1}};
-  DIO_driver_enable <= 1'b0;
-  DIO_driver        <= {RANK_BIT_WIDTH{1'bz}};
-
-  // Read back
-  for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 16) begin
-    #(CYCLE_TIME);
-
-    for (j = 0; j < CHIP_COUNT; j = j + 1) begin
+    // Read back
+    for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 16) begin
+      #(CYCLE_TIME);
       A_RANK0             <= i[RANK_ADDR_WIDTH-1:0];
+      CE       = ~(256'd65535 << (16*j));
+      OE       = CE;
+      WR      <= {CHIP_COUNT{1'b1}};
+
+      #(CYCLE_TIME/2);
+      check();
+      #(CYCLE_TIME/2);
     end
-    CE      <= 0;
-    WR      <= {CHIP_COUNT{1'b1}};
-    OE      <= 0;
 
-    #(CYCLE_TIME/2);
-    check();
-    #(CYCLE_TIME/2);
+    #(CYCLE_TIME);
+    CE  <= {CHIP_COUNT{1'b1}};
+    OE  <= {CHIP_COUNT{1'b1}};
+    #(CYCLE_TIME);
   end
-
-  #(CYCLE_TIME);
-  CE  <= {CHIP_COUNT{1'b1}};
-  OE  <= {CHIP_COUNT{1'b1}};
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
