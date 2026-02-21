@@ -4,7 +4,6 @@ initial begin
   $vcdplusfile("mmu_tb.dump.vpd");
   $vcdpluson(0, mmu_tb); 
   $vcdpluson(0, mmu_tb.DUT); 
-  // $vcdpluson(0, mmu_tb.DUT.mem_module.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;
@@ -53,7 +52,7 @@ wire  [31:0]  DATA_BUS = DATA_driver_enable ? DATA_driver : {32{1'bz}};
 wire   [14:0]  ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {15{1'bz}};
 
 
-mmu #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
+mmu #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
   .rst          (rst          )    , .clk(clk), 
   .DC_MEM_WR_ACK(DC_MEM_WR_ACK)    , .DMA_MEM_WR_ACK(DMA_MEM_WR_ACK),
   .DC_MEM_RD_ACK(DC_MEM_RD_ACK)    , .IC_MEM_RD_ACK(IC_MEM_RD_ACK),
