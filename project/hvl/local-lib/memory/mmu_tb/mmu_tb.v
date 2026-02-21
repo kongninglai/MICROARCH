@@ -46,6 +46,8 @@ reg           DATA_driver_enable;
 reg   [14:0]  ADDR_driver;
 reg           ADDR_driver_enable;
 
+reg   [127:0] RAND_DATA;
+
 wire  [15:0]  WR_mask  = WR_mask_driver_enable ? WR_mask_driver : {16{1'bz}};
 wire  [31:0]  DATA_BUS = DATA_driver_enable ? DATA_driver : {32{1'bz}};
 wire   [14:0]  ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {15{1'bz}};
@@ -162,31 +164,68 @@ task driveRDaddr;
   end
 endtask
 
-task driveRDaddrICACHE;
-  input [MEM_ADDR_WIDTH-1:0]  MEM_ADDR;
+task check;
+  input [31:0] EXPECTED_DATA;
   begin
-    #(DELAY_ADJ);
-    ADDR_driver             <= MEM_ADDR;
-    ADDR_driver_enable      <= 1'b1;
-    #(1 * CYCLE_TIME);
-    stopAllDrivers();
-    #(CYCLE_TIME - DELAY_ADJ);
+    if (DATA_BUS !== EXPECTED_DATA) begin
+      FAILURES = FAILURES + 1;
+      $display("FAILURE AT TIME %t. EXP = %h, DATA = %h\n", 
+                $time, EXPECTED_DATA, DATA_BUS);
+    end else begin
+      SUCCESSES = SUCCESSES + 1;
+    end
   end
 endtask
+
+
+task checkRDaddr;
+  input [RANK_BIT_WIDTH-1:0] EXPECTED_DATA;
+  begin
+    #((1 + RD_EN_CYCLES + 1) * CYCLE_TIME);
+    check(EXPECTED_DATA[31:0]);
+    #(CYCLE_TIME);
+    check(EXPECTED_DATA[63:32]);
+    #(CYCLE_TIME);
+    check(EXPECTED_DATA[95:64]);
+    #(CYCLE_TIME);
+    check(EXPECTED_DATA[127:96]);
+    #(CYCLE_TIME);
+  end
+endtask
+
 
 initial begin
   rst               <= 1'b0;
   deassertAll();
   stopAllDrivers();
   #(1.5 * CYCLE_TIME);
-
-  // for (i = 0; i < 2048; i = i + 2)
-  // {
-
-  // }
-
-
   rst               <= 1'b1;
+  #(CYCLE_TIME);
+
+  for (i = 0; i < 2048; i = i + 1) begin
+    assertOneCycle(0);
+    RAND_DATA = {$random, $random, $random, $random};
+    fork
+      driveWRmaskWRaddr(16'h0000, (i << 4));
+      driveWRdata(RAND_DATA);
+    join
+
+    #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+    assertOneCycle(2);
+    fork
+      driveRDaddr(i << 4);
+      checkRDaddr(RAND_DATA);
+    join
+  end
+
+  
+  for (i = 0; i < 32; i = i + 1) begin
+    assertOneCycle(3);
+    driveRDaddr(i << 4);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  end
+
+  /*
   assertOneCycle(0);
 
   fork
@@ -209,8 +248,9 @@ initial begin
   #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
 
   assertOneCycle(3);
-  driveRDaddrICACHE(15'h43F0);
+  driveRDaddr(15'h43F0);
   #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  */
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
