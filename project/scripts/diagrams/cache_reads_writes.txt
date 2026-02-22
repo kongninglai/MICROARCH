@@ -7,6 +7,7 @@
     {name: 'DC_MEM_RD_RQ', wave: '0..........1.0............'},
     {name: 'DC_MEM_RD_ACK', wave:    '0...........10............'},
     {name: 'MEM_BUSY', wave: '0..1.......0.1...........0'},
+    {name: 'DATA_VALID_BAR', wave: '1....................0...1'},
   ],
   {name: 'DATA BUS', wave: 'x..3456x.............3456x', data:['D0', 'D1', 'D2', 'D3', 'D0', 'D1', 'D2', 'D3']},
   {name: 'ADDR BUS', wave: 'x..2...x.....2x...........', data:['WRITE ADDR (TO SB)', 'RDA']},

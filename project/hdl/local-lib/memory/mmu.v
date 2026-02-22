@@ -43,7 +43,7 @@ module mmu #(
   input     [CHIPS_PER_RANK-1:0]    WR_mask,
   input     [MEM_ADDR_WIDTH-1:0]    ADDR_BUS,
   inout     [BUS_BIT_WIDTH-1:0]     DATA_BUS,
-  output                            MEM_BUSY
+  output                            MEM_BUSY, DATA_VALID_BAR
 );
 
 /*** REWRITE COUNTER VALUES AS WIRES ***/
@@ -94,7 +94,18 @@ bufferH16$  bufferH16$_MEM_ADDR_GATE_LD_buf16(MEM_ADDR_GATE_LD_buf16, MEM_ADDR_G
 bufferH256$ bufferH256$_MEM_DIO_GATE_buf256(MEM_DIO_GATE_buf256, MEM_DIO_GATE);
 bufferH64$  bufferH64$_DATA_BUS_GATE_buf64(DATA_BUS_GATE_buf64, DATA_BUS_GATE);
 
-or4$    or4$_MEM_BUSY(MEM_BUSY, Q3, Q2, Q1, Q0);
+wire    MEM_BUSY_DRIVER_VALUE;
+or4$    or4$_MEM_BUSY_DRIVER_VALUE(MEM_BUSY_DRIVER_VALUE, Q3, Q2, Q1, Q0);
+tristate_bus_driver1$  tristate_bus_driver1$_MEM_BUSY(.enbar(1'b0), 
+                                                      .in(MEM_BUSY_DRIVER_VALUE), 
+                                                      .out(MEM_BUSY));
+
+wire    DATA_VALID_BAR_DRIVER_VALUE, NOT_MEM_BUSY_DRIVER_VALUE;
+assign  DATA_VALID_BAR_DRIVER_VALUE = DATA_BUS_GATE_buf64;
+inv1$   inv1$_NOT_MEM_BUSY_DRIVER_VALUE(NOT_MEM_BUSY_DRIVER_VALUE, MEM_BUSY_DRIVER_VALUE);
+tristate_bus_driver1$  tristate_bus_driver1$_DATA_VALID_BAR(.enbar(NOT_MEM_BUSY_DRIVER_VALUE), 
+                                                            .in(DATA_VALID_BAR_DRIVER_VALUE), 
+                                                            .out(DATA_VALID_BAR));
 
 /*** STORE BUFFER ***/
 

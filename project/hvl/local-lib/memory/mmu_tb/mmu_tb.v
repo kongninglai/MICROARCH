@@ -51,6 +51,8 @@ wire  [15:0]  WR_mask  = WR_mask_driver_enable ? WR_mask_driver : {16{1'bz}};
 wire  [31:0]  DATA_BUS = DATA_driver_enable ? DATA_driver : {32{1'bz}};
 wire   [14:0]  ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {15{1'bz}};
 
+wire          MEM_BUSY, DATA_VALID_BAR;
+
 
 mmu #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
   .rst          (rst          )    , .clk(clk), 
@@ -59,7 +61,7 @@ mmu #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
   .WR_mask      (WR_mask      )    ,
   .ADDR_BUS     (ADDR_BUS     )    ,
   .DATA_BUS     (DATA_BUS     )    ,
-  .MEM_BUSY     (MEM_BUSY     )
+  .MEM_BUSY     (MEM_BUSY     )    , .DATA_VALID_BAR(DATA_VALID_BAR)
 );
 
 integer SUCCESSES = 0;
@@ -201,6 +203,7 @@ initial begin
   rst               <= 1'b1;
   #(CYCLE_TIME);
 
+  // for (i = 0; i < 32; i = i + 1) begin
   for (i = 0; i < 2048; i = i + 1) begin
     assertOneCycle(0);
     RAND_DATA = {$random, $random, $random, $random};

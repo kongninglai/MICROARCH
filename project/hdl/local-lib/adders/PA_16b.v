@@ -22,9 +22,12 @@ module PA_16b (
 	
 	// gen_prop_2(Gi_j, Pi_j, Pi_k, Pkm1_j, Gi_k, Gkm1_j)
 	
+  assign Pi_im1[0] = 1'b1;
+  assign Gi_im1[0] = Gi_i[0];
+
 	genvar i;
 	generate
-		 for (i = 0; i < 8; i = i + 1) begin : STAGE1
+		 for (i = 1; i < 8; i = i + 1) begin : STAGE1
 			  gen_prop_2 gp1_0(Gi_im1[i], Pi_im1[i], Pi_i[2*i], Pi_i[2*i - 1], Gi_i[2*i], Gi_i[2*i - 1]);
 		 end
 	endgenerate

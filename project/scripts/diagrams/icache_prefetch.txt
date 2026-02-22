@@ -4,6 +4,7 @@
    {name: 'IC_MEM_RD_RQ', 	  wave: '01.0................'},
     {name: 'IC_MEM_RD_ACK',   wave: '0.10................'},
     {name: 'MEM_BUSY', 		    wave: '0..1...............0'},
+    {name: 'DATA_VALID_BAR',    wave: '1..........0.......1'},
   ],
   {name: 'DATA BUS', 		      wave: 'x..........34567892x', data:['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7']},
   {name: 'ADDR BUS', 		      wave: 'x..2x...............', data:['RDA']},

@@ -39,6 +39,7 @@ mux8_tb                        FAILURES=0      SUCCESSES=2048
 negate_32b_tb                  FAILURES=0      SUCCESSES=258   
 PA_16b_tb                      FAILURES=0      SUCCESSES=1024  
 PA_32b_tb                      FAILURES=0      SUCCESSES=1030  
+PA_4b_tb                       FAILURES=0      SUCCESSES=258   
 PA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 rank_tb                        FAILURES=0      SUCCESSES=2048  
 reg_n_tb                       FAILURES=0      SUCCESSES=1000  
