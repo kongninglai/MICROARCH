@@ -22,7 +22,7 @@ module PA_16b (
 	
 	// gen_prop_2(Gi_j, Pi_j, Pi_k, Pkm1_j, Gi_k, Gkm1_j)
 	
-  assign Pi_im1[0] = 1'b1;
+  assign Pi_im1[0] = 1'b0;
   assign Gi_im1[0] = Gi_i[0];
 
 	genvar i;

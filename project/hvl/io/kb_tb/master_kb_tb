@@ -9,5 +9,5 @@
 ~/MICROARCH/project/hdl/local-lib/adders/gen_prop_2.v
 ~/MICROARCH/project/hdl/local-lib/adders/PA_8b.v
 ~/MICROARCH/project/hdl/io/dff32.v
-~/MICROARCH/project/hdl/io/kmu.v
-~/MICROARCH/project/hvl/io/kmu_tb/kmu_tb.v
+~/MICROARCH/project/hdl/io/kb.v
+~/MICROARCH/project/hvl/io/kb_tb/kb_tb.v

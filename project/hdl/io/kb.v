@@ -1,4 +1,4 @@
-module kmu #(
+module kb #(
   parameter MEM_BYTE_CAPACITY = 32768,
   parameter BURST_SIZE=4,
   /* IMPORTANT: All parameters assume DELAY_ADJ < CYCLE_TIME <= 17 */

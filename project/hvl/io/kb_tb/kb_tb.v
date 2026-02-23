@@ -1,8 +1,8 @@
-module  kmu_tb;
+module  kb_tb;
 
 initial begin
-  $vcdplusfile("kmu_tb.dump.vpd");
-  $vcdpluson(0, kmu_tb); 
+  $vcdplusfile("kb_tb.dump.vpd");
+  $vcdpluson(0, kb_tb); 
 end
 
 reg           rst, clk, RD_KBDR, RD_KBSR, WE;
@@ -44,7 +44,7 @@ localparam V_CT_DRIVE_STAT   = ADDR_HIZ_PROT + RD_EN_DURATION + (RD_DIS_TO_DATA_
 localparam V_CT_DRIVE_DATA   = ADDR_HIZ_PROT + RD_EN_DURATION + (RD_DIS_TO_DATA_V + ((BURST_SIZE-1) * RD_CLK_SPACING)) - 1;
 localparam V_CT_CLR_RDY      = RD_TO_BUS_FREE - 1;
 
-kmu DUT(
+kb DUT(
   .rst(rst), .clk(clk), .RD_KBDR(RD_KBDR), .RD_KBSR(RD_KBSR),
   .WE(WE), .new_data(new_data), .DATA_BUS(DATA_BUS)
 );

@@ -16,7 +16,7 @@
     {name: 'CE', wave: '1......0...1..0......1....'},
     {name: 'WE', wave: '1......0...1..............'},
     {name: 'OE', wave: '1.............0......1....'},
-    {name: 'A', wave: 'x...2......x..2......x....', data:['WRITE ADDR (FROM SB)', 'RD ADDR (FROM MMU)']},
+    {name: 'A', wave: 'x...2......x..2......x....', data:['WRITE ADDR (FROM SB)', 'RD ADDR (FROM MCU)']},
     {name: 'DIO[127:0]', wave: 'x...2......x........2x....', data:['WRITE DATA (FROM SB)', 'D']}
   ]
 ],

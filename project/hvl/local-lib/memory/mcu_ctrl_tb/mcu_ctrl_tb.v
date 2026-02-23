@@ -1,10 +1,10 @@
-module  mmu_ctrl_tb;
+module  mcu_ctrl_tb;
 
 initial begin
-  $vcdplusfile("mmu_ctrl_tb.dump.vpd");
-  $vcdpluson(0, mmu_ctrl_tb); 
-  // $vcdpluson(0, mmu_ctrl_tb.DUT); 
-  // $vcdpluson(0, mmu_ctrl_tb.DUT.mem_module.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem); 
+  $vcdplusfile("mcu_ctrl_tb.dump.vpd");
+  $vcdpluson(0, mcu_ctrl_tb); 
+  // $vcdpluson(0, mcu_ctrl_tb.DUT); 
+  // $vcdpluson(0, mcu_ctrl_tb.DUT.mem_module.rank_group_generation[0].rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;
@@ -41,7 +41,7 @@ reg     rst, clk, DC_MEM_WR_ACK, DMA_MEM_WR_ACK, DC_MEM_RD_ACK, IC_MEM_RD_ACK;
 wire    [2:0] MEM_CTRL_Q_MUX;
 
 
-mmu_ctrl #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
+mcu_ctrl #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
   .rst          (rst          )    , .clk(clk), 
   .DC_MEM_WR_ACK(DC_MEM_WR_ACK)    , .DMA_MEM_WR_ACK(DMA_MEM_WR_ACK),
   .DC_MEM_RD_ACK(DC_MEM_RD_ACK)    , .IC_MEM_RD_ACK(IC_MEM_RD_ACK),

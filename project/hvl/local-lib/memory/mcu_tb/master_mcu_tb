@@ -17,6 +17,6 @@
 ~/MICROARCH/project/hdl/local-lib/adders/big_increment.v
 ~/MICROARCH/project/hdl/local-lib/memory/rank.v
 ~/MICROARCH/project/hdl/local-lib/memory/main_memory.v
-~/MICROARCH/project/hdl/local-lib/memory/mmu_ctrl.v
-~/MICROARCH/project/hdl/local-lib/memory/mmu.v
-~/MICROARCH/project/hvl/local-lib/memory/mmu_tb/mmu_tb.v
+~/MICROARCH/project/hdl/local-lib/memory/mcu_ctrl.v
+~/MICROARCH/project/hdl/local-lib/memory/mcu.v
+~/MICROARCH/project/hvl/local-lib/memory/mcu_tb/mcu_tb.v

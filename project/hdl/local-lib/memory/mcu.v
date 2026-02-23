@@ -1,4 +1,4 @@
-module mmu #(
+module mcu #(
   parameter MEM_BYTE_CAPACITY=32768,
   parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
 
@@ -340,14 +340,14 @@ reg_n #(
   .q(LOAD_BUFFER_DATA)
 );
 
-/* mmu_ctrl determines which OE, CE, and WR gets picked */
+/* mcu_ctrl determines which OE, CE, and WR gets picked */
 
 wire  [2:0] MEM_CTRL_Q_MUX;
 
-mmu_ctrl #(
+mcu_ctrl #(
   .MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY),
   .CYCLE_TIME_X10(CYCLE_TIME_X10)
-) mmu_ctrl_inst (
+) mcu_ctrl_inst (
   .rst(rst), .clk(clk), 
   .DC_MEM_WR_ACK(DC_MEM_WR_ACK), .DMA_MEM_WR_ACK(DMA_MEM_WR_ACK),
   .DC_MEM_RD_ACK(DC_MEM_RD_ACK), .IC_MEM_RD_ACK(IC_MEM_RD_ACK),

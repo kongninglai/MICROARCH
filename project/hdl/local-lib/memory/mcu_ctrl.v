@@ -1,4 +1,4 @@
-module mmu_ctrl #(
+module mcu_ctrl #(
   parameter MEM_BYTE_CAPACITY=32768,
   parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
 

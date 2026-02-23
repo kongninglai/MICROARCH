@@ -1,9 +1,9 @@
-module  mmu_tb;
+module  mcu_tb;
 
 initial begin
-  $vcdplusfile("mmu_tb.dump.vpd");
-  $vcdpluson(0, mmu_tb); 
-  $vcdpluson(0, mmu_tb.DUT); 
+  $vcdplusfile("mcu_tb.dump.vpd");
+  $vcdpluson(0, mcu_tb); 
+  $vcdpluson(0, mcu_tb.DUT); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;
@@ -54,7 +54,7 @@ wire   [14:0]  ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {15{1'bz}};
 wire          MEM_BUSY, DATA_VALID_BAR;
 
 
-mmu #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
+mcu #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
   .rst          (rst          )    , .clk(clk), 
   .DC_MEM_WR_ACK(DC_MEM_WR_ACK)    , .DMA_MEM_WR_ACK(DMA_MEM_WR_ACK),
   .DC_MEM_RD_ACK(DC_MEM_RD_ACK)    , .IC_MEM_RD_ACK(IC_MEM_RD_ACK),

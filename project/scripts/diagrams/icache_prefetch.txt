@@ -14,7 +14,7 @@
     {name: 'OE_DL',              wave: '1...0......1........'},
     {name: 'CE_PL',              wave: '1.......0......1....'},
     {name: 'OE_PL',              wave: '1.......0......1....'},
-    {name: 'A',               wave: 'x...2..........x....', data:['RD ADDR (FROM MMU)']},
+    {name: 'A',               wave: 'x...2..........x....', data:['RD ADDR (FROM MCU)']},
     {name: 'DIO[127:0]',      wave: 'x.........2x..2x....', data:['DD', 'DP']}
   ]
 ],
