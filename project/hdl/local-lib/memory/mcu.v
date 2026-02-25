@@ -64,6 +64,14 @@ assign          W_CT_SHORT_BRST_DONE  = V_CT_SHORT_BRST_DONE;
 wire  [2:0] STATE, NEXT_STATE;
 wire        Q2,Q1,Q0;
 wire        D2,D1,D0;
+
+wire        Q2_prebuf,Q1_prebuf,Q0_prebuf;
+wire        Q2_bar_prebuf,Q1_bar_prebuf,Q0_bar_prebuf;
+
+bufferH16$  bufferH16$_Q2(Q2, Q2_prebuf);
+bufferH16$  bufferH16$_Q1(Q1, Q1_prebuf);
+bufferH16$  bufferH16$_Q0(Q0, Q0_prebuf);
+
 wire  [2:0] counter, counter_buf1024;
 wire        L2B_CTR;
 
@@ -487,79 +495,85 @@ main_memory #(
 /*** BEGIN AUTO-GENERATED CODE ***/
 
 /* Inverters */
-        wire WRITE_DONE_bar;
-        inv1$ inv_0(WRITE_DONE_bar, WRITE_DONE);
-        wire Q2_bar;
-        wire SHORT_BRST_DONE_bar;
-        inv1$ inv_2(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
-        wire Q1_bar;
-        wire Q0_bar;
-        wire L2B_CTR_bar;
-        inv1$ inv_5(L2B_CTR_bar, L2B_CTR);
+wire WRITE_DONE_bar;
+inv1$ inv_0(WRITE_DONE_bar, WRITE_DONE);
+wire Q2_bar;
+wire SHORT_BRST_DONE_bar;
+inv1$ inv_2(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
+wire Q1_bar;
+wire Q0_bar;
+wire L2B_CTR_bar;
+inv1$ inv_5(L2B_CTR_bar, L2B_CTR);
 
-        /* Product Expressions */
-        wire and_0_0_out;
-        and3$ and_0_0(and_0_0_out,Q1,Q0_bar,WRITE_DONE_bar);
-        wire and_1_0_out;
-        and4$ and_1_0(and_1_0_out,Q2_bar,Q1_bar,Q0_bar,DMA_MEM_WR_ACK);
-        wire and_2_0_out;
-        and4$ and_2_0(and_2_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_WR_ACK);
-        wire and_3_0_out;
-        and4$ and_3_0(and_3_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
-        wire and_4_0_out;
-        and3$ and_4_0(and_4_0_out,Q2,Q0_bar,RD_EN_DONE);
-        wire and_5_0_out;
-        and3$ and_5_0(and_5_0_out,Q2_bar,Q1,Q0);
-        wire and_6_0_out;
-        and4$ and_6_0(and_6_0_out,Q2_bar,Q1_bar,Q0_bar,IC_MEM_RD_ACK);
-        wire and_7_0_out;
-        and4$ and_7_0(and_7_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_RD_ACK);
-        wire and_8_0_out;
-        and4$ and_8_0(and_8_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
-        wire and_9_0_out;
-        and4$ and_9_0(and_9_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE);
-        wire and_10_0_out;
-        and4$ and_10_0(and_10_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE_bar);
-        wire and_11_0_out;
-        and3$ and_11_0(and_11_0_out,Q2,Q1,L2B_CTR_bar);
-        wire and_12_0_out;
-        and2$ and_12_0(and_12_0_out,Q2,Q0_bar);
-        wire and_13_0_out;
-        and2$ and_13_0(and_13_0_out,Q1,Q0);
-        wire and_14_0_out;
-        assign and_14_0_out = Q2_bar;
-        wire and_15_0_out;
-        and3$ and_15_0(and_15_0_out,Q2,Q1,Q0_bar);
-        wire and_16_0_out;
-        and2$ and_16_0(and_16_0_out,Q1_bar,Q0_bar);
+/* Product Expressions */
+wire and_0_0_out;
+and3$ and_0_0(and_0_0_out,Q1,Q0_bar,WRITE_DONE_bar);
+wire and_1_0_out;
+and4$ and_1_0(and_1_0_out,Q2_bar,Q1_bar,Q0_bar,DMA_MEM_WR_ACK);
+wire and_2_0_out;
+and4$ and_2_0(and_2_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_WR_ACK);
+wire and_3_0_out;
+and4$ and_3_0(and_3_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
+wire and_4_0_out;
+and3$ and_4_0(and_4_0_out,Q2,Q0_bar,RD_EN_DONE);
+wire and_5_0_out;
+and3$ and_5_0(and_5_0_out,Q2_bar,Q1,Q0);
+wire and_6_0_out;
+and4$ and_6_0(and_6_0_out,Q2_bar,Q1_bar,Q0_bar,IC_MEM_RD_ACK);
+wire and_7_0_out;
+and4$ and_7_0(and_7_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_RD_ACK);
+wire and_8_0_out;
+and4$ and_8_0(and_8_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
+wire and_9_0_out;
+and4$ and_9_0(and_9_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE);
+wire and_10_0_out;
+and4$ and_10_0(and_10_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE_bar);
+wire and_11_0_out;
+and3$ and_11_0(and_11_0_out,Q2,Q1,L2B_CTR_bar);
+wire and_12_0_out;
+and2$ and_12_0(and_12_0_out,Q2,Q0_bar);
+wire and_13_0_out;
+and2$ and_13_0(and_13_0_out,Q1,Q0);
+wire and_14_0_out;
+assign and_14_0_out = Q2_bar;
+wire and_15_0_out;
+and3$ and_15_0(and_15_0_out,Q2,Q1,Q0_bar);
+wire and_16_0_out;
+and2$ and_16_0(and_16_0_out,Q1_bar,Q0_bar);
 
-        /* Sum Expressions */
-        wire or_0_1_out;
-        or4$ or_0_0(D2,or_0_1_out,and_5_0_out,and_9_0_out,and_10_0_out);
-        or2$ or_0_1(or_0_1_out,and_11_0_out,and_12_0_out);
-        wire or_1_1_out;
-        or4$ or_1_0(D1,or_1_1_out,and_0_0_out,and_3_0_out,and_6_0_out);
-        or4$ or_1_1(or_1_1_out,and_7_0_out,and_9_0_out,and_11_0_out,and_15_0_out);
-        wire or_2_1_out;
-        wire or_2_2_out;
-        or4$ or_2_0(D0,or_2_1_out,or_2_2_out,and_1_0_out,and_2_0_out);
-        or4$ or_2_1(or_2_1_out,and_4_0_out,and_6_0_out,and_7_0_out,and_8_0_out);
-        or3$ or_2_2(or_2_2_out,and_10_0_out,and_11_0_out,and_15_0_out);
-        wire or_3_1_out;
-        or4$ or_3_0(MEM_ADDR_GATE_ST,or_3_1_out,and_9_0_out,and_10_0_out,and_13_0_out);
-        or2$ or_3_1(or_3_1_out,and_15_0_out,and_16_0_out);
-        or2$ or_4_0(MEM_ADDR_GATE_LD,and_13_0_out,and_14_0_out);
-        wire or_5_1_out;
-        or4$ or_5_0(MEM_DIO_GATE,or_5_1_out,and_3_0_out,and_8_0_out,and_9_0_out);
-        or4$ or_5_1(or_5_1_out,and_10_0_out,and_13_0_out,and_15_0_out,and_16_0_out);
-        or2$ or_6_0(DATA_BUS_GATE,and_14_0_out,and_16_0_out);
-        or2$ or_7_0(STORE_BUF_LD_EN,and_3_0_out,and_8_0_out);
-        assign LOAD_BUF_LD_EN = and_12_0_out;
-        assign LOAD_ADDR_LD_EN = and_5_0_out;
+/* Sum Expressions */
+wire or_0_1_out;
+or4$ or_0_0(D2,or_0_1_out,and_5_0_out,and_9_0_out,and_10_0_out);
+or2$ or_0_1(or_0_1_out,and_11_0_out,and_12_0_out);
+wire or_1_1_out;
+or4$ or_1_0(D1,or_1_1_out,and_0_0_out,and_3_0_out,and_6_0_out);
+or4$ or_1_1(or_1_1_out,and_7_0_out,and_9_0_out,and_11_0_out,and_15_0_out);
+wire or_2_1_out;
+wire or_2_2_out;
+or4$ or_2_0(D0,or_2_1_out,or_2_2_out,and_1_0_out,and_2_0_out);
+or4$ or_2_1(or_2_1_out,and_4_0_out,and_6_0_out,and_7_0_out,and_8_0_out);
+or3$ or_2_2(or_2_2_out,and_10_0_out,and_11_0_out,and_15_0_out);
+wire or_3_1_out;
+or4$ or_3_0(MEM_ADDR_GATE_ST,or_3_1_out,and_9_0_out,and_10_0_out,and_13_0_out);
+or2$ or_3_1(or_3_1_out,and_15_0_out,and_16_0_out);
+or2$ or_4_0(MEM_ADDR_GATE_LD,and_13_0_out,and_14_0_out);
+wire or_5_1_out;
+or4$ or_5_0(MEM_DIO_GATE,or_5_1_out,and_3_0_out,and_8_0_out,and_9_0_out);
+or4$ or_5_1(or_5_1_out,and_10_0_out,and_13_0_out,and_15_0_out,and_16_0_out);
+or2$ or_6_0(DATA_BUS_GATE,and_14_0_out,and_16_0_out);
+or2$ or_7_0(STORE_BUF_LD_EN,and_3_0_out,and_8_0_out);
+assign LOAD_BUF_LD_EN = and_12_0_out;
+assign LOAD_ADDR_LD_EN = and_5_0_out;
 
 /* State Flip Flops */
-dff$ dff_0(clk, D0, Q0, Q0_bar, rst, 1'b1);
-dff$ dff_1(clk, D1, Q1, Q1_bar, rst, 1'b1);
-dff$ dff_2(clk, D2, Q2, Q2_bar, rst, 1'b1);
+dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);
+dff$ dff_1(clk, D1, Q1_prebuf, Q1_bar_prebuf, rst, 1'b1);
+dff$ dff_2(clk, D2, Q2_prebuf, Q2_bar_prebuf, rst, 1'b1);
+
+/* INVERT STATE BITS */
+
+bufferH16$  bufferH16$_Q2_bar(Q2_bar, Q2_bar_prebuf);
+bufferH16$  bufferH16$_Q1_bar(Q1_bar, Q1_bar_prebuf);
+bufferH16$  bufferH16$_Q0_bar(Q0_bar, Q0_bar_prebuf);
 
 endmodule
