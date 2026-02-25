@@ -32,7 +32,6 @@ localparam ADDR_EN_TO_WR_EN_CYCLES   = ((ADDR_SETUP_X10  / CYCLE_TIME_X10)   + 1
 localparam WR_AND_DATA_EN_CYCLES     = ((CE_SETUP_X10  / CYCLE_TIME_X10)   + 1);
 localparam V_CT_1000   = RANK_BURST_SIZE - 1;
 localparam V_CT_0100   = WR_AND_DATA_EN_CYCLES - 1;
-localparam V_CT_0101   = RD_EN_CYCLES  - 1;
 localparam V_CT_1101   = RANK_BURST_SIZE  - 1;
 localparam V_CT_1110   = (RD_EN_CYCLES - RANK_BURST_SIZE) - 1;
 localparam V_CT_1111   = (RANK_BURST_SIZE) - 1;
@@ -71,9 +70,9 @@ initial begin
   #(1.5 * CYCLE_TIME);
   rst <= 1;
   DC_MEM_WR_ACK   <= 1'b0;
-  DMA_MEM_WR_ACK  <= 1'b0;
+  DMA_MEM_WR_ACK  <= 1'b1;
   DC_MEM_RD_ACK   <= 1'b0;
-  IC_MEM_RD_ACK   <= 1'b1;
+  IC_MEM_RD_ACK   <= 1'b0;
   #(30 * CYCLE_TIME);
   
 

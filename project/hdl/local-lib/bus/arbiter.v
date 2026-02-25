@@ -1,44 +1,4 @@
-module arbiter #(
-  parameter MEM_BYTE_CAPACITY = 32768,
-  parameter BURST_SIZE=4,
-  /* IMPORTANT: All parameters assume DELAY_ADJ < CYCLE_TIME <= 17 */
-  // Next few parameters are in units of ns
-  parameter DELAY_ADJ         = 7,
-  parameter ADDR_SETUP        = 25 + DELAY_ADJ,
-  parameter DATA_SETUP        = 25 + DELAY_ADJ,
-  parameter CE_SETUP          = 35,
-  parameter DOE_TIME          = 64,
-  parameter HZ_TIME           = 18,
-
-  parameter CYCLE_TIME        = 10,
-
-  // Next few parameters are in units of cycles
-  parameter ADDR_HIZ_PROT     = 1, // Don't enable RD when ADDR comparator can still be HiZ after clock edge
-  parameter RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1),
-  parameter RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 1, // This will fail miserably if you have a bad cycle time (>= 18 ns)
-  parameter RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1, // Needed due to tHz
-
-  // Yes, the extra + 1 should be there below in RD_CLK_SPACING
-  // Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ
-  parameter RD_CLK_SPACING    = ((HZ_TIME     / CYCLE_TIME)   + 1) + 1,
-
-  parameter ADDR_EN_TO_WR_EN  = ((ADDR_SETUP  / CYCLE_TIME)   + 1),
-  parameter DATA_EN_TO_WR_DIS = ((DATA_SETUP  / CYCLE_TIME)   + 1),
-  parameter WR_DIS_TO_DATA_EN = 1, // Protect against DIO -> posedge WR violations   
-  parameter WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1) + WR_DIS_TO_DATA_EN,
-
-
-  parameter V_CT_HIZ_PROT     = ADDR_HIZ_PROT - 1,
-  parameter V_CT_RD_EN        = RD_EN_DURATION - 1,
-  parameter V_CT_RD_BRST      = (RD_DIS_TO_DATA_V + ((BURST_SIZE-1) * RD_CLK_SPACING)) - 1,
-  parameter V_CT_BUS_FREE     = RD_TO_BUS_FREE - 1,
-  parameter V_CT_WR_ADDR      = ADDR_EN_TO_WR_EN - 1,
-  parameter V_CT_WR_EN        = WR_CLK_SPACING - 1,
-  parameter V_CT_WR_BRST      = (WR_DIS_TO_DATA_EN + ((BURST_SIZE-1) * WR_CLK_SPACING)) - 1,
-
-  parameter V_CT_WR_DIS       = (V_CT_WR_ADDR + 1) + (V_CT_WR_EN + 1) + (V_CT_WR_BRST + 1) - 1,
-  parameter V_CT_RD_DIS       = (V_CT_HIZ_PROT + 1) + (V_CT_RD_EN + 1) + (V_CT_RD_BRST + 1) + (V_CT_BUS_FREE + 1) - 1
-) (
+module arbiter (
   input               rst, clk,
                       DC_MEM_WR_RQ, DC_DMA_WR_RQ, DC_MEM_RD_RQ, DC_DMA_RD_RQ, DC_KB_RD_KBDR_RQ, DC_KB_RD_KBSR_RQ, IC_MEM_RD_RQ, DMA_MEM_WR_RQ,
   output              DC_WR_ACK, DC_RD_ACK, IC_RD_ACK, DMA_WR_ACK, 

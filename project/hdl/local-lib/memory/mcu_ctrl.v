@@ -35,7 +35,6 @@ module mcu_ctrl #(
 
   parameter V_CT_1000   = RANK_BURST_SIZE - 1,
   parameter V_CT_0100   = WR_AND_DATA_EN_CYCLES - 1,
-  parameter V_CT_0101   = RD_EN_CYCLES  - 1,
   parameter V_CT_1101   = RANK_BURST_SIZE  - 1,
   parameter V_CT_1110   = (RD_EN_CYCLES - RANK_BURST_SIZE) - 1,
   parameter V_CT_1111   = (RANK_BURST_SIZE) - 1
@@ -50,7 +49,6 @@ module mcu_ctrl #(
 
 wire    [0:0]   CT_1000,
                 CT_0100,
-                CT_0101,
                 CT_1101,
                 CT_1110,
                 CT_1111;
@@ -64,7 +62,6 @@ wire    [2:0]   W_CT_1000,
 
 assign          W_CT_1000 = V_CT_1000 ;  
 assign          W_CT_0100 = V_CT_0100 ;  
-assign          W_CT_0101 = V_CT_0101 ;  
 assign          W_CT_1101 = V_CT_1101 ;  
 assign          W_CT_1110 = V_CT_1110 ;
 assign          W_CT_1111 = V_CT_1111 ;
@@ -121,26 +118,23 @@ reg_n #(
 
 big_eq  #(.WIDTH(3)) done_1000  (.in0(counter_buf16), .in1(W_CT_1000), .eq(CT_1000));
 big_eq  #(.WIDTH(3)) done_0100  (.in0(counter_buf16), .in1(W_CT_0100), .eq(CT_0100));
-big_eq  #(.WIDTH(3)) done_0101  (.in0(counter_buf16), .in1(W_CT_0101), .eq(CT_0101));
 big_eq  #(.WIDTH(3)) done_1101  (.in0(counter_buf16), .in1(W_CT_1101), .eq(CT_1101));
 big_eq  #(.WIDTH(3)) done_1110  (.in0(counter_buf16), .in1(W_CT_1110), .eq(CT_1110));
 big_eq  #(.WIDTH(3)) done_1111  (.in0(counter_buf16), .in1(W_CT_1111), .eq(CT_1111));
 
 /* Inverters */
 wire Q0_bar;
-wire Q3_bar;
-wire CT_0101_bar;
-inv1$ inv_2(CT_0101_bar, CT_0101);
-wire CT_0100_bar;
-inv1$ inv_3(CT_0100_bar, CT_0100);
-wire CT_1000_bar;
-inv1$ inv_4(CT_1000_bar, CT_1000);
 wire Q2_bar;
-wire CT_1111_bar;
-inv1$ inv_6(CT_1111_bar, CT_1111);
-wire CT_1101_bar;
-inv1$ inv_7(CT_1101_bar, CT_1101);
+wire CT_0100_bar;
+inv1$ inv_2(CT_0100_bar, CT_0100);
 wire Q1_bar;
+wire Q3_bar;
+wire CT_1101_bar;
+inv1$ inv_5(CT_1101_bar, CT_1101);
+wire CT_1000_bar;
+inv1$ inv_6(CT_1000_bar, CT_1000);
+wire CT_1111_bar;
+inv1$ inv_7(CT_1111_bar, CT_1111);
 
 /* Product Expressions */
 wire and_0_0_out;
@@ -149,56 +143,56 @@ and4$ and_0_0(and_0_0_out,and_0_1_out,Q3,Q2,Q1);
 and2$ and_0_1(and_0_1_out,Q0_bar,CT_1110);
 wire and_1_0_out;
 wire and_1_1_out;
-and4$ and_1_0(and_1_0_out,and_1_1_out,Q3,Q2,Q1_bar);
-and2$ and_1_1(and_1_1_out,Q0,CT_1101);
+and4$ and_1_0(and_1_0_out,and_1_1_out,Q3_bar,Q2,Q1_bar);
+and2$ and_1_1(and_1_1_out,Q0_bar,CT_0100_bar);
 wire and_2_0_out;
 wire and_2_1_out;
-and4$ and_2_0(and_2_0_out,and_2_1_out,Q3_bar,Q2,Q1_bar);
-and2$ and_2_1(and_2_1_out,Q0_bar,CT_0100_bar);
+and4$ and_2_0(and_2_0_out,and_2_1_out,Q3_bar,Q2_bar,Q1_bar);
+and2$ and_2_1(and_2_1_out,Q0_bar,DMA_MEM_WR_ACK);
 wire and_3_0_out;
 wire and_3_1_out;
 and4$ and_3_0(and_3_0_out,and_3_1_out,Q3_bar,Q2_bar,Q1_bar);
-and2$ and_3_1(and_3_1_out,Q0_bar,DMA_MEM_WR_ACK);
+and2$ and_3_1(and_3_1_out,Q0_bar,DC_MEM_WR_ACK);
 wire and_4_0_out;
-wire and_4_1_out;
-and4$ and_4_0(and_4_0_out,and_4_1_out,Q3_bar,Q2_bar,Q1_bar);
-and2$ and_4_1(and_4_1_out,Q0_bar,DC_MEM_WR_ACK);
+and4$ and_4_0(and_4_0_out,Q3,Q2_bar,Q1_bar,CT_1000);
 wire and_5_0_out;
 wire and_5_1_out;
 and4$ and_5_0(and_5_0_out,and_5_1_out,Q3_bar,Q2_bar,Q1_bar);
 and2$ and_5_1(and_5_1_out,Q0_bar,IC_MEM_RD_ACK);
 wire and_6_0_out;
 wire and_6_1_out;
-and4$ and_6_0(and_6_0_out,and_6_1_out,Q3,Q2,Q1);
-and2$ and_6_1(and_6_1_out,Q0,CT_1111_bar);
+and4$ and_6_0(and_6_0_out,and_6_1_out,Q3_bar,Q2_bar,Q1_bar);
+and2$ and_6_1(and_6_1_out,Q0_bar,DC_MEM_RD_ACK);
 wire and_7_0_out;
-and4$ and_7_0(and_7_0_out,Q3_bar,Q2_bar,Q1_bar,DC_MEM_RD_ACK);
+wire and_7_1_out;
+and4$ and_7_0(and_7_0_out,and_7_1_out,Q3,Q2,Q1);
+and2$ and_7_1(and_7_1_out,Q0,CT_1111_bar);
 wire and_8_0_out;
-and4$ and_8_0(and_8_0_out,Q3,Q1_bar,Q0,CT_1101_bar);
+wire and_8_1_out;
+and4$ and_8_0(and_8_0_out,and_8_1_out,Q3,Q2,Q1_bar);
+and2$ and_8_1(and_8_1_out,Q0,CT_1101);
 wire and_9_0_out;
 and4$ and_9_0(and_9_0_out,Q3,Q2_bar,Q1_bar,CT_1000_bar);
 wire and_10_0_out;
-and4$ and_10_0(and_10_0_out,Q3,Q2_bar,Q1_bar,CT_1000);
+and4$ and_10_0(and_10_0_out,Q3,Q2,Q1,Q0_bar);
 wire and_11_0_out;
-and4$ and_11_0(and_11_0_out,Q3,Q2,Q1,Q0_bar);
+and4$ and_11_0(and_11_0_out,Q3,Q1_bar,Q0,CT_1101_bar);
 wire and_12_0_out;
-and4$ and_12_0(and_12_0_out,Q3_bar,Q1_bar,Q0,CT_0101_bar);
-wire and_13_0_out;
-and3$ and_13_0(and_13_0_out,Q2_bar,Q1_bar,Q0);
-wire and_14_0_out;
-and3$ and_14_0(and_14_0_out,Q3,Q1_bar,Q0);
+and4$ and_12_0(and_12_0_out,Q3,Q2_bar,Q1_bar,Q0);
 
 /* Sum Expressions */
 wire or_0_1_out;
-or4$ or_0_0(D3,or_0_1_out,and_3_0_out,and_4_0_out,and_5_0_out);
-or4$ or_0_1(or_0_1_out,and_6_0_out,and_9_0_out,and_11_0_out,and_14_0_out);
+wire or_0_2_out;
+or4$ or_0_0(D3,or_0_1_out,or_0_2_out,and_2_0_out,and_3_0_out);
+or4$ or_0_1(or_0_1_out,and_5_0_out,and_6_0_out,and_7_0_out,and_8_0_out);
+or4$ or_0_2(or_0_2_out,and_9_0_out,and_10_0_out,and_11_0_out,and_12_0_out);
 wire or_1_1_out;
-or4$ or_1_0(D2,or_1_1_out,and_2_0_out,and_6_0_out,and_10_0_out);
-or4$ or_1_1(or_1_1_out,and_11_0_out,and_12_0_out,and_13_0_out,and_14_0_out);
-or3$ or_2_0(D1,and_1_0_out,and_6_0_out,and_11_0_out);
+or4$ or_1_0(D2,or_1_1_out,and_1_0_out,and_4_0_out,and_7_0_out);
+or4$ or_1_1(or_1_1_out,and_8_0_out,and_10_0_out,and_11_0_out,and_12_0_out);
+or3$ or_2_0(D1,and_7_0_out,and_8_0_out,and_10_0_out);
 wire or_3_1_out;
 or4$ or_3_0(D0,or_3_1_out,and_0_0_out,and_5_0_out,and_6_0_out);
-or4$ or_3_1(or_3_1_out,and_7_0_out,and_8_0_out,and_12_0_out,and_13_0_out);
+or3$ or_3_1(or_3_1_out,and_7_0_out,and_11_0_out,and_12_0_out);
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);
