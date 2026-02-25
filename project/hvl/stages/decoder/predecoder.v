@@ -1,6 +1,6 @@
 
 //Pass in
-module predecoder(
+module decoder(
     input [127:0]  instr_bytes_in, // input instruction bytes (cache line size 16B)
     input [31:0] eip_in,    
     //input [15:0] instr_cnt,            

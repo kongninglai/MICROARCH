@@ -1,0 +1,96 @@
+module logic_true_prefix(
+    input wire [7:0] candidate_prefix0,
+    input wire [7:0] candidate_prefix1,
+    input wire [7:0] candidate_prefix2,
+    input wire [7:0] candidate_prefix3,
+    output wire is_rep_true,
+    output wire is_operand_size_override_true,
+    ouput wire is_seg_ov,
+    output wire [2:0] seg_id,
+    output wire ext_op_true
+);
+
+    //Stage 1 - 1.49ns
+    wire is_rep0, is_rep1, is_rep2, is_rep3;
+    wire is_operand_size_override0, is_operand_size_override1, is_operand_size_override2, is_operand_size_override3;
+    wire is_ext_opcode0, is_ext_opcode1, is_ext_opcode2, is_ext_opcode3;
+    wire is_es0, is_es1, is_es2, is_es3;
+    wire is_cs0, is_cs1, is_cs2, is_cs3;
+    wire is_ss0, is_ss1, is_ss2, is_ss3;
+    wire is_ds0, is_ds1, is_ds2, is_ds3;
+    wire is_fs0, is_fs1, is_fs2, is_fs3;
+    wire is_gs0, is_gs1, is_gs2, is_gs3;
+    wire is_any0, is_any1, is_any2, is_any3;
+    
+    logic_is_prefix LOGIC_IS_PREFIX0(
+        .candidate_prefix(candidate_prefix0),
+        .is_rep(is_rep0),
+        .is_operand_size_override(is_operand_size_override0),
+        .is_ext_opcode(is_ext_opcode0),
+        .is_es(is_es0),
+        .is_cs(is_cs0),
+        .is_ss(is_ss0),
+        .is_ds(is_ds0),
+        .is_fs(is_fs0),
+        .is_gs(is_gs0),
+        .is_any_prefix(is_any0)
+    );
+
+    logic_is_prefix LOGIC_IS_PREFIX1(
+        .candidate_prefix(candidate_prefix1),
+        .is_rep(is_rep1),
+        .is_operand_size_override(is_operand_size_override1),
+        .is_ext_opcode(is_ext_opcode1),
+        .is_es(is_es1),
+        .is_cs(is_cs1),
+        .is_ss(is_ss1),
+        .is_ds(is_ds1),
+        .is_fs(is_fs1),
+        .is_gs(is_gs1),
+        .is_any_prefix(is_any1)
+    );
+
+    logic_is_prefix LOGIC_IS_PREFIX2(
+        .candidate_prefix(candidate_prefix2),
+        .is_rep(is_rep2),
+        .is_operand_size_override(is_operand_size_override2),
+        .is_ext_opcode(is_ext_opcode2),
+        .is_es(is_es2),
+        .is_cs(is_cs2),
+        .is_ss(is_ss2),
+        .is_ds(is_ds2),
+        .is_fs(is_fs2),
+        .is_gs(is_gs2),
+        .is_any_prefix(is_any2)
+    );
+
+    logic_is_prefix LOGIC_IS_PREFIX3(
+        .candidate_prefix(candidate_prefix3),
+        .is_rep(is_rep3),
+        .is_operand_size_override(is_operand_size_override3),
+        .is_ext_opcode(is_ext_opcode3),
+        .is_es(is_es3),
+        .is_cs(is_cs3),
+        .is_ss(is_ss3),
+        .is_ds(is_ds3),
+        .is_fs(is_fs3),
+        .is_gs(is_gs3),
+        .is_any_prefix(is_any3)
+    );
+
+    //Stage 2 - 2.04ns (crit path)
+    wire is_seg_ov
+    logic_seg_ov SEGMENT_OVERRIDE_REG_ID_LOGIC (
+        .is_es0(is_es0), .is_es1(is_es1), .is_es2(is_es2), .is_es3(is_es3),
+        .is_cs0(is_cs0), .is_cs1(is_cs1), .is_cs2(is_cs2), .is_cs3(is_cs3),
+        .is_ss0(is_ss0), .is_ss1(is_ss1), .is_ss2(is_ss2), .is_ss3(is_ss3),
+        .is_ds0(is_ds0), .is_ds1(is_ds1), .is_ds2(is_ds2), .is_ds3(is_ds3),
+        .is_fs0(is_fs0), .is_fs1(is_fs1), .is_fs2(is_fs2), .is_fs3(is_fs3),
+        .is_gs0(is_gs0), .is_gs1(is_gs1), .is_gs2(is_gs2), .is_gs3(is_gs3),
+        .is_any_prefix0(is_any0), .is_any_prefix1(is_any1), 
+        .is_any_prefix2(is_any2), .is_any_prefix3(is_any3),
+        .is_seg_ov(is_seg_ov),           //out
+        .segment_override_reg_id(seg_id) //out
+    );
+
+endmodule
