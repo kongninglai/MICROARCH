@@ -32,6 +32,12 @@ task check;
 endtask
 
 initial begin
+  in_long = {32'hFFFFFFFF, 32'd0}; #40; check(out, out_exp);
+  in_long = {32'hFFFFFFFF, 32'd1}; #40; check(out, out_exp);
+  in_long = {32'h7FFFFFFF, 32'd0}; #40; check(out, out_exp);
+  in_long = {32'h7FFFFFFF, 32'd1}; #40; check(out, out_exp);
+  in_long = {32'h80000000, 32'h80000000}; #40; check(out, out_exp);
+  in_long = {32'h2FFFFFFF, 32'h300F0000}; #40; check(out, out_exp);
   in_long = 0;
   repeat (1 << 10) begin
     #5; 

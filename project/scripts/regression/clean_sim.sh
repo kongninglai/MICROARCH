@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$HOME/MICROARCH/project/hvl/local-lib/"
+ROOT="$HOME/MICROARCH/project/hvl/"
 
 pids=()
 

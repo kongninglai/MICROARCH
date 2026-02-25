@@ -1,0 +1,9 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib6
+~/MICROARCH/project/hdl/io/dff32.v
+~/MICROARCH/project/hdl/io/disk_rank.v
+~/MICROARCH/project/hdl/io/disk_regs.v
+~/MICROARCH/project/hvl/io/disk_regs_tb/disk_regs_tb.v

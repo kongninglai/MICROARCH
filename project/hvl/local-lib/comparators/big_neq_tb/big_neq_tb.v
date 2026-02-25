@@ -1,0 +1,58 @@
+module  big_neq_tb;
+
+initial begin
+  $vcdplusfile("big_neq_tb.dump.vpd");
+  $vcdpluson(0, big_neq_tb); 
+end
+
+localparam WIDTH = 32;
+
+reg   [WIDTH-1:0] in0, in1;
+wire              out, out_exp;
+
+big_neq #(.WIDTH(WIDTH)) DUT(.in0(in0), .in1(in1), .neq(out));
+
+big_neq_behav #(.WIDTH(WIDTH)) REF(.in0(in0), .in1(in1), .neq(out_exp));
+
+integer FAILURES  = 0;
+integer SUCCESSES = 0;
+
+task check;
+  input [WIDTH-1:0] out, out_exp;
+  if (out !== out_exp) begin
+    FAILURES = FAILURES + 1;
+    $display("FAILURE AT TIME %t. out_exp = %h, out = %h\n", 
+              $time, out_exp, out);
+  end else begin
+    SUCCESSES = SUCCESSES + 1;
+    // $display("SUCCESS AT TIME %t. out_exp = %h, out = %h\n", 
+    //           $time, out_exp, out);
+  end
+endtask
+
+initial begin
+  
+  in0 = 0; in1 = 1; #40; check(out, out_exp);
+  in0 = 1; in1 = 1; #40; check(out, out_exp);
+  in0 = 2; in1 = 1; #40; check(out, out_exp);
+  in0 = {{WIDTH-1{1'b1}},1'b0}; in1 = {WIDTH{1'b1}}; #40; check(out, out_exp);
+  in0 = {WIDTH{1'b1}}; in1 = {WIDTH{1'b1}}; #40; check(out, out_exp);
+  in0 = {WIDTH{1'b1}}; in1 = {WIDTH{1'b1}} >> 16; #40; check(out, out_exp);
+  in0 = {WIDTH{1'b1}}; in1 = {WIDTH{1'b1}} >> 24; #40; check(out, out_exp);
+  in0 = 0; in1 = {WIDTH{1'b1}}; #40; check(out, out_exp);
+  in0 = 0; in1 = 1;
+  repeat (1 << 8) begin
+    #40;
+    check(out, out_exp);
+    in0  = $random;
+    in1  = $random;
+  end
+
+  $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+
+  $finish;
+
+end
+
+endmodule
