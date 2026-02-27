@@ -1,4 +1,4 @@
-arbiter_tb                     COMPILE_ERROR
+arbiter_tb                     FAILURES=0      SUCCESSES=16    
 big_and_tb                     FAILURES=0      SUCCESSES=4096  
 big_decrement_tb               FAILURES=0      SUCCESSES=4097  
 big_eq_tb                      FAILURES=0      SUCCESSES=264   

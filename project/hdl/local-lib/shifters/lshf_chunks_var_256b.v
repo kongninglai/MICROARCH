@@ -8,9 +8,9 @@ module lshf_chunks_var_256b #(
 
 wire [255:0] lshf_out [255:1];
 
-wire  [3:0] shf_amt_buf256;
+wire  [3:0] shf_amt_buf1024;
 
-bufferH256$    bufferH256$_shf_amt_buf16[3:0](shf_amt_buf256, shf_amt);
+bufferH1024$    bufferH1024$_shf_amt_buf1024[3:0](shf_amt_buf1024, shf_amt);
 
 genvar i;
 generate
@@ -41,10 +41,10 @@ mux16 mux16_0[255:0] (
   .in13(lshf_out[13]),
   .in14(lshf_out[14]),
   .in15(lshf_out[15]),
-  .s0(shf_amt_buf256[0]),
-  .s1(shf_amt_buf256[1]),
-  .s2(shf_amt_buf256[2]),
-  .s3(shf_amt_buf256[3]),
+  .s0(shf_amt_buf1024[0]),
+  .s1(shf_amt_buf1024[1]),
+  .s2(shf_amt_buf1024[2]),
+  .s3(shf_amt_buf1024[3]),
   .outb(out)
 );
 
