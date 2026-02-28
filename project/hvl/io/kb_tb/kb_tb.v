@@ -3,54 +3,83 @@ module  kb_tb;
 initial begin
   $vcdplusfile("kb_tb.dump.vpd");
   $vcdpluson(0, kb_tb); 
+  $vcdpluson(0, kb_tb.DUT); 
 end
 
-reg           rst, clk, RD_KBDR, RD_KBSR, WE;
-reg   [31:0]  new_data;
-wire  [31:0]  DATA_BUS;
+localparam MEM_BYTE_CAPACITY=32768;
+localparam MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY);
+localparam CHIP_BIT_WIDTH=8;
+localparam CHIP_BYTE_WIDTH=CHIP_BIT_WIDTH/8;
+localparam CHIP_ROW_COUNT=128;
+localparam CHIP_BYTE_CAPACITY=CHIP_ROW_COUNT*CHIP_BYTE_WIDTH;
+localparam CHIP_COUNT=MEM_BYTE_CAPACITY/CHIP_BYTE_CAPACITY;
+localparam BUS_BIT_WIDTH=32;
+localparam RANK_BIT_WIDTH=128;
+localparam RANK_BURST_SIZE=RANK_BIT_WIDTH/BUS_BIT_WIDTH;
+localparam CHIPS_PER_RANK=RANK_BIT_WIDTH/CHIP_BIT_WIDTH;
+localparam RANK_BYTE_CAPACITY=CHIP_BYTE_CAPACITY*CHIPS_PER_RANK;
+localparam RANK_COUNT=MEM_BYTE_CAPACITY/RANK_BYTE_CAPACITY;
+localparam RANK_IDX_WIDTH=$clog2(RANK_COUNT);
+localparam RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK);
+localparam ADDR_SETUP_X10            = 280;
+localparam CE_SETUP_X10              = 370;
+localparam DOE_TIME_X10              = 620;
+localparam HZ_TIME_X10               = 175;
+localparam CYCLE_TIME_X10            = 100;
+localparam RD_EN_CYCLES              = ((DOE_TIME_X10 / CYCLE_TIME_X10)   + 1);
+localparam ADDR_EN_TO_WR_EN_CYCLES   = ((ADDR_SETUP_X10  / CYCLE_TIME_X10)   + 1);
+localparam WR_AND_DATA_EN_CYCLES     = ((CE_SETUP_X10  / CYCLE_TIME_X10)   + 1);
+localparam V_CT_WRITE_DONE           = WR_AND_DATA_EN_CYCLES - 1;
+localparam V_CT_RD_EN_DONE           = RD_EN_CYCLES - 1;
+localparam V_CT_SHORT_BRST_DONE      = (RANK_BURST_SIZE - 1) - 1;
 
-localparam MEM_BYTE_CAPACITY = 32768;
-localparam BURST_SIZE=4;
-/* IMPORTANT: All parameters assume DELAY_ADJ < CYCLE_TIME <= 17 */
-// Next few parameters are in units of ns
-localparam DELAY_ADJ         = 7;
-localparam ADDR_SETUP        = 25 + DELAY_ADJ;
-localparam DATA_SETUP        = 25 + DELAY_ADJ;
-localparam CE_SETUP          = 35;
-localparam DOE_TIME          = 64;
-localparam HZ_TIME           = 18;
+localparam DELAY_ADJ = 7;
 
-localparam CYCLE_TIME        = 10;
+reg     rst, clk, DC_KB_WR_ACK, DC_KB_RD_ACK;
 
-// Next few parameters are in units of cycles
-localparam ADDR_HIZ_PROT     = 1; // Don't enable RD when ADDR comparator can still be HiZ after clock edge
-localparam RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1);
-localparam RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 1; // This will fail miserably if you have a bad cycle time (>= 18 ns)
-localparam RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1; // Needed due to tHz
+reg   [15:0]  WR_mask_driver;
+reg           WR_mask_driver_enable;
 
-// Yes, the extra + 1 should be there below in RD_CLK_SPACING
-// Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ
-localparam RD_CLK_SPACING    = ((HZ_TIME     / CYCLE_TIME)   + 1) + 1;
-localparam ADDR_EN_TO_WR_EN  = ((ADDR_SETUP  / CYCLE_TIME)   + 1);
-localparam DATA_EN_TO_WR_DIS = ((DATA_SETUP  / CYCLE_TIME)   + 1);
-localparam WR_DIS_TO_DATA_EN = 1; // Protect against DIO -> posedge WR violations
-localparam WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1) + WR_DIS_TO_DATA_EN; // again to protect DIO -> posedge WR for ALL ranks
-localparam V_CT_HIZ_PROT     = ADDR_HIZ_PROT - 1;
-localparam V_CT_RD_EN        = RD_EN_DURATION - 1;
-localparam V_CT_RD_BRST      = (RD_DIS_TO_DATA_V + ((BURST_SIZE-1) * RD_CLK_SPACING)) - 1;
-localparam V_CT_BUS_FREE     = RD_TO_BUS_FREE - 1;
+reg   [31:0]  DATA_driver;
+reg           DATA_driver_enable;
+reg   [14:0]  ADDR_driver;
+reg           ADDR_driver_enable;
 
-localparam V_CT_DRIVE_STAT   = ADDR_HIZ_PROT + RD_EN_DURATION + (RD_DIS_TO_DATA_V + ((BURST_SIZE-1) * RD_CLK_SPACING)) + RD_TO_BUS_FREE - 1;
-localparam V_CT_DRIVE_DATA   = ADDR_HIZ_PROT + RD_EN_DURATION + (RD_DIS_TO_DATA_V + ((BURST_SIZE-1) * RD_CLK_SPACING)) - 1;
-localparam V_CT_CLR_RDY      = RD_TO_BUS_FREE - 1;
+reg   [127:0] IN_DATA0, EXP_DATA0;
+reg   [127:0] IN_DATA1, EXP_DATA1;
 
-kb DUT(
-  .rst(rst), .clk(clk), .RD_KBDR(RD_KBDR), .RD_KBSR(RD_KBSR),
-  .WE(WE), .new_data(new_data), .DATA_BUS(DATA_BUS)
+wire  [15:0]  WR_mask  = WR_mask_driver_enable ? WR_mask_driver : {16{1'bz}};
+wire  [31:0]  DATA_BUS = DATA_driver_enable ? DATA_driver : {32{1'bz}};
+wire  [14:0]  ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {15{1'bz}};
+
+wire          MEM_BUSY, DATA_VALID_BAR;
+
+reg    [7:0]  TEST_CASE_NEW_CHAR      ;
+reg    [7:0]  TEST_CASE_NEW_CHAR_WR   ;  
+reg           TEST_CASE_NEW_READY     ;
+reg           TEST_CASE_NEW_READY_WR  ;    
+
+
+kb #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
+  .rst          (rst          )    , .clk(clk), 
+  .TEST_CASE_NEW_CHAR     (TEST_CASE_NEW_CHAR),      
+  .TEST_CASE_NEW_CHAR_WR      (TEST_CASE_NEW_CHAR_WR),   
+  .TEST_CASE_NEW_READY      (TEST_CASE_NEW_READY),     
+  .TEST_CASE_NEW_READY_WR     (TEST_CASE_NEW_READY_WR),  
+  .DC_KB_WR_ACK(DC_KB_WR_ACK)      ,
+  .DC_KB_RD_ACK(DC_KB_RD_ACK)      , 
+  .WR_mask      (WR_mask      )    ,
+  .ADDR_BUS     (ADDR_BUS     )    ,
+  .DATA_BUS     (DATA_BUS     )    ,
+  .KB_BUSY      (KB_BUSY     )     , .DATA_VALID_BAR(DATA_VALID_BAR)
 );
 
-integer FAILURES  = 0;
 integer SUCCESSES = 0;
+integer FAILURES = 0;
+
+integer i;
+
+localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 
 initial begin
   clk = 0;
@@ -59,116 +88,227 @@ initial begin
   end
 end
 
-task toggle_RD_KBSR;
+task deassertAll;
   begin
-    RD_KBSR   <= 0;
-    #(CYCLE_TIME);
-    RD_KBSR   <= 1;
-    #(CYCLE_TIME);
+    DC_KB_WR_ACK   <= 1'b0;
+    DC_KB_RD_ACK   <= 1'b0;
   end
 endtask
 
-task toggle_RD_KBDR;
+task stopAllDrivers;
   begin
-    RD_KBDR   <= 0;
-    #(CYCLE_TIME);
-    RD_KBDR   <= 1;
-    #(CYCLE_TIME);
+    DATA_driver             <= {BUS_BIT_WIDTH{1'bz}};
+    DATA_driver_enable      <= 1'b0;
+    WR_mask_driver          <= {CHIPS_PER_RANK{1'bz}};
+    WR_mask_driver_enable   <= 1'b0;
+    ADDR_driver             <= {MEM_ADDR_WIDTH{1'bz}};
+    ADDR_driver_enable      <= 1'b0;
   end
 endtask
 
-task toggle_both_RD;
+task assertOneCycle;
+  input integer idx;
   begin
-    RD_KBDR   <= 0;
-    RD_KBSR   <= 0;
+    case(idx)
+      0: begin 
+        DC_KB_WR_ACK     <= 1'b1;
+      end
+      1: begin 
+        DC_KB_RD_ACK     <= 1'b1;
+      end
+    endcase
     #(CYCLE_TIME);
-    RD_KBDR   <= 1;
-    RD_KBSR   <= 1;
-    #(CYCLE_TIME);
+    deassertAll();
   end
 endtask
 
-task toggle_WE;
+task driveWRmaskWRaddr;
+  input [15:0]  WR_mask_val;
+  input [14:0]  MEM_ADDR;
   begin
-    WE        <= 0;
+    #(DELAY_ADJ);
+    WR_mask_driver          <= WR_mask_val;
+    WR_mask_driver_enable   <= 1'b1;
+    ADDR_driver             <= MEM_ADDR;
+    ADDR_driver_enable      <= 1'b1;
+    #(RANK_BURST_SIZE * CYCLE_TIME);
+    stopAllDrivers();
+    #(CYCLE_TIME - DELAY_ADJ);
+  end
+endtask
+
+task driveWRdata;
+  input [RANK_BIT_WIDTH-1:0] WR_DATA;
+  begin
+    #(DELAY_ADJ);
+    DATA_driver             <= WR_DATA[BUS_BIT_WIDTH-1:0];
+    DATA_driver_enable      <= 1'b1;    
     #(CYCLE_TIME);
-    WE        <= 1;
+    DATA_driver             <= WR_DATA[2*BUS_BIT_WIDTH-1:BUS_BIT_WIDTH];
     #(CYCLE_TIME);
+    DATA_driver             <= WR_DATA[3*BUS_BIT_WIDTH-1:2*BUS_BIT_WIDTH];
+    #(CYCLE_TIME);
+    DATA_driver             <= WR_DATA[4*BUS_BIT_WIDTH-1:3*BUS_BIT_WIDTH];
+    #(CYCLE_TIME);
+    stopAllDrivers();
+    #(CYCLE_TIME - DELAY_ADJ);
+  end
+endtask
+
+task driveRDaddr;
+  input [MEM_ADDR_WIDTH-1:0]  MEM_ADDR;
+  begin
+    #(DELAY_ADJ);
+    ADDR_driver             <= MEM_ADDR;
+    ADDR_driver_enable      <= 1'b1;
+    #(1 * CYCLE_TIME);
+    stopAllDrivers();
+    #(CYCLE_TIME - DELAY_ADJ);
   end
 endtask
 
 task check;
-  input [31:0]  DATA_BUS_EXP;
+  input [31:0] EXPECTED_DATA;
   begin
-    if (DATA_BUS !== DATA_BUS_EXP) begin
+    if (DATA_BUS !== EXPECTED_DATA) begin
       FAILURES = FAILURES + 1;
-      $display("FAILURE AT TIME %t. DATA_BUS_EXP = %h, DATA_BUS = %h\n", 
-                $time, DATA_BUS_EXP, DATA_BUS);
+      $display("FAILURE AT TIME %t. EXP = %h, DATA = %h\n", 
+                $time, EXPECTED_DATA, DATA_BUS);
     end else begin
       SUCCESSES = SUCCESSES + 1;
-      // $display("SUCCESS AT TIME %t. DATA_BUS_EXP = %h, DATA_BUS = %h\n", 
-      //           $time, DATA_BUS_EXP, DATA_BUS);
     end
   end
 endtask
 
-integer i;
+
+task checkRDaddr;
+  input [RANK_BIT_WIDTH-1:0] EXPECTED_DATA0;
+  begin
+    #((1 + RD_EN_CYCLES + 1) * CYCLE_TIME);
+    check(EXPECTED_DATA0[31:0]);
+    #(CYCLE_TIME);
+    check(EXPECTED_DATA0[63:32]);
+    #(CYCLE_TIME);
+    check(EXPECTED_DATA0[95:64]);
+    #(CYCLE_TIME);
+    check(EXPECTED_DATA0[127:96]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[31:0]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[63:32]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[95:64]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[127:96]);
+    #(CYCLE_TIME);
+  end
+endtask
+
 
 initial begin
-  new_data  <= 32'h0001FFFF;
-  WE        <= 1;
-  rst       <= 1;
-  RD_KBDR   <= 1;
-  RD_KBSR   <= 1;
-  #(CYCLE_TIME);
-  rst       <= 0;
-  #(CYCLE_TIME);
-  rst       <= 1;
-  #(0.5*CYCLE_TIME);
-  toggle_WE();
-
-  #(DELAY_ADJ);
-  toggle_RD_KBSR();
-  #(CYCLE_TIME*(V_CT_DRIVE_STAT-1) - DELAY_ADJ);
-  check(new_data);
+  rst                     <= 1'b0;
+  TEST_CASE_NEW_CHAR_WR   <= 1'b0;
+  TEST_CASE_NEW_READY_WR  <= 1'b0;
+  deassertAll();
+  stopAllDrivers();
+  #(1.5 * CYCLE_TIME);
+  rst               <= 1'b1;
   #(CYCLE_TIME);
 
-  #(DELAY_ADJ);
-  toggle_RD_KBDR();
-  #(CYCLE_TIME*(V_CT_DRIVE_DATA-1) - DELAY_ADJ);
-  check(new_data);
+  // Ensure new char writes do not work when KBER = 0
+  TEST_CASE_NEW_CHAR      <= 8'h55;
+  TEST_CASE_NEW_CHAR_WR   <= {8{1'b1}};
+  TEST_CASE_NEW_READY     <= 1'b1;
+  TEST_CASE_NEW_READY_WR  <= 1'b1;
+  EXP_DATA0                = 0;                    
+  EXP_DATA1                = 0;                                
   #(CYCLE_TIME);
+  TEST_CASE_NEW_CHAR_WR   <= {8{1'b0}};
+  TEST_CASE_NEW_READY_WR  <= 1'b0;
 
-  #(DELAY_ADJ);
-  #(CYCLE_TIME*(V_CT_CLR_RDY + 1));
-  toggle_RD_KBSR();
-  #(CYCLE_TIME*(V_CT_DRIVE_STAT-1) - DELAY_ADJ);
-  check(new_data & 32'h0000FFFF);
-  #(CYCLE_TIME);
+  assertOneCycle(1);
+  fork
+    driveRDaddr(0);
+    checkRDaddr(EXP_DATA0);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  assertOneCycle(1);
+  fork
+    driveRDaddr((1 << 4));
+    checkRDaddr(EXP_DATA1);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
 
   
-  new_data  <= 32'h0001BEEF;
-  toggle_WE();
 
-  #(DELAY_ADJ);
-  toggle_RD_KBSR();
-  #(CYCLE_TIME*(V_CT_DRIVE_STAT-1) - DELAY_ADJ);
-  check(new_data);
+  // Set KBER
+  assertOneCycle(0);
+  IN_DATA0    = {{63{1'bX}},1'bX,{63{1'bX}},1'b1};
+  EXP_DATA0   = {{63{1'b0}},1'b0,{63{1'b0}},1'b1};    // KBER, but NOT KBSR, affected by writes
+  IN_DATA1    = {128{1'bX}};                          
+  EXP_DATA1   = 0;                                    // KBDR unaffected by writes
+  fork
+    driveWRmaskWRaddr(16'h0000, 0);
+    driveWRdata(IN_DATA0);
+  join
+  #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+  // KBER should be unaffected by second write, so should not be cleared
+  assertOneCycle(0);
+  fork
+    driveWRmaskWRaddr(16'h0000, (1 << 4));
+    driveWRdata(IN_DATA1);
+  join
+  #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+  assertOneCycle(1);
+  fork
+    driveRDaddr(0);
+    checkRDaddr(EXP_DATA0);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  assertOneCycle(1);
+  fork
+    driveRDaddr((1 << 4));
+    checkRDaddr(EXP_DATA1);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  // New character ready, and now KB is enabled!
+  TEST_CASE_NEW_CHAR      <= 8'h55;
+  TEST_CASE_NEW_CHAR_WR   <= {8{1'b1}};
+  TEST_CASE_NEW_READY     <= 1'b1;
+  TEST_CASE_NEW_READY_WR  <= 1'b1;
+  EXP_DATA0                = {{63{1'b0}},1'b1,{63{1'b0}},1'b1};         // Expect READY, and KB enabled           
+  EXP_DATA1                = {{120{1'b0}},8'h55};                       // Expect new KBDR    
   #(CYCLE_TIME);
+  TEST_CASE_NEW_CHAR_WR   <= {8{1'b0}};
+  TEST_CASE_NEW_READY_WR  <= 1'b0;
 
+  // Read ready bit, ensure it's 1, and then read data, ensure it's 0x55, then ensure ready was cleared!
+  assertOneCycle(1);
+  fork
+    driveRDaddr(0);
+    checkRDaddr(EXP_DATA0);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
 
-  #(DELAY_ADJ);
-  toggle_both_RD();
-  #(CYCLE_TIME*(V_CT_DRIVE_DATA-1) - DELAY_ADJ);
-  check(new_data);
-  #(CYCLE_TIME);
+  assertOneCycle(1);
+  fork
+    driveRDaddr((1 << 4));
+    checkRDaddr(EXP_DATA1);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
 
-  #(DELAY_ADJ);
-  #(CYCLE_TIME*(V_CT_CLR_RDY + 1));
-  toggle_RD_KBSR();
-  #(CYCLE_TIME*(V_CT_DRIVE_STAT-1) - DELAY_ADJ);
-  check(new_data & 32'h0000FFFF);
-  #(CYCLE_TIME);
+  EXP_DATA0                = {{63{1'b0}},1'b0,{63{1'b0}},1'b1};         // Expect READY to be CLEARED
+  assertOneCycle(1);
+  fork
+    driveRDaddr(0);
+    checkRDaddr(EXP_DATA0);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);

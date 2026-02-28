@@ -11,14 +11,14 @@ module arbiter (
                       DC_KB_WR_RQ,
                       IC_MEM_RD_RQ,
                       DMA_MEM_WR_RQ,
-  output              DC_MEM_RD_ACK,
-                      DC_DMA_RD_ACK,
-                      DC_KB_RD_ACK,
-                      DC_MEM_WR_ACK,
-                      DC_DMA_WR_ACK,
-                      DC_KB_WR_ACK,
-                      IC_MEM_RD_ACK,
-                      DMA_MEM_WR_ACK
+  output              DC_MEM_RD_ACK_BUS   ,
+                      DC_DMA_RD_ACK_BUS   ,
+                      DC_KB_RD_ACK_BUS    ,
+                      DC_MEM_WR_ACK_BUS   ,
+                      DC_DMA_WR_ACK_BUS   ,
+                      DC_KB_WR_ACK_BUS    ,
+                      IC_MEM_RD_ACK_BUS   ,
+                      DMA_MEM_WR_ACK_BUS   
 );
 
 wire    Q2,Q1,Q0;
@@ -33,6 +33,15 @@ nor3$   nor3$_NOBODY_BUSY(NOBODY_BUSY,
                           MEM_BUSY,
                           DMAC_BUSY,
                           KB_BUSY);
+
+tristate_bus_driver1$ tristate_bus_driver1$_DC_MEM_RD_ACK_BUS     (.enbar(1'b0), .in(DC_MEM_RD_ACK ), .out(DC_MEM_RD_ACK_BUS ));
+tristate_bus_driver1$ tristate_bus_driver1$_DC_DMA_RD_ACK_BUS     (.enbar(1'b0), .in(DC_DMA_RD_ACK ), .out(DC_DMA_RD_ACK_BUS ));
+tristate_bus_driver1$ tristate_bus_driver1$_DC_KB_RD_ACK_BUS      (.enbar(1'b0), .in(DC_KB_RD_ACK  ), .out(DC_KB_RD_ACK_BUS  ));
+tristate_bus_driver1$ tristate_bus_driver1$_DC_MEM_WR_ACK_BUS     (.enbar(1'b0), .in(DC_MEM_WR_ACK ), .out(DC_MEM_WR_ACK_BUS ));
+tristate_bus_driver1$ tristate_bus_driver1$_DC_DMA_WR_ACK_BUS     (.enbar(1'b0), .in(DC_DMA_WR_ACK ), .out(DC_DMA_WR_ACK_BUS ));
+tristate_bus_driver1$ tristate_bus_driver1$_DC_KB_WR_ACK_BUS      (.enbar(1'b0), .in(DC_KB_WR_ACK  ), .out(DC_KB_WR_ACK_BUS  ));
+tristate_bus_driver1$ tristate_bus_driver1$_IC_MEM_RD_ACK_BUS     (.enbar(1'b0), .in(IC_MEM_RD_ACK ), .out(IC_MEM_RD_ACK_BUS ));
+tristate_bus_driver1$ tristate_bus_driver1$_DMA_MEM_WR_ACK_BUS    (.enbar(1'b0), .in(DMA_MEM_WR_ACK), .out(DMA_MEM_WR_ACK_BUS));
 
 /* Inverters */
 wire Q0_bar;

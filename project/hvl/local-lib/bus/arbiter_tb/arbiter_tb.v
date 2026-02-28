@@ -18,14 +18,14 @@ reg   rst, clk,
       IC_MEM_RD_RQ,
       DMA_MEM_WR_RQ;
 
-wire  DC_MEM_RD_ACK,
-      DC_DMA_RD_ACK,
-      DC_KB_RD_ACK,
-      DC_MEM_WR_ACK,
-      DC_DMA_WR_ACK,
-      DC_KB_WR_ACK,
-      IC_MEM_RD_ACK,
-      DMA_MEM_WR_ACK;
+wire  DC_MEM_RD_ACK_BUS,
+      DC_DMA_RD_ACK_BUS,
+      DC_KB_RD_ACK_BUS,
+      DC_MEM_WR_ACK_BUS,
+      DC_DMA_WR_ACK_BUS,
+      DC_KB_WR_ACK_BUS,
+      IC_MEM_RD_ACK_BUS,
+      DMA_MEM_WR_ACK_BUS;
 
 arbiter (
   .rst(rst), .clk(clk),
@@ -40,14 +40,14 @@ arbiter (
   .DC_KB_WR_RQ(DC_KB_WR_RQ),
   .IC_MEM_RD_RQ(IC_MEM_RD_RQ),
   .DMA_MEM_WR_RQ(DMA_MEM_WR_RQ),
-  .DC_MEM_RD_ACK(DC_MEM_RD_ACK),
-  .DC_DMA_RD_ACK(DC_DMA_RD_ACK),
-  .DC_KB_RD_ACK(DC_KB_RD_ACK),
-  .DC_MEM_WR_ACK(DC_MEM_WR_ACK),
-  .DC_DMA_WR_ACK(DC_DMA_WR_ACK),
-  .DC_KB_WR_ACK(DC_KB_WR_ACK),
-  .IC_MEM_RD_ACK(IC_MEM_RD_ACK),
-  .DMA_MEM_WR_ACK(DMA_MEM_WR_ACK)
+  .DC_MEM_RD_ACK_BUS(DC_MEM_RD_ACK_BUS),
+  .DC_DMA_RD_ACK_BUS(DC_DMA_RD_ACK_BUS),
+  .DC_KB_RD_ACK_BUS(DC_KB_RD_ACK_BUS),
+  .DC_MEM_WR_ACK_BUS(DC_MEM_WR_ACK_BUS),
+  .DC_DMA_WR_ACK_BUS(DC_DMA_WR_ACK_BUS),
+  .DC_KB_WR_ACK_BUS(DC_KB_WR_ACK_BUS),
+  .IC_MEM_RD_ACK_BUS(IC_MEM_RD_ACK_BUS),
+  .DMA_MEM_WR_ACK_BUS(DMA_MEM_WR_ACK_BUS)
 );
 
 integer FAILURES  = 0;
@@ -109,35 +109,35 @@ task checkOutputs;
   begin
     ACK_EXP     = 1 << (7 - idx);
 
-    if (({DC_MEM_RD_ACK,
-          DC_DMA_RD_ACK,
-          DC_KB_RD_ACK,
-          DC_MEM_WR_ACK,
-          DC_DMA_WR_ACK,
-          DC_KB_WR_ACK,
-          IC_MEM_RD_ACK,
-          DMA_MEM_WR_ACK} !== ACK_EXP)) begin
+    if (({DC_MEM_RD_ACK_BUS,
+          DC_DMA_RD_ACK_BUS,
+          DC_KB_RD_ACK_BUS,
+          DC_MEM_WR_ACK_BUS,
+          DC_DMA_WR_ACK_BUS,
+          DC_KB_WR_ACK_BUS,
+          IC_MEM_RD_ACK_BUS,
+          DMA_MEM_WR_ACK_BUS} !== ACK_EXP)) begin
       FAILURES = FAILURES + 1;
       $display("FAILURE AT TIME %t. ACK_EXP = %b, ACK = %b\n", 
-                $time, ACK_EXP, { DC_MEM_RD_ACK,
-                                  DC_DMA_RD_ACK,
-                                  DC_KB_RD_ACK,
-                                  DC_MEM_WR_ACK,
-                                  DC_DMA_WR_ACK,
-                                  DC_KB_WR_ACK,
-                                  IC_MEM_RD_ACK,
-                                  DMA_MEM_WR_ACK});
+                $time, ACK_EXP, { DC_MEM_RD_ACK_BUS,
+                                  DC_DMA_RD_ACK_BUS,
+                                  DC_KB_RD_ACK_BUS,
+                                  DC_MEM_WR_ACK_BUS,
+                                  DC_DMA_WR_ACK_BUS,
+                                  DC_KB_WR_ACK_BUS,
+                                  IC_MEM_RD_ACK_BUS,
+                                  DMA_MEM_WR_ACK_BUS});
     end else begin
       SUCCESSES = SUCCESSES + 1;
       // $display("SUCCESS AT TIME %t. ACK_EXP = %b, ACK = %b\n", 
-      //           $time, ACK_EXP, { DC_MEM_RD_ACK,
-      //                             DC_DMA_RD_ACK,
-      //                             DC_KB_RD_ACK,
-      //                             DC_MEM_WR_ACK,
-      //                             DC_DMA_WR_ACK,
-      //                             DC_KB_WR_ACK,
-      //                             IC_MEM_RD_ACK,
-      //                             DMA_MEM_WR_ACK});
+      //           $time, ACK_EXP, { DC_MEM_RD_ACK_BUS,
+      //                             DC_DMA_RD_ACK_BUS,
+      //                             DC_KB_RD_ACK_BUS,
+      //                             DC_MEM_WR_ACK_BUS,
+      //                             DC_DMA_WR_ACK_BUS,
+      //                             DC_KB_WR_ACK_BUS,
+      //                             IC_MEM_RD_ACK_BUS,
+      //                             DMA_MEM_WR_ACK_BUS});
     end
   end
 endtask
