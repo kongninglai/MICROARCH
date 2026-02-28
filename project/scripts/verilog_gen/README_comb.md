@@ -20,7 +20,7 @@ The purpose of this script is to turn a truth table into a syntactically and fun
 15. If the output looks right, you are good to pipe it into my script. Run `cd; ./espresso.linux example_comb.in | python3 moore_log_gen.py`
 16. Run `cd; ls` and, if your truth table format was correct, you'll see a new file called `comb_logic_gen.v`.
 17. You can now run `cd; cat comb_logic_gen.v` to see the Verilog. It will be a correct Verilog module which compiles.
-
+~
 ## Truth Table Format
 Following is an example of a truth table file `example_comb.in`:
 ```bash

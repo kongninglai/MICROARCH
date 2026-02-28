@@ -22,7 +22,7 @@
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shifters
 
 // Test Logic 
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder
+/home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder/logic_prefix_combadder.v
 
 // Testbench for Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/logic_true_prefix_tb/logic_true_prefix_tb.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/logic_prefix_combadder_tb/logic_prefix_combadder_tb.v
