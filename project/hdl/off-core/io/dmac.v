@@ -41,7 +41,7 @@ module dmac #(
   input                             DC_DMA_WR_ACK,
   input                             DC_DMA_RD_ACK,
   input     [CHIPS_PER_RANK-1:0]    WR_mask,
-  input     [MEM_ADDR_WIDTH-1:0]    ADDR_BUS,
+  inout     [MEM_ADDR_WIDTH-1:0]    ADDR_BUS,
   inout     [BUS_BIT_WIDTH-1:0]     DATA_BUS,
   input                             DMA_MEM_WR_ACK,
   output                            DMA_MEM_WR_RQ,

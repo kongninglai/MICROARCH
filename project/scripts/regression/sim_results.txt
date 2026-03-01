@@ -33,6 +33,7 @@ mux32_tb                       FAILURES=0      SUCCESSES=256
 mux64_tb                       FAILURES=0      SUCCESSES=256   
 mux8_tb                        FAILURES=0      SUCCESSES=2048  
 negate_32b_tb                  FAILURES=0      SUCCESSES=258   
+off_core_top_tb                FAILURES=0      SUCCESSES=16376 
 PA_16b_tb                      FAILURES=0      SUCCESSES=1024  
 PA_32b_tb                      FAILURES=0      SUCCESSES=1030  
 PA_4b_tb                       FAILURES=0      SUCCESSES=258   

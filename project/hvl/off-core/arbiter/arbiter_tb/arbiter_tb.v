@@ -27,7 +27,7 @@ wire  DC_MEM_RD_ACK_BUS,
       IC_MEM_RD_ACK_BUS,
       DMA_MEM_WR_ACK_BUS;
 
-arbiter (
+arbiter DUT (
   .rst(rst), .clk(clk),
   .MEM_BUSY(MEM_BUSY),
   .DMAC_BUSY(DMAC_BUSY),
