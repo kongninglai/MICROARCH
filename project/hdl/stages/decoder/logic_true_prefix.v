@@ -3,8 +3,8 @@ Determines the direct output to prefix registers with the correct signal
 that shows whether or not a certain prefix is present. 
 
 Critical Path: Through the Prefix Adder module
-Delay: 
-1.74 + 
+Delay: 2.74
+1.74 + 1
 */
 
 module logic_true_prefix(
@@ -94,7 +94,8 @@ module logic_true_prefix(
     and2$ isany1actual(is_any1_actual, is_any0, is_any1);
     and2$ isany2actual(is_any2_actual, is_any1_actual, is_any2);
     and2$ isany3actual(is_any3_actual, is_any2_actual, is_any3);
-    logic_prefix_combadder PREFIX_ADDER(
+    
+    logic_prefix_combadder PREFIX_ADDER( //Critical Path 1ns
         .P0(is_any0_actual),
         .P1(is_any1_actual),
         .P2(is_any2_actual),
