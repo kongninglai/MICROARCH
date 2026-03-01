@@ -96,15 +96,8 @@ bufferH1024$  bufferH1024$_STORE_BUF_LD_EN_buf1024(STORE_BUF_LD_EN_buf1024, STOR
 bufferH1024$  bufferH1024$_LOAD_BUF_LD_EN_buf1024 (LOAD_BUF_LD_EN_buf1024,  LOAD_BUF_LD_EN);
 bufferH1024$  bufferH1024$_LOAD_ADDR_LD_EN_buf1024(LOAD_ADDR_LD_EN_buf1024, LOAD_ADDR_LD_EN);
 
-wire    MEM_ADDR_GATE_ST, MEM_ADDR_GATE_ST_buf16,
-        MEM_ADDR_GATE_LD, MEM_ADDR_GATE_LD_buf16,
-        MEM_DIO_GATE, MEM_DIO_GATE_buf256,
-        DATA_BUS_GATE, DATA_BUS_GATE_buf256;
+wire    DATA_BUS_GATE, DATA_BUS_GATE_buf256;
 
-
-bufferH16$  bufferH16$_MEM_ADDR_GATE_ST_buf16(MEM_ADDR_GATE_ST_buf16, MEM_ADDR_GATE_ST);
-bufferH16$  bufferH16$_MEM_ADDR_GATE_LD_buf16(MEM_ADDR_GATE_LD_buf16, MEM_ADDR_GATE_LD);
-bufferH256$ bufferH256$_MEM_DIO_GATE_buf256(MEM_DIO_GATE_buf256, MEM_DIO_GATE);
 bufferH256$ bufferH256$_DATA_BUS_GATE_buf256(DATA_BUS_GATE_buf256, DATA_BUS_GATE);
 
 wire    KB_BUSY_DRIVER_VALUE;
@@ -286,13 +279,13 @@ big_eq  #(.WIDTH(3)) done_SHORT_BRST_DONE    (.in0(counter_buf1024), .in1(W_CT_S
 /*** BEGIN AUTO-GENERATED CODE ***/
 
 /* Inverters */
+wire Q2_bar;
+wire L2B_CTR_bar;
+inv1$ inv_1(L2B_CTR_bar, L2B_CTR);
 wire Q0_bar;
 wire Q1_bar;
-wire Q2_bar;
 wire SHORT_BRST_DONE_bar;
-inv1$ inv_3(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
-wire L2B_CTR_bar;
-inv1$ inv_4(L2B_CTR_bar, L2B_CTR);
+inv1$ inv_4(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
 wire WRITE_DONE_bar;
 inv1$ inv_5(WRITE_DONE_bar, WRITE_DONE);
 
@@ -300,55 +293,46 @@ inv1$ inv_5(WRITE_DONE_bar, WRITE_DONE);
 wire and_0_0_out;
 and3$ and_0_0(and_0_0_out,Q1,Q0_bar,WRITE_DONE_bar);
 wire and_1_0_out;
-and4$ and_1_0(and_1_0_out,Q2_bar,Q1_bar,Q0_bar,DC_KB_WR_ACK);
+and3$ and_1_0(and_1_0_out,Q2,Q0_bar,RD_EN_DONE);
 wire and_2_0_out;
-and4$ and_2_0(and_2_0_out,Q2_bar,Q1_bar,Q0_bar,DC_KB_RD_ACK);
+and4$ and_2_0(and_2_0_out,Q2_bar,Q1_bar,Q0_bar,DC_KB_WR_ACK);
 wire and_3_0_out;
-and3$ and_3_0(and_3_0_out,Q2,Q0_bar,RD_EN_DONE);
+and4$ and_3_0(and_3_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
 wire and_4_0_out;
-and4$ and_4_0(and_4_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
+and4$ and_4_0(and_4_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
 wire and_5_0_out;
-and3$ and_5_0(and_5_0_out,Q2,Q1,L2B_CTR_bar);
+and4$ and_5_0(and_5_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE);
 wire and_6_0_out;
-and4$ and_6_0(and_6_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
+and4$ and_6_0(and_6_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE_bar);
 wire and_7_0_out;
-and3$ and_7_0(and_7_0_out,Q2_bar,Q1,Q0);
+and4$ and_7_0(and_7_0_out,Q2_bar,Q1_bar,Q0_bar,DC_KB_RD_ACK);
 wire and_8_0_out;
-and4$ and_8_0(and_8_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE);
+and3$ and_8_0(and_8_0_out,Q2,Q1,L2B_CTR_bar);
 wire and_9_0_out;
-and4$ and_9_0(and_9_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE_bar);
+and3$ and_9_0(and_9_0_out,Q2_bar,Q1,Q0);
 wire and_10_0_out;
-and2$ and_10_0(and_10_0_out,Q2,Q0_bar);
+and2$ and_10_0(and_10_0_out,Q1,Q0);
 wire and_11_0_out;
-assign and_11_0_out = Q2_bar;
+and3$ and_11_0(and_11_0_out,Q2,Q1_bar,Q0_bar);
 wire and_12_0_out;
-and3$ and_12_0(and_12_0_out,Q2,Q1,Q0_bar);
+assign and_12_0_out = Q2_bar;
 wire and_13_0_out;
-and2$ and_13_0(and_13_0_out,Q1_bar,Q0_bar);
-wire and_14_0_out;
-and2$ and_14_0(and_14_0_out,Q1,Q0);
+and3$ and_13_0(and_13_0_out,Q2,Q1,Q0_bar);
 
 /* Sum Expressions */
 wire or_0_1_out;
-or4$ or_0_0(D2,or_0_1_out,and_5_0_out,and_7_0_out,and_8_0_out);
-or2$ or_0_1(or_0_1_out,and_9_0_out,and_10_0_out);
+or4$ or_0_0(D2,or_0_1_out,and_5_0_out,and_6_0_out,and_8_0_out);
+or3$ or_0_1(or_0_1_out,and_9_0_out,and_11_0_out,and_13_0_out);
 wire or_1_1_out;
-or4$ or_1_0(D1,or_1_1_out,and_0_0_out,and_2_0_out,and_4_0_out);
-or3$ or_1_1(or_1_1_out,and_5_0_out,and_8_0_out,and_12_0_out);
+or4$ or_1_0(D1,or_1_1_out,and_0_0_out,and_3_0_out,and_5_0_out);
+or3$ or_1_1(or_1_1_out,and_7_0_out,and_8_0_out,and_13_0_out);
 wire or_2_1_out;
-or4$ or_2_0(D0,or_2_1_out,and_1_0_out,and_2_0_out,and_3_0_out);
-or4$ or_2_1(or_2_1_out,and_5_0_out,and_6_0_out,and_9_0_out,and_12_0_out);
-wire or_3_1_out;
-or4$ or_3_0(MEM_ADDR_GATE_ST,or_3_1_out,and_8_0_out,and_9_0_out,and_12_0_out);
-or2$ or_3_1(or_3_1_out,and_13_0_out,and_14_0_out);
-or2$ or_4_0(MEM_ADDR_GATE_LD,and_11_0_out,and_14_0_out);
-wire or_5_1_out;
-or4$ or_5_0(MEM_DIO_GATE,or_5_1_out,and_4_0_out,and_6_0_out,and_8_0_out);
-or4$ or_5_1(or_5_1_out,and_9_0_out,and_12_0_out,and_13_0_out,and_14_0_out);
-or3$ or_6_0(DATA_BUS_GATE,and_11_0_out,and_13_0_out,and_14_0_out);
-or2$ or_7_0(STORE_BUF_LD_EN,and_4_0_out,and_6_0_out);
-assign LOAD_BUF_LD_EN = and_10_0_out;
-assign LOAD_ADDR_LD_EN = and_7_0_out;
+or4$ or_2_0(D0,or_2_1_out,and_1_0_out,and_2_0_out,and_4_0_out);
+or4$ or_2_1(or_2_1_out,and_6_0_out,and_7_0_out,and_8_0_out,and_13_0_out);
+or3$ or_3_0(DATA_BUS_GATE,and_10_0_out,and_11_0_out,and_12_0_out);
+or2$ or_4_0(STORE_BUF_LD_EN,and_3_0_out,and_4_0_out);
+or2$ or_5_0(LOAD_BUF_LD_EN,and_11_0_out,and_13_0_out);
+assign LOAD_ADDR_LD_EN = and_9_0_out;
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);

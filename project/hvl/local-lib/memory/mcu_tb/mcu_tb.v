@@ -102,6 +102,7 @@ endtask
 task assertOneCycle;
   input integer idx;
   begin
+    #(DELAY_ADJ);
     case(idx)
       0: begin 
         DC_MEM_WR_ACK     <= 1'b1;
@@ -116,7 +117,7 @@ task assertOneCycle;
         IC_MEM_RD_ACK     <= 1'b1;
       end
     endcase
-    #(CYCLE_TIME);
+    #(CYCLE_TIME - DELAY_ADJ);
     deassertAll();
   end
 endtask

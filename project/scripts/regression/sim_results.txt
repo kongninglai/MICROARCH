@@ -6,12 +6,9 @@ big_increment_tb               FAILURES=0      SUCCESSES=4097
 big_neq_tb                     FAILURES=0      SUCCESSES=264   
 big_or_tb                      FAILURES=0      SUCCESSES=4096  
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
-dff32_tb                       FAILURES=0      SUCCESSES=160   
-disk_rank_tb                   FAILURES=0      SUCCESSES=1     
-disk_regs_tb                   FAILURES=0      SUCCESSES=4     
 dmac_tb                        COMPILE_ERROR
 dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
-dmu_tb                         COMPILE_ERROR
+dmu_tb                         FAILURES=0      SUCCESSES=4     
 FA_16b_tb                      FAILURES=0      SUCCESSES=4096  
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
@@ -22,7 +19,6 @@ gt99_8b_tb                     FAILURES=0      SUCCESSES=256
 HA_16b_tb                      FAILURES=0      SUCCESSES=1024  
 HA_32b_tb                      FAILURES=0      SUCCESSES=262   
 HA_8b_tb                       FAILURES=0      SUCCESSES=65536 
-ioreg32_tb                     FAILURES=0      SUCCESSES=160   
 kb_tb                          FAILURES=0      SUCCESSES=28    
 lshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
 lshf_chunks_var_256b_tb        FAILURES=0      SUCCESSES=4096  

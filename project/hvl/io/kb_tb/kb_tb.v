@@ -52,7 +52,7 @@ wire  [15:0]  WR_mask  = WR_mask_driver_enable ? WR_mask_driver : {16{1'bz}};
 wire  [31:0]  DATA_BUS = DATA_driver_enable ? DATA_driver : {32{1'bz}};
 wire  [14:0]  ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {15{1'bz}};
 
-wire          MEM_BUSY, DATA_VALID_BAR;
+wire          KB_BUSY, DATA_VALID_BAR;
 
 reg    [7:0]  TEST_CASE_NEW_CHAR      ;
 reg    [7:0]  TEST_CASE_NEW_CHAR_WR   ;  
@@ -109,6 +109,7 @@ endtask
 task assertOneCycle;
   input integer idx;
   begin
+    #(DELAY_ADJ);
     case(idx)
       0: begin 
         DC_KB_WR_ACK     <= 1'b1;
@@ -117,7 +118,7 @@ task assertOneCycle;
         DC_KB_RD_ACK     <= 1'b1;
       end
     endcase
-    #(CYCLE_TIME);
+    #(CYCLE_TIME - DELAY_ADJ);
     deassertAll();
   end
 endtask

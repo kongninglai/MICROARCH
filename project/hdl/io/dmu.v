@@ -1,194 +1,306 @@
 module dmu #(
-  parameter MEM_BYTE_CAPACITY = 32768,
-  parameter BURST_SIZE=4,
-  /* IMPORTANT: All parameters assume DELAY_ADJ < CYCLE_TIME <= 17 */
-  // Next few parameters are in units of ns
-  parameter DELAY_ADJ         = 7,
-  parameter ADDR_SETUP        = 25 + DELAY_ADJ,
-  parameter DATA_SETUP        = 25 + DELAY_ADJ,
-  parameter CE_SETUP          = 35,
-  parameter DOE_TIME          = 64,
-  parameter HZ_TIME           = 18,
+  parameter MEM_BYTE_CAPACITY=32768,
+  parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
 
-  parameter CYCLE_TIME        = 10,
+  parameter CHIP_BIT_WIDTH=8,
+  parameter CHIP_BYTE_WIDTH=CHIP_BIT_WIDTH/8,
+  parameter CHIP_ROW_COUNT=128,
+  parameter CHIP_BYTE_CAPACITY=CHIP_ROW_COUNT*CHIP_BYTE_WIDTH,
+  parameter CHIP_COUNT=MEM_BYTE_CAPACITY/CHIP_BYTE_CAPACITY,
 
-  // Next few parameters are in units of cycles
-  parameter ADDR_HIZ_PROT     = 1, // Don't enable RD when ADDR comparator can still be HiZ after clock edge
-  parameter RD_EN_DURATION    = ((DOE_TIME    / CYCLE_TIME)   + 1),
-  parameter RD_DIS_TO_DATA_V  = CYCLE_TIME <= 17 ? 1 : 1, // This will fail miserably if you have a bad cycle time (>= 18 ns)
-  parameter RD_TO_BUS_FREE    = CYCLE_TIME <= 8 ? 2 : 1, // Needed due to tHz
+  parameter BUS_BIT_WIDTH=32,
+  parameter RANK_BIT_WIDTH=128,
+  parameter RANK_BURST_SIZE=RANK_BIT_WIDTH/BUS_BIT_WIDTH,
+  parameter CHIPS_PER_RANK=RANK_BIT_WIDTH/CHIP_BIT_WIDTH,
+  parameter RANK_BYTE_CAPACITY=CHIP_BYTE_CAPACITY*CHIPS_PER_RANK,
+  parameter RANK_COUNT=MEM_BYTE_CAPACITY/RANK_BYTE_CAPACITY,
+  parameter RANK_IDX_WIDTH=$clog2(RANK_COUNT),
+  parameter RANK_ADDR_WIDTH=MEM_ADDR_WIDTH-$clog2(RANK_COUNT)-$clog2(CHIPS_PER_RANK),
 
-  // Yes, the extra + 1 should be there below in RD_CLK_SPACING
-  // Need + 1 cycle for data to be valid, and then extra time to let DIO become HiZ
-  parameter RD_CLK_SPACING    = ((HZ_TIME     / CYCLE_TIME)   + 1) + 1,
+  /*  
+      Next few parameters are in units of 1e-10 seconds (X10 turns ns (1e-9) into 1e-10).
+      The point of multiplying by 10 is to allow cycle time to have increments of 0.1 ns 
+      while still using integer math.
+  */
+  parameter ADDR_SETUP_X10            = 280,  /* Add 3 ns for state transition comb logic delay + buf256 */
+  parameter CE_SETUP_X10              = 370,  /* Add 2 ns for state transition comb logic delay */
+  parameter DOE_TIME_X10              = 620,  /* Add 2 ns for state transition comb logic delay */
+  parameter HZ_TIME_X10               = 175,
+  parameter CYCLE_TIME_X10            = 100,
 
-  parameter ADDR_EN_TO_WR_EN  = ((ADDR_SETUP  / CYCLE_TIME)   + 1),
-  parameter DATA_EN_TO_WR_DIS = ((DATA_SETUP  / CYCLE_TIME)   + 1),
-  parameter WR_DIS_TO_DATA_EN = 1, // Protect against DIO -> posedge WR violations   
-  parameter WR_CLK_SPACING    = ((CE_SETUP    / CYCLE_TIME)   + 1) + WR_DIS_TO_DATA_EN,
+  /* Next few parameters are in units of cycles */
+  parameter RD_EN_CYCLES              = ((DOE_TIME_X10 / CYCLE_TIME_X10)   + 1),
+  parameter ADDR_EN_TO_WR_EN_CYCLES   = ((ADDR_SETUP_X10  / CYCLE_TIME_X10)   + 1),
+  parameter WR_AND_DATA_EN_CYCLES     = ((CE_SETUP_X10  / CYCLE_TIME_X10)   + 1),
 
-
-  parameter V_CT_HIZ_PROT     = ADDR_HIZ_PROT - 1,
-  parameter V_CT_RD_BRST      = (RD_EN_DURATION - 1 + RD_DIS_TO_DATA_V + ((BURST_SIZE-1) * RD_CLK_SPACING)) - 1,
-  parameter V_CT_BUS_FREE     = RD_TO_BUS_FREE - 1,
-  parameter V_CT_WR_ADDR      = ADDR_EN_TO_WR_EN - 1,
-  parameter V_CT_WR_EN        = WR_CLK_SPACING - 1,
-  parameter V_CT_WR_BRST      = (WR_DIS_TO_DATA_EN + ((BURST_SIZE-1) * WR_CLK_SPACING)) - 1
+  parameter V_CT_WRITE_DONE       = WR_AND_DATA_EN_CYCLES - 1,
+  parameter V_CT_RD_EN_DONE       = RD_EN_CYCLES - 1,
+  parameter V_CT_SHORT_BRST_DONE  = (RANK_BURST_SIZE - 1) - 1
 ) (
-  input               rst, clk, RD, WR,
-  input     [15:0]    WR_mask,
-  inout     [31:0]    DATA_BUS,
-  output    [127:0]   DMA_config    
+  input                             rst, clk, 
+
+  input                             DC_DMA_WR_ACK,
+  input                             DC_DMA_RD_ACK,
+  input     [CHIPS_PER_RANK-1:0]    WR_mask,
+  input     [MEM_ADDR_WIDTH-1:0]    ADDR_BUS,
+  inout     [BUS_BIT_WIDTH-1:0]     DATA_BUS,
+  output                            DMAC_BUSY, DATA_VALID_BAR,
+  output    [RANK_BIT_WIDTH-1:0]    DMA_config
 );
 
-wire    [0:0]   CT_HIZ_PROT,CT_RD_BRST,CT_BUS_FREE,CT_WR_ADDR,CT_WR_EN,CT_WR_BRST;
+/*** REWRITE COUNTER VALUES AS WIRES ***/
 
-wire    [5:0]   W_CT_HIZ_PROT,W_CT_RD_BRST,W_CT_BUS_FREE,W_CT_WR_ADDR,W_CT_WR_EN,W_CT_WR_BRST;
-assign          W_CT_HIZ_PROT = V_CT_HIZ_PROT;    
-assign          W_CT_RD_BRST  = V_CT_RD_BRST ;     
-assign          W_CT_BUS_FREE = V_CT_BUS_FREE;     
-assign          W_CT_WR_ADDR  = V_CT_WR_ADDR ;     
-assign          W_CT_WR_EN    = V_CT_WR_EN   ;     
-assign          W_CT_WR_BRST  = V_CT_WR_BRST ;    
+wire    [0:0]   WRITE_DONE     ,
+                RD_EN_DONE     ,
+                SHORT_BRST_DONE;
 
-wire    [31:0]  DIO;
-wire    not_writing, not_wr_addr, not_wr_en, not_wr_brst;
+wire    [2:0]   W_CT_WRITE_DONE     ,
+                W_CT_RD_EN_DONE     ,
+                W_CT_SHORT_BRST_DONE;
 
-wire    Q2,Q1,Q0;
-wire    D2,D1,D0;
-wire    OE_out,WR_out,DATA_EN_BAR;
+assign          W_CT_WRITE_DONE       = V_CT_WRITE_DONE     ;
+assign          W_CT_RD_EN_DONE       = V_CT_RD_EN_DONE     ;
+assign          W_CT_SHORT_BRST_DONE  = V_CT_SHORT_BRST_DONE;
 
-wire    [15:0]  WR_mask_out;
-or2$    or2$_WR_mask_out[15:0](WR_mask_out, WR_mask, {16{WR_out}});
+/*** STATE BITS + COUNTER ***/
+wire  [2:0] STATE, NEXT_STATE;
+wire        Q2,Q1,Q0;
+wire        D2,D1,D0;
 
-neq_3b  neq_3b_not_wr_addr(.in0(3'b101), .in1({Q2,Q1,Q0}), .neq(not_wr_addr));
-neq_3b  neq_3b_not_wr_en  (.in0(3'b110), .in1({Q2,Q1,Q0}), .neq(not_wr_en));
-neq_3b  neq_3b_not_wr_brst(.in0(3'b111), .in1({Q2,Q1,Q0}), .neq(not_wr_brst));
+wire        Q2_prebuf,Q1_prebuf,Q0_prebuf;
+wire        Q2_bar_prebuf,Q1_bar_prebuf,Q0_bar_prebuf;
 
-and3$   and3$_not_writing(not_writing, not_wr_addr, not_wr_en, not_wr_brst);
+bufferH16$  bufferH16$_Q2(Q2, Q2_prebuf);
+bufferH16$  bufferH16$_Q1(Q1, Q1_prebuf);
+bufferH16$  bufferH16$_Q0(Q0, Q0_prebuf);
 
-// If we need to use tristate_bus_driver16$ even for the internal memory bus, it still works, last I checked
-// tristate_bus_driver16$  DIO_BUS_DRIVER_H(.enbar(not_writing), .in(DATA_BUS[31:16]), .out(DIO[31:16]));
-// tristate_bus_driver16$  DIO_BUS_DRIVER_L(.enbar(not_writing), .in(DATA_BUS[15:0]),  .out(DIO[15:0]));
+wire  [2:0] counter, counter_buf1024;
+wire        L2B_CTR;
 
-tristate16L$  DIO_DRIVER_H(.enbar(not_writing), .in(DATA_BUS[31:16]), .out(DIO[31:16]));
-tristate16L$  DIO_DRIVER_L(.enbar(not_writing), .in(DATA_BUS[15:0]), .out(DIO[15:0]));
+assign STATE        = {Q2, Q1, Q0};
+assign NEXT_STATE   = {D2, D1, D0};
 
-wire    not_reading;
+bufferH1024$  bufferH1024$_counter_buf1024[2:0](counter_buf1024, counter);
 
-neq_3b  neq_3b_not_reading(.in0(3'b011), .in1({Q2,Q1,Q0}), .neq(not_reading));
+and2$   and2$_L2B_CTR(L2B_CTR, counter_buf1024[1], counter_buf1024[0]);
 
-tristate_bus_driver16$  DATA_BUS_DRIVER_H(.enbar(not_reading), .in(DIO[31:16]), .out(DATA_BUS[31:16]));
-tristate_bus_driver16$  DATA_BUS_DRIVER_L(.enbar(not_reading), .in(DIO[15:0]),  .out(DATA_BUS[15:0]));
+/*** STATE MACHINE OUTPUTS ***/
+wire    STORE_BUF_LD_EN, STORE_BUF_LD_EN_buf1024;
+wire    LOAD_BUF_LD_EN , LOAD_BUF_LD_EN_buf1024;
+wire    LOAD_ADDR_LD_EN, LOAD_ADDR_LD_EN_buf1024;
 
-wire    idling;
+bufferH1024$  bufferH1024$_STORE_BUF_LD_EN_buf1024(STORE_BUF_LD_EN_buf1024, STORE_BUF_LD_EN);
+bufferH1024$  bufferH1024$_LOAD_BUF_LD_EN_buf1024 (LOAD_BUF_LD_EN_buf1024,  LOAD_BUF_LD_EN);
+bufferH1024$  bufferH1024$_LOAD_ADDR_LD_EN_buf1024(LOAD_ADDR_LD_EN_buf1024, LOAD_ADDR_LD_EN);
 
-nor3$   nor3$_idling(idling, Q2, Q1, Q0);
+wire    MEM_ADDR_GATE_ST, MEM_ADDR_GATE_ST_buf16,
+        MEM_ADDR_GATE_LD, MEM_ADDR_GATE_LD_buf16,
+        MEM_DIO_GATE, MEM_DIO_GATE_buf256,
+        DATA_BUS_GATE, DATA_BUS_GATE_buf256;
 
-wire    [7:0] counter, inc_counter, next_counter;
-PA_8b   inc_adder(.in0(counter), .in1(8'd1), .s(inc_counter));
 
-wire    state_change;
-neq_3b  neq_3b_state_change(.in0({Q2,Q1,Q0}), .in1({D2,D1,D0}), .neq(state_change));
+bufferH16$  bufferH16$_MEM_ADDR_GATE_ST_buf16(MEM_ADDR_GATE_ST_buf16, MEM_ADDR_GATE_ST);
+bufferH16$  bufferH16$_MEM_ADDR_GATE_LD_buf16(MEM_ADDR_GATE_LD_buf16, MEM_ADDR_GATE_LD);
+bufferH256$ bufferH256$_MEM_DIO_GATE_buf256(MEM_DIO_GATE_buf256, MEM_DIO_GATE);
+bufferH256$ bufferH256$_DATA_BUS_GATE_buf256(DATA_BUS_GATE_buf256, DATA_BUS_GATE);
 
-wire    zero_counter;
-or2$    or2$_zero_counter(zero_counter, state_change, idling);
+wire    DMAC_BUSY_DRIVER_VALUE;
+or3$    or3$_DMAC_BUSY_DRIVER_VALUE(DMAC_BUSY_DRIVER_VALUE, Q2, Q1, Q0);
+tristate_bus_driver1$  tristate_bus_driver1$_DMAC_BUSY(.enbar(1'b0), 
+                                                      .in(DMAC_BUSY_DRIVER_VALUE), 
+                                                      .out(DMAC_BUSY));
 
-mux2$   mux2$_next_counter[7:0](next_counter, inc_counter, 8'd0, zero_counter);
+wire    DATA_VALID_BAR_DRIVER_VALUE, NOT_DMAC_BUSY_DRIVER_VALUE;
+assign  DATA_VALID_BAR_DRIVER_VALUE = DATA_BUS_GATE_buf256;
+inv1$   inv1$_NOT_DMAC_BUSY_DRIVER_VALUE(NOT_DMAC_BUSY_DRIVER_VALUE, DMAC_BUSY_DRIVER_VALUE);
+tristate_bus_driver1$  tristate_bus_driver1$_DATA_VALID_BAR(.enbar(NOT_DMAC_BUSY_DRIVER_VALUE), 
+                                                            .in(DATA_VALID_BAR_DRIVER_VALUE), 
+                                                            .out(DATA_VALID_BAR));
 
-dff8$   dff_counter(clk, next_counter, counter, , rst, 1'b1);
+/*** STORE BUFFER ***/
 
-eq_6b   done_HIZ_PROT     (.in0(counter[5:0]), .in1(W_CT_HIZ_PROT), .eq(CT_HIZ_PROT));
-eq_6b   done_RD_BRST      (.in0(counter[5:0]), .in1(W_CT_RD_BRST ), .eq(CT_RD_BRST ));
-eq_6b   done_BUS_FREE     (.in0(counter[5:0]), .in1(W_CT_BUS_FREE), .eq(CT_BUS_FREE));
-eq_6b   done_WR_ADDR      (.in0(counter[5:0]), .in1(W_CT_WR_ADDR ), .eq(CT_WR_ADDR ));
-eq_6b   done_WR_EN        (.in0(counter[5:0]), .in1(W_CT_WR_EN   ), .eq(CT_WR_EN   ));
-eq_6b   done_WR_BRST      (.in0(counter[5:0]), .in1(W_CT_WR_BRST ), .eq(CT_WR_BRST ));
+/* "STORE BUFFER DATA" (DMA_config) */
 
-disk_regs #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME(CYCLE_TIME), .DELAY_ADJ(DELAY_ADJ)) DUT 
-(
+wire    [RANK_BIT_WIDTH-1:0]  STORE_BUFFER_DATA, STORE_BUFFER_DATA_WR_EN, STORE_BUFFER_DATA_WR_EN_GATED,
+                              SHIFTED_DATA_BUS;
+
+wire    [RANK_BIT_WIDTH-1:0]  DMA_config_WR_mask, DMA_config_WR_mask_bar;
+
+genvar i;
+generate
+    for (i = 0; i < CHIPS_PER_RANK; i = i + 1) begin : DMA_config_WR_mask_generation
+        assign DMA_config_WR_mask[i*8 +: 8] = {8{WR_mask[i]}};
+    end
+endgenerate
+
+inv1$   inv1$_DMA_config_WR_mask_bar[RANK_BIT_WIDTH-1:0](DMA_config_WR_mask_bar, DMA_config_WR_mask);
+
+mux4$   mux4$_STORE_BUFFER_DATA_WR_EN[RANK_BIT_WIDTH-1:0](STORE_BUFFER_DATA_WR_EN,
+                                                          {{96{1'b0}}, {32{1'b1}}},
+                                                          {{64{1'b0}}, {32{1'b1}}, {32{1'b0}}},
+                                                          {{32{1'b0}}, {32{1'b1}}, {64{1'b0}}},
+                                                          {{32{1'b1}}, {96{1'b0}}},
+                                                          counter_buf1024[0],
+                                                          counter_buf1024[1]);
+
+mux4$   mux4$_SHIFTED_DATA_BUS[RANK_BIT_WIDTH-1:0]        (SHIFTED_DATA_BUS,
+                                                          {{96{1'b0}}, DATA_BUS},
+                                                          {{64{1'b0}}, DATA_BUS, {32{1'b0}}},
+                                                          {{32{1'b0}}, DATA_BUS, {64{1'b0}}},
+                                                          {DATA_BUS,   {96{1'b0}}},
+                                                          counter_buf1024[0],
+                                                          counter_buf1024[1]);
+
+and3$   and3$_STORE_BUFFER_DATA_WR_EN_GATED[RANK_BIT_WIDTH-1:0](STORE_BUFFER_DATA_WR_EN_GATED,
+                                                                STORE_BUFFER_DATA_WR_EN,
+                                                                {RANK_BIT_WIDTH{STORE_BUF_LD_EN_buf1024}},
+                                                                DMA_config_WR_mask_bar);
+
+reg_n #(
+  .WIDTH(RANK_BIT_WIDTH),
+  .USE_EN_BAR(0)
+) reg_n_DMA_config (
   .clk(clk), .rst(rst),
-  .WR_mask(WR_mask_out),
-	.WR(WR_out), .OE(OE_out),
-  .DIO(DIO), .DMA_config(DMA_config)
+  .en(STORE_BUFFER_DATA_WR_EN_GATED), .d(SHIFTED_DATA_BUS),
+  .q(DMA_config)
 );
+
+/*** LOAD BUFFER ***/
+
+/* LOAD BUFFER DATA (just the same DMA config) */
+
+wire    [BUS_BIT_WIDTH-1:0]   DATA_BUS_DRIVER_VALUE;
+
+mux4$   mux4$_DATA_BUS_DRIVER_VALUE[BUS_BIT_WIDTH-1:0] (DATA_BUS_DRIVER_VALUE,
+                                                        DMA_config[BUS_BIT_WIDTH-1:0],
+                                                        DMA_config[2*BUS_BIT_WIDTH-1:BUS_BIT_WIDTH],
+                                                        DMA_config[3*BUS_BIT_WIDTH-1:2*BUS_BIT_WIDTH],
+                                                        DMA_config[4*BUS_BIT_WIDTH-1:3*BUS_BIT_WIDTH],
+                                                        counter_buf1024[0],
+                                                        counter_buf1024[1]);
+
+tristate_bus_driver16$  tristate_bus_driver16$_DATA_BUS_H(.enbar(DATA_BUS_GATE_buf256), 
+                                                          .in(DATA_BUS_DRIVER_VALUE[BUS_BIT_WIDTH-1:16]), 
+                                                          .out(DATA_BUS[BUS_BIT_WIDTH-1:16]));
+                                                                              
+tristate_bus_driver16$  tristate_bus_driver16$_DATA_BUS_L(.enbar(DATA_BUS_GATE_buf256), 
+                                                          .in(DATA_BUS_DRIVER_VALUE[15:0]), 
+                                                          .out(DATA_BUS[15:0]));
+
+/* Counter Logic */
+
+wire  [2:0] inc_counter, next_counter;
+
+big_increment #(
+  .WIDTH(3)
+) big_increment_inc_counter (
+  .a(counter_buf1024),
+  .s(inc_counter)
+);
+
+wire    no_state_change;
+
+big_eq #(
+  .WIDTH(3)
+) big_eq_no_state_change (
+  .in0({Q2,Q1,Q0}), .in1({D2,D1,D0}),
+  .eq(no_state_change)
+);
+
+wire    state_override, should_inc_counter;
+
+big_eq #(
+  .WIDTH(3)
+) big_eq_no_state_override (
+  .in0({Q2,Q1,Q0}), .in1(3'b101),
+  .eq(state_override)
+);    
+
+or2$  or2$_should_inc_counter(should_inc_counter, no_state_change, state_override);
+
+mux2$ mux2$_next_counter[2:0](next_counter, 3'b000, inc_counter, should_inc_counter);
+
+reg_n #(
+  .WIDTH(3),
+  .USE_EN_BAR(0)
+) reg_n_counter (
+  .clk(clk), .rst(rst),
+  .en({3{1'b1}}), .d(next_counter),
+  .q(counter)
+);
+
+/* "State Done" Counter Comparators */
+
+big_eq  #(.WIDTH(3)) done_WRITE_DONE         (.in0(counter_buf1024), .in1(W_CT_WRITE_DONE     ), .eq(WRITE_DONE     ));
+big_eq  #(.WIDTH(3)) done_RD_EN_DONE         (.in0(counter_buf1024), .in1(W_CT_RD_EN_DONE     ), .eq(RD_EN_DONE     ));
+big_eq  #(.WIDTH(3)) done_SHORT_BRST_DONE    (.in0(counter_buf1024), .in1(W_CT_SHORT_BRST_DONE), .eq(SHORT_BRST_DONE));
+
+/*** BEGIN AUTO-GENERATED CODE ***/
 
 /* Inverters */
-wire WR_bar;
-inv1$ inv_0(WR_bar, WR);
-wire CT_WR_ADDR_bar;
-inv1$ inv_1(CT_WR_ADDR_bar, CT_WR_ADDR);
 wire Q2_bar;
-wire Q1_bar;
-wire CT_WR_BRST_bar;
-inv1$ inv_4(CT_WR_BRST_bar, CT_WR_BRST);
+wire SHORT_BRST_DONE_bar;
+inv1$ inv_1(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
+wire WRITE_DONE_bar;
+inv1$ inv_2(WRITE_DONE_bar, WRITE_DONE);
 wire Q0_bar;
-wire CT_RD_BRST_bar;
-inv1$ inv_6(CT_RD_BRST_bar, CT_RD_BRST);
-wire RD_bar;
-inv1$ inv_7(RD_bar, RD);
-wire CT_HIZ_PROT_bar;
-inv1$ inv_8(CT_HIZ_PROT_bar, CT_HIZ_PROT);
-wire CT_BUS_FREE_bar;
-inv1$ inv_9(CT_BUS_FREE_bar, CT_BUS_FREE);
+wire Q1_bar;
+wire L2B_CTR_bar;
+inv1$ inv_5(L2B_CTR_bar, L2B_CTR);
 
 /* Product Expressions */
 wire and_0_0_out;
-and4$ and_0_0(and_0_0_out,Q2_bar,Q0_bar,RD_bar,WR);
+and4$ and_0_0(and_0_0_out,Q2_bar,Q1_bar,Q0_bar,DC_DMA_WR_ACK);
 wire and_1_0_out;
-wire and_1_1_out;
-and4$ and_1_0(and_1_0_out,and_1_1_out,Q2_bar,Q1_bar,Q0_bar);
-and2$ and_1_1(and_1_1_out,RD,WR_bar);
+and4$ and_1_0(and_1_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
 wire and_2_0_out;
-and3$ and_2_0(and_2_0_out,Q1,Q0_bar,CT_WR_EN);
+and4$ and_2_0(and_2_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
 wire and_3_0_out;
-and4$ and_3_0(and_3_0_out,Q2_bar,Q1_bar,Q0,CT_HIZ_PROT);
+and3$ and_3_0(and_3_0_out,Q1,Q0_bar,WRITE_DONE_bar);
 wire and_4_0_out;
-and4$ and_4_0(and_4_0_out,Q2_bar,Q1_bar,Q0,CT_HIZ_PROT_bar);
+and4$ and_4_0(and_4_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE);
 wire and_5_0_out;
-and4$ and_5_0(and_5_0_out,Q2,Q1_bar,Q0,CT_WR_ADDR);
+and4$ and_5_0(and_5_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE_bar);
 wire and_6_0_out;
-and3$ and_6_0(and_6_0_out,Q2,Q1_bar,CT_BUS_FREE_bar);
+and4$ and_6_0(and_6_0_out,Q2_bar,Q1_bar,Q0_bar,DC_DMA_RD_ACK);
 wire and_7_0_out;
-and4$ and_7_0(and_7_0_out,Q2,Q1_bar,Q0,CT_WR_ADDR_bar);
+and3$ and_7_0(and_7_0_out,Q2,Q0_bar,RD_EN_DONE);
 wire and_8_0_out;
-and4$ and_8_0(and_8_0_out,Q2_bar,Q1,Q0,CT_RD_BRST);
+and3$ and_8_0(and_8_0_out,Q2_bar,Q1,Q0);
 wire and_9_0_out;
-and4$ and_9_0(and_9_0_out,Q2,Q1,Q0,CT_WR_BRST_bar);
+and2$ and_9_0(and_9_0_out,Q1,Q0);
 wire and_10_0_out;
-and4$ and_10_0(and_10_0_out,Q2_bar,Q1,Q0,CT_RD_BRST_bar);
+and3$ and_10_0(and_10_0_out,Q2,Q1_bar,Q0_bar);
 wire and_11_0_out;
-and3$ and_11_0(and_11_0_out,Q2,Q1,Q0_bar);
+and3$ and_11_0(and_11_0_out,Q2,Q1,L2B_CTR_bar);
 wire and_12_0_out;
-and3$ and_12_0(and_12_0_out,Q2_bar,Q1,Q0_bar);
+assign and_12_0_out = Q2_bar;
 wire and_13_0_out;
-and2$ and_13_0(and_13_0_out,Q2,Q0);
-wire and_14_0_out;
-buffer$ buffer_and_14_0(and_14_0_out,Q1_bar);
+and3$ and_13_0(and_13_0_out,Q2,Q1,Q0_bar);
 
 /* Sum Expressions */
 wire or_0_1_out;
-or4$ or_0_0(D2,or_0_1_out,and_1_0_out,and_5_0_out,and_6_0_out);
-or4$ or_0_1(or_0_1_out,and_7_0_out,and_8_0_out,and_9_0_out,and_11_0_out);
+or4$ or_0_0(D2,or_0_1_out,and_4_0_out,and_5_0_out,and_8_0_out);
+or3$ or_0_1(or_0_1_out,and_10_0_out,and_11_0_out,and_13_0_out);
 wire or_1_1_out;
-or4$ or_1_0(D1,or_1_1_out,and_3_0_out,and_5_0_out,and_9_0_out);
-or3$ or_1_1(or_1_1_out,and_10_0_out,and_11_0_out,and_12_0_out);
+or4$ or_1_0(D1,or_1_1_out,and_1_0_out,and_3_0_out,and_4_0_out);
+or3$ or_1_1(or_1_1_out,and_6_0_out,and_11_0_out,and_13_0_out);
 wire or_2_1_out;
-wire or_2_2_out;
-or4$ or_2_0(D0,or_2_1_out,or_2_2_out,and_0_0_out,and_1_0_out);
-or4$ or_2_1(or_2_1_out,and_2_0_out,and_4_0_out,and_7_0_out,and_9_0_out);
-or2$ or_2_2(or_2_2_out,and_10_0_out,and_12_0_out);
-wire or_3_1_out;
-or4$ or_3_0(OE_out,or_3_1_out,and_8_0_out,and_10_0_out,and_11_0_out);
-or2$ or_3_1(or_3_1_out,and_13_0_out,and_14_0_out);
-wire or_4_1_out;
-or4$ or_4_0(WR_out,or_4_1_out,and_8_0_out,and_10_0_out,and_12_0_out);
-or2$ or_4_1(or_4_1_out,and_13_0_out,and_14_0_out);
-or4$ or_5_0(DATA_EN_BAR,and_11_0_out,and_12_0_out,and_13_0_out,and_14_0_out);
+or4$ or_2_0(D0,or_2_1_out,and_0_0_out,and_2_0_out,and_5_0_out);
+or4$ or_2_1(or_2_1_out,and_6_0_out,and_7_0_out,and_11_0_out,and_13_0_out);
+or3$ or_3_0(DATA_BUS_GATE,and_9_0_out,and_10_0_out,and_12_0_out);
+or2$ or_4_0(STORE_BUF_LD_EN,and_1_0_out,and_2_0_out);
+or2$ or_5_0(LOAD_BUF_LD_EN,and_10_0_out,and_13_0_out);
 
 /* State Flip Flops */
-dff$ dff_0(clk, D0, Q0, Q0_bar, rst, 1'b1);
-dff$ dff_1(clk, D1, Q1, Q1_bar, rst, 1'b1);
-dff$ dff_2(clk, D2, Q2, Q2_bar, rst, 1'b1);
+dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);
+dff$ dff_1(clk, D1, Q1_prebuf, Q1_bar_prebuf, rst, 1'b1);
+dff$ dff_2(clk, D2, Q2_prebuf, Q2_bar_prebuf, rst, 1'b1);
+
+/* INVERT STATE BITS */
+
+bufferH16$  bufferH16$_Q2_bar(Q2_bar, Q2_bar_prebuf);
+bufferH16$  bufferH16$_Q1_bar(Q1_bar, Q1_bar_prebuf);
+bufferH16$  bufferH16$_Q0_bar(Q0_bar, Q0_bar_prebuf);
 
 endmodule
