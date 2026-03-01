@@ -17,7 +17,7 @@ module logic_modrm_imm(
 
     //Layer 1:
     //buffer$ opcode7_buffer(.out(opcode7_buf), .in(opcode[7]))
-    inv1$ opcode7_inv(.out(opcode7_bar), .in(opcode7_buf))
+    inv1$ opcode7_inv(.out(opcode7_bar), .in(opcode[7]));
 
     //Layer 2: 1 ns
     // BANK 0: Standard Opcodes (ext = 0, op_size = 0)
@@ -38,19 +38,29 @@ module logic_modrm_imm(
 
     //Layer 3: 0.5ns (worse case through select)
     wire [31:0] active_row;
-    mux4_32 choose_bank(.Y(active_row), .IN0(bus_std), .IN1(bus_oso), .IN2(bus_ext), .IN3(bus_ext_oso), .S0(op_size), .S1(ext))
+    mux4_32 choose_bank(.Y(active_row), .IN0(bus_std), .IN1(bus_oso), .IN2(bus_ext), .IN3(bus_ext_oso), .S0(op_size), .S1(ext));
 
     //Layer 4: 0.22ns (worst case through select, but opcode[1:0] is ready so no wait)
     wire [7:0] info_byte;
-    mux4_8$ choose_byte_inromrow(.Y(info_byte), .IN0(bus_std), .IN1(bus_oso), .IN2(bus_ext), .IN3(bus_ext_oso), .S0(opcode[1:0]), .S1(opcode[1:0]))
+    mux4_8$ choose_byte_inromrow(.Y(info_byte), .IN0(active_row[7:0]), .IN1(active_row[15:8]), .IN2(active_row[23:16]), .IN3(active_row[31:24]), .S0(opcode[0]), .S1(opcode[1]));
 
     assign is_modrm = info_byte[7];
     assign imm_size_inbytes = info_byte[6:4];
     assign sum_modrm_imm = info_byte[3:1];
-    assign is_far_br = info_byte[0]
+    assign is_far_br = info_byte[0];
 
     initial begin
-            //initial readmemh("rom/rom_modrm_imm.data", ROM12.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_std_lo.data", ROM_STD_LO.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_std_hi.data", ROM_STD_HI.mem);
+        
+        //$readmemh("rom/rom_oso_lo.data",     ROM_OSO_LO.mem);
+        //$readmemh("rom/rom_oso_hi.data",     ROM_OSO_HI.mem);
+        
+        //$readmemh("rom/rom_ext_lo.data",     ROM_EXT_LO.mem);
+        //$readmemh("rom/rom_ext_hi.data",     ROM_EXT_HI.mem);
+        
+        //$readmemh("rom/rom_ext_oso_lo.data", ROM_EXT_OSO_LO.mem);
+        //$readmemh("rom/rom_ext_oso_hi.data", ROM_EXT_OSO_HI.mem);    
     end
 
 endmodule
