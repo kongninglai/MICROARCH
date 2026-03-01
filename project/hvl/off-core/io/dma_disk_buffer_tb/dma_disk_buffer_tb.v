@@ -38,7 +38,7 @@ task check;
   reg [7:0] tmp [0:15];
   begin
     for (j = 0; j < 16; j = j + 1)
-      tmp[j] = ((buf_addr_in << 4) + j[7:0]) ^ disk_addr_in[7:0];
+      tmp[j] = ((buf_addr_in << 4) + j[7:0]) + disk_addr_in[7:0];
     buf_data_exp = {tmp[15], tmp[14], tmp[13], tmp[12], tmp[11], tmp[10], tmp[9], tmp[8],
                     tmp[7], tmp[6], tmp[5], tmp[4], tmp[3], tmp[2], tmp[1], tmp[0]};
     if (buf_data !== buf_data_exp) begin
@@ -58,6 +58,7 @@ initial begin
   rst = 1'b1;
   #(CYCLE_TIME);
   rst <= 1'b0;
+  start_xfer <= 1'b0;
   #(CYCLE_TIME);
   rst <= 1'b1;
   #(0.5*CYCLE_TIME);
@@ -66,7 +67,7 @@ initial begin
   start_mem_addr <= 0;
   start_xfer <= 1'b1;
   buf_addr <= 0;
-  disk_addr <= 0;
+  disk_addr <= 1;
   #(CYCLE_TIME);
   start_xfer <= 1'b0;
 

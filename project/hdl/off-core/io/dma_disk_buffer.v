@@ -15,7 +15,7 @@ function [7:0] disk_read_byte;
   input [31:0] disk_addr;
   input [11:0] offset;
   begin
-    disk_read_byte = disk_addr[7:0] ^ offset[7:0];
+    disk_read_byte = disk_addr[7:0] + offset[7:0];
   end
 endfunction
 
@@ -26,12 +26,15 @@ generate
   end
 endgenerate
 
+reg start_xfer_delay;
+
 integer idx;
 always @(posedge clk) begin
+  start_xfer_delay <= start_xfer;
   if (~rst) begin
     busy      <= 1'b0;
     buf_valid <= 1'b0;
-  end else if (start_xfer && !busy) begin
+  end else if (start_xfer && !start_xfer_delay && !busy) begin
     busy      <= 1'b1;
     buf_valid <= 1'b0;
     #(750);
@@ -44,6 +47,8 @@ always @(posedge clk) begin
     end
     buf_valid <= 1'b1;
     busy      <= 1'b0;
+  end else if (!busy) begin
+    buf_valid <= 1'b0;
   end
 end
 

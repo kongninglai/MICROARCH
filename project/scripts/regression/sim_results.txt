@@ -6,7 +6,7 @@ big_increment_tb               FAILURES=0      SUCCESSES=4097
 big_neq_tb                     FAILURES=0      SUCCESSES=264   
 big_or_tb                      FAILURES=0      SUCCESSES=4096  
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
-dmac_tb                        COMPILE_ERROR
+dmac_tb                        FAILURES=0      SUCCESSES=1040  
 dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
 dmu_tb                         FAILURES=0      SUCCESSES=4     
 FA_16b_tb                      FAILURES=0      SUCCESSES=4096  

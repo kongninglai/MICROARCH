@@ -18,11 +18,7 @@ assign c[0] = 1'b1;
 genvar i;
 generate
   for (i = 1; i < WIDTH; i = i + 1) begin : carry_generation
-    if (WIDTH < 8) begin
-      big_and #(.WIDTH(i)) big_and_inst(c[i], a[i-1:0]);
-    end else begin
-      big_and #(.WIDTH(i)) big_and_inst(c[i], a_buf64[i-1:0]);
-    end
+    big_and #(.WIDTH(i)) big_and_inst(c[i], a_buf64[i-1:0]);
   end
 endgenerate
 
@@ -30,11 +26,7 @@ endgenerate
 genvar j;
 generate
   for (j = 0; j < WIDTH; j = j + 1) begin
-    if (WIDTH < 8) begin
-      xor2$ xor2$_sum(s[j], a[j], c[j]);
-    end else begin
-      xor2$ xor2$_sum(s[j], a_buf64[j], c[j]);
-    end
+    xor2$ xor2$_sum(s[j], a[j], c[j]);
   end
 endgenerate
 
