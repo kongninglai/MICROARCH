@@ -8,5 +8,5 @@
 ~/MICROARCH/project/hdl/local-lib/regs/reg_n.v
 ~/MICROARCH/project/hdl/local-lib/comparators/big_eq.v
 ~/MICROARCH/project/hdl/local-lib/comparators/big_neq.v
-~/MICROARCH/project/hdl/io/kb.v
-~/MICROARCH/project/hvl/io/kb_tb/kb_tb.v
+~/MICROARCH/project/hdl/off-core/io/kb.v
+~/MICROARCH/project/hvl/off-core/io/kb_tb/kb_tb.v

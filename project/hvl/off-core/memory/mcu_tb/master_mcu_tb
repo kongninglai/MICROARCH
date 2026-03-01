@@ -15,8 +15,8 @@
 ~/MICROARCH/project/hdl/local-lib/adders/gen_prop.v
 ~/MICROARCH/project/hdl/local-lib/adders/gen_prop_2.v
 ~/MICROARCH/project/hdl/local-lib/adders/big_increment.v
-~/MICROARCH/project/hdl/local-lib/memory/rank.v
-~/MICROARCH/project/hdl/local-lib/memory/main_memory.v
-~/MICROARCH/project/hdl/local-lib/memory/mcu_ctrl.v
-~/MICROARCH/project/hdl/local-lib/memory/mcu.v
-~/MICROARCH/project/hvl/local-lib/memory/mcu_tb/mcu_tb.v
+~/MICROARCH/project/hdl/off-core/memory/rank.v
+~/MICROARCH/project/hdl/off-core/memory/main_memory.v
+~/MICROARCH/project/hdl/off-core/memory/mcu_ctrl.v
+~/MICROARCH/project/hdl/off-core/memory/mcu.v
+~/MICROARCH/project/hvl/off-core/memory/mcu_tb/mcu_tb.v
