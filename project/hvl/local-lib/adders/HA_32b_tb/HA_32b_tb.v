@@ -33,6 +33,7 @@ endtask
 
 initial begin
   
+  in_long = {32'hFFFFFFFF, 32'd0}; #40; check(out, out_exp);
   in_long = {32'hFFFFFFFF, 32'd1}; #40; check(out, out_exp);
   in_long = {32'h7FFFFFFF, 32'd0}; #40; check(out, out_exp);
   in_long = {32'h7FFFFFFF, 32'd1}; #40; check(out, out_exp);

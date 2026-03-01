@@ -23,7 +23,7 @@ Here is the general workflow:
 - Write a testbench.
 - Fill out a `master` file.
 - `cd` into the `sim` directory (run `mkdir sim` if needed to create the directory)
-- Run `vcs -full64 -v2005 -debug_all -f ../master_<module_name>_tb`
+- Run `vcs -full64 -v2005 -debug_all -f ../master*`
 - Run `./simv`
 - If you want to view waveforms, run `dve -full64 &`. We suggest just using `$display` statements in the testbench as much as possible. This can save unnecessary effort to scroll through a waveform.
 

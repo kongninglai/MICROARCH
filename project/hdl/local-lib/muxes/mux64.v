@@ -13,22 +13,27 @@ wire    mux4$_0_out, mux4$_1_out, mux4$_2_out, mux4$_3_out,
         mux4$_12_out, mux4$_13_out, mux4$_14_out, mux4$_15_out,
         mux4$_16_out, mux4$_17_out;
 
-mux4$   mux4$_0(mux4$_0_out, in0, in1, in2, in3, s0, s1);
-mux4$   mux4$_1(mux4$_1_out, in4, in5, in6, in7, s0, s1);
-mux4$   mux4$_2(mux4$_2_out, in8, in9, in10, in11, s0, s1);
-mux4$   mux4$_3(mux4$_3_out, in12, in13, in14, in15, s0, s1);
-mux4$   mux4$_4(mux4$_4_out, in16, in17, in18, in19, s0, s1);
-mux4$   mux4$_5(mux4$_5_out, in20, in21, in22, in23, s0, s1);
-mux4$   mux4$_6(mux4$_6_out, in24, in25, in26, in27, s0, s1);
-mux4$   mux4$_7(mux4$_7_out, in28, in29, in30, in31, s0, s1);
-mux4$   mux4$_8(mux4$_8_out, in32, in33, in34, in35, s0, s1);
-mux4$   mux4$_9(mux4$_9_out, in36, in37, in38, in39, s0, s1);
-mux4$   mux4$_10(mux4$_10_out, in40, in41, in42, in43, s0, s1);
-mux4$   mux4$_11(mux4$_11_out, in44, in45, in46, in47, s0, s1);
-mux4$   mux4$_12(mux4$_12_out, in48, in49, in50, in51, s0, s1);
-mux4$   mux4$_13(mux4$_13_out, in52, in53, in54, in55, s0, s1);
-mux4$   mux4$_14(mux4$_14_out, in56, in57, in58, in59, s0, s1);
-mux4$   mux4$_15(mux4$_15_out, in60, in61, in62, in63, s0, s1);
+wire    s0_buf16, s1_buf16;
+
+bufferH16$    bufferH16$_s0_buf16(s0_buf16, s0);
+bufferH16$    bufferH16$_s1_buf16(s1_buf16, s1);
+
+mux4$   mux4$_0(mux4$_0_out, in0, in1, in2, in3, s0_buf16, s1_buf16);
+mux4$   mux4$_1(mux4$_1_out, in4, in5, in6, in7, s0_buf16, s1_buf16);
+mux4$   mux4$_2(mux4$_2_out, in8, in9, in10, in11, s0_buf16, s1_buf16);
+mux4$   mux4$_3(mux4$_3_out, in12, in13, in14, in15, s0_buf16, s1_buf16);
+mux4$   mux4$_4(mux4$_4_out, in16, in17, in18, in19, s0_buf16, s1_buf16);
+mux4$   mux4$_5(mux4$_5_out, in20, in21, in22, in23, s0_buf16, s1_buf16);
+mux4$   mux4$_6(mux4$_6_out, in24, in25, in26, in27, s0_buf16, s1_buf16);
+mux4$   mux4$_7(mux4$_7_out, in28, in29, in30, in31, s0_buf16, s1_buf16);
+mux4$   mux4$_8(mux4$_8_out, in32, in33, in34, in35, s0_buf16, s1_buf16);
+mux4$   mux4$_9(mux4$_9_out, in36, in37, in38, in39, s0_buf16, s1_buf16);
+mux4$   mux4$_10(mux4$_10_out, in40, in41, in42, in43, s0_buf16, s1_buf16);
+mux4$   mux4$_11(mux4$_11_out, in44, in45, in46, in47, s0_buf16, s1_buf16);
+mux4$   mux4$_12(mux4$_12_out, in48, in49, in50, in51, s0_buf16, s1_buf16);
+mux4$   mux4$_13(mux4$_13_out, in52, in53, in54, in55, s0_buf16, s1_buf16);
+mux4$   mux4$_14(mux4$_14_out, in56, in57, in58, in59, s0_buf16, s1_buf16);
+mux4$   mux4$_15(mux4$_15_out, in60, in61, in62, in63, s0_buf16, s1_buf16);
 
 mux4$   mux4$_16(mux4$_16_out, mux4$_0_out, mux4$_1_out, mux4$_2_out, mux4$_3_out, s2, s3);
 mux4$   mux4$_17(mux4$_17_out, mux4$_4_out, mux4$_5_out, mux4$_6_out, mux4$_7_out, s2, s3);

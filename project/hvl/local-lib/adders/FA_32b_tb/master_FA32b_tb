@@ -1,0 +1,9 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time -v
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+~/MICROARCH/project/hdl/local-lib/gates/xor3LL.v
+~/MICROARCH/project/hdl/local-lib/adders/gen_prop.v
+~/MICROARCH/project/hdl/local-lib/adders/gen_prop_2.v
+~/MICROARCH/project/hdl/local-lib/adders/FA_32b.v
+~/MICROARCH/project/hvl/local-lib/adders/FA_32b_tb/FA_32b_behav.v
+~/MICROARCH/project/hvl/local-lib/adders/FA_32b_tb/FA_32b_tb.v
