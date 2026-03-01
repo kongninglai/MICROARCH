@@ -43,7 +43,7 @@ reg IC_MEM_RD_RQ;
 reg [7:0] TEST_CASE_NEW_CHAR, TEST_CASE_NEW_CHAR_WR;
 reg TEST_CASE_NEW_READY, TEST_CASE_NEW_READY_WR;
 
-reg   [CHIPS_PER_RANK-1:0] WR_mask_driver;
+reg   [CHIPS_PER_RANK-1:0] WR_mask_driver, WR_mask_driver_val;
 reg                        WR_mask_driver_enable;
 
 reg   [BUS_BIT_WIDTH-1:0]  DATA_driver;
@@ -106,6 +106,8 @@ task deassertAll;
     DC_DMA_RD_RQ <= 1'b0;
     DC_KB_RD_RQ  <= 1'b0;
     IC_MEM_RD_RQ <= 1'b0;
+    TEST_CASE_NEW_CHAR     <= 8'd0;
+    TEST_CASE_NEW_CHAR_WR  <= 8'd0;
     TEST_CASE_NEW_READY    <= 1'b0;
     TEST_CASE_NEW_READY_WR <= 1'b0;
   end
@@ -119,8 +121,20 @@ task assertTwoCycles;
       0: begin 
         DC_MEM_WR_RQ     <= 1'b1;
       end
-      3: begin 
+      1: begin 
         IC_MEM_RD_RQ     <= 1'b1;
+      end
+      2: begin 
+        DC_KB_WR_RQ      <= 1'b1;
+      end
+      3: begin 
+        DC_KB_RD_RQ      <= 1'b1;
+      end
+      4: begin 
+        DC_DMA_WR_RQ     <= 1'b1;
+      end
+      5: begin 
+        DC_DMA_RD_RQ     <= 1'b1;
       end
     endcase
     #(2 * CYCLE_TIME - DELAY_ADJ);
@@ -197,8 +211,30 @@ task check;
   end
 endtask
 
-
 task checkRDaddr;
+  input [RANK_BIT_WIDTH-1:0] EXPECTED_DATA0;
+  begin
+    #((1 + RD_EN_CYCLES + 1) * CYCLE_TIME);
+    check(EXPECTED_DATA0[31:0]);
+    #(CYCLE_TIME);
+    check(EXPECTED_DATA0[63:32]);
+    #(CYCLE_TIME);
+    check(EXPECTED_DATA0[95:64]);
+    #(CYCLE_TIME);
+    check(EXPECTED_DATA0[127:96]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[31:0]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[63:32]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[95:64]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[127:96]);
+    #(CYCLE_TIME);
+  end
+endtask
+
+task checkRDaddr_prefetch;
   input [RANK_BIT_WIDTH-1:0] EXPECTED_DATA0, EXPECTED_DATA1;
   begin
     #((1 + RD_EN_CYCLES + 1) * CYCLE_TIME);
@@ -221,8 +257,97 @@ task checkRDaddr;
   end
 endtask
 
+task checkRDaddr_prefetch_dummy;
+  input [RANK_BIT_WIDTH-1:0] EXPECTED_DATA0, EXPECTED_DATA1;
+  begin
+    #((1 + RD_EN_CYCLES + 1) * CYCLE_TIME);
+    // check(EXPECTED_DATA0[31:0]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA0[63:32]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA0[95:64]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA0[127:96]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[31:0]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[63:32]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[95:64]);
+    #(CYCLE_TIME);
+    // check(EXPECTED_DATA1[127:96]);
+    #(CYCLE_TIME);
+  end
+endtask
+
+task check_full;
+  input [31:0] EXPECTED_DATA;
+  input [14:0] EXPECTED_ADDR;
+  input [15:0] EXPECTED_WR_MASK;
+  begin
+    if (DATA_BUS !== EXPECTED_DATA || ADDR_BUS !== EXPECTED_ADDR || WR_mask !== EXPECTED_WR_MASK) begin
+      FAILURES = FAILURES + 1;
+      $display("FAILURE AT TIME %t. EXP = %h, DATA = %h; EXP = %h, ADDR_BUS = %h; EXP = %h, WR_mask = %h\n", 
+                $time, EXPECTED_DATA, DATA_BUS, EXPECTED_ADDR, ADDR_BUS, EXPECTED_WR_MASK, WR_mask);
+    end else begin
+      SUCCESSES = SUCCESSES + 1;
+      // $display("SUCCESS AT TIME %t. EXP = %h, DATA = %h; EXP = %h, ADDR_BUS = %h; EXP = %h, WR_mask = %h\n", 
+      //           $time, EXPECTED_DATA, DATA_BUS, EXPECTED_ADDR, ADDR_BUS, EXPECTED_WR_MASK, WR_mask);
+    end
+  end
+endtask
+
+task checkRDaddr_dma;
+  input [RANK_BIT_WIDTH-1:0] EXPECTED_DATA0;
+  input [CHIPS_PER_RANK-1:0] MASK;
+  reg   [RANK_BIT_WIDTH-1:0] REAL_EXPECTED_DATA0;
+  reg   [RANK_BIT_WIDTH-1:0] FULL_MASK;
+  begin
+    FULL_MASK = ~({
+      {8{MASK[15]}},
+      {8{MASK[14]}},
+      {8{MASK[13]}},
+      {8{MASK[12]}},
+      {8{MASK[11]}},
+      {8{MASK[10]}},
+      {8{MASK[9]}},
+      {8{MASK[8]}},
+      {8{MASK[7]}},
+      {8{MASK[6]}},
+      {8{MASK[5]}},
+      {8{MASK[4]}},
+      {8{MASK[3]}},
+      {8{MASK[2]}},
+      {8{MASK[1]}},
+      {8{MASK[0]}}
+    });
+    REAL_EXPECTED_DATA0 = EXPECTED_DATA0 & FULL_MASK;
+    #((1 + RD_EN_CYCLES + 1) * CYCLE_TIME);
+    check(REAL_EXPECTED_DATA0[31:0]);
+    #(CYCLE_TIME);
+    check(REAL_EXPECTED_DATA0[63:32]);
+    #(CYCLE_TIME);
+    check(REAL_EXPECTED_DATA0[95:64]);
+    #(CYCLE_TIME);
+    check(REAL_EXPECTED_DATA0[127:96]);
+    #(CYCLE_TIME);
+    // check(REAL_EXPECTED_DATA0[31:0]);
+    #(CYCLE_TIME);
+    // check(REAL_EXPECTED_DATA0[63:32]);
+    #(CYCLE_TIME);
+    // check(REAL_EXPECTED_DATA0[95:64]);
+    #(CYCLE_TIME);
+    // check(REAL_EXPECTED_DATA0[127:96]);
+    #(CYCLE_TIME);
+  end
+endtask
+
 reg   [RANK_BIT_WIDTH-1:0] RAND_DATA0;
 reg   [RANK_BIT_WIDTH-1:0] RAND_DATA1;
+reg   [RANK_BIT_WIDTH-1:0] IN_DATA0, EXP_DATA0;
+reg   [RANK_BIT_WIDTH-1:0] IN_DATA1, EXP_DATA1;
+reg   [7:0] ctr;
+reg   [10:0] addr_ctr;
 
 integer i;
 
@@ -235,6 +360,7 @@ initial begin
   rst <= 1'b1;
   #(CYCLE_TIME);
 
+  /*** MEMORY CONTROLLER TESTING ***/
   for (i = 0; i < 2047; i = i + 1) begin
     assertTwoCycles(0);
     RAND_DATA0 = {$random, $random, $random, $random};
@@ -252,14 +378,231 @@ initial begin
     join
     #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
 
-    assertTwoCycles(3);
+    assertTwoCycles(1);
     fork
       driveRDaddr(i << 4);
-      checkRDaddr(RAND_DATA0, RAND_DATA1);
+      checkRDaddr_prefetch(RAND_DATA0, RAND_DATA1);
       #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
     join
   end
 
+  /*** KEYBOARD TESTING ***/
+  // Ensure new char writes do not work when KBER = 0
+  TEST_CASE_NEW_CHAR      <= 8'h55;
+  TEST_CASE_NEW_CHAR_WR   <= {8{1'b1}};
+  TEST_CASE_NEW_READY     <= 1'b1;
+  TEST_CASE_NEW_READY_WR  <= 1'b1;
+  EXP_DATA0                = 0;                    
+  EXP_DATA1                = 0;                                
+  #(CYCLE_TIME);
+  TEST_CASE_NEW_CHAR_WR   <= {8{1'b0}};
+  TEST_CASE_NEW_READY_WR  <= 1'b0;
+
+  assertTwoCycles(3);
+  fork
+    driveRDaddr(0);
+    checkRDaddr(EXP_DATA0);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  assertTwoCycles(3);
+  fork
+    driveRDaddr((1 << 4));
+    checkRDaddr(EXP_DATA1);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  // Set KBER
+  assertTwoCycles(2);
+  IN_DATA0    = {{63{1'bX}},1'bX,{63{1'bX}},1'b1};
+  EXP_DATA0   = {{63{1'b0}},1'b0,{63{1'b0}},1'b1};    // KBER, but NOT KBSR, affected by writes
+  IN_DATA1    = {128{1'bX}};                          
+  EXP_DATA1   = 0;                                    // KBDR unaffected by writes
+  fork
+    driveWRmaskWRaddr(16'h0000, 0);
+    driveWRdata(IN_DATA0);
+  join
+  #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+  // KBER should be unaffected by second write, so should not be cleared
+  assertTwoCycles(2);
+  fork
+    driveWRmaskWRaddr(16'h0000, (1 << 4));
+    driveWRdata(IN_DATA1);
+  join
+  #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+  assertTwoCycles(3);
+  fork
+    driveRDaddr(0);
+    checkRDaddr(EXP_DATA0);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  assertTwoCycles(3);
+  fork
+    driveRDaddr((1 << 4));
+    checkRDaddr(EXP_DATA1);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  // New character ready, and now KB is enabled!
+  TEST_CASE_NEW_CHAR      <= 8'h55;
+  TEST_CASE_NEW_CHAR_WR   <= {8{1'b1}};
+  TEST_CASE_NEW_READY     <= 1'b1;
+  TEST_CASE_NEW_READY_WR  <= 1'b1;
+  EXP_DATA0                = {{63{1'b0}},1'b1,{63{1'b0}},1'b1};         // Expect READY, and KB enabled           
+  EXP_DATA1                = {{120{1'b0}},8'h55};                       // Expect new KBDR    
+  #(CYCLE_TIME);
+  TEST_CASE_NEW_CHAR_WR   <= {8{1'b0}};
+  TEST_CASE_NEW_READY_WR  <= 1'b0;
+
+  // Read ready bit, ensure it's 1, and then read data, ensure it's 0x55, then ensure ready was cleared!
+  assertTwoCycles(3);
+  fork
+    driveRDaddr(0);
+    checkRDaddr(EXP_DATA0);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  assertTwoCycles(3);
+  fork
+    driveRDaddr((1 << 4));
+    checkRDaddr(EXP_DATA1);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  EXP_DATA0                = {{63{1'b0}},1'b0,{63{1'b0}},1'b1};         // Expect READY to be CLEARED
+  assertTwoCycles(3);
+  fork
+    driveRDaddr(0);
+    checkRDaddr(EXP_DATA0);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+
+  /*** DMAC TEST ***/
+
+  assertTwoCycles(4);
+  WR_mask_driver_val = 0;
+  // Write 3 bytes from ADDR 3 on disk to ADDR 2 in memory
+  RAND_DATA0 = {32'd1, 32'd3, 32'h00000002, 32'h00000003};
+  fork
+    driveWRmaskWRaddr(WR_mask_driver_val, {15{1'bX}});
+    driveWRdata(RAND_DATA0);
+  join
+  #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+  assertTwoCycles(5);
+  fork
+    checkRDaddr_dma(RAND_DATA0, WR_mask_driver_val);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  @(posedge DUT.dmac_inst.DMA_MEM_WR_ACK);
+  @(posedge clk);
+
+  #(CYCLE_TIME);
+  check_full(32'h04030000, 15'h0000, 16'hFFE3);
+  ctr = 5;
+  repeat (3) begin
+    #(CYCLE_TIME);
+    check_full({ctr+8'd3,ctr+8'd2,ctr+8'd1,ctr}, 15'h0000, 16'hFFE3);
+    ctr = ctr + 8'd4;
+  end
+  DC_DMA_WR_RQ <= 1'b1;
+  @(posedge DUT.DC_DMA_WR_ACK);
+  @(posedge clk);
+  deassertAll();
+
+  WR_mask_driver_val = 0;
+  // Write 4083 bytes from ADDR 7 on disk to ADDR C in memory, but first need to clear initiate transfer bit
+  RAND_DATA0 = {32'd0, 32'd4083, 32'h0000000C, 32'h00000007};
+  fork
+    driveWRmaskWRaddr(WR_mask_driver_val, {15{1'bX}});
+    driveWRdata(RAND_DATA0);
+  join
+  #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+  assertTwoCycles(5);
+  fork
+    checkRDaddr_dma(RAND_DATA0, WR_mask_driver_val);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  assertTwoCycles(4);
+  WR_mask_driver_val = 0;
+  // Write 4083 bytes from ADDR 7 on disk to ADDR C in memory.
+  // Should only write the 4 MSBytes at the start
+  // Will have 15 Bytes left over at the end
+  RAND_DATA0 = {32'd1, 32'd4083, 32'h0000000C, 32'h00000007};
+  fork
+    driveWRmaskWRaddr(WR_mask_driver_val, {15{1'bX}});
+    driveWRdata(RAND_DATA0);
+  join
+  #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+  assertTwoCycles(5);
+  fork
+    checkRDaddr_dma(RAND_DATA0, WR_mask_driver_val);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  @(posedge DUT.dmac_inst.DMA_MEM_WR_ACK);
+  @(posedge clk);
+
+  addr_ctr = 1;
+  ctr = 8'h0B;
+
+  #(CYCLE_TIME);
+  check_full(32'd0, 15'h0000, 16'h0FFF);
+  #(CYCLE_TIME);
+  check_full(32'd0, 15'h0000, 16'h0FFF);
+  #(CYCLE_TIME);
+  check_full(32'd0, 15'h0000, 16'h0FFF);
+  #(CYCLE_TIME);
+  check_full(32'h0a090807, 15'h0000, 16'h0FFF);
+
+  repeat (254) begin
+    #(CYCLE_TIME);
+    @(posedge DUT.dmac_inst.DMA_MEM_WR_ACK);
+    @(posedge clk);
+
+
+    repeat (4) begin
+      #(CYCLE_TIME);
+      check_full({ctr+8'd3,ctr+8'd2,ctr+8'd1,ctr}, {addr_ctr, 4'b0000}, 0);
+      ctr = ctr + 8'd4;
+    end
+
+    addr_ctr = addr_ctr + 11'd1;
+  end
+
+  #(CYCLE_TIME);
+  @(posedge DUT.dmac_inst.DMA_MEM_WR_ACK);
+  @(posedge clk);
+
+  #(CYCLE_TIME);
+  check_full({ctr+8'd3,ctr+8'd2,ctr+8'd1,ctr}, 15'h0FF0, 16'h8000);
+  #(CYCLE_TIME);
+  check_full({ctr+8'd7,ctr+8'd6,ctr+8'd5,ctr+8'd4}, 15'h0FF0, 16'h8000);
+  #(CYCLE_TIME);
+  check_full({ctr+8'd11,ctr+8'd10,ctr+8'd9,ctr+8'd8}, 15'h0FF0, 16'h8000);
+  #(CYCLE_TIME);
+  check_full({ctr+8'd15,ctr+8'd14,ctr+8'd13,ctr+8'd12}, 15'h0FF0, 16'h8000);
+
+  @(posedge DUT.arbiter_inst.NOBODY_BUSY);
+  @(posedge clk);
+
+  /*** REPEAT MEMORY CONTROLLER TESTING (TEST DMA TRANFSER BY INSPECTION) ***/
+  for (i = 0; i < 255; i = i + 1) begin
+    assertTwoCycles(1);
+    fork
+      driveRDaddr(i << 4);
+      checkRDaddr_prefetch_dummy(RAND_DATA0, RAND_DATA1);
+      #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+    join
+  end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);

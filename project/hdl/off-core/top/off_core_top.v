@@ -104,7 +104,7 @@ mcu #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) mcu_inst (
   .MEM_BUSY     (MEM_BUSY     )    , .DATA_VALID_BAR(DATA_VALID_BAR)
 );
 
-arbiter DUT (
+arbiter arbiter_inst (
   .rst(rst), .clk(clk),
   .MEM_BUSY(MEM_BUSY),
   .DMAC_BUSY(DMAC_BUSY),
