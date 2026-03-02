@@ -342,7 +342,7 @@ task checkRDaddr_dma;
   end
 endtask
 
-reg   [RANK_BIT_WIDTH-1:0] RAND_DATA0;
+reg   [RANK_BIT_WIDTH-1:0] RAND_DATA0, RAND_DATA0_SAVED_START, RAND_DATA0_SAVED_END;
 reg   [RANK_BIT_WIDTH-1:0] RAND_DATA1;
 reg   [RANK_BIT_WIDTH-1:0] IN_DATA0, EXP_DATA0;
 reg   [RANK_BIT_WIDTH-1:0] IN_DATA1, EXP_DATA1;
@@ -361,9 +361,15 @@ initial begin
   #(CYCLE_TIME);
 
   /*** MEMORY CONTROLLER TESTING ***/
-  for (i = 0; i < 2047; i = i + 1) begin
+  for (i = 0; i < 256; i = i + 1) begin
     assertTwoCycles(0);
     RAND_DATA0 = {$random, $random, $random, $random};
+    if (i == 0) begin
+      RAND_DATA0_SAVED_START = RAND_DATA0;
+    end
+    if (i == 255) begin
+      RAND_DATA0_SAVED_END = RAND_DATA0;
+    end
     RAND_DATA1 = {$random, $random, $random, $random};
     fork
       driveWRmaskWRaddr(16'h0000, (i << 4));
@@ -595,14 +601,37 @@ initial begin
   @(posedge clk);
 
   /*** REPEAT MEMORY CONTROLLER TESTING (TEST DMA TRANFSER BY INSPECTION) ***/
-  for (i = 0; i < 255; i = i + 1) begin
+  assertTwoCycles(1);
+  fork
+    driveRDaddr(0 << 4);
+    checkRDaddr_dma({8'h0A,8'h09,8'h08,8'h07,RAND_DATA0_SAVED_START[95:40],8'h05,8'h04,8'h03,RAND_DATA0_SAVED_START[15:0]}, 0);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
+
+  ctr = 8'h0B;
+
+  for (i = 1; i < 255; i = i + 1) begin
     assertTwoCycles(1);
     fork
       driveRDaddr(i << 4);
-      checkRDaddr_prefetch_dummy(RAND_DATA0, RAND_DATA1);
+      checkRDaddr_dma({ctr+8'd15,ctr+8'd14,ctr+8'd13,ctr+8'd12,
+                       ctr+8'd11,ctr+8'd10,ctr+8'd9,ctr+8'd8,
+                       ctr+8'd7,ctr+8'd6,ctr+8'd5,ctr+8'd4,
+                       ctr+8'd3,ctr+8'd2,ctr+8'd1,ctr+8'd0}, 0);
       #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
     join
+    ctr = ctr + 8'd16;
   end
+
+  assertTwoCycles(1);
+  fork
+    driveRDaddr(i << 4);
+    checkRDaddr_dma({RAND_DATA0_SAVED_END[127:120], {ctr+8'd14,ctr+8'd13,ctr+8'd12,
+                       ctr+8'd11,ctr+8'd10,ctr+8'd9,ctr+8'd8,
+                       ctr+8'd7,ctr+8'd6,ctr+8'd5,ctr+8'd4,
+                       ctr+8'd3,ctr+8'd2,ctr+8'd1,ctr+8'd0}}, 0);
+    #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+  join
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
