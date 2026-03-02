@@ -43,6 +43,7 @@ reg_n_tb                       FAILURES=0      SUCCESSES=1000
 rshfa_const_tb                 FAILURES=0      SUCCESSES=1024  
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
 se_tb                          FAILURES=0      SUCCESSES=258   
+stream_buffer_tb               FAILURES=0      SUCCESSES=4130  
 xor3LL_tb                      FAILURES=0      SUCCESSES=8     
 xor4LL_tb                      FAILURES=0      SUCCESSES=16    
 ze_tb                          FAILURES=0      SUCCESSES=258   
