@@ -361,7 +361,7 @@ initial begin
   #(CYCLE_TIME);
 
   /*** MEMORY CONTROLLER TESTING ***/
-  for (i = 0; i < 256; i = i + 1) begin
+  for (i = 0; i < 2047; i = i + 1) begin
     assertTwoCycles(0);
     RAND_DATA0 = {$random, $random, $random, $random};
     if (i == 0) begin
