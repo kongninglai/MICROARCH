@@ -1,0 +1,7 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1 
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib6
+~/MICROARCH/project/hdl/off-core/arbiter/arbiter.v
+~/MICROARCH/project/hvl/off-core/arbiter/arbiter_tb/arbiter_tb.v

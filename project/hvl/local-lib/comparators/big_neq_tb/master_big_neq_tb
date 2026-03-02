@@ -1,0 +1,5 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time -v
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+~/MICROARCH/project/hdl/local-lib/comparators/big_neq.v
+~/MICROARCH/project/hvl/local-lib/comparators/big_neq_tb/big_neq_behav.v
+~/MICROARCH/project/hvl/local-lib/comparators/big_neq_tb/big_neq_tb.v

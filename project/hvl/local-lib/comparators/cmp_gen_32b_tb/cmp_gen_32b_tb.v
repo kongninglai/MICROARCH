@@ -36,7 +36,7 @@ initial begin
   in0 = 32'hFFFFFFFE; in1 = 32'hFFFFFFFF; #40; check(out, out_exp);
   in0 = 32'hFFFFFFFF; in1 = 32'hFFFFFFFF; #40; check(out, out_exp);
   in0 = 0; in1 = 32'hFFFFFFFF; #40; check(out, out_exp);
-  in0 = 0; in0 = 1;
+  in0 = 0; in1 = 1;
   repeat (1 << 8) begin
     #40;
     check(out, out_exp);

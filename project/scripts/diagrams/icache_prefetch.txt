@@ -1,0 +1,25 @@
+{signal: [
+  {name: 'clk', 			        wave: 'p...................'},
+  ['CONTROL BUS',
+   {name: 'IC_MEM_RD_RQ', 	  wave: '01.0................'},
+    {name: 'IC_MEM_RD_ACK',   wave: '0.10................'},
+    {name: 'MEM_BUSY', 		    wave: '0..1...............0'},
+    {name: 'DATA_VALID_BAR',    wave: '1..........0.......1'},
+  ],
+  {name: 'DATA BUS', 		      wave: 'x..........34567892x', data:['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7']},
+  {name: 'ADDR BUS', 		      wave: 'x..2x...............', data:['RDA']},
+  {},
+  ['MAIN MEMORY I/Os',
+    {name: 'CE_DL',              wave: '1...0......1........'},
+    {name: 'OE_DL',              wave: '1...0......1........'},
+    {name: 'CE_PL',              wave: '1.......0......1....'},
+    {name: 'OE_PL',              wave: '1.......0......1....'},
+    {name: 'A',               wave: 'x...2..........x....', data:['RD ADDR (FROM MCU)']},
+    {name: 'DIO[127:0]',      wave: 'x.........2x..2x....', data:['DD', 'DP']}
+  ]
+],
+head:{
+  text:['tspan', {class: 'info h3'}, 'Memory Read Timing for I$ (Cycle Time = 10 ns)'],
+   tick:0,
+   every:1
+ }}

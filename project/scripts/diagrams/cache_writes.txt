@@ -1,0 +1,25 @@
+{signal: [
+  {name: 'clk', wave: 'p...........'},
+  ['CONTROL BUS',
+   {name: 'DC_MEM_WR_RQ', wave: '01.0........'},
+    {name: 'DC_MEM_WR_ACK', wave: '0.10........'},
+   {name: 'MEM_WR_MASK[15:0]', wave: 'x..2...x....', data:['WRITE MASK']},
+    {name: 'MEM_BUSY', wave: '0..1.......0'},
+    {name: 'DATA_VALID_BAR', wave: '1...........'},
+  ],
+  {name: 'DATA BUS', wave: 'x..3456x....', data:['D0', 'D1', 'D2', 'D3']},
+  {name: 'ADDR BUS', wave: 'x..2...x....', data:['WRITE ADDR (TO SB)']},
+  {},
+  ['MAIN MEMORY I/Os',
+    {name: 'CE', wave: '1......0...1'},
+    {name: 'WE', wave: '1......0...1'},
+    {name: 'OE', wave: '1...........'},
+    {name: 'A', wave: 'x...2......x', data:['WRITE ADDR (FROM SB)']},
+    {name: 'DIO[127:0]', wave: 'x...2......x', data:['WRITE DATA (FROM SB)']}
+  ]
+],
+head:{
+  text:['tspan', {class: 'info h3'}, 'Mem. Write Timing: D$ (10 ns clock)'],
+   tick:0,
+   every:1
+ }}
