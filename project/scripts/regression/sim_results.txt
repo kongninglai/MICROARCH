@@ -45,6 +45,7 @@ rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024
 se_tb                          FAILURES=0      SUCCESSES=258   
 stream_buffer_tb               FAILURES=0      SUCCESSES=4130  
 tag_store_tb                   FAILURES=0      SUCCESSES=160   
+valid_or_dirty_store_tb        FAILURES=0      SUCCESSES=1056  
 xor3LL_tb                      FAILURES=0      SUCCESSES=8     
 xor4LL_tb                      FAILURES=0      SUCCESSES=16    
 ze_tb                          FAILURES=0      SUCCESSES=258   
