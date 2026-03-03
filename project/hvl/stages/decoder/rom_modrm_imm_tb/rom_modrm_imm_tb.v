@@ -27,17 +27,16 @@ module tb_logic_modrm_imm();
     integer i;
 
     initial begin
-        // -----------------------------------------------------------
-        // TEST 1: RAW MEMORY DUMP
-        // Use hierarchical paths to look directly inside the ROMs
-        // -----------------------------------------------------------
+        // Wait 1ns to ensure readmemh has finished loading before reading
+        #1; 
+
+        // ===========================================================
+        // BANK 0: STANDARD ROMS
+        // ===========================================================
         $display("==================================================");
         $display("   DUMPING ROM_STD_LO (Opcodes 0x00 to 0x7F)      ");
         $display("==================================================");
-        // Wait 1ns to ensure readmemh has finished loading
-        #1; 
         for (i = 0; i < 32; i = i + 1) begin
-            // UUT = your module, ROM_STD_LO = the instance, mem = the reg array
             $display("Row %02d (Opcodes %02X-%02X): %08X", 
                       i, (i*4), (i*4)+3, UUT.ROM_STD_LO.mem[i]);
         end
@@ -50,9 +49,66 @@ module tb_logic_modrm_imm();
                       i, (i*4)+8'h80, (i*4)+8'h83, UUT.ROM_STD_HI.mem[i]);
         end
 
-        // -----------------------------------------------------------
+        // ===========================================================
+        // BANK 1: OPERAND SIZE OVERRIDE ROMS
+        // ===========================================================
+        $display("\n==================================================");
+        $display("   DUMPING ROM_OSO_LO (Opcodes 0x00 to 0x7F)      ");
+        $display("==================================================");
+        for (i = 0; i < 32; i = i + 1) begin
+            $display("Row %02d (Opcodes %02X-%02X): %08X", 
+                      i, (i*4), (i*4)+3, UUT.ROM_OSO_LO.mem[i]);
+        end
+
+        $display("\n==================================================");
+        $display("   DUMPING ROM_OSO_HI (Opcodes 0x80 to 0xFF)      ");
+        $display("==================================================");
+        for (i = 0; i < 32; i = i + 1) begin
+            $display("Row %02d (Opcodes %02X-%02X): %08X", 
+                      i, (i*4)+8'h80, (i*4)+8'h83, UUT.ROM_OSO_HI.mem[i]);
+        end
+
+        // ===========================================================
+        // BANK 2: EXTENDED 0F ROMS
+        // ===========================================================
+        $display("\n==================================================");
+        $display("   DUMPING ROM_EXT_LO (Opcodes 0x00 to 0x7F)      ");
+        $display("==================================================");
+        for (i = 0; i < 32; i = i + 1) begin
+            $display("Row %02d (Opcodes %02X-%02X): %08X", 
+                      i, (i*4), (i*4)+3, UUT.ROM_EXT_LO.mem[i]);
+        end
+
+        $display("\n==================================================");
+        $display("   DUMPING ROM_EXT_HI (Opcodes 0x80 to 0xFF)      ");
+        $display("==================================================");
+        for (i = 0; i < 32; i = i + 1) begin
+            $display("Row %02d (Opcodes %02X-%02X): %08X", 
+                      i, (i*4)+8'h80, (i*4)+8'h83, UUT.ROM_EXT_HI.mem[i]);
+        end
+
+        // ===========================================================
+        // BANK 3: EXTENDED 0F + OPERAND SIZE OVERRIDE ROMS
+        // ===========================================================
+        $display("\n==================================================");
+        $display("   DUMPING ROM_EXT_OSO_LO (Opcodes 0x00 to 0x7F)  ");
+        $display("==================================================");
+        for (i = 0; i < 32; i = i + 1) begin
+            $display("Row %02d (Opcodes %02X-%02X): %08X", 
+                      i, (i*4), (i*4)+3, UUT.ROM_EXT_OSO_LO.mem[i]);
+        end
+
+        $display("\n==================================================");
+        $display("   DUMPING ROM_EXT_OSO_HI (Opcodes 0x80 to 0xFF)  ");
+        $display("==================================================");
+        for (i = 0; i < 32; i = i + 1) begin
+            $display("Row %02d (Opcodes %02X-%02X): %08X", 
+                      i, (i*4)+8'h80, (i*4)+8'h83, UUT.ROM_EXT_OSO_HI.mem[i]);
+        end
+
+        // ===========================================================
         // TEST 2: FUNCTIONAL DECODE VERIFICATION
-        // -----------------------------------------------------------
+        // ===========================================================
         $display("\n==================================================");
         $display("   FUNCTIONAL TEST: SWEEPING OPCODES 0x00 TO 0xFF ");
         $display("==================================================");

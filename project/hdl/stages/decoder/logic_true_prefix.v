@@ -2,9 +2,15 @@
 Determines the direct output to prefix registers with the correct signal 
 that shows whether or not a certain prefix is present. 
 
-Critical Path: Through the Prefix Adder module
-Delay: 2.74
-1.74 + 1
+Critical Path: Through opsize signal and ext signal to find true signal 
+(modrm lookup needs this value to choose the modrm and imm byte info it needs)
+
+Delay: Is_prefix through seg and ext signal
+1.74 + 0.45 = 2.19
+
+Delay: prefix num -> though isprefix, and block, and combadder
+1.74 + 0.4 + 1 = 3.14ns
+
 */
 
 module logic_true_prefix(
@@ -89,11 +95,13 @@ module logic_true_prefix(
     );
 
     //Layer 2 - 2.04ns (longest through segment)
+
+    //Block takes 0.4ns
     wire is_any0_actual, is_any1_actual, is_any2_actual, is_any3_actual;
     assign is_any0_actual = is_any0;
     and2$ isany1actual(is_any1_actual, is_any0, is_any1);
-    and2$ isany2actual(is_any2_actual, is_any1_actual, is_any2);
-    and2$ isany3actual(is_any3_actual, is_any2_actual, is_any3);
+    and3$ isany2actual(is_any2_actual, is_any0, is_any1, is_any2);
+    and4$ isany3actual(is_any3_actual, is_any0, is_any1, is_any2, is_any3);
     
     logic_prefix_combadder PREFIX_ADDER( //Critical Path 1ns
         .P0(is_any0_actual),

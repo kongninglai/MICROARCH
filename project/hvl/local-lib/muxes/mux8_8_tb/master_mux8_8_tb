@@ -22,7 +22,7 @@
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shifters
 
 // Test Logic 
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder
+/home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/muxes/mux8_8.v
 
 // Testbench for Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/rom_modrm_imm_tb/logic_modrm_imm_tb.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hvl/local-lib/muxes/mux8_8_tb/mux8_8_tb.v

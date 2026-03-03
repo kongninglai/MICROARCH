@@ -33,7 +33,8 @@ module logic_is_prefix(
     
     //Level 1: 0.24ns
     wire [7:0] candidate_prefix_buf;
-    buffer8$ candidate_prefix_wire_buf(candidate_prefix_buf, candidate_prefix);
+    
+    bufferH16$ candidate_prefix_wire_buf(candidate_prefix_buf, candidate_prefix);
 
     //Level 2: 1.05ns delay 
     //Compare Opcode to all Prefixes in Parallel
