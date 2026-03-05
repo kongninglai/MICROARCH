@@ -1,23 +1,23 @@
-module  lshf_chunks_tb;
+module  lshf_chunks_var_128b_tb;
 
 initial begin
-  $vcdplusfile("lshf_chunks_tb.dump.vpd");
-  $vcdpluson(0, lshf_chunks_tb); 
+  $vcdplusfile("lshf_chunks_var_128b_tb.dump.vpd");
+  $vcdpluson(0, lshf_chunks_var_128b_tb); 
 end
 
-localparam WIDTH = 256;
-localparam SHF_ZEROS = 0;
+localparam WIDTH = 128;
 
 reg   [WIDTH-1:0]   in;
+reg         [4:0]   shf_amt;
 wire  [WIDTH-1:0]   out, out_exp;
 
-lshf_chunks #(.SHF_AMT(8), .SHF_ZEROS(SHF_ZEROS))  DUT (
-  .in(in),
+lshf_chunks_var_128b DUT (
+  .in(in), .shf_amt(shf_amt),
   .out(out)
 );
 
-lshf_chunks_behav #(.SHF_AMT(8), .SHF_ZEROS(SHF_ZEROS)) REF (
-  .in(in),
+lshf_chunks_var_128b_behav REF (
+  .in(in), .shf_amt(shf_amt),
   .out(out_exp)
 );
 
@@ -37,10 +37,12 @@ endtask
 
 initial begin
   in = 0;
+  shf_amt = 0;
   repeat (1 << 12) begin
     #5; 
     check(out, out_exp);
-    in = ($random | 256'hFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000);
+    in = ($random | 128'hFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000);
+    shf_amt = $random;
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
