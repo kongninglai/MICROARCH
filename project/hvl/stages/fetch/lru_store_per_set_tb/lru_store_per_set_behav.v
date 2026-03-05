@@ -1,5 +1,5 @@
 module lru_store_per_set_behav (
-    input rst, clk, 
+    input rst, clk, valid,
     input T1, T0,
     output reg V1, V0
 );
@@ -7,6 +7,7 @@ module lru_store_per_set_behav (
 reg [4:0] state, next_state;
 
 always @(*) begin
+  if (valid) begin
     case (state)
         5'b00000: case ({T1,T0})
             2'b00: next_state = 5'b01011; 2'b01: next_state = 5'b00011;
@@ -106,6 +107,9 @@ always @(*) begin
         endcase
         default: next_state = 5'b00000;
     endcase
+  end else begin
+    next_state <= state;
+  end
 end
 
 always @(posedge clk or negedge rst) begin

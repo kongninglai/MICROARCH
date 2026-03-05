@@ -7,13 +7,14 @@ end
 
 localparam CYCLE_TIME = 10.0;
 
-reg clk, rst, T1, T0;
+reg clk, rst, T1, T0, valid;
 wire V1, V0;
 wire V1_exp, V0_exp;
 
 lru_store_per_set DUT (
   .clk(clk),
   .rst(rst),
+  .valid(valid),
   .T1(T1),
   .T0(T0),
   .V1(V1),
@@ -23,6 +24,7 @@ lru_store_per_set DUT (
 lru_store_per_set_behav REF (
   .clk(clk),
   .rst(rst),
+  .valid(valid),
   .T1(T1),
   .T0(T0),
   .V1(V1_exp),
@@ -53,6 +55,7 @@ integer i, j, k;
 initial begin
   clk = 0;
   rst = 1;
+  valid = 1;
   T1 = 0;
   T0 = 0;
 
@@ -91,6 +94,7 @@ initial begin
 
   for (i = 0; i < 1 << 13; i = i + 1) begin
     {T1, T0} = $random % 4;
+    valid = ($random & 1'b1);
     #(CYCLE_TIME);
     check();
   end
