@@ -14,7 +14,6 @@ module we_logic_block_behav #(
   output     [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] DATA_WR_MASK_OUT,
   output     [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] SB_DATA_WR_MASK_OUT,
 
-  output     [INDEX_WIDTH-1:0]                       TAG_VALID_SET_INDEX,
   output     [NUM_WAYS-1:0]                          TAG_WR_MASK_OUT,
 
   output     [INDEX_WIDTH+WAY_WIDTH-1:0]             VALID_WR_EN
@@ -34,7 +33,6 @@ assign sb_data_uninverted = {{(NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-4){1'b0}}, 4'd1
 assign DATA_WR_MASK_OUT    = ~data_uninverted;
 assign SB_DATA_WR_MASK_OUT = ~sb_data_uninverted;
 
-assign TAG_VALID_SET_INDEX = set_index;
 assign TAG_WR_MASK_OUT     = 1 << ICACHE_VICT_WAY;
 
 assign VALID_WR_EN         = combined_index;
