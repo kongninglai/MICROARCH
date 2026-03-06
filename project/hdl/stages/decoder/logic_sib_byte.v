@@ -1,7 +1,11 @@
 /*
 This module outputs the correct sib byte and whether it is a true sib byte. 
 Critical Path: through is_sib_true signal
-Delay: 0.75 + 0.8 (total 1.55ns -> need to wait for prefixnum to propogate  so wait 1.59) + 0.35 = 3.49 ns total
+Delay: 4.55ns total delay for is_sib_true signal.
+Prefix_num signal is ready at 3.38ns. 
+Then, it takes 0.8ns to select the correct sib byte and determine if there is an sib byte. Then it takes 0.35ns to 
+determine if the signal is true. Is_modrm is ready at 4.2ns. 
+3.38 + 0.8 = 4.18 (need to wait for modrm to be ready, so wait until 4.2ns) + 0.35 = 4.55ns total delay for is_sib_true signal
 */
 
 module logic_sib_byte(

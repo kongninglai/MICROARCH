@@ -15,7 +15,8 @@ module logic_modrm_imm(
     output wire is_modrm,
     output wire [2:0] imm_size_inbytes,
     output wire [2:0] sum_modrm_imm,
-    output wire is_far_br
+    output wire is_far_br,
+    output wire [1:0] imm_size //ready at 2.69 + 0.35 = 3.04ns
 );  
 
     wire [31:0] bus_std;
@@ -60,10 +61,13 @@ module logic_modrm_imm(
     wire [7:0] active_byte;
     mux4_8$ choose_bank(.Y(active_byte), .IN0(info_byte_std), .IN1(info_byte_oso), .IN2(info_byte_ext), .IN3(info_byte_ext_oso), .S0(op_size), .S1(ext));
 
-    assign is_modrm = active_byte[7];
+    assign is_modrm = active_byte[7]; //ready at 2.69ns
     assign imm_size_inbytes = active_byte[6:4];
     assign sum_modrm_imm = active_byte[3:1];
     assign is_far_br = active_byte[0];
+
+    or2$ calc_imm_size_bit0(.out(imm_size[0]), .in0(imm_size_inbytes[0]), .in1(imm_size_inbytes[2])); //0.35ns
+    or2$ calc_imm_size_bit1(.out(imm_size[1]), .in0(imm_size_inbytes[1]), .in1(imm_size_inbytes[2])); //0.35ns
 
     initial begin
         $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_std_lo.data", ROM_STD_LO.mem);

@@ -76,6 +76,7 @@ module block_decoder(
     wire [7:0] modrm_byte_true;
     wire is_modrm_true, is_far_br_true;
     wire [2:0] imm_size_inbytes_true, sum_modrm_imm_true, sib_idx;
+    wire [1:0] imm_size_true;
     logic_true_modrm(
     .candidate_opcode0(cache_bytes[0]),
     .candidate_opcode1(cache_bytes[1]),
@@ -89,6 +90,7 @@ module block_decoder(
     .modrm_byte_true(modrm_byte_true),
     .is_modrm_true(is_modrm_true), //signal ready at 4.2ns
     .imm_size_inbytes_true(imm_size_inbytes_true),
+    .imm_size_true(imm_size_true), 
     .sum_modrm_imm_true(sum_modrm_imm_true),
     .is_far_br_true(is_far_br_true)
     );
@@ -96,7 +98,7 @@ module block_decoder(
     //Sib logic
     wire is_sib_true;
     wire [7:0]sib_byte_true;
-    module logic_sib_byte(
+    logic_sib_byte LOGIC_SIB_BYTE(
         .candidate_modrm1(cache_bytes[1]),
         .candidate_modrm2(cache_bytes[2]),
         .candidate_modrm3(cache_bytes[3]),
@@ -106,8 +108,22 @@ module block_decoder(
         .is_modrm_true(is_modrm_true),
         .prefix_num(prefix_num),
         .sib_byte_true(sib_byte_true),
-        .is_sib_true(is_sib_true)
+        .is_sib_true(is_sib_true) //ready at 6.2ns
     );  
+
+    wire [2:0] disp_size_inbytes;
+    wire [1:0] disp_size;
+    wire [31:0] disp_bytes;
+    logic_disp_bytes LOGIC_DISP_BYTES(
+        .cache_bits(cache_line_buf[111:16]), //bytes 2-12 of the instruction cache
+        .modrm_byte(modrm_byte_true),
+        .is_modrm_true(is_modrm_true),
+        .has_sib(is_sib_true),
+        .prefix_num(prefix_num),
+        .disp_size_inbytes(disp_size_inbytes),
+        .disp_size(disp_size),
+        .disp_bytes(disp_bytes)
+    );
 
     
 
