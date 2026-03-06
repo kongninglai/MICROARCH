@@ -52,29 +52,7 @@ module block_decoder(
         .is_seg_ov(is_seg_ov),
         .seg_id(seg_id),
         .ext_op_true(is_ext),
-        .prefix_num(prefix_num)
-    );
-
-    //Modrm logic
-    wire [7:0] modrm_byte_true;
-    wire is_modrm_true, is_far_br_true;
-    wire [2:0] imm_size_inbytes_true, sum_modrm_imm_true, modrm_idx;
-    logic_true_modrm(
-    .candidate_opcode0(cache_bytes[0]),
-    .candidate_opcode1(cache_bytes[1]),
-    .candidate_opcode2(cache_bytes[2]),
-    .candidate_opcode3(cache_bytes[3]),
-    .candidate_opcode4(cache_bytes[4]),
-    .candidate_opcode5(cache_bytes[5]),
-    .ext(is_ext),
-    .op_size(is_op_size),
-    .prefix_num(prefix_num),
-    .modrm_idx(modrm_idx),
-    .modrm_byte_true(modrm_byte_true),
-    .is_modrm_true(is_modrm_true),
-    .imm_size_inbytes_true(imm_size_inbytes_true),
-    .sum_modrm_imm_true(sum_modrm_imm_true),
-    .is_far_br_true(is_far_br_true)
+        .prefix_num(prefix_num) //signal ready at 3.38ns
     );
 
     //Opcode Logic
@@ -93,6 +71,47 @@ module block_decoder(
         .S1(prefix_num[1]),
         .S2(prefix_num[2])
     );
+
+    //Modrm logic
+    wire [7:0] modrm_byte_true;
+    wire is_modrm_true, is_far_br_true;
+    wire [2:0] imm_size_inbytes_true, sum_modrm_imm_true, sib_idx;
+    logic_true_modrm(
+    .candidate_opcode0(cache_bytes[0]),
+    .candidate_opcode1(cache_bytes[1]),
+    .candidate_opcode2(cache_bytes[2]),
+    .candidate_opcode3(cache_bytes[3]),
+    .candidate_opcode4(cache_bytes[4]),
+    .candidate_opcode5(cache_bytes[5]),
+    .ext(is_ext),
+    .op_size(is_op_size),
+    .prefix_num(prefix_num),
+    .modrm_byte_true(modrm_byte_true),
+    .is_modrm_true(is_modrm_true), //signal ready at 4.2ns
+    .imm_size_inbytes_true(imm_size_inbytes_true),
+    .sum_modrm_imm_true(sum_modrm_imm_true),
+    .is_far_br_true(is_far_br_true)
+    );
+
+    //Sib logic
+    wire is_sib_true;
+    wire [7:0]sib_byte_true;
+    module logic_sib_byte(
+        .candidate_modrm1(cache_bytes[1]),
+        .candidate_modrm2(cache_bytes[2]),
+        .candidate_modrm3(cache_bytes[3]),
+        .candidate_modrm4(cache_bytes[4]),
+        .candidate_modrm5(cache_bytes[5]),
+        .candidate_modrm6(cache_bytes[6]),
+        .is_modrm_true(is_modrm_true),
+        .prefix_num(prefix_num),
+        .sib_byte_true(sib_byte_true),
+        .is_sib_true(is_sib_true)
+    );  
+
+    
+
+    
 
     
 

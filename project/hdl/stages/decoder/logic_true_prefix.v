@@ -9,7 +9,7 @@ Delay: Is_prefix through seg and ext signal
 1.74 + 0.45 = 2.19
 
 Delay: prefix num -> though isprefix, and block, and combadder
-1.74 + 0.4 + 1 = 3.14ns
+1.74 + 0.4 + 1.24 = 3.38ns
 
 */
 
@@ -103,7 +103,7 @@ module logic_true_prefix(
     and3$ isany2actual(is_any2_actual, is_any0, is_any1, is_any2);
     and4$ isany3actual(is_any3_actual, is_any0, is_any1, is_any2, is_any3);
     
-    logic_prefix_combadder PREFIX_ADDER( //Critical Path 1ns
+    logic_prefix_combadder PREFIX_ADDER( //Critical Path 1.24ns
         .P0(is_any0_actual),
         .P1(is_any1_actual),
         .P2(is_any2_actual),
