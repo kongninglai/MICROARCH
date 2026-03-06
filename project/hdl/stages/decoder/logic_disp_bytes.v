@@ -1,6 +1,8 @@
 /*
 Module will return the displacement and the size of the displacement in bytes.  
 Delay: 5.29ns through disp_bytes  
+disp_size_in_bytes is ready at 4.55ns
+total_offset is ready at 6.2ns
 
 */
 
@@ -43,7 +45,7 @@ module logic_disp_bytes(
         .prefix_num(prefix_num),
         .has_modrm(is_modrm_true), //ready at 4.2ns
         .has_sib(has_sib), //ready at 3.49 ns
-        .total_offset(total_offset)
+        .total_offset(total_offset) //ready at 6.2ns 
     );
 
     //Layer 2: takes 0.8ns (starts running at 4.49 + 0.8ns = 5.29ns done)

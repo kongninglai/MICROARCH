@@ -3,8 +3,8 @@
 This module is a 3 bit adder. This module computes total_offset = prefix_num + has_modrm + has_sib
 
 Delay: 
-0.35 + 0.3 = 1 ns for modrm and sib calculation. Modrm signal is ready at 4.2ns + 1ns to execute is done at 5.2ns 
-with temp_sum. Then has_sib has already arrived by then and can spend 1 ns executing 5.2 + 1ns = 6.2ns total delay
+0.35 + 0.35 + 0.3 = 1 ns for modrm and sib calculation. Modrm signal is ready at 4.2ns + 1ns to execute is done at 5.2ns 
+with temp_sum. Then has_sib has already arrived by then and can spend 1 ns executing 5.2 + 1ns = 6.2ns total delay for total_offset
 
 */
 

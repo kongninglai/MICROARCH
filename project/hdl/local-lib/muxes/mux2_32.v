@@ -2,7 +2,7 @@
 0.2 - data 
 0.3 - select
 */
-module mux2_32$(Y, IN0, IN1, S0);
+module mux2_32(Y, IN0, IN1, S0);
     input  [31:0] IN0;
     input  [31:0] IN1;
     input  S0;

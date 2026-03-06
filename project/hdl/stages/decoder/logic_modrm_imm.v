@@ -6,6 +6,11 @@ signals (ext and seg ov) are resolved after 2.19ns We then access a single mux t
 depending on what the opcode input was. After we retrieve the correct info byte, we have the modrm and 
 imm information. This takes a total time of 2.69ns. 
 
+Imm_size is determined by imm_size_inbytes[2:1]. 
+Imm_size = 00 (8 bit), 01 (16 bit), 10 (32 bit), 11 (48 bit)
+This is only used inside of the immediate logic for selection. 
+Imm_size_inbytes is saved into the pipeline register. 
+
 Critical Path: 2.19ns + 0.5ns = 2.69ns
 */
 module logic_modrm_imm(
@@ -66,8 +71,7 @@ module logic_modrm_imm(
     assign sum_modrm_imm = active_byte[3:1];
     assign is_far_br = active_byte[0];
 
-    or2$ calc_imm_size_bit0(.out(imm_size[0]), .in0(imm_size_inbytes[0]), .in1(imm_size_inbytes[2])); //0.35ns
-    or2$ calc_imm_size_bit1(.out(imm_size[1]), .in0(imm_size_inbytes[1]), .in1(imm_size_inbytes[2])); //0.35ns
+    assign imm_size[1:0] = imm_size_inbytes[2:1];
 
     initial begin
         $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_std_lo.data", ROM_STD_LO.mem);

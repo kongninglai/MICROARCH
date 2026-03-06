@@ -1,3 +1,10 @@
+/*
+This module is a 4 input multiplexer for 32 bit inputs. It takes 4 32-bit inputs and selects. 
+Delay: 
+0.22 data
+0.5 select
+*/
+
 module mux4_32(
     input [31:0] IN0,
     input [31:0] IN1,

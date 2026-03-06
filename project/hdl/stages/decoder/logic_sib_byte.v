@@ -16,7 +16,7 @@ module logic_sib_byte(
     input wire [7:0] candidate_modrm5,
     input wire [7:0] candidate_modrm6,
     input wire is_modrm_true, //signal is ready at 2.69ns
-    input wire [2:0] prefix_num, //signal is ready at 3.14ns
+    input wire [2:0] prefix_num, //signal is ready at 3.38ns
     output wire [7:0] sib_byte_true,
     output wire is_sib_true
 );  
