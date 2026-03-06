@@ -113,7 +113,7 @@ initial begin
     #(CYCLE_TIME);
 
     IC_MEM_RD_ACK               <= 1'b1;
-    DATA_VALID_BAR              <= 1'b0;
+    DATA_VALID_BAR              <= 1'b1;
     DATA_driver                 <= 32'h12345678;
     DATA_driver_enable          <= 1'b1;
     
@@ -122,7 +122,12 @@ initial begin
     ICC_DATA_WR_MASK_DEFAULT    <= {128{1'b1}};
     ICACHE_MISS                 <= 1'b1;
 
-    #(100 * CYCLE_TIME);
+    @(posedge IC_MEM_RD_RQ);
+    @(posedge clk);
+    #(4 * CYCLE_TIME);
+    DATA_VALID_BAR              <= 1'b0;
+
+    #(30 * CYCLE_TIME);
 
   
     $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);

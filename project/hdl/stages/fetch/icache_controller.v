@@ -254,6 +254,14 @@ reg_n #(
   .q(Q_ICC_VALID_WR_EN_1)
 );
 
+mux2$   mux2$_ICC_VALID_WR_EN[INDEX_WIDTH+WAY_WIDTH-1:0](
+                                                          ICC_VALID_WR_EN, 
+                                                          {INDEX_WIDTH+WAY_WIDTH{1'b0}},
+                                                          Q_ICC_VALID_WR_EN_1,
+                                                          FSM_TAG_WR_MASK_MUX
+                                                        );
+assign ICC_VALID_SET_OR_CLR = 1'b1;
+
 wire  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      D_ICC_ADDR_OUT_1, D_ICC_NL_PHYS_ADDR;
 wire  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      Q_ICC_ADDR_OUT_1, Q_ICC_NL_PHYS_ADDR;
 
