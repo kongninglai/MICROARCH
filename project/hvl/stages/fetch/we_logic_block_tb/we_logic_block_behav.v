@@ -33,7 +33,7 @@ assign sb_data_uninverted = {{(NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-4){1'b0}}, 4'd1
 assign DATA_WR_MASK_OUT    = ~data_uninverted;
 assign SB_DATA_WR_MASK_OUT = ~sb_data_uninverted;
 
-assign TAG_WR_MASK_OUT     = 1 << ICACHE_VICT_WAY;
+assign TAG_WR_MASK_OUT     = ~(1 << ICACHE_VICT_WAY);
 
 assign VALID_WR_EN         = combined_index;
 
