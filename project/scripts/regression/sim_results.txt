@@ -22,6 +22,7 @@ HA_16b_tb                      FAILURES=0      SUCCESSES=1024
 HA_32b_tb                      FAILURES=0      SUCCESSES=262   
 HA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 icache_controller_tb           FAILURES=0      SUCCESSES=90112 
+icc_off_core_tb                FAILURES=0      SUCCESSES=40960 
 kb_tb                          FAILURES=0      SUCCESSES=28    
 lru_store_per_set_tb           FAILURES=0      SUCCESSES=8416  
 lshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
