@@ -42,7 +42,7 @@ module logic_disp_size(
 
     //Layer 4: 0.35ns
     and2$ mask_bit0(.out(disp_size[0]), .in0(size_1_byte), .in1(is_modrm_true));
-    and2$ mask_bit1(.out(disp_size[1]), .in0(size_4_bytes), .in1(is_modrm_true));
+    and2$ mask_bit1(.out(disp_size[1]), .in0(size_4_bytes), .in1(is_modrm_true)); 
 
     //Layer 5: 0.5ns
     wire [7:0] disp_size_inbytes_w;

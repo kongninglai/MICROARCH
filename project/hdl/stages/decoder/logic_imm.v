@@ -3,9 +3,8 @@ This module extracts the immediate value
 */
 module logic_imm(
     input wire [127:8] cache_bits, //bytes 1-14 of the instruction cache
-    input wire [2:0] total_offset, //ready at 6.2ns
+    input wire [3:0] total_offset, //ready at 6.45ns from p_m_s_d_adder
     input wire [1:0] imm_size, //ready at 4.2ns
-    input wire is_far_br, //ready at 4.2ns
     output wire [47:0] imm_bytes
 );  
 
@@ -24,8 +23,8 @@ module logic_imm(
 
     //Layer 1: takes 1.1ns
     wire [47:0] imm_bytes48, imm_bytes32, imm_bytes16, imm_bytes8;
-
-    mux16_48 imm_byte_mux48(.Y(imm_bytes48), 
+    mux16_48 imm_byte_mux48(
+        .Y(imm_bytes48), 
         .IN0({cache_bytes[6], cache_bytes[5], cache_bytes[4], cache_bytes[3], cache_bytes[2], cache_bytes[1]}), 
         .IN1({cache_bytes[7], cache_bytes[6], cache_bytes[5], cache_bytes[4], cache_bytes[3], cache_bytes[2]}), 
         .IN2({cache_bytes[8], cache_bytes[7], cache_bytes[6], cache_bytes[5], cache_bytes[4], cache_bytes[3]}), 
@@ -42,10 +41,11 @@ module logic_imm(
         .IN13(48'd0),
         .IN14(48'd0),
         .IN15(48'd0),
-        .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2], .S3(total_offset[3]))
+        .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2]), .S3(total_offset[3])
     );
 
-    mux16_48 imm_byte_mux32(.Y(imm_bytes32), 
+    mux16_48 imm_byte_mux32(
+        .Y(imm_bytes32), 
         .IN0({16'd0, cache_bytes[4], cache_bytes[3], cache_bytes[2], cache_bytes[1]}), 
         .IN1({16'd0, cache_bytes[5], cache_bytes[4], cache_bytes[3], cache_bytes[2]}), 
         .IN2({16'd0, cache_bytes[6], cache_bytes[5], cache_bytes[4], cache_bytes[3]}), 
@@ -62,10 +62,11 @@ module logic_imm(
         .IN13(48'd0),
         .IN14(48'd0),
         .IN15(48'd0),
-        .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2], .S3(total_offset[3]))
+        .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2]), .S3(total_offset[3])
     );
  
-    mux16_48 imm_byte_mux16(.Y(imm_bytes16), 
+    mux16_48 imm_byte_mux16(
+        .Y(imm_bytes16), 
         .IN0({32'd0, cache_bytes[2], cache_bytes[1]}), 
         .IN1({32'd0, cache_bytes[3], cache_bytes[2]}), 
         .IN2({32'd0, cache_bytes[4], cache_bytes[3]}), 
@@ -82,10 +83,11 @@ module logic_imm(
         .IN13(48'd0),
         .IN14(48'd0),
         .IN15(48'd0),
-        .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2], .S3(total_offset[3]))
+        .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2]), .S3(total_offset[3])
     );
 
-    mux16_48 imm_byte_mux8(.Y(imm_bytes8), 
+    mux16_48 imm_byte_mux8(
+        .Y(imm_bytes8), 
         .IN0({40'd0, cache_bytes[1]}), 
         .IN1({40'd0, cache_bytes[2]}), 
         .IN2({40'd0, cache_bytes[3]}), 
@@ -102,21 +104,18 @@ module logic_imm(
         .IN13(48'd0),
         .IN14(48'd0),
         .IN15(48'd0),
-        .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2], .S3(total_offset[3]))
+        .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2]), .S3(total_offset[3])
     );
 
     //Layer 2: 0.22ns through data delay
-    mux4_32 imm_size(
+    mux4_48 imm_size_mux(
         .IN0(imm_bytes8),
         .IN1(imm_bytes16),
         .IN2(imm_bytes32),
         .IN3(imm_bytes48),
         .S0(imm_size[0]),
-        .S1(imm_size[1])
+        .S1(imm_size[1]),
         .Y(imm_bytes)
     );
-);
-
-
 
 endmodule

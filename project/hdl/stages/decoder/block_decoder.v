@@ -111,6 +111,7 @@ module block_decoder(
         .is_sib_true(is_sib_true) //ready at 6.2ns
     );  
 
+    wire [3:0] disp_offset; 
     wire [2:0] disp_size_inbytes;
     wire [1:0] disp_size;
     wire [31:0] disp_bytes;
@@ -122,13 +123,16 @@ module block_decoder(
         .prefix_num(prefix_num),
         .disp_size_inbytes(disp_size_inbytes),
         .disp_size(disp_size),
-        .disp_bytes(disp_bytes)
+        .disp_bytes(disp_bytes),
+        .disp_offset(disp_offset)
     );
 
-    
-
-    
-
+    logic_imm LOGIC_IMM(
+        .cache_bits(cache_line_buf[127:8]), 
+        .total_offset(total_offset),
+        .imm_size(imm_size),
+        .imm_bytes(imm_bytes)
+    );  
     
 
 endmodule
