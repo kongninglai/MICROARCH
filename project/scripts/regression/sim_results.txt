@@ -5,7 +5,10 @@ big_eq_tb                      FAILURES=0      SUCCESSES=264
 big_increment_tb               FAILURES=0      SUCCESSES=4097  
 big_neq_tb                     FAILURES=0      SUCCESSES=264   
 big_or_tb                      FAILURES=0      SUCCESSES=4096  
+cache_controller_tb            FAILURES=0      SUCCESSES=90112 
+cc_off_core_tb                 FAILURES=0      SUCCESSES=30720 
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
+dcache_controller_wbe_tb       FAILURES=0      SUCCESSES=10240 
 decoder4_16_tb                 FAILURES=0      SUCCESSES=16    
 decoder5_32_tb                 FAILURES=0      SUCCESSES=32    
 dmac_tb                        FAILURES=0      SUCCESSES=1040  
@@ -21,8 +24,7 @@ gt99_8b_tb                     FAILURES=0      SUCCESSES=256
 HA_16b_tb                      FAILURES=0      SUCCESSES=1024  
 HA_32b_tb                      FAILURES=0      SUCCESSES=262   
 HA_8b_tb                       FAILURES=0      SUCCESSES=65536 
-icache_controller_tb           FAILURES=0      SUCCESSES=90112 
-icc_off_core_tb                FAILURES=0      SUCCESSES=40960 
+io_addr_logic_block_tb         FAILURES=0      SUCCESSES=512   
 kb_tb                          FAILURES=0      SUCCESSES=28    
 lru_store_per_set_tb           FAILURES=0      SUCCESSES=8416  
 lshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  

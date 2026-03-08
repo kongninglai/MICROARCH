@@ -1,9 +1,9 @@
-module icc_off_core_tb;
+module cc_off_core_tb;
 
 initial begin
-    $vcdplusfile("icc_off_core_tb.dump.vpd");
-    $vcdpluson(0, icc_off_core_tb);
-    $vcdpluson(0, icc_off_core_tb.DUT);
+    $vcdplusfile("cc_off_core_tb.dump.vpd");
+    $vcdpluson(0, cc_off_core_tb);
+    $vcdpluson(0, cc_off_core_tb.DUT);
 end
 
 localparam MEM_BYTE_CAPACITY=32768;
@@ -56,29 +56,31 @@ reg  [CHIPS_PER_RANK-1:0]               WR_mask_driver;
 reg                                     WR_mask_driver_enable;
 wire [CHIPS_PER_RANK-1:0]               WR_mask  = WR_mask_driver_enable ? WR_mask_driver : {CHIPS_PER_RANK{1'bz}};
 
-reg                                     ICACHE_MISS;
-reg  [RANK_BIT_WIDTH-1:0]               ICACHE_RD_DATA;
-reg  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] ICACHE_PHYS_ADDR;
-reg  [WAY_WIDTH-1:0]                    ICACHE_VICT_WAY;
-reg  [MASK_WIDTH-1:0]                   ICC_DATA_WR_MASK_DEFAULT;
+reg                                     CACHE_MISS;
+reg  [RANK_BIT_WIDTH-1:0]               CACHE_RD_DATA;
+reg  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] CACHE_PHYS_ADDR;
+reg  [WAY_WIDTH-1:0]                    CACHE_VICT_WAY;
+reg  [MASK_WIDTH-1:0]                   CC_DATA_WR_MASK_DEFAULT;
 
-wire                                    ICC_STREAM_BUF_HIT;
-wire                                    ICC_FSM_FILL_BUSY;
-wire [RANK_BIT_WIDTH-1:0]               ICC_WR_DATA_OUT;
-wire [RANK_BIT_WIDTH-1:0]               ICC_HIT_DATA_OUT;
-wire [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] ICC_ADDR_OUT;
-wire [MASK_WIDTH-1:0]                   ICC_DATA_WR_MASK_OUT;
+wire                                    CC_STREAM_BUF_HIT;
+wire                                    CC_FSM_FILL_BUSY;
+wire [RANK_BIT_WIDTH-1:0]               CC_WR_DATA_OUT;
+wire [RANK_BIT_WIDTH-1:0]               CC_HIT_DATA_OUT;
+wire [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] CC_ADDR_OUT;
+wire [MASK_WIDTH-1:0]                   CC_DATA_WR_MASK_OUT;
 
-wire [INDEX_WIDTH-1:0]                  ICC_TAG_VALID_SET_INDEX;
-wire [NUM_WAYS-1:0]                     ICC_TAG_WR_MASK_OUT;
-wire [TAG_WIDTH-1:0]                    ICC_TAG_IN;
+wire [INDEX_WIDTH-1:0]                  CC_TAG_VALID_SET_INDEX;
+wire [NUM_WAYS-1:0]                     CC_TAG_WR_MASK_OUT;
+wire [TAG_WIDTH-1:0]                    CC_TAG_IN;
 
-wire                                    ICC_VALID_SET_OR_CLR;
-wire [INDEX_WIDTH+WAY_WIDTH-1:0]        ICC_VALID_WR_EN;
-wire                                    ICC_FSM_VALID_WR_EN_GLOBAL;
+wire                                    CC_VALID_SET_OR_CLR;
+wire [INDEX_WIDTH+WAY_WIDTH-1:0]        CC_VALID_WR_EN;
+wire                                    CC_FSM_VALID_WR_EN_GLOBAL;
 
 reg                                     DC_MEM_WR_RQ;
 wire                                    DC_MEM_WR_ACK;
+
+reg  [2:0]                              KB_PFN, DMA_PFN;
 
 initial begin
     clk = 0;
@@ -88,31 +90,33 @@ end
 integer FAILURES  = 0;
 integer SUCCESSES = 0;
 
-icc_off_core #(
+cc_off_core #(
     .CYCLE_TIME_X10           (CYCLE_TIME_X10)
 ) DUT (
     .rst                        (rst),
     .clk                        (clk),
+    .KB_PFN                     (KB_PFN),
+    .DMA_PFN                    (DMA_PFN),
     .DATA_BUS                   (DATA_BUS),
     .ADDR_BUS                   (ADDR_BUS),
     .WR_mask                    (WR_mask),
-    .ICACHE_MISS                (ICACHE_MISS),
-    .ICACHE_RD_DATA             (ICACHE_RD_DATA),
-    .ICACHE_PHYS_ADDR           (ICACHE_PHYS_ADDR),
-    .ICACHE_VICT_WAY            (ICACHE_VICT_WAY),
-    .ICC_DATA_WR_MASK_DEFAULT   (ICC_DATA_WR_MASK_DEFAULT),
-    .ICC_STREAM_BUF_HIT         (ICC_STREAM_BUF_HIT),
-    .ICC_FSM_FILL_BUSY          (ICC_FSM_FILL_BUSY),
-    .ICC_WR_DATA_OUT            (ICC_WR_DATA_OUT),
-    .ICC_HIT_DATA_OUT           (ICC_HIT_DATA_OUT),
-    .ICC_ADDR_OUT               (ICC_ADDR_OUT),
-    .ICC_DATA_WR_MASK_OUT       (ICC_DATA_WR_MASK_OUT),
-    .ICC_TAG_VALID_SET_INDEX    (ICC_TAG_VALID_SET_INDEX),
-    .ICC_TAG_WR_MASK_OUT        (ICC_TAG_WR_MASK_OUT),
-    .ICC_TAG_IN                 (ICC_TAG_IN),
-    .ICC_VALID_SET_OR_CLR       (ICC_VALID_SET_OR_CLR),
-    .ICC_VALID_WR_EN            (ICC_VALID_WR_EN),
-    .ICC_FSM_VALID_WR_EN_GLOBAL (ICC_FSM_VALID_WR_EN_GLOBAL),
+    .CACHE_MISS                (CACHE_MISS),
+    .CACHE_RD_DATA             (CACHE_RD_DATA),
+    .CACHE_PHYS_ADDR           (CACHE_PHYS_ADDR),
+    .CACHE_VICT_WAY            (CACHE_VICT_WAY),
+    .CC_DATA_WR_MASK_DEFAULT   (CC_DATA_WR_MASK_DEFAULT),
+    .CC_STREAM_BUF_HIT         (CC_STREAM_BUF_HIT),
+    .CC_FSM_FILL_BUSY          (CC_FSM_FILL_BUSY),
+    .CC_WR_DATA_OUT            (CC_WR_DATA_OUT),
+    .CC_HIT_DATA_OUT           (CC_HIT_DATA_OUT),
+    .CC_ADDR_OUT               (CC_ADDR_OUT),
+    .CC_DATA_WR_MASK_OUT       (CC_DATA_WR_MASK_OUT),
+    .CC_TAG_VALID_SET_INDEX    (CC_TAG_VALID_SET_INDEX),
+    .CC_TAG_WR_MASK_OUT        (CC_TAG_WR_MASK_OUT),
+    .CC_TAG_IN                 (CC_TAG_IN),
+    .CC_VALID_SET_OR_CLR       (CC_VALID_SET_OR_CLR),
+    .CC_VALID_WR_EN            (CC_VALID_WR_EN),
+    .CC_FSM_VALID_WR_EN_GLOBAL (CC_FSM_VALID_WR_EN_GLOBAL),
     .DC_MEM_WR_RQ               (DC_MEM_WR_RQ),
     .DC_MEM_WR_ACK              (DC_MEM_WR_ACK)
 );
@@ -183,11 +187,11 @@ task driveWRdata;
 endtask
 
 task check_wr_data;
-  input [RANK_BIT_WIDTH-1:0]  ICC_WR_DATA_OUT_EXP;
+  input [RANK_BIT_WIDTH-1:0]  CC_WR_DATA_OUT_EXP;
   begin
-    if (ICC_WR_DATA_OUT !== ICC_WR_DATA_OUT_EXP) begin
+    if (CC_WR_DATA_OUT !== CC_WR_DATA_OUT_EXP) begin
       FAILURES = FAILURES + 1;
-      $display("FAILURE AT TIME %t: ICC_WR_DATA_OUT exp=%h got=%h", $time, ICC_WR_DATA_OUT_EXP, ICC_WR_DATA_OUT);
+      $display("FAILURE AT TIME %t: CC_WR_DATA_OUT exp=%h got=%h", $time, CC_WR_DATA_OUT_EXP, CC_WR_DATA_OUT);
     end else begin
       SUCCESSES = SUCCESSES + 1;
     end
@@ -197,9 +201,9 @@ endtask
 task check_stream_buffer;
   input [RANK_BIT_WIDTH-1:0]  SB_DATA_OUT_EXP;
   begin
-    if (DUT.icache_controller_inst.SB_DATA_OUT !== SB_DATA_OUT_EXP) begin
+    if (DUT.cache_controller_inst.SB_DATA_OUT !== SB_DATA_OUT_EXP) begin
       FAILURES = FAILURES + 1;
-      $display("FAILURE AT TIME %t: SB_DATA_OUT exp=%h got=%h", $time, SB_DATA_OUT_EXP, DUT.icache_controller_inst.SB_DATA_OUT);
+      $display("FAILURE AT TIME %t: SB_DATA_OUT exp=%h got=%h", $time, SB_DATA_OUT_EXP, DUT.cache_controller_inst.SB_DATA_OUT);
     end else begin
       SUCCESSES = SUCCESSES + 1;
     end
@@ -208,18 +212,20 @@ endtask
 
 integer i, j;
 reg   [RANK_BIT_WIDTH-1:0] RAND_DATA0, RAND_DATA1;
-reg   [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  ICACHE_PHYS_ADDR_SAVED;
+reg   [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  CACHE_PHYS_ADDR_SAVED;
 
 initial begin
   rst <= 1'b0;
   DC_MEM_WR_RQ  <= 1'b0;
   stopAllDrivers();
-  ICACHE_MISS                 <= 1'b0;
-  ICACHE_RD_DATA              <= {RANK_BIT_WIDTH{1'b0}};
-  ICACHE_PHYS_ADDR            <= 0;
-  ICACHE_PHYS_ADDR_SAVED      <= 0;
-  ICACHE_VICT_WAY             <= {WAY_WIDTH{1'b0}};
-  ICC_DATA_WR_MASK_DEFAULT    <= {MASK_WIDTH{1'b1}};
+  CACHE_MISS                 <= 1'b0;
+  CACHE_RD_DATA              <= {RANK_BIT_WIDTH{1'b0}};
+  CACHE_PHYS_ADDR            <= 0;
+  CACHE_PHYS_ADDR_SAVED      <= 0;
+  CACHE_VICT_WAY             <= {WAY_WIDTH{1'b0}};
+  CC_DATA_WR_MASK_DEFAULT    <= {MASK_WIDTH{1'b1}};
+  DMA_PFN                    <= 3'd1;
+  KB_PFN                     <= 3'd3;
 
   #(1.5 * CYCLE_TIME);
   rst <= 1'b1;
@@ -245,44 +251,46 @@ initial begin
   end
 
   for (i = 0; i < 2048; i = i + 2) begin
-    for (j = 0; j < 4; j = j + 1) begin
-      ICACHE_PHYS_ADDR            <= i[10:0];
-      ICACHE_PHYS_ADDR_SAVED      <= i[10:0];
-      ICACHE_VICT_WAY             <= j[1:0];
+    if (i[10:8] !== DMA_PFN && i[10:8] !== KB_PFN) begin
+      for (j = 0; j < 4; j = j + 1) begin
+        CACHE_PHYS_ADDR            <= i[10:0];
+        CACHE_PHYS_ADDR_SAVED      <= i[10:0];
+        CACHE_VICT_WAY             <= j[1:0];
 
-      ICACHE_MISS                 <= 1'b1;
-      #(CYCLE_TIME);
-      ICACHE_MISS                 <= 1'b1;
-      #(CYCLE_TIME);
-      ICACHE_PHYS_ADDR            <= ICACHE_PHYS_ADDR + 2;
-      #(CYCLE_TIME);
-      #(CYCLE_TIME);
-      #(7 * CYCLE_TIME);
-      #(CYCLE_TIME);
-      check_wr_data({{96{1'b0}}, i+0});
-      #(CYCLE_TIME);
-      check_wr_data(({{96{1'b0}}, i+1}) << 32);
-      #(CYCLE_TIME);
-      check_wr_data(({{96{1'b0}}, i+2}) << 64);
-      #(CYCLE_TIME);
-      check_wr_data(({{96{1'b0}}, i+3}) << 96);
-      #(CYCLE_TIME);
-      check_wr_data(({{96{1'b0}}, i+4}));
-      ICACHE_MISS                 <= 1'b0;
-      #(CYCLE_TIME);
-      check_wr_data(({{96{1'b0}}, i+5}) << 32);
-      #(CYCLE_TIME);
-      check_wr_data(({{96{1'b0}}, i+6}) << 64);
-      #(CYCLE_TIME);
-      check_wr_data(({{96{1'b0}}, i+7}) << 96);
-      #(CYCLE_TIME);
-      check_stream_buffer({i+7, i+6, i+5, i+4});
-      #(CYCLE_TIME);
-      ICACHE_PHYS_ADDR            <= ICACHE_PHYS_ADDR_SAVED + 1;
-      ICACHE_PHYS_ADDR_SAVED      <= ICACHE_PHYS_ADDR_SAVED + 1;
-      ICACHE_MISS                 <= 1'b1;
-      #(2 * CYCLE_TIME);
-      check_wr_data({i+7, i+6, i+5, i+4});
+        CACHE_MISS                 <= 1'b1;
+        #(CYCLE_TIME);
+        CACHE_MISS                 <= 1'b1;
+        #(CYCLE_TIME);
+        CACHE_PHYS_ADDR            <= CACHE_PHYS_ADDR + 2;
+        #(CYCLE_TIME);
+        #(CYCLE_TIME);
+        #(7 * CYCLE_TIME);
+        #(CYCLE_TIME);
+        check_wr_data({{96{1'b0}}, i+0});
+        #(CYCLE_TIME);
+        check_wr_data(({{96{1'b0}}, i+1}) << 32);
+        #(CYCLE_TIME);
+        check_wr_data(({{96{1'b0}}, i+2}) << 64);
+        #(CYCLE_TIME);
+        check_wr_data(({{96{1'b0}}, i+3}) << 96);
+        #(CYCLE_TIME);
+        check_wr_data(({{96{1'b0}}, i+4}));
+        CACHE_MISS                 <= 1'b0;
+        #(CYCLE_TIME);
+        check_wr_data(({{96{1'b0}}, i+5}) << 32);
+        #(CYCLE_TIME);
+        check_wr_data(({{96{1'b0}}, i+6}) << 64);
+        #(CYCLE_TIME);
+        check_wr_data(({{96{1'b0}}, i+7}) << 96);
+        #(CYCLE_TIME);
+        check_stream_buffer({i+7, i+6, i+5, i+4});
+        #(CYCLE_TIME);
+        CACHE_PHYS_ADDR            <= CACHE_PHYS_ADDR_SAVED + 1;
+        CACHE_PHYS_ADDR_SAVED      <= CACHE_PHYS_ADDR_SAVED + 1;
+        CACHE_MISS                 <= 1'b1;
+        #(2 * CYCLE_TIME);
+        check_wr_data({i+7, i+6, i+5, i+4});
+      end
     end
   end
 

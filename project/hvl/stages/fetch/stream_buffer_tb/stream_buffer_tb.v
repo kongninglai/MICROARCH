@@ -14,10 +14,10 @@ localparam CYCLE_TIME      = 10;
 reg clk, rst;
 
 reg [RANK_BURST_SIZE-1:0] stream_buffer_wr_mask;
-reg icache_controller_set_valid;
+reg cache_controller_set_valid;
 
-reg [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] icache_addr;
-reg [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] icache_controller_next_line_addr;
+reg [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] cache_addr;
+reg [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] cache_controller_next_line_addr;
 
 reg [RANK_BIT_WIDTH-1:0] DATA_BUS_SHF;
 
@@ -36,10 +36,10 @@ stream_buffer #(
   .clk(clk),
   .rst(rst),
   .stream_buffer_wr_mask(stream_buffer_wr_mask),
-  .icache_addr(icache_addr),
-  .icache_controller_next_line_addr(icache_controller_next_line_addr),
+  .cache_addr(cache_addr),
+  .cache_controller_next_line_addr(cache_controller_next_line_addr),
   .DATA_BUS_SHF(DATA_BUS_SHF),
-  .icache_controller_set_valid(icache_controller_set_valid),
+  .cache_controller_set_valid(cache_controller_set_valid),
   .stream_buffer_hit(stream_buffer_hit),
   .stream_buffer_miss(stream_buffer_miss),
   .stream_buffer_data(stream_buffer_data)
@@ -54,10 +54,10 @@ stream_buffer_behav #(
   .clk(clk),
   .rst(rst),
   .stream_buffer_wr_mask(stream_buffer_wr_mask),
-  .icache_addr(icache_addr),
-  .icache_controller_next_line_addr(icache_controller_next_line_addr),
+  .cache_addr(cache_addr),
+  .cache_controller_next_line_addr(cache_controller_next_line_addr),
   .DATA_BUS_SHF(DATA_BUS_SHF),
-  .icache_controller_set_valid(icache_controller_set_valid),
+  .cache_controller_set_valid(cache_controller_set_valid),
   .stream_buffer_hit(stream_buffer_hit_exp),
   .stream_buffer_miss(stream_buffer_miss_exp),
   .stream_buffer_data(stream_buffer_data_exp)
@@ -95,9 +95,9 @@ initial begin
   rst = 1'b1;
 
   stream_buffer_wr_mask = 0;
-  icache_controller_set_valid = 0;
-  icache_addr = 0;
-  icache_controller_next_line_addr = 0;
+  cache_controller_set_valid = 0;
+  cache_addr = 0;
+  cache_controller_next_line_addr = 0;
   DATA_BUS_SHF = 0;
 
   #(CYCLE_TIME);
@@ -111,10 +111,10 @@ initial begin
 
   for (i = 0; i < (1 << (RANK_BURST_SIZE+1)); i = i + 1) begin
     stream_buffer_wr_mask = combo[RANK_BURST_SIZE-1:0];
-    icache_controller_set_valid = combo[RANK_BURST_SIZE];
+    cache_controller_set_valid = combo[RANK_BURST_SIZE];
     DATA_BUS_SHF = {$random,$random,$random,$random};
-    icache_controller_next_line_addr = $random;
-    icache_addr = $random;
+    cache_controller_next_line_addr = $random;
+    cache_addr = $random;
     @(posedge clk);
     check();
     combo = combo + 1;
@@ -124,17 +124,17 @@ initial begin
 
   @(posedge clk);
   stream_buffer_wr_mask = {RANK_BURST_SIZE{1'b1}};
-  icache_controller_set_valid = 1'b1;
-  icache_controller_next_line_addr = saved_addr;
-  icache_addr = $random;
+  cache_controller_set_valid = 1'b1;
+  cache_controller_next_line_addr = saved_addr;
+  cache_addr = $random;
   DATA_BUS_SHF = {$random,$random,$random,$random};
   @(posedge clk);
   check();
 
   @(posedge clk);
   stream_buffer_wr_mask = 0;
-  icache_controller_set_valid = 1'b0;
-  icache_addr = saved_addr;
+  cache_controller_set_valid = 1'b0;
+  cache_addr = saved_addr;
   DATA_BUS_SHF = {$random,$random,$random,$random};
   @(posedge clk);
   check();
@@ -142,9 +142,9 @@ initial begin
   repeat (1 << 12) begin
     @(posedge clk);
     stream_buffer_wr_mask = $random;
-    icache_controller_set_valid = $random;
-    icache_controller_next_line_addr = $random;
-    icache_addr = $random;
+    cache_controller_set_valid = $random;
+    cache_controller_next_line_addr = $random;
+    cache_addr = $random;
     DATA_BUS_SHF = {$random,$random,$random,$random};
     @(posedge clk);
     check();

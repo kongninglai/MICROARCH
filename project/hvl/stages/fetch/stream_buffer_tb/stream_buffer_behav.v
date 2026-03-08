@@ -7,10 +7,10 @@ module stream_buffer_behav #(
   input                                       clk,
   input                                       rst,
   input   [RANK_BURST_SIZE-1:0]               stream_buffer_wr_mask,
-  input   [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  icache_addr,
-  input   [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  icache_controller_next_line_addr,
+  input   [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  cache_addr,
+  input   [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  cache_controller_next_line_addr,
   input   [RANK_BIT_WIDTH-1:0]                DATA_BUS_SHF,
-  input                                       icache_controller_set_valid,
+  input                                       cache_controller_set_valid,
 
   output                                      stream_buffer_hit,
   output                                      stream_buffer_miss,
@@ -37,8 +37,8 @@ always @(posedge clk or negedge rst) begin
   end else begin
     wr_mask_d <= stream_buffer_wr_mask;
     data_bus_d <= DATA_BUS_SHF;
-    set_valid_d <= icache_controller_set_valid;
-    next_line_addr_d <= icache_controller_next_line_addr;
+    set_valid_d <= cache_controller_set_valid;
+    next_line_addr_d <= cache_controller_next_line_addr;
   end
 end
 
@@ -69,7 +69,7 @@ end
 
 assign stream_buffer_hit  =
   stream_buffer_valid &&
-  (stream_buffer_next_line_addr == icache_addr);
+  (stream_buffer_next_line_addr == cache_addr);
 
 assign stream_buffer_miss = ~stream_buffer_hit;
 

@@ -15,5 +15,6 @@
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_128b.v
 ~/MICROARCH/project/hdl/stages/fetch/we_logic_block.v
-~/MICROARCH/project/hdl/stages/fetch/icache_controller.v
-~/MICROARCH/project/hvl/stages/fetch/icache_controller_tb/icache_controller_tb.v
+~/MICROARCH/project/hdl/stages/memory/io_addr_logic_block.v
+~/MICROARCH/project/hdl/stages/fetch/cache_controller.v
+~/MICROARCH/project/hvl/stages/fetch/cache_controller_tb/cache_controller_tb.v

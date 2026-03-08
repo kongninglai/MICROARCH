@@ -15,8 +15,8 @@ localparam NUM_WAYS        = 4;
 localparam WAY_WIDTH       = $clog2(NUM_WAYS);
 localparam CYCLE_TIME      = 10.0;
 
-reg  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      ICACHE_PHYS_ADDR;
-reg  [WAY_WIDTH-1:0]                         ICACHE_VICT_WAY;
+reg  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      CACHE_PHYS_ADDR;
+reg  [WAY_WIDTH-1:0]                         CACHE_VICT_WAY;
 
 wire [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] DATA_WR_MASK_OUT;
 wire [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] SB_DATA_WR_MASK_OUT;
@@ -36,8 +36,8 @@ we_logic_block #(
   .NUM_SETS(NUM_SETS),
   .NUM_WAYS(NUM_WAYS)
 ) DUT (
-  .ICACHE_PHYS_ADDR(ICACHE_PHYS_ADDR),
-  .ICACHE_VICT_WAY(ICACHE_VICT_WAY),
+  .CACHE_PHYS_ADDR(CACHE_PHYS_ADDR),
+  .CACHE_VICT_WAY(CACHE_VICT_WAY),
   .DATA_WR_MASK_OUT(DATA_WR_MASK_OUT),
   .SB_DATA_WR_MASK_OUT(SB_DATA_WR_MASK_OUT),
   .TAG_WR_MASK_OUT(TAG_WR_MASK_OUT),
@@ -52,8 +52,8 @@ we_logic_block_behav #(
   .NUM_SETS(NUM_SETS),
   .NUM_WAYS(NUM_WAYS)
 ) REF (
-  .ICACHE_PHYS_ADDR(ICACHE_PHYS_ADDR),
-  .ICACHE_VICT_WAY(ICACHE_VICT_WAY),
+  .CACHE_PHYS_ADDR(CACHE_PHYS_ADDR),
+  .CACHE_VICT_WAY(CACHE_VICT_WAY),
   .DATA_WR_MASK_OUT(DATA_WR_MASK_OUT_EXP),
   .SB_DATA_WR_MASK_OUT(SB_DATA_WR_MASK_OUT_EXP),
   .TAG_WR_MASK_OUT(TAG_WR_MASK_OUT_EXP),
@@ -71,8 +71,8 @@ begin
       (VALID_WR_EN !== VALID_WR_EN_EXP)) begin
     FAILURES = FAILURES + 1;
     $display("FAILURE AT TIME %t", $time);
-    $display("  ICACHE_PHYS_ADDR = %h", ICACHE_PHYS_ADDR);
-    $display("  ICACHE_VICT_WAY  = %h", ICACHE_VICT_WAY);
+    $display("  CACHE_PHYS_ADDR = %h", CACHE_PHYS_ADDR);
+    $display("  CACHE_VICT_WAY  = %h", CACHE_VICT_WAY);
     $display("  DATA_WR GOT = %h, EXP = %h", DATA_WR_MASK_OUT, DATA_WR_MASK_OUT_EXP);
     $display("  TAG_WR  GOT = %h, EXP = %h\n", TAG_WR_MASK_OUT, TAG_WR_MASK_OUT_EXP);
   end else begin
@@ -84,23 +84,23 @@ endtask
 integer i, j;
 
 initial begin
-  ICACHE_PHYS_ADDR = 0;
-  ICACHE_VICT_WAY  = 0;
+  CACHE_PHYS_ADDR = 0;
+  CACHE_VICT_WAY  = 0;
 
   #(CYCLE_TIME);
 
   for (i = 0; i < NUM_SETS; i = i + 1) begin
     for (j = 0; j < NUM_WAYS; j = j + 1) begin
-      ICACHE_PHYS_ADDR = (i << RANK_BURST_SIZE);
-      ICACHE_VICT_WAY  = j[WAY_WIDTH-1:0];
+      CACHE_PHYS_ADDR = (i << RANK_BURST_SIZE);
+      CACHE_VICT_WAY  = j[WAY_WIDTH-1:0];
       #(CYCLE_TIME);
       check();
     end
   end
 
   for (i = 0; i < 100; i = i + 1) begin
-    ICACHE_PHYS_ADDR = $random;
-    ICACHE_VICT_WAY  = $random % NUM_WAYS;
+    CACHE_PHYS_ADDR = $random;
+    CACHE_VICT_WAY  = $random % NUM_WAYS;
     #(CYCLE_TIME);
     check();
   end

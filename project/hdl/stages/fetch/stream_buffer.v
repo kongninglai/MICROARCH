@@ -6,9 +6,9 @@ module stream_buffer #(
 ) (
   input                                       clk, rst,
   input   [RANK_BURST_SIZE-1:0]               stream_buffer_wr_mask,
-  input   [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  icache_addr, icache_controller_next_line_addr,
+  input   [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  cache_addr, cache_controller_next_line_addr,
   input   [RANK_BIT_WIDTH-1:0]                DATA_BUS_SHF,
-  input                                       icache_controller_set_valid,
+  input                                       cache_controller_set_valid,
 
   output                                      stream_buffer_hit,
   output                                      stream_buffer_miss,
@@ -39,17 +39,17 @@ reg_n #(
 
 wire    stream_buffer_valid;
 
-wire    icache_controller_set_valid_buf16;
+wire    cache_controller_set_valid_buf16;
 
-bufferH16$    bufferH16$_icache_controller_set_valid_buf16
-              (icache_controller_set_valid_buf16, icache_controller_set_valid);
+bufferH16$    bufferH16$_cache_controller_set_valid_buf16
+              (cache_controller_set_valid_buf16, cache_controller_set_valid);
 
 reg_n #(
   .WIDTH(1),
   .USE_EN_BAR(0)
 ) reg_n_stream_buffer_valid (
   .clk(clk), .rst(rst),
-  .en(icache_controller_set_valid_buf16), .d(1'b1),
+  .en(cache_controller_set_valid_buf16), .d(1'b1),
   .q(stream_buffer_valid)
 );
 
@@ -62,7 +62,7 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_stream_buffer_next_line_addr (
   .clk(clk), .rst(rst),
-  .en({MEM_ADDR_WIDTH-RANK_BURST_SIZE{icache_controller_set_valid_buf16}}), .d(icache_controller_next_line_addr),
+  .en({MEM_ADDR_WIDTH-RANK_BURST_SIZE{cache_controller_set_valid_buf16}}), .d(cache_controller_next_line_addr),
   .q(stream_buffer_next_line_addr)
 );
 
@@ -71,14 +71,14 @@ reg_n #(
 big_eq #(
   .WIDTH(MEM_ADDR_WIDTH-RANK_BURST_SIZE+1)
 ) big_eq_stream_buffer_hit (
-  .in0({stream_buffer_valid, stream_buffer_next_line_addr}), .in1({1'b1, icache_addr}),
+  .in0({stream_buffer_valid, stream_buffer_next_line_addr}), .in1({1'b1, cache_addr}),
   .eq(stream_buffer_hit)
 );
 
 big_neq #(
   .WIDTH(MEM_ADDR_WIDTH-RANK_BURST_SIZE+1)
 ) big_neq_stream_buffer_miss (
-  .in0({stream_buffer_valid, stream_buffer_next_line_addr}), .in1({1'b1, icache_addr}),
+  .in0({stream_buffer_valid, stream_buffer_next_line_addr}), .in1({1'b1, cache_addr}),
   .neq(stream_buffer_miss)
 );
 
