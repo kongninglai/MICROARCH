@@ -4,7 +4,7 @@ This module extracts the immediate value
 module logic_imm(
     input wire [127:8] cache_bits, //bytes 1-14 of the instruction cache
     input wire [3:0] total_offset, //ready at 6.45ns from p_m_s_d_adder
-    input wire [1:0] imm_size, //ready at 4.2ns
+    input wire [1:0] imm_size, //ready at 4.2ns (comes from logic_true_modrm)
     output wire [47:0] imm_bytes
 );  
 

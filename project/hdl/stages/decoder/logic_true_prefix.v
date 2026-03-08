@@ -127,6 +127,14 @@ module logic_true_prefix(
         .segment_override_reg_id(seg_id) //out
     );
 
+    initial begin
+        $monitor("Time: %0t | is_operand_size_override0: %b | is_operand_size_override1: %b | is_operand_size_override2: %b | is_operand_size_override3: %b",
+                 $time, is_operand_size_override0, is_operand_size_override1, is_operand_size_override2, is_operand_size_override3);
+
+        $monitor("Time: %0t | candidate_prefix0: %h | candidate_prefix1: %h | candidate_prefix2: %h | candidate_prefix3: %h",
+             $time, candidate_prefix0, candidate_prefix1, candidate_prefix2, candidate_prefix3);
+    end
+
     wire rep_nand0_w, rep_nand1_w, rep_nand2_w, rep_nand3_w; //0.45ns total in parallel with segment ov logic
     nand2$ rep_nand0(rep_nand0_w, is_rep0, is_rep0);
     nand2$ rep_nand1(rep_nand1_w, is_rep1, is_any0);
