@@ -77,15 +77,12 @@ generate
       assign out = or_0_0_out;
     end
     12: begin
-      wire or_0_0_out;
-      wire or_0_1_out;
-      wire or_0_2_out;
-      wire or_0_3_out;
-      or4$ or_0_0(or_0_0_out,or_0_1_out,or_0_2_out,or_0_3_out,in[0]);
-      or4$ or_0_1(or_0_1_out,in[1],in[2],in[3],in[4]);
-      or4$ or_0_2(or_0_2_out,in[5],in[6],in[7],in[8]);
-      or3$ or_0_3(or_0_3_out,in[9],in[10],in[11]);
-      assign out = or_0_0_out;
+      // Optimized for DMAC
+      wire nor_0_0_out, nor_0_1_out, nor_0_2_out;
+      nand3$  nand3$_out(out, nor_0_0_out, nor_0_1_out, nor_0_2_out);
+      nor4$   nor4$_nor_0_0_out(nor_0_0_out,in[0],in[1],in[2],in[3]);
+      nor4$   nor4$_nor_0_1_out(nor_0_1_out,in[4],in[5],in[6],in[7]);
+      nor4$   nor4$_nor_0_2_out(nor_0_2_out,in[8],in[9],in[10],in[11]);
     end
     13: begin
       wire or_0_0_out;
