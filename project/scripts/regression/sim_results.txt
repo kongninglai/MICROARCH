@@ -17,7 +17,7 @@ dmu_tb                         FAILURES=0      SUCCESSES=4
 FA_16b_tb                      FAILURES=0      SUCCESSES=4096  
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
-full_cc_off_core_tb            FAILURES=0      SUCCESSES=0     
+full_cc_off_core_tb            FAILURES=0      SUCCESSES=32063 
 gen_prop_2_tb                  FAILURES=0      SUCCESSES=16    
 gen_prop_tb                    FAILURES=0      SUCCESSES=4     
 gt9_4b_tb                      FAILURES=0      SUCCESSES=16    

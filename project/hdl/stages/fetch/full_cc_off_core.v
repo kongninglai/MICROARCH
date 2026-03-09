@@ -80,7 +80,7 @@ module full_cc_off_core #(
   output    [INDEX_WIDTH+WAY_WIDTH-1:0]             DCC_VALID_WR_EN,
   output                                            DCC_FSM_VALID_WR_EN_GLOBAL,
 
-  /*** WRITEBACK ENGINER ***/
+  /*** WRITEBACK ENGINE ***/
   input                                             DCACHE_NEED_WR_BUS,
   input     [RANK_BIT_WIDTH-1:0]                    DCACHE_WBE_DATA,
   input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      DCACHE_WR_PHYS_ADDR,
@@ -88,8 +88,14 @@ module full_cc_off_core #(
 
   output                                            WBE_BUSY,
 
-  /*** DMA INTERRUPT!!!! ***/
-  output                                            DMA_INT
+  /*** DMA INTERRUPT ***/
+  output                                            DMA_INT,
+
+  /*** KB TEST CASE ***/
+  input     [7:0]                                   TEST_CASE_NEW_CHAR      ,
+                                                    TEST_CASE_NEW_CHAR_WR   ,
+  input                                             TEST_CASE_NEW_READY     ,
+                                                    TEST_CASE_NEW_READY_WR  
 );
 
 wire    [2:0]   ICC_REQS, ICC_ACKS;
@@ -172,7 +178,7 @@ cache_controller dcache_controller_inst (
     .CC_FSM_VALID_WR_EN_GLOBAL(DCC_FSM_VALID_WR_EN_GLOBAL)
 );
 
-off_core_top #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
+off_core_top #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) off_core_top_inst (
   .rst(rst),
   .clk(clk),
   .DC_MEM_WR_RQ(DCC_REQS[5]),
@@ -182,10 +188,10 @@ off_core_top #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
   .DC_DMA_RD_RQ(DCC_REQS[1]),
   .DC_KB_RD_RQ(DCC_REQS[0]),
   .IC_MEM_RD_RQ(ICC_REQS[2]),
-  .TEST_CASE_NEW_CHAR(8'd0),
-  .TEST_CASE_NEW_CHAR_WR(8'd0),
-  .TEST_CASE_NEW_READY(1'b0),
-  .TEST_CASE_NEW_READY_WR(1'b0),
+  .TEST_CASE_NEW_CHAR(TEST_CASE_NEW_CHAR),
+  .TEST_CASE_NEW_CHAR_WR(TEST_CASE_NEW_CHAR_WR),
+  .TEST_CASE_NEW_READY(TEST_CASE_NEW_READY),
+  .TEST_CASE_NEW_READY_WR(TEST_CASE_NEW_READY_WR),
   .WR_mask(WR_mask),
   .ADDR_BUS(ADDR_BUS),
   .DATA_BUS(DATA_BUS),

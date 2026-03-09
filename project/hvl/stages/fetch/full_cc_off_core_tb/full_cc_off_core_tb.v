@@ -33,18 +33,9 @@ localparam CYCLE_TIME                   = CYCLE_TIME_X10 / 10.0;
 reg                                     clk;
 reg                                     rst;
 reg  [2:0]                              KB_PFN, DMA_PFN;
-
-reg  [BUS_BIT_WIDTH-1:0]                DATA_driver;
-reg                                     DATA_driver_enable;
-wire [BUS_BIT_WIDTH-1:0]                DATA_BUS = DATA_driver_enable ? DATA_driver : {BUS_BIT_WIDTH{1'bz}};
-
-reg  [MEM_ADDR_WIDTH-1:0]               ADDR_driver;
-reg                                     ADDR_driver_enable;
-wire [MEM_ADDR_WIDTH-1:0]               ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {MEM_ADDR_WIDTH{1'bz}};
-
-reg  [CHIPS_PER_RANK-1:0]               WR_mask_driver;
-reg                                     WR_mask_driver_enable;
-wire [CHIPS_PER_RANK-1:0]               WR_mask  = WR_mask_driver_enable ? WR_mask_driver : {CHIPS_PER_RANK{1'bz}};
+wire [BUS_BIT_WIDTH-1:0]                DATA_BUS;
+wire [MEM_ADDR_WIDTH-1:0]               ADDR_BUS;
+wire [CHIPS_PER_RANK-1:0]               WR_mask;
 
 reg                                     ICACHE_MISS;
 reg  [RANK_BIT_WIDTH-1:0]               ICACHE_RD_DATA;
@@ -86,6 +77,11 @@ reg  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] DCACHE_WR_PHYS_ADDR;
 reg  [CHIPS_PER_RANK-1:0]               DCACHE_WR_MASK;
 wire                                    WBE_BUSY;
 wire                                    DMA_INT;
+
+reg  [7:0]                              TEST_CASE_NEW_CHAR;
+reg  [7:0]                              TEST_CASE_NEW_CHAR_WR; 
+reg                                     TEST_CASE_NEW_READY;
+reg                                     TEST_CASE_NEW_READY_WR;
 
 initial begin
     clk = 0;
@@ -145,28 +141,390 @@ full_cc_off_core #(
   .DCACHE_WR_PHYS_ADDR       (DCACHE_WR_PHYS_ADDR),
   .DCACHE_WR_MASK            (DCACHE_WR_MASK),
   .WBE_BUSY                  (WBE_BUSY),
-  .DMA_INT                   (DMA_INT)
+  .DMA_INT                   (DMA_INT),
+  .TEST_CASE_NEW_CHAR        (TEST_CASE_NEW_CHAR),
+  .TEST_CASE_NEW_CHAR_WR     (TEST_CASE_NEW_CHAR_WR),
+  .TEST_CASE_NEW_READY       (TEST_CASE_NEW_READY),
+  .TEST_CASE_NEW_READY_WR    (TEST_CASE_NEW_READY_WR)
 );
 
 integer FAILURES = 0;
 integer SUCCESSES = 0;
 
+task check_wr_data;
+  input [RANK_BIT_WIDTH-1:0]  ICC_WR_DATA_OUT_EXP;
+  begin
+    if (ICC_WR_DATA_OUT !== ICC_WR_DATA_OUT_EXP) begin
+      FAILURES = FAILURES + 1;
+      $display("FAILURE AT TIME %t: ICC_WR_DATA_OUT exp=%h got=%h", $time, ICC_WR_DATA_OUT_EXP, ICC_WR_DATA_OUT);
+    end else begin
+      SUCCESSES = SUCCESSES + 1;
+    end
+  end
+endtask
+
+task check_stream_buffer;
+  input [RANK_BIT_WIDTH-1:0]  SB_DATA_OUT_EXP;
+  begin
+    if (DUT.icache_controller_inst.SB_DATA_OUT !== SB_DATA_OUT_EXP) begin
+      FAILURES = FAILURES + 1;
+      $display("FAILURE AT TIME %t: SB_DATA_OUT exp=%h got=%h", $time, SB_DATA_OUT_EXP, DUT.icache_controller_inst.SB_DATA_OUT);
+    end else begin
+      SUCCESSES = SUCCESSES + 1;
+    end
+  end
+endtask
+
+task check_wr_data_D;
+  input [RANK_BIT_WIDTH-1:0]  DCC_WR_DATA_OUT_EXP;
+  begin
+    if (DCC_WR_DATA_OUT !== DCC_WR_DATA_OUT_EXP) begin
+      FAILURES = FAILURES + 1;
+      $display("FAILURE AT TIME %t: DCC_WR_DATA_OUT exp=%h got=%h", $time, DCC_WR_DATA_OUT_EXP, DCC_WR_DATA_OUT);
+    end else begin
+      SUCCESSES = SUCCESSES + 1;
+    end
+  end
+endtask
+
+task check_stream_buffer_D;
+  input [RANK_BIT_WIDTH-1:0]  SB_DATA_OUT_EXP;
+  begin
+    if (DUT.dcache_controller_inst.SB_DATA_OUT !== SB_DATA_OUT_EXP) begin
+      FAILURES = FAILURES + 1;
+      $display("FAILURE AT TIME %t: SB_DATA_OUT exp=%h got=%h", $time, SB_DATA_OUT_EXP, DUT.dcache_controller_inst.SB_DATA_OUT);
+    end else begin
+      SUCCESSES = SUCCESSES + 1;
+    end
+  end
+endtask
+
+integer i, j;
+reg   [RANK_BIT_WIDTH-1:0] RAND_DATA0, RAND_DATA1;
+reg   [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  ICACHE_PHYS_ADDR_SAVED, DCACHE_RD_PHYS_ADDR_SAVED;
+
+task check_full_line_fill;
+  input integer i;
+  begin
+    ICACHE_MISS                 <= 1'b1;
+    #(CYCLE_TIME);
+    ICACHE_PHYS_ADDR            <= ICACHE_PHYS_ADDR + 2;
+    while (DUT.DATA_VALID_BAR !== 1'b0) begin
+      @(DUT.DATA_VALID_BAR);
+    end
+    @(posedge clk);
+    check_wr_data({{96{1'b0}}, i+0});
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, i+1}) << 32);
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, i+2}) << 64);
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, i+3}) << 96);
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, i+4}));
+    ICACHE_MISS                 <= 1'b0;
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, i+5}) << 32);
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, i+6}) << 64);
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, i+7}) << 96);
+    #(CYCLE_TIME);
+    check_stream_buffer({i+7, i+6, i+5, i+4});
+    #(CYCLE_TIME);
+  end
+endtask
+
+task check_raw_data;
+  input [RANK_BIT_WIDTH-1:0]  DATA, DATA_NEXT;
+  begin
+    ICACHE_MISS                 <= 1'b1;
+    #(CYCLE_TIME);
+    ICACHE_PHYS_ADDR            <= ICACHE_PHYS_ADDR + 2;
+    while (DUT.DATA_VALID_BAR !== 1'b0) begin
+      @(DUT.DATA_VALID_BAR);
+    end
+    @(posedge clk);
+    check_wr_data({{96{1'b0}}, DATA[31:0]});
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, DATA[63:32]}) << 32);
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, DATA[95:64]}) << 64);
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, DATA[127:96]}) << 96);
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, DATA_NEXT[31:0]}));
+    ICACHE_MISS                 <= 1'b0;
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, DATA_NEXT[63:32]}) << 32);
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, DATA_NEXT[95:64]}) << 64);
+    #(CYCLE_TIME);
+    check_wr_data(({{96{1'b0}}, DATA_NEXT[127:96]}) << 96);
+    #(CYCLE_TIME);
+    check_stream_buffer(DATA_NEXT);
+    #(CYCLE_TIME);
+  end
+endtask
+
+task check_raw_data_no_NL;
+  input [RANK_BIT_WIDTH-1:0]  DATA;
+  begin
+    DCACHE_MISS                 <= 1'b1;
+    #(CYCLE_TIME);
+    DCACHE_RD_PHYS_ADDR         <= DCACHE_RD_PHYS_ADDR + 2;
+    while (DUT.DATA_VALID_BAR !== 1'b0) begin
+      @(DUT.DATA_VALID_BAR);
+    end
+    @(posedge clk);
+    check_wr_data_D({{96{1'b0}}, DATA[31:0]});
+    #(CYCLE_TIME);
+    check_wr_data_D(({{96{1'b0}}, DATA[63:32]}) << 32);
+    #(CYCLE_TIME);
+    check_wr_data_D(({{96{1'b0}}, DATA[95:64]}) << 64);
+    #(CYCLE_TIME);
+    check_wr_data_D(({{96{1'b0}}, DATA[127:96]}) << 96);
+    #(CYCLE_TIME);
+    check_wr_data_D(({{96{1'b0}}, {BUS_BIT_WIDTH{1'bX}}}));
+    DCACHE_MISS                 <= 1'b0;
+    #(CYCLE_TIME);
+    check_wr_data_D(({{96{1'b0}}, {BUS_BIT_WIDTH{1'bX}}}) << 32);
+    #(CYCLE_TIME);
+    check_wr_data_D(({{96{1'b0}}, {BUS_BIT_WIDTH{1'bX}}}) << 64);
+    #(CYCLE_TIME);
+    check_wr_data_D(({{96{1'b0}}, {BUS_BIT_WIDTH{1'bX}}}) << 96);
+    #(CYCLE_TIME);
+    check_stream_buffer_D({RANK_BIT_WIDTH{1'bX}});
+    #(CYCLE_TIME);
+  end
+endtask
+
+reg [7:0] BYTE_VAL;
+reg [RANK_BIT_WIDTH-1:0]  DATA_EXP, DATA_NEXT_EXP;
+
 initial begin
-  // rst = 1;
-  // KB_PFN = 0; DMA_PFN = 0;
-  // DATA_driver_enable = 0;
-  // ADDR_driver_enable = 0;
-  // WR_mask_driver_enable = 0;
-  // ICACHE_MISS = 0;
-  // DCACHE_MISS = 0;
-  // DCACHE_NEED_WR_BUS = 0;
-  // repeat(10) @(posedge clk);
-  // rst = 0;
+  rst <= 1'b0;
+  
+
+  ICACHE_MISS                <= 1'b0;
+  ICACHE_RD_DATA             <= {RANK_BIT_WIDTH{1'b0}};
+  ICACHE_PHYS_ADDR           <= 0;
+  ICACHE_VICT_WAY            <= {WAY_WIDTH{1'b0}};
+  ICC_DATA_WR_MASK_DEFAULT   <= {MASK_WIDTH{1'b1}};
+
+
+  DCACHE_MISS                <= 1'b0;
+  DCACHE_RD_DATA             <= {RANK_BIT_WIDTH{1'b0}};
+  DCACHE_RD_PHYS_ADDR        <= 0;
+  DCACHE_RD_PHYS_ADDR_SAVED  <= 0;
+  DCACHE_VICT_WAY            <= {WAY_WIDTH{1'b0}};
+  DCC_DATA_WR_MASK_DEFAULT   <= {MASK_WIDTH{1'b1}};
+
+
+  DCACHE_NEED_WR_BUS         <= 1'b0;
+  DCACHE_WBE_DATA            <= {RANK_BIT_WIDTH{1'b0}};
+  DCACHE_WR_PHYS_ADDR        <= 0;
+  DCACHE_WR_MASK             <= {CHIPS_PER_RANK{1'b0}};
+
+  TEST_CASE_NEW_CHAR         <= 8'd0;
+  TEST_CASE_NEW_CHAR_WR      <= 8'd0;
+  TEST_CASE_NEW_READY        <= 1'b0;
+  TEST_CASE_NEW_READY_WR     <= 1'b0;
+
+  DMA_PFN                    <= 3'd1;
+  KB_PFN                     <= 3'd3;
+
+  #(1.5 * CYCLE_TIME);
+  rst <= 1'b1;
+  #(CYCLE_TIME);
+
+  /*** Enable keyboard and put in the test case ***/
+
+  // Enable KB
+
+  DCACHE_NEED_WR_BUS         <= 1'b1;
+  DCACHE_WBE_DATA            <= {RANK_BIT_WIDTH{1'b1}}; // Only the write to KBER should take effect!
+  DCACHE_WR_PHYS_ADDR        <= {KB_PFN, 8'd0}; // KBER in bit [0], KBSR in bit [64]
+  #(CYCLE_TIME);
+  DCACHE_NEED_WR_BUS         <= 1'b0;
+  @(negedge WBE_BUSY);
+  @(posedge clk);
+
+  // Verify only KBER was updated
+
+  DCACHE_RD_PHYS_ADDR         <= {KB_PFN, 8'd0};
+  DCACHE_RD_PHYS_ADDR_SAVED   <= {KB_PFN, 8'd0};
+  DCACHE_VICT_WAY             <= 0;
+  check_raw_data_no_NL(128'd1);
+
+  DCACHE_RD_PHYS_ADDR         <= {KB_PFN, 8'd1};
+  DCACHE_RD_PHYS_ADDR_SAVED   <= {KB_PFN, 8'd1};
+  DCACHE_VICT_WAY             <= 0;
+  check_raw_data_no_NL(128'd0);
+
+  TEST_CASE_NEW_CHAR         <= 8'h67;
+  TEST_CASE_NEW_CHAR_WR      <= {8{1'b1}};
+  TEST_CASE_NEW_READY        <= 1'b1;
+  TEST_CASE_NEW_READY_WR     <= 1'b1;
+
+  #(CYCLE_TIME);
+
+  TEST_CASE_NEW_CHAR         <= 8'd0;
+  TEST_CASE_NEW_CHAR_WR      <= 8'd0;
+  TEST_CASE_NEW_READY        <= 1'b0;
+  TEST_CASE_NEW_READY_WR     <= 1'b0;
+
+  // Verify KBSR and KBDR
+
+  DCACHE_RD_PHYS_ADDR         <= {KB_PFN, 8'd0};
+  DCACHE_RD_PHYS_ADDR_SAVED   <= {KB_PFN, 8'd0};
+  DCACHE_VICT_WAY             <= 0;
+  check_raw_data_no_NL({64'd1, 64'd1});
+
+  DCACHE_RD_PHYS_ADDR         <= {KB_PFN, 8'd1};
+  DCACHE_RD_PHYS_ADDR_SAVED   <= {KB_PFN, 8'd1};
+  DCACHE_VICT_WAY             <= 0;
+  check_raw_data_no_NL({120'd0, 8'h67});
+
+  // Verify self-clearing KBSR
+
+  DCACHE_RD_PHYS_ADDR         <= {KB_PFN, 8'd0};
+  DCACHE_RD_PHYS_ADDR_SAVED   <= {KB_PFN, 8'd0};
+  DCACHE_VICT_WAY             <= 0;
+  check_raw_data_no_NL(128'd1);
+
+  DCACHE_RD_PHYS_ADDR         <= {KB_PFN, 8'd1};
+  DCACHE_RD_PHYS_ADDR_SAVED   <= {KB_PFN, 8'd1};
+  DCACHE_VICT_WAY             <= 0;
+  check_raw_data_no_NL({120'd0, 8'h67});
+
+  /*** Setting up DMA Test Case (DISK ADDR = 0xFFFFFF67, MEM_ADDR = 0x00000067,
+                                 NUM_BYTES = 32'd3988 (END MEM_ADDR = 0x00000FFA))
+                                 First 0x66 bytes = 8'hXX, Last 0x5 bytes = 8'hXX ***/
+  
+  DCACHE_NEED_WR_BUS         <= 1'b1;
+  DCACHE_WBE_DATA            <= {32'd1, 32'd3988, 32'h00000067, 32'hFFFFFF67};
+  DCACHE_WR_PHYS_ADDR        <= {DMA_PFN, 8'd0}; // KBER in bit [0], KBSR in bit [64]
+  #(CYCLE_TIME);
+  DCACHE_NEED_WR_BUS         <= 1'b0;
+  @(negedge WBE_BUSY);
+  @(posedge clk);
+
+  DCACHE_RD_PHYS_ADDR         <= {DMA_PFN, 8'd0};
+  DCACHE_RD_PHYS_ADDR_SAVED   <= {DMA_PFN, 8'd0};
+  DCACHE_VICT_WAY             <= 0;
+  check_raw_data_no_NL({32'd1, 32'd3988, 32'h00000067, 32'hFFFFFF67});
+
+  // Ensure this can occur with other processor operations
+
+  #(200 * CYCLE_TIME);
+  ICACHE_PHYS_ADDR            <= 0;
+  ICACHE_PHYS_ADDR_SAVED      <= 0;
+  ICACHE_VICT_WAY             <= 0;
+  ICACHE_MISS                 <= 1'b1;
+  #(CYCLE_TIME);
+  ICACHE_MISS                 <= 1'b0;
+
+  #(200 * CYCLE_TIME);
+  ICACHE_MISS                 <= 1'b1;
+  #(CYCLE_TIME);
+  ICACHE_MISS                 <= 1'b0;
+
+  @(posedge DMA_INT);
+
+  #(20 * CYCLE_TIME);
+
+  ICACHE_VICT_WAY             <= 0;
+  BYTE_VAL = 8'h67;
+  DATA_EXP = 0;
+  DATA_NEXT_EXP = 0;
+
+  for (i = 0; i < 256; i = i + 2) begin
+    if (i < 6) begin
+      DATA_EXP      = {RANK_BIT_WIDTH{1'bX}};
+      DATA_NEXT_EXP = {RANK_BIT_WIDTH{1'bX}};
+    end else if (i == 6) begin
+      DATA_EXP      = {BYTE_VAL+8'd8, BYTE_VAL+8'd7, BYTE_VAL+8'd6, BYTE_VAL+8'd5, 
+                       BYTE_VAL+8'd4, BYTE_VAL+8'd3, BYTE_VAL+8'd2, BYTE_VAL+8'd1, 
+                       BYTE_VAL, 8'hXX, 8'hXX, 8'hXX, 
+                       8'hXX, 8'hXX, 8'hXX, 8'hXX};
+      DATA_NEXT_EXP = {BYTE_VAL+8'd24, BYTE_VAL+8'd23, BYTE_VAL+8'd22, BYTE_VAL+8'd21,
+                       BYTE_VAL+8'd20, BYTE_VAL+8'd19, BYTE_VAL+8'd18, BYTE_VAL+8'd17,
+                       BYTE_VAL+8'd16, BYTE_VAL+8'd15, BYTE_VAL+8'd14, BYTE_VAL+8'd13,
+                       BYTE_VAL+8'd12, BYTE_VAL+8'd11, BYTE_VAL+8'd10, BYTE_VAL+8'd9};
+      BYTE_VAL      = BYTE_VAL + 8'd25;
+    end else if (i == 254) begin
+      DATA_EXP      = {BYTE_VAL+8'd15, BYTE_VAL+8'd14, BYTE_VAL+8'd13, BYTE_VAL+8'd12,
+                       BYTE_VAL+8'd11, BYTE_VAL+8'd10, BYTE_VAL+8'd9,  BYTE_VAL+8'd8,
+                       BYTE_VAL+8'd7,  BYTE_VAL+8'd6,  BYTE_VAL+8'd5,  BYTE_VAL+8'd4,
+                       BYTE_VAL+8'd3,  BYTE_VAL+8'd2,  BYTE_VAL+8'd1,  BYTE_VAL+8'd0};
+      DATA_NEXT_EXP = {8'hXX, 8'hXX, 8'hXX, 8'hXX,
+                       8'hXX, BYTE_VAL+8'd26, BYTE_VAL+8'd25, BYTE_VAL+8'd24,
+                       BYTE_VAL+8'd23, BYTE_VAL+8'd22, BYTE_VAL+8'd21, BYTE_VAL+8'd20,
+                       BYTE_VAL+8'd19, BYTE_VAL+8'd18, BYTE_VAL+8'd17, BYTE_VAL+8'd16};
+    end else begin
+      DATA_EXP =      {BYTE_VAL+8'd15, BYTE_VAL+8'd14, BYTE_VAL+8'd13, BYTE_VAL+8'd12,
+                       BYTE_VAL+8'd11, BYTE_VAL+8'd10, BYTE_VAL+8'd9,  BYTE_VAL+8'd8,
+                       BYTE_VAL+8'd7,  BYTE_VAL+8'd6,  BYTE_VAL+8'd5,  BYTE_VAL+8'd4,
+                       BYTE_VAL+8'd3,  BYTE_VAL+8'd2,  BYTE_VAL+8'd1,  BYTE_VAL+8'd0};
+      DATA_NEXT_EXP = {BYTE_VAL+8'd31, BYTE_VAL+8'd30, BYTE_VAL+8'd29, BYTE_VAL+8'd28,
+                       BYTE_VAL+8'd27, BYTE_VAL+8'd26, BYTE_VAL+8'd25, BYTE_VAL+8'd24,
+                       BYTE_VAL+8'd23, BYTE_VAL+8'd22, BYTE_VAL+8'd21, BYTE_VAL+8'd20,
+                       BYTE_VAL+8'd19, BYTE_VAL+8'd18, BYTE_VAL+8'd17, BYTE_VAL+8'd16};
+      BYTE_VAL      = BYTE_VAL + 8'd32;
+    end
+
+    ICACHE_PHYS_ADDR            <= i[10:0];
+    ICACHE_PHYS_ADDR_SAVED      <= i[10:0];
+    check_raw_data(DATA_EXP, DATA_NEXT_EXP);
+    ICACHE_PHYS_ADDR            <= ICACHE_PHYS_ADDR_SAVED + 1;
+    ICACHE_PHYS_ADDR_SAVED      <= ICACHE_PHYS_ADDR_SAVED + 1;
+    ICACHE_MISS                 <= 1'b1;
+    #(2 * CYCLE_TIME);
+    check_wr_data(DATA_NEXT_EXP);
+  end
+
+  /*** MEMORY CONTROLLER TESTING ***/
+  for (i = 0; i < 2048; i = i + 2) begin
+    if (i[10:8] !== DMA_PFN && i[10:8] !== KB_PFN) begin
+      DCACHE_NEED_WR_BUS         <= 1'b1;
+      DCACHE_WBE_DATA            <= {i+3, i+2, i+1, i+0};
+      DCACHE_WR_PHYS_ADDR        <= i[10:0];
+      #(CYCLE_TIME);
+      DCACHE_NEED_WR_BUS         <= 1'b0;
+      @(negedge WBE_BUSY);
+      @(posedge clk);
+      DCACHE_NEED_WR_BUS         <= 1'b1;
+      DCACHE_WBE_DATA            <= {i+7, i+6, i+5, i+4};
+      DCACHE_WR_PHYS_ADDR        <= (i[10:0]) + 11'd1;
+      #(CYCLE_TIME);
+      DCACHE_NEED_WR_BUS         <= 1'b0;
+      @(negedge WBE_BUSY);
+      @(posedge clk);
+    end
+  end
+  
+  for (i = 0; i < 2048; i = i + 2) begin
+    if (i[10:8] !== DMA_PFN && i[10:8] !== KB_PFN) begin
+      for (j = 0; j < 4; j = j + 1) begin
+        ICACHE_PHYS_ADDR            <= i[10:0];
+        ICACHE_PHYS_ADDR_SAVED      <= i[10:0];
+        ICACHE_VICT_WAY             <= j[1:0];
+        check_full_line_fill(i);
+        ICACHE_PHYS_ADDR            <= ICACHE_PHYS_ADDR_SAVED + 1;
+        ICACHE_PHYS_ADDR_SAVED      <= ICACHE_PHYS_ADDR_SAVED + 1;
+        ICACHE_MISS                 <= 1'b1;
+        #(2 * CYCLE_TIME);
+        check_wr_data({i+7, i+6, i+5, i+4});
+      end
+    end
+  end
+  
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
-  // test
+
   $finish;
 end
 

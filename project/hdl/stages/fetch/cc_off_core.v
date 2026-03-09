@@ -90,7 +90,7 @@ cache_controller cache_controller_inst (
     .CC_FSM_VALID_WR_EN_GLOBAL(CC_FSM_VALID_WR_EN_GLOBAL)
 );
 
-off_core_top #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
+off_core_top #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) off_core_top_inst (
   .rst(rst),
   .clk(clk),
   .DC_MEM_WR_RQ(DC_MEM_WR_RQ),
