@@ -36,15 +36,6 @@ module block_decoder(
         end
     endgenerate
 
-    // =====================================================================
-    // TEMPORARY DEBUG BLOCK: Probing Prefix Inputs
-    // =====================================================================
-    always @(cache_bytes[0] or cache_bytes[1] or cache_bytes[2] or cache_bytes[3]) begin
-        $display("[%0t] DECODER PROBE: Prefix Inputs -> Byte0:%h | Byte1:%h | Byte2:%h | Byte3:%h", 
-                 $time, cache_bytes[0], cache_bytes[1], cache_bytes[2], cache_bytes[3]);
-    end
-    // =====================================================================
-
     //Prefix logic
     wire is_rep, is_op_size, is_seg_ov, is_ext;
     wire [2:0] seg_id, prefix_num;

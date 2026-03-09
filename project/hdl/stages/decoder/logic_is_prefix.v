@@ -50,11 +50,6 @@ module logic_is_prefix(
         .eq(is_operand_size_override)
     );
 
-    initial begin
-        $monitor("Time: %0t | candidate_prefix_buf: %h | is_operand_size_override: %b", 
-                 $time, candidate_prefix_buf, is_operand_size_override);
-    end
-
     big_eq #(.WIDTH(8)) EXT_OP_compare ( 
         .in0(EXT_OP), 
         .in1(candidate_prefix_buf), 

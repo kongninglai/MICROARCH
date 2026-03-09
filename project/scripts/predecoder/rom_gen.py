@@ -1,6 +1,6 @@
 import csv
 
-def process_opcodes(input_csv):
+def rom_gen(input_csv):
     # Initialize 4 distinct maps for the 256 opcodes
     opcode_map_std     = ["00"] * 256
     opcode_map_oso     = ["00"] * 256

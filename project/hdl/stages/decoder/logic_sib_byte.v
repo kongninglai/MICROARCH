@@ -48,6 +48,12 @@ module logic_sib_byte(
         .is_sib(is_sib6)
     );
 
+    // Output each is_sib signal when it changes
+    always @(is_sib1, is_sib2, is_sib3, is_sib4, is_sib5, is_sib6) begin
+        $display("is_sib1=%b, is_sib2=%b, is_sib3=%b, is_sib4=%b, is_sib5=%b, is_sib6=%b", 
+                 is_sib1, is_sib2, is_sib3, is_sib4, is_sib5, is_sib6);
+    end
+    
     //Layer 2: 0.8ns
     wire is_any_sib;
     mux8 choose_is_sib(.outb(is_any_sib), .in0(is_sib1), .in1(is_sib2), .in2(is_sib3), .in3(is_sib4), .in4(is_sib5), .in5(is_sib6), .in6(1'b0), .in7(1'b0), .s0(prefix_num[0]), .s1(prefix_num[1]), .s2(prefix_num[2]));
