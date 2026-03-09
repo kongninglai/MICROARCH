@@ -5,10 +5,11 @@ module big_eq #(
   output                  eq
 );
 
-wire		[WIDTH-1:0]	in;
+wire		[WIDTH-1:0]	in, in_inv;
 	
 // xnor2$(out, in0, in1);
 xnor2$	xnor2$_0[WIDTH-1:0](in, in0, in1);
+xor2$	   xor2$_0[WIDTH-1:0](in_inv, in0, in1);
 
 generate
   case (WIDTH)
@@ -190,21 +191,24 @@ generate
       assign eq = and_0_0_out;
     end
     20: begin
-      wire and_0_0_out;
-      wire and_0_1_out;
-      wire and_0_2_out;
-      wire and_0_3_out;
-      wire and_0_4_out;
-      wire and_0_5_out;
-      wire and_0_6_out;
-      and4$ and_0_0(and_0_0_out,and_0_1_out,and_0_2_out,and_0_3_out,and_0_4_out);
-      and4$ and_0_1(and_0_1_out,in[0],in[1],in[2],in[3]);
-      and4$ and_0_2(and_0_2_out,in[4],in[5],in[6],in[7]);
-      and4$ and_0_3(and_0_3_out,in[8],in[9],in[10],in[11]);
-      and4$ and_0_4(and_0_4_out,in[12],in[13],in[14],and_0_5_out);
-      and4$ and_0_5(and_0_5_out,and_0_6_out,in[15],in[16],in[17]);
-      and2$ and_0_6(and_0_6_out,in[18],in[19]);
-      assign eq = and_0_0_out;
+      // Optimized for TLB lookups
+      wire nor_0_0_out;
+      wire nor_0_1_out;
+      wire nor_0_2_out;
+      wire nor_0_3_out;
+      wire nor_0_4_out;
+      wire or_0_0_out;
+      wire nand_0_1_out;
+      wire nand_0_2_out;
+      nor3$   nor_0_0(nor_0_0_out,nand_0_1_out,nand_0_2_out, or_0_0_out);
+      nand2$ nand_0_1(nand_0_1_out, nor_0_1_out, nor_0_2_out);
+      nand2$ nand_0_2(nand_0_2_out, nor_0_3_out, nor_0_4_out);
+      nor4$   nor_0_1(nor_0_1_out,in_inv[0],in_inv[1],in_inv[2],in_inv[3]);
+      nor4$   nor_0_2(nor_0_2_out,in_inv[4],in_inv[5],in_inv[6],in_inv[7]);
+      nor4$   nor_0_3(nor_0_3_out,in_inv[8],in_inv[9],in_inv[10],in_inv[11]);
+      nor4$   nor_0_4(nor_0_4_out,in_inv[12],in_inv[13],in_inv[14],in_inv[15]);
+      or4$     or_0_0(or_0_0_out,in_inv[16],in_inv[17],in_inv[18],in_inv[19]);
+      assign eq = nor_0_0_out;
     end
     21: begin
       wire and_0_0_out;
