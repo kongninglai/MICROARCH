@@ -76,14 +76,15 @@ endgenerate
 genvar k;
 generate
   for (k = 0; k < TLB_OUT_BIT_WIDTH; k = k + 1) begin : TLB_OUT_COMBINED_GEN
-    // Same this as a big_or, just optimized
-    wire nor0, nor1;
-    nor4$ nor4$_nor0(nor0, TLB_OUT_GATED[0][k], TLB_OUT_GATED[1][k],
-            TLB_OUT_GATED[2][k], TLB_OUT_GATED[3][k]);
-    nor4$ nor4$_nor1(nor1, 
+    big_or #(
+      .WIDTH(NUM_TLB_ENTRIES)
+    ) big_or_TLB_OUT_COMBINED (
+      .out(TLB_OUT_COMBINED[k]),
+      .in({ TLB_OUT_GATED[0][k], TLB_OUT_GATED[1][k],
+            TLB_OUT_GATED[2][k], TLB_OUT_GATED[3][k],
             TLB_OUT_GATED[4][k], TLB_OUT_GATED[5][k],
-            TLB_OUT_GATED[6][k], TLB_OUT_GATED[7][k]);
-    nand2$  nand2$_TLB_OUT_COMBINED(TLB_OUT_COMBINED[k], nor0, nor1);
+            TLB_OUT_GATED[6][k], TLB_OUT_GATED[7][k]})
+    );
   end
 endgenerate
 
