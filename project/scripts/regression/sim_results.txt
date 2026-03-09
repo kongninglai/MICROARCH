@@ -37,6 +37,7 @@ lshf_var_32b_tb                FAILURES=0      SUCCESSES=4096
 main_memory_tb                 FAILURES=0      SUCCESSES=32768 
 mcu_ctrl_tb                    FAILURES=0      SUCCESSES=0     
 mcu_tb                         FAILURES=0      SUCCESSES=16376 
+mux16_16b_tb                   FAILURES=0      SUCCESSES=524288
 mux16_tb                       FAILURES=0      SUCCESSES=1048576
 mux32_tb                       FAILURES=0      SUCCESSES=256   
 mux64_tb                       FAILURES=0      SUCCESSES=256   

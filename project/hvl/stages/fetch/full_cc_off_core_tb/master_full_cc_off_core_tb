@@ -20,6 +20,7 @@
 ~/MICROARCH/project/hdl/stages/fetch/cache_controller.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_16b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_256b.v
 ~/MICROARCH/project/hdl/local-lib/gates/big_or.v
 ~/MICROARCH/project/hdl/local-lib/adders/big_decrement.v
