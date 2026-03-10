@@ -15,6 +15,7 @@ decoder5_32_tb                 FAILURES=0      SUCCESSES=32
 dmac_tb                        FAILURES=0      SUCCESSES=1040  
 dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
 dmu_tb                         FAILURES=0      SUCCESSES=4     
+encoder4_2_tb                  FAILURES=0      SUCCESSES=5     
 FA_16b_tb                      FAILURES=0      SUCCESSES=4096  
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
@@ -56,6 +57,7 @@ rshfa_const_tb                 FAILURES=0      SUCCESSES=1024
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
 se_tb                          FAILURES=0      SUCCESSES=258   
 stream_buffer_tb               FAILURES=0      SUCCESSES=4130  
+tag_hit_logic_tb               FAILURES=0      SUCCESSES=5200  
 tag_store_tb                   FAILURES=0      SUCCESSES=160   
 tlb_tb                         FAILURES=0      SUCCESSES=65538 
 valid_or_dirty_store_tb        FAILURES=0      SUCCESSES=1056  
