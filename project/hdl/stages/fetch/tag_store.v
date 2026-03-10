@@ -13,7 +13,7 @@ module tag_store #(
 
 genvar i;
 generate
-  for (i = 0; i < NUM_WAYS; i = i + 1) begin : tag_store_generatino
+  for (i = 0; i < NUM_WAYS; i = i + 1) begin : tag_store_generation
     ram8b8w$ ram8b8w$_tag_store_one_way (
                                           .A(set_index),
                                           .DIN(tag_in),

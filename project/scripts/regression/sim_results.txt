@@ -8,6 +8,7 @@ big_or_tb                      FAILURES=0      SUCCESSES=4096
 cache_controller_tb            FAILURES=0      SUCCESSES=90112 
 cc_off_core_tb                 FAILURES=0      SUCCESSES=30720 
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
+data_store_tb                  FAILURES=0      SUCCESSES=1032  
 dcache_controller_wbe_tb       FAILURES=0      SUCCESSES=10240 
 decoder4_16_tb                 FAILURES=0      SUCCESSES=16    
 decoder5_32_tb                 FAILURES=0      SUCCESSES=32    
