@@ -1,4 +1,4 @@
-// Designed to shift a 128b wire in 16b chunks
+// Designed to shift a 256b wire in 16b chunks
 
 module lshf_chunks_var_256b #(
   parameter WIDTH = 256

@@ -174,35 +174,35 @@ tristate_bus_driver1$   tristate_bus_driver1$_DC_KB_WR_RQ
                                                        );
 
 /* Inverters */
-wire Q0_bar;
 wire WB_DONE_bar;
-inv1$ inv_1(WB_DONE_bar, WB_DONE);
+inv1$ inv_0(WB_DONE_bar, WB_DONE);
 wire Q1_bar;
 wire ARB_ACK_RECV_bar;
-inv1$ inv_3(ARB_ACK_RECV_bar, ARB_ACK_RECV);
+inv1$ inv_2(ARB_ACK_RECV_bar, ARB_ACK_RECV);
+wire Q0_bar;
 
 /* Product Expressions */
-wire and_0_0_out;
-and3$ and_0_0(and_0_0_out,Q1,Q0_bar,WB_DONE_bar);
-wire and_1_0_out;
-and3$ and_1_0(and_1_0_out,Q1_bar,Q0_bar,DCACHE_NEED_WR_BUS);
-wire and_2_0_out;
-and2$ and_2_0(and_2_0_out,Q1,Q0_bar);
-wire and_3_0_out;
-and3$ and_3_0(and_3_0_out,Q1_bar,Q0,ARB_ACK_RECV);
-wire and_4_0_out;
-and3$ and_4_0(and_4_0_out,Q1_bar,Q0,ARB_ACK_RECV_bar);
-wire and_5_0_out;
-assign and_5_0_out = Q1_bar;
+wire nand_0_0_0_out;
+nand3$ nand_0_0_0(nand_0_0_0_out,Q1,Q0_bar,WB_DONE_bar);
+wire nand_1_0_0_out;
+nand3$ nand_1_0_0(nand_1_0_0_out,Q1_bar,Q0_bar,DCACHE_NEED_WR_BUS);
+wire nand_2_0_0_out;
+nand2$ nand_2_0_0(nand_2_0_0_out,Q1,Q0_bar);
+wire nand_3_0_0_out;
+nand3$ nand_3_0_0(nand_3_0_0_out,Q1_bar,Q0,ARB_ACK_RECV);
+wire nand_4_0_0_out;
+nand3$ nand_4_0_0(nand_4_0_0_out,Q1_bar,Q0,ARB_ACK_RECV_bar);
+wire nand_5_0_0_out;
+inv1$ nand_5_0_0(nand_5_0_0_out, Q1_bar);
 
 /* Sum Expressions */
-or2$ or_0_0(D1,and_0_0_out,and_3_0_out);
-or2$ or_1_0(D0,and_1_0_out,and_4_0_out);
-assign FSM_LD_REGS = and_1_0_out;
-assign FSM_BUS_ENBAR = and_5_0_out;
-or3$ or_4_0(WBE_FSM_BUSY,and_2_0_out,and_3_0_out,and_4_0_out);
-assign FSM_CLR_CTR = and_5_0_out;
-or2$ or_6_0(FSM_GATE_RQ,and_3_0_out,and_4_0_out);
+nand2$ nand_0_0_1(D1,nand_0_0_0_out,nand_3_0_0_out);
+nand2$ nand_1_0_1(D0,nand_1_0_0_out,nand_4_0_0_out);
+inv1$ nand_2_0_1(FSM_LD_REGS, nand_1_0_0_out);
+inv1$ nand_3_0_1(FSM_BUS_ENBAR, nand_5_0_0_out);
+nand3$ nand_4_0_1(WBE_FSM_BUSY,nand_2_0_0_out,nand_3_0_0_out,nand_4_0_0_out);
+inv1$ nand_5_0_1(FSM_CLR_CTR, nand_5_0_0_out);
+nand2$ nand_6_0_1(FSM_GATE_RQ,nand_3_0_0_out,nand_4_0_0_out);
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0, Q0_bar, rst, 1'b1);

@@ -1,5 +1,5 @@
 import sys
-from gate_structure import *
+from gate_structure_nand import *
 import re
 
 with open("moore_logic_gen.v", "w") as f:
@@ -64,16 +64,20 @@ with open("moore_logic_gen.v", "w") as f:
         elif (product_expression[i] == '1'):
           product_inputs[product_num].append(input_list[i])
       
+      print(f"Product {len(product_inputs[product_num])}")
+      
 
       sum_expression = cleaned_line.split()[1]
       for i in range(len(sum_expression)):
         if (sum_expression[i] == '1'):
-          output_contributions[i].append(f"and_{product_num}_0_out")
+          output_contributions[i].append(f"nand_{product_num}_0_0_out")
 
       product_num += 1
 
 
-
+  for i, contrib in enumerate(output_contributions):
+    print(f"Output {len(contrib)}")
+    
   f.write(f"\n\t/* Inverters */\n")
   inp_num = 0
   for input_name in inverted_list:
@@ -84,8 +88,8 @@ with open("moore_logic_gen.v", "w") as f:
 
   f.write(f"\n\t/* Product Expressions */\n")
   for i in range(int(num_products)):
-    my_v_info = V_info(0, [], [], product_inputs[i], 0, i, "and")   
-    gate_structure(len(product_inputs[i]), my_v_info)
+    my_v_info = V_info(0, [], [], product_inputs[i], 0, i, "nand", "0", "nand")   
+    gate_structure_nand(len(product_inputs[i]), my_v_info)
     for output in my_v_info.outputs:
       f.write(f"\twire {output};\n")
     if (len(product_inputs[i]) == 0):
@@ -98,8 +102,8 @@ with open("moore_logic_gen.v", "w") as f:
   
   f.write(f"\n\t/* Sum Expressions */\n")
   for i in range(int(num_outputs)):
-    my_v_info = V_info(0, [], [], output_contributions[i], 0, i, "or")   
-    gate_structure(len(output_contributions[i]), my_v_info)
+    my_v_info = V_info(0, [], [], output_contributions[i], 0, i, "nand", "1", "nand")   
+    gate_structure_nand(len(output_contributions[i]), my_v_info)
     if (len(output_contributions[i]) == 0):
       f.write(f"\tassign {output_list[i]} = 1'b0;\n")
       # f.write(f"\tbuffer$ buffer_empty_cont_{i}({output_list[i]}, 1'b0);\n")
@@ -109,7 +113,7 @@ with open("moore_logic_gen.v", "w") as f:
           f.write(f"\twire {output};\n")
 
       for gate in my_v_info.gates:
-        pattern = r'or_\d+_0_out'
+        pattern = r'nand_\d+_0_1_out'
         new_gate = re.sub(pattern, output_list[i], gate, count=1)
         # print(f"Gate = {gate}, NewGate = {new_gate}")
         f.write(new_gate)
