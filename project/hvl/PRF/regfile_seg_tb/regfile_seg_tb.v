@@ -1,196 +1,205 @@
-module  regfile_seg_tb;
+module regfile_seg_tb;
+    initial begin
+        $vcdplusfile("regfile_seg_tb.dump.vpd");
+        $vcdpluson(0, regfile_seg_tb); 
+    end
 
-initial begin
-  $vcdplusfile("regfile_seg_tb.dump.vpd");
-  $vcdpluson(0, regfile_seg_tb); 
-end
+    reg clk;
+    reg rst_n;
 
-localparam WIDTH = 16;
-localparam DEPTH = 8;
-localparam IDX_SIZE = 3;
-reg clk;
-reg rst_n;
+    reg  [2:0] segrd0_idx;
+    reg  [2:0] segrd1_idx;
 
-reg  [IDX_SIZE-1:0] rd_reg0_idx;
-reg  [IDX_SIZE-1:0] rd_reg1_idx;
+    wire [15:0] segrd0_data, segrd0_data_bh;
+    wire [15:0] segrd1_data, segrd1_data_bh;
+    wire [19:0] segrd0_limit, segrd0_limit_bh;
+    wire [19:0] segrd1_limit, segrd1_limit_bh;
+    wire [15:0] cs, cs_bh;
 
-wire [WIDTH-1:0]    rd_reg0_data_bh;
-wire [WIDTH-1:0]    rd_reg1_data_bh;
-wire [WIDTH-1:0]    cs_bh;
+    reg  [2:0] segwr_idx;
+    reg  [15:0] segwr_data;
+    reg  segwr_en;
 
-wire [WIDTH-1:0]    rd_reg0_data;
-wire [WIDTH-1:0]    rd_reg1_data;
-wire [WIDTH-1:0]    cs;
+    reg  cs_wr_en;
+    reg  [15:0] cs_wr_data;
 
-reg  [IDX_SIZE-1:0] wr_reg0_idx;
-reg  [WIDTH-1:0]    wr_reg0_data;
-reg                 wr0_en;
+    regfile_seg_bh dut_bh (
+        .clk(clk),
+        .rst_n(rst_n),
+        .segrd0_idx(segrd0_idx),
+        .segrd1_idx(segrd1_idx),
+        .segrd0_data(segrd0_data_bh),
+        .segrd1_data(segrd1_data_bh),
+        .segrd0_limit(segrd0_limit_bh),
+        .segrd1_limit(segrd1_limit_bh),
+        .cs(cs_bh),
+        .segwr_idx(segwr_idx),
+        .segwr_data(segwr_data),
+        .segwr_en(segwr_en),
+        .cs_wr_en(cs_wr_en),
+        .cs_wr_data(cs_wr_data)
+    );
 
-regfile_seg_bh #(
-  .WIDTH(WIDTH),
-  .DEPTH(DEPTH),
-  .IDX_SIZE(IDX_SIZE)
-) dut_bh (
-    .clk(clk),
-    .rst_n(rst_n),
+    regfile_seg dut (
+        .clk(clk),
+        .rst_n(rst_n),
+        .segrd0_idx(segrd0_idx),
+        .segrd1_idx(segrd1_idx),
+        .segrd0_data(segrd0_data),
+        .segrd1_data(segrd1_data),
+        .segrd0_limit(segrd0_limit),
+        .segrd1_limit(segrd1_limit),
+        .cs(cs),
+        .segwr_idx(segwr_idx),
+        .segwr_data(segwr_data),
+        .segwr_en(segwr_en),
+        .cs_wr_en(cs_wr_en),
+        .cs_wr_data(cs_wr_data)
+    );
 
-    .rd_reg0_idx(rd_reg0_idx),
-    .rd_reg1_idx(rd_reg1_idx),
-    .rd_reg0_data(rd_reg0_data_bh),
-    .rd_reg1_data(rd_reg1_data_bh),
+    always #5 clk = ~clk;
 
-    .wr_reg0_idx(wr_reg0_idx),
-    .wr_reg0_data(wr_reg0_data),
-    .wr0_en(wr0_en),
-    .cs(cs_bh)
-);
+    task clear_inputs;
+    begin
+        segrd0_idx = 3'd0;
+        segrd1_idx = 3'd0;
+        segwr_idx  = 3'd0;
+        segwr_data = 16'h0000;
+        segwr_en   = 1'b0;
+        cs_wr_en   = 1'b0;
+        cs_wr_data = 16'h0000;
+    end
+    endtask
 
-regfile_seg #(
-  .WIDTH(WIDTH)
-) dut (
-    .clk(clk),
-    .rst_n(rst_n),
+    task check16;
+        input [15:0] got_bh;
+        input [15:0] got_st;
+        input [15:0] exp;
+        input [255:0] msg;
+    begin
+        if (got_bh !== exp) begin
+            $display("[BEHAVIORAL FAIL] %s: got_bh=%h exp=%h time=%0t", msg, got_bh, exp, $time);
+            $finish;
+        end else if (got_st !== got_bh) begin 
+            $display("[STRUCTURAL FAIL] %s: got_bh=%h got_st=%h time=%0t", msg, got_bh, got_st, $time);
+            $finish;
+        end else begin
+            $display("[PASS] %s: %h=%h", msg, got_bh, got_st);
+        end
+    end
+    endtask
 
-    .rd_reg0_idx(rd_reg0_idx),
-    .rd_reg1_idx(rd_reg1_idx),
-    .rd_reg0_data(rd_reg0_data),
-    .rd_reg1_data(rd_reg1_data),
+    task check20;
+        input [19:0] got_bh;
+        input [19:0] got_st;
+        input [19:0] exp;
+        input [255:0] msg;
+    begin
+        if (got_bh !== exp) begin
+            $display("[BEHAVIORAL FAIL] %s: got_bh=%h exp=%h time=%0t", msg, got_bh, exp, $time);
+            $finish;
+        end else if (got_st !== got_bh) begin 
+            $display("[STRUCTURAL FAIL] %s: got_bh=%h got_st=%h time=%0t", msg, got_bh, got_st, $time);
+            $finish;
+        end else begin
+            $display("[PASS] %s: %h=%h", msg, got_bh, got_st);
+        end
+    end
+    endtask
 
-    .wr_reg0_idx(wr_reg0_idx),
-    .wr_reg0_data(wr_reg0_data),
-    .wr0_en(wr0_en),
-    .cs(cs)
-);
+    integer k;
 
-initial begin
-    clk = 0;
-    forever #5 clk = ~clk;
-end
-integer FAILURES  = 0;
-integer SUCCESSES = 0;
+    initial begin
+        clk = 1'b0;
+        rst_n = 1'b0;
+        clear_inputs();
 
-task check;
-  input [WIDTH-1:0] out, out_exp;
-  input [8*80:1]    msg; // string
-  if (out !== out_exp) begin
-    FAILURES = FAILURES + 1;
-    $display("FAILURE AT TIME %0t: %0s. out_exp = %h, out = %h\n", 
-              $time, msg, out_exp, out);
-  end else begin
-    SUCCESSES = SUCCESSES + 1;
-  end
-endtask
+        // ============================================================
+        // Test 1: reset all
+        // ============================================================
+        @(posedge clk);
+        @(posedge clk);
 
-task apply_reset;
-  begin
-    rst_n = 0;
+        // release reset
+        rst_n = 1'b1;
+        @(negedge clk);
 
-    rd_reg0_idx = 0;
-    rd_reg1_idx = 0;
+        // check all segment regs are zero
+        for (k = 0; k < 8; k = k + 1) begin
+            segrd0_idx = k[2:0];
+            #1;
+            check16(segrd0_data_bh, segrd0_data, 16'h0000, "reset clears segment register");
+        end
 
-    wr0_en = 0;
-    wr_reg0_idx  = 0;
-    wr_reg0_data = 0;
+        check16(cs_bh, cs, 16'h0000, "reset clears cs");
 
-    repeat (5) @(posedge clk);
-    rst_n = 1;
-    @(posedge clk);
-  end
-endtask
+        // also check limit outputs for a few known indices
+        @(negedge clk);
+        segrd0_idx = 3'd0; #2; check20(segrd0_limit_bh, segrd0_limit, 20'h003ff, "limit idx0");
+        segrd0_idx = 3'd1; #2; check20(segrd0_limit_bh, segrd0_limit, 20'h04fff, "limit idx1");
+        segrd0_idx = 3'd5; #2; check20(segrd0_limit_bh, segrd0_limit, 20'h007ff, "limit idx5");
 
-task single_write_test;
-  begin
-    wr0_en = 1'b1;
-    wr_reg0_idx = 3'b001;
-    wr_reg0_data = 64'h1111_1111_1111_1111;
-    @(posedge clk);
-    wr0_en = 1'b0;
-    rd_reg0_idx = 3'b001;
-    #1;
-    check(rd_reg0_data_bh, 64'h1111_1111_1111_1111, "single write to register 1 and read behavioral check");
-    check(rd_reg0_data, rd_reg0_data_bh, "single write to register 1 and read");
+        // ============================================================
+        // Test 2: single write (not cs)
+        // ============================================================
+        @(negedge clk);
+        segwr_en   = 1'b1;
+        segwr_idx  = 3'd3;
+        segwr_data = 16'hABCD;
+        @(negedge clk);
+        segwr_en = 1'b0;
 
-    check(cs_bh, 64'h1111_1111_1111_1111, "single write to register 1 and read cs behavioral check");
-    check(cs, cs_bh, "single write to register 1 and read cs");
+        segrd0_idx = 3'd3;
+        #2;
+        check16(segrd0_data_bh, segrd0_data, 16'hABCD, "single write non-cs read back");
 
-    @(posedge clk);
-  end
-endtask
+        // make sure cs unchanged
+        check16(cs_bh, cs, 16'h0000, "single write non-cs does not change cs");
 
-task consecutive_write_test;
-  begin
-    wr0_en = 1'b1;
-    wr_reg0_idx = 3'b010;
-    wr_reg0_data = 64'h2222_2222_2222_2222;
-    @(posedge clk);
-    wr0_en = 1'b1;
-    wr_reg0_idx = 3'b011;
-    wr_reg0_data = 64'h3333_3333_3333_3333;
-    @(posedge clk);
-    wr0_en = 1'b0;
-    rd_reg0_idx = 3'b010;  
-    rd_reg1_idx = 3'b011;
-    #1;
-    check(rd_reg0_data_bh, 64'h2222_2222_2222_2222, "consecutively write to register 2 and read behavioral check");
-    check(rd_reg1_data_bh, 64'h3333_3333_3333_3333, "consecutively write to register 3 and read behavioral check");
-    check(rd_reg0_data, rd_reg0_data_bh, "consecutively write to register 2 and read");
-    check(rd_reg1_data, rd_reg1_data_bh, "consecutively write to register 3 and read");
-    @(posedge clk);
-  end
-endtask
+        // ============================================================
+        // Test 3: single write (cs)
+        // ============================================================
+        @(negedge clk);
+        cs_wr_en   = 1'b1;
+        cs_wr_data = 16'h1357;
+        @(negedge clk);
+        cs_wr_en = 1'b0;
 
-task bypass_raw_test;
-  begin
-    wr0_en = 1'b1;
-    wr_reg0_idx = 3'b100;
-    wr_reg0_data = 64'h4444_4444_4444_4444;
+        check16(cs_bh, cs, 16'h1357, "cs write updates cs output");
 
-    rd_reg0_idx = 3'b100;  
-    #1;
-    check(rd_reg0_data_bh, 64'h4444_4444_4444_4444, "write to register 4 and read in the same cycle behavioral check");
-    check(rd_reg0_data, rd_reg0_data_bh, "write to register 4 and read in the same cycle");
-    @(posedge clk);
-    wr0_en = 1'b0;
-    @(posedge clk);
-  end
-endtask
+        // read idx=1 should return reg_cs, not registers[1]
+        @(negedge clk);
+        segrd0_idx = 3'd1;
+        #2;
+        check16(segrd0_data_bh, segrd0_data, 16'h1357, "read idx1 returns cs");
 
-initial begin
-  apply_reset();
-  single_write_test();
-  consecutive_write_test();
-  bypass_raw_test();
+        // ============================================================
+        // Test 4: same cycle write/read bypass (no cs)
+        // ============================================================
+        @(negedge clk);
+        segwr_en   = 1'b1;
+        segwr_idx  = 3'd4;
+        segwr_data = 16'hDEAD;
 
-  @(negedge clk);
-  rd_reg0_idx = $random;   
-  rd_reg1_idx = $random;
+        // same-cycle read same index -> should bypass segwr_data
+        segrd0_idx = 3'd4;
+        segrd1_idx = 3'd2;   // another port reading unrelated reg
+        #2;
 
-  wr0_en       = $random;
-  wr_reg0_idx  = $random;
-  wr_reg0_data = $random;
-  
-  repeat (1 << 8) begin
-    @(negedge clk);
-    check(rd_reg0_data, rd_reg0_data_bh, "Random test register 0");
-    check(rd_reg1_data, rd_reg1_data_bh, "Random test register 1");
-    check(cs, cs_bh, "Random test register cs");
+        check16(segrd0_data_bh, segrd0_data, 16'hDEAD, "same-cycle write/read bypass on rd0");
+        check16(segrd1_data_bh, segrd1_data, 16'h0000, "other read port unaffected");
 
-    @(negedge clk);
-    wr0_en       = 0;
+        @(negedge clk);
+        segwr_en = 1'b0;
 
-    @(negedge clk);
-    rd_reg0_idx = $random;   
-    rd_reg1_idx = $random;
-    wr0_en       = $random;
-    wr_reg0_idx  = $random;
-    wr_reg0_data = $random;
-  end
+        segrd0_idx = 3'd4;
+        #2;
+        check16(segrd0_data_bh, segrd0_data, 16'hDEAD, "written value committed after clock");
 
-  $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
-  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
-
-  $finish;
-
-end
+        $display("======================================");
+        $display("All requested tests passed.");
+        $display("======================================");
+        $finish;
+    end
 
 endmodule

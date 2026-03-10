@@ -1,3 +1,16 @@
+/*
+ * regfile_gp: general purpose register file
+ * input:   gprd0_idx, gprd1_idx, gprd2_idx, gprd3_idx,
+ *          gpwr0_idx, gpwr0_data, gpwr0_size, gpwr0_en,
+ *          gpwr1_idx, gpwr1_data, gpwr1_size, gpwr1_en
+ * output:  gprd0_data, gprd1_data, gprd2_data, gprd3_data
+ *
+ * For read port, it always read out 32-bits.
+ * For write port, it would only write {size}-bit to the register
+ * The high/low eight bits logic for datasize=8 is handled in the regfile itself
+ * The module would assume the write data is always at the low {size}-bit
+ * and will write into the high eight bits if needed
+*/
 module check_en (
     input we0_i,
     input wr0_en,
@@ -16,20 +29,6 @@ module check_en (
     mux2$ mux2$_32[31:0] (din_i, wr_reg1_data, wr_reg0_data, andout_0);
 endmodule
 
-module extract_read_data (
-    output [31:0] read_out,
-    input [1:0] datasize,
-    input [2:0] read_idx,
-    input [31:0] read_data
-); 
-    wire [31:0] read_low8, read_high8, read8, read16;
-    assign read_low8 = {24'b0, read_data[7:0]};
-    assign read_high8 = {24'b0, read_data[15:8]};
-    mux2$ mux2_read8[31:0](read8, read_low8, read_high8, read_idx[2]);
-    assign read16 = {16'b0, read_data[15:0]};
-    mux4$ mux4_readdata[31:0](read_out, read8, read_data, read16, read_data, datasize[0], datasize[1]);
-endmodule
-
 module regfile_gp (
     input clk,
     input rst_n,
@@ -37,19 +36,27 @@ module regfile_gp (
     input [2:0] rd_reg0_idx,
     input [2:0] rd_reg1_idx,
     input [2:0] rd_reg2_idx,
+    input [2:0] rd_reg3_idx,
+
+    input [1:0] rd_reg0_ds,
+    input [1:0] rd_reg1_ds,
+    input [1:0] rd_reg2_ds,
+    input [1:0] rd_reg3_ds,
+
     output [31:0] rd_reg0_data,
     output [31:0] rd_reg1_data,
     output [31:0] rd_reg2_data,
+    output [31:0] rd_reg3_data,
 
     input [2:0] wr_reg0_idx,
     input [31:0] wr_reg0_data,
+    input [1:0] wr_reg0_ds, // 00(8-bit), 01(16-bit), 10(32-bit), 11(64-bit/UNUSED)
     input wr0_en,
 
     input [2:0] wr_reg1_idx,
     input [31:0] wr_reg1_data,
-    input wr1_en,
-    
-    input [1:0] datasize
+    input [1:0] wr_reg1_ds,
+    input wr1_en
 ); 
     
     // q0 to q7 hold the register values
@@ -66,17 +73,11 @@ module regfile_gp (
     // dini are the input for the i-th register
     wire [31:0] din[7:0];
 
-    wire we0_0, en_0;
-    wire [31:0] din_0;
-    assign we0_0 = we0[0];
-    assign en_0 = en[0];
-    assign din_0 = din[0];
 
-    wire not_datasize1, not_datasize0, datasize_is_8;
+    wire wr_reg0_ds_is_8, wr_reg1_ds_is_8;
 
-    inv1$ inv1_datasize1(not_datasize1, datasize[1]);
-    inv1$ inv1_datasize0(not_datasize0, datasize[0]);
-    and2$ and2_datasize8(datasize_is_8, not_datasize1, not_datasize0);
+    nor2$ nor2_wr0_size8(wr_reg0_ds_is_8, wr_reg0_ds[1], wr_reg0_ds[0]);
+    nor2$ nor2_wr1_size8(wr_reg1_ds_is_8, wr_reg1_ds[1], wr_reg1_ds[0]);
     
     wire [2:0] wr_reg0_idx_shifted, wr_reg1_idx_shifted;
     wire [2:0] wr0_pidx, wr1_pidx;
@@ -84,19 +85,8 @@ module regfile_gp (
     assign wr_reg0_idx_shifted = {1'b0, wr_reg0_idx[1:0]};
     assign wr_reg1_idx_shifted = {1'b0, wr_reg1_idx[1:0]};
 
-    mux2$ mux2_wr0_pidx[2:0](wr0_pidx, wr_reg0_idx, wr_reg0_idx_shifted, datasize_is_8);
-    mux2$ mux2_wr1_pidx[2:0](wr1_pidx, wr_reg1_idx, wr_reg1_idx_shifted, datasize_is_8);
-
-    wire [2:0] rd_reg0_idx_shifted, rd_reg1_idx_shifted, rd_reg2_idx_shifted;
-    wire [2:0] rd0_pidx, rd1_pidx, rd2_pidx;
-    
-    assign rd_reg0_idx_shifted = {1'b0, rd_reg0_idx[1:0]};
-    assign rd_reg1_idx_shifted = {1'b0, rd_reg1_idx[1:0]};
-    assign rd_reg2_idx_shifted = {1'b0, rd_reg2_idx[1:0]};
-
-    mux2$ mux2_rd0_pidx[2:0](rd0_pidx, rd_reg0_idx, rd_reg0_idx_shifted, datasize_is_8);
-    mux2$ mux2_rd1_pidx[2:0](rd1_pidx, rd_reg1_idx, rd_reg1_idx_shifted, datasize_is_8);
-    mux2$ mux2_rd2_pidx[2:0](rd2_pidx, rd_reg2_idx, rd_reg2_idx_shifted, datasize_is_8);
+    mux2$ mux2_wr0_pidx[2:0](wr0_pidx, wr_reg0_idx, wr_reg0_idx_shifted, wr_reg0_ds_is_8);
+    mux2$ mux2_wr1_pidx[2:0](wr1_pidx, wr_reg1_idx, wr_reg1_idx_shifted, wr_reg1_ds_is_8);
 
     wire [31:0] wr0_orig_full, wr1_orig_full;
     mux8 mux_wr0_orig[31:0](wr0_orig_full, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], wr0_pidx[0], wr0_pidx[1], wr0_pidx[2]);
@@ -117,59 +107,93 @@ module regfile_gp (
     mux2$ mux2_wr1_in_8[31:0](wr1_wrdata_8, wr1_wrdata_low8, wr1_wrdata_high8, wr_reg1_idx[2]);
 
     wire [31:0] wr0_wrdata, wr1_wrdata;
-    mux4$ mux4_wr0_in[31:0](wr0_wrdata, wr0_wrdata_8, wr0_orig_full, wr0_wrdata_16, wr_reg0_data, datasize[0], datasize[1]);
-    mux4$ mux4_wr1_in[31:0](wr1_wrdata, wr1_wrdata_8, wr1_orig_full, wr1_wrdata_16, wr_reg1_data, datasize[0], datasize[1]);
+    mux4$ mux4_wr0_in[31:0](wr0_wrdata, wr0_wrdata_8, wr0_wrdata_16, wr_reg0_data, wr_reg0_data, wr_reg0_ds[0], wr_reg0_ds[1]);
+    mux4$ mux4_wr1_in[31:0](wr1_wrdata, wr1_wrdata_8, wr1_wrdata_16, wr_reg1_data, wr_reg1_data, wr_reg1_ds[0], wr_reg1_ds[1]);
 
-    wire write_both_en, write_same_idx, write_low_high, write_same_low_high;
+    wire write_both_en, write_same_idx, write_low_high, both_write_8, write_same_low_high;
     and2$ and2_wr_both(write_both_en, wr0_en, wr1_en);
     xor2$ xor2_wr_idx(write_low_high, wr_reg0_idx[2], wr_reg1_idx[2]);
-    eq_2b eq2_wr_idx(.in0(wr_reg0_idx[1:0]), .in1(wr_reg1_idx[1:0]), .eq(write_same_idx));
-    and4$ and4_wr_idx(write_same_low_high, datasize_is_8, write_both_en, write_same_idx, write_low_high);
+    big_eq #(.WIDTH(2)) eq2_wr_idx(.in0(wr_reg0_idx[1:0]), .in1(wr_reg1_idx[1:0]), .eq(write_same_idx));
+    and2$ and2_both_write_8(both_write_8, wr_reg0_ds_is_8, wr_reg1_ds_is_8);
+    and4$ and4_wr_idx(write_same_low_high, both_write_8, write_both_en, write_same_idx, write_low_high);
 
     wire [31:0] wr01_merged, wr0_wrdata_final;
-    assign wr01_merged = {wr0_orig_full[31:16], wr_reg1_data[7:0], wr_reg0_data[7:0]};
+    wire [31:0] wr01, wr10;
+    assign wr01 = {wr0_orig_full[31:16], wr_reg0_data[7:0], wr_reg1_data[7:0]};
+    assign wr10 = {wr0_orig_full[31:16], wr_reg1_data[7:0], wr_reg0_data[7:0]};
+
+    mux2_32 mux2_wr01_merged(.out(wr01_merged), .in0(wr10), .in1(wr01), .s0(wr_reg0_idx[2]));
+    // assign wr01_merged = {wr0_orig_full[31:16], wr_reg1_data[7:0], wr_reg0_data[7:0]};
     mux2$ mux2_wr0_wrdata_final[31:0](wr0_wrdata_final, wr0_wrdata, wr01_merged, write_same_low_high);
 
     genvar i;
     generate
         for (i = 0; i < 8; i=i+1) begin 
-            eq_3b wr0_eq_i(.in0(wr0_pidx), .in1(i[2:0]), .eq(we0[i]));
-            eq_3b wr1_eq_i(.in0(wr1_pidx), .in1(i[2:0]), .eq(we1[i]));
+            big_eq #(.WIDTH(3)) wr0_eq_i(.in0(wr0_pidx), .in1(i[2:0]), .eq(we0[i]));
+            big_eq #(.WIDTH(3)) wr1_eq_i(.in0(wr1_pidx), .in1(i[2:0]), .eq(we1[i]));
             check_en check_en_i(.we0_i(we0[i]), .wr0_en(wr0_en), .wr_reg0_data(wr0_wrdata_final), .we1_i(we1[i]), .wr1_en(wr1_en), .wr_reg1_data(wr1_wrdata), .en_i(en[i]), .din_i(din[i]));
             reg32e$ reg32e$_inst(clk, din[i], q[i], qb[i], rst_n, 1'b1, en[i]);
         end
     endgenerate
 
-    // hitij means the i-th rd_idx matches the j-th wr_idx
-    wire hit00, hit10, hit20, hit01, hit11, hit21;
-    wire match00, match10, match20, match01, match11, match21;
+    // read logic
+    wire rd0_size_is_8, rd1_size_is_8, rd2_size_is_8, rd3_size_is_8;
+    nor2$ nor2_rd0_size8(rd0_size_is_8, rd_reg0_ds[1], rd_reg0_ds[0]);
+    nor2$ nor2_rd1_size8(rd1_size_is_8, rd_reg1_ds[1], rd_reg1_ds[0]);
+    nor2$ nor2_rd2_size8(rd2_size_is_8, rd_reg2_ds[1], rd_reg2_ds[0]);
+    nor2$ nor2_rd3_size8(rd3_size_is_8, rd_reg3_ds[1], rd_reg3_ds[0]);
 
-    eq_3b rd0_wr0_eq(.in0(rd_reg0_idx), .in1(wr_reg0_idx), .eq(match00));
-    eq_3b rd1_wr0_eq(.in0(rd_reg1_idx), .in1(wr_reg0_idx), .eq(match10));
-    eq_3b rd2_wr0_eq(.in0(rd_reg2_idx), .in1(wr_reg0_idx), .eq(match20));
-    eq_3b rd0_wr1_eq(.in0(rd_reg0_idx), .in1(wr_reg1_idx), .eq(match01));
-    eq_3b rd1_wr1_eq(.in0(rd_reg1_idx), .in1(wr_reg1_idx), .eq(match11));
-    eq_3b rd2_wr1_eq(.in0(rd_reg2_idx), .in1(wr_reg1_idx), .eq(match21));
+    wire [2:0] rd_reg0_idx_shifted, rd_reg1_idx_shifted, rd_reg2_idx_shifted, rd_reg3_idx_shifted;
+    wire [2:0] rd0_pidx, rd1_pidx, rd2_pidx, rd3_pidx;
+    
+    assign rd_reg0_idx_shifted = {1'b0, rd_reg0_idx[1:0]};
+    assign rd_reg1_idx_shifted = {1'b0, rd_reg1_idx[1:0]};
+    assign rd_reg2_idx_shifted = {1'b0, rd_reg2_idx[1:0]};
+    assign rd_reg3_idx_shifted = {1'b0, rd_reg3_idx[1:0]};
+
+    mux2$ mux2_rd0_pidx[2:0](rd0_pidx, rd_reg0_idx, rd_reg0_idx_shifted, rd0_size_is_8);
+    mux2$ mux2_rd1_pidx[2:0](rd1_pidx, rd_reg1_idx, rd_reg1_idx_shifted, rd1_size_is_8);
+    mux2$ mux2_rd2_pidx[2:0](rd2_pidx, rd_reg2_idx, rd_reg2_idx_shifted, rd2_size_is_8);
+    mux2$ mux2_rd3_pidx[2:0](rd3_pidx, rd_reg3_idx, rd_reg3_idx_shifted, rd3_size_is_8);
+
+    // hitij means the i-th rd_idx matches the j-th wr_idx
+    wire hit00, hit10, hit20, hit30, hit01, hit11, hit21, hit31;
+    wire match00, match10, match20, match30, match01, match11, match21, match31;
+
+    eq_3b rd0_wr0_eq(.in0(rd0_pidx), .in1(wr0_pidx), .eq(match00));
+    eq_3b rd1_wr0_eq(.in0(rd1_pidx), .in1(wr0_pidx), .eq(match10));
+    eq_3b rd2_wr0_eq(.in0(rd2_pidx), .in1(wr0_pidx), .eq(match20));
+    eq_3b rd3_wr0_eq(.in0(rd3_pidx), .in1(wr0_pidx), .eq(match30));
+    eq_3b rd0_wr1_eq(.in0(rd0_pidx), .in1(wr1_pidx), .eq(match01));
+    eq_3b rd1_wr1_eq(.in0(rd1_pidx), .in1(wr1_pidx), .eq(match11));
+    eq_3b rd2_wr1_eq(.in0(rd2_pidx), .in1(wr1_pidx), .eq(match21));
+    eq_3b rd3_wr1_eq(.in0(rd3_pidx), .in1(wr1_pidx), .eq(match31));
+
 
     and2$ and_hit00(hit00, wr0_en, match00);
     and2$ and_hit10(hit10, wr0_en, match10);
     and2$ and_hit20(hit20, wr0_en, match20);
+    and2$ and_hit30(hit30, wr0_en, match30);
     and2$ and_hit01(hit01, wr1_en, match01);
     and2$ and_hit11(hit11, wr1_en, match11);
     and2$ and_hit21(hit21, wr1_en, match21);
+    and2$ and_hit31(hit31, wr1_en, match31);
 
-    wire [31:0] rd_reg0_raw, rd_reg1_raw, rd_reg2_raw;
-    mux8 mux_reg0_raw[31:0](rd_reg0_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg0_idx[0], rd_reg0_idx[1], rd0_pidx[2]);
-    mux8 mux_reg1_raw[31:0](rd_reg1_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg1_idx[0], rd_reg1_idx[1], rd1_pidx[2]);
-    mux8 mux_reg2_raw[31:0](rd_reg2_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg2_idx[0], rd_reg2_idx[1], rd2_pidx[2]);
+    wire [31:0] rd_reg0_raw, rd_reg1_raw, rd_reg2_raw, rd_reg3_raw;
+    mux8 mux_reg0_raw[31:0](rd_reg0_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd0_pidx[0], rd0_pidx[1], rd0_pidx[2]);
+    mux8 mux_reg1_raw[31:0](rd_reg1_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd1_pidx[0], rd1_pidx[1], rd1_pidx[2]);
+    mux8 mux_reg2_raw[31:0](rd_reg2_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd2_pidx[0], rd2_pidx[1], rd2_pidx[2]);
+    mux8 mux_reg3_raw[31:0](rd_reg3_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd3_pidx[0], rd3_pidx[1], rd3_pidx[2]);
 
-    wire [31:0] rd0_data, rd1_data, rd2_data;
-    mux4$ mux_reg0[31:0](rd0_data, rd_reg0_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata, hit01, hit00);
-    mux4$ mux_reg1[31:0](rd1_data, rd_reg1_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata, hit11, hit10);
-    mux4$ mux_reg2[31:0](rd2_data, rd_reg2_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata, hit21, hit20);
+    wire [31:0] rd0_data, rd1_data, rd2_data, rd3_data;
+    mux4$ mux_reg0[31:0](rd0_data, rd_reg0_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit01, hit00);
+    mux4$ mux_reg1[31:0](rd1_data, rd_reg1_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit11, hit10);
+    mux4$ mux_reg2[31:0](rd2_data, rd_reg2_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit21, hit20);
+    mux4$ mux_reg3[31:0](rd3_data, rd_reg3_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit31, hit30);
 
-    extract_read_data extract_r0(rd_reg0_data, datasize, rd_reg0_idx, rd0_data);
-    extract_read_data extract_r1(rd_reg1_data, datasize, rd_reg1_idx, rd1_data);
-    extract_read_data extract_r2(rd_reg2_data, datasize, rd_reg2_idx, rd2_data);
+    gpr_shifter extract_r0(rd_reg0_data, rd_reg0_ds, rd_reg0_idx, rd0_data);
+    gpr_shifter extract_r1(rd_reg1_data, rd_reg1_ds, rd_reg1_idx, rd1_data);
+    gpr_shifter extract_r2(rd_reg2_data, rd_reg2_ds, rd_reg2_idx, rd2_data);
+    gpr_shifter extract_r3(rd_reg3_data, rd_reg3_ds, rd_reg3_idx, rd3_data);
 
 endmodule

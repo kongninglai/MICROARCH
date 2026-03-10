@@ -42,21 +42,19 @@ regfile_mmx_bh #(
     .wr0_en(wr0_en)
 );
 
-regfile_mmx #(
-  .WIDTH(WIDTH)
-) dut (
+regfile_mmx dut(
     .clk(clk),
     .rst_n(rst_n),
 
-    .rd_reg0_idx(rd_reg0_idx),
-    .rd_reg1_idx(rd_reg1_idx),
-    .rd_reg0_data(rd_reg0_data),
-    .rd_reg1_data(rd_reg1_data),
+    .mmxrd0_idx(rd_reg0_idx),
+    .mmxrd1_idx(rd_reg1_idx),
+    .mmxrd0_data(rd_reg0_data),
+    .mmxrd1_data(rd_reg1_data),
 
-    .wr_reg0_idx(wr_reg0_idx),
-    .wr_reg0_data(wr_reg0_data),
-    .wr0_en(wr0_en)
-);
+    .mmxwr_idx(wr_reg0_idx),
+    .mmxwr_data(wr_reg0_data),
+    .mmxwr_en(wr0_en)
+); 
 
 initial begin
     clk = 0;
