@@ -30,6 +30,7 @@ HA_8b_tb                       FAILURES=0      SUCCESSES=65536
 io_addr_logic_block_tb         FAILURES=0      SUCCESSES=512   
 kb_tb                          FAILURES=0      SUCCESSES=28    
 lru_store_per_set_tb           FAILURES=0      SUCCESSES=8416  
+lru_store_tb                   FAILURES=0      SUCCESSES=1152  
 lshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
 lshf_chunks_var_128b_tb        FAILURES=0      SUCCESSES=4096  
 lshf_chunks_var_16b_tb         FAILURES=0      SUCCESSES=4096  
