@@ -37,7 +37,7 @@ localparam NUM_WAYS                   = 4;
 localparam INDEX_WIDTH                = $clog2(NUM_SETS);
 localparam WAY_WIDTH                  = $clog2(NUM_WAYS);
 localparam TAG_WIDTH                  = 8;
-localparam MASK_WIDTH                 = NUM_SETS * NUM_WAYS * RANK_BURST_SIZE;
+localparam MASK_WIDTH                 = NUM_WAYS * RANK_BURST_SIZE;
 localparam CYCLE_TIME                 = CYCLE_TIME_X10 / 10.0;
 localparam DELAY_ADJ                  = 7;
 
@@ -104,7 +104,6 @@ cc_off_core #(
     .CACHE_RD_DATA             (CACHE_RD_DATA),
     .CACHE_PHYS_ADDR           (CACHE_PHYS_ADDR),
     .CACHE_VICT_WAY            (CACHE_VICT_WAY),
-    .CC_DATA_WR_MASK_DEFAULT   (CC_DATA_WR_MASK_DEFAULT),
     .CC_STREAM_BUF_HIT         (CC_STREAM_BUF_HIT),
     .CC_FSM_FILL_BUSY          (CC_FSM_FILL_BUSY),
     .CC_WR_DATA_OUT            (CC_WR_DATA_OUT),

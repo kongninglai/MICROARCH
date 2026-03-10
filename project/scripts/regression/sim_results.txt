@@ -30,6 +30,7 @@ kb_tb                          FAILURES=0      SUCCESSES=28
 lru_store_per_set_tb           FAILURES=0      SUCCESSES=8416  
 lshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
 lshf_chunks_var_128b_tb        FAILURES=0      SUCCESSES=4096  
+lshf_chunks_var_16b_tb         FAILURES=0      SUCCESSES=4096  
 lshf_chunks_var_256b_tb        FAILURES=0      SUCCESSES=4096  
 lshf_const_tb                  FAILURES=0      SUCCESSES=4096  
 lshf_var_16b_tb                FAILURES=0      SUCCESSES=4096  

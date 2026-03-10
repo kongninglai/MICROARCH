@@ -39,12 +39,11 @@ module full_cc_off_core #(
   input     [RANK_BIT_WIDTH-1:0]                    ICACHE_RD_DATA,
   input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      ICACHE_PHYS_ADDR,
   input     [WAY_WIDTH-1:0]                         ICACHE_VICT_WAY,
-  input     [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] ICC_DATA_WR_MASK_DEFAULT,
 
   output                                            ICC_STREAM_BUF_HIT, ICC_FSM_FILL_BUSY,
   output    [RANK_BIT_WIDTH-1:0]                    ICC_WR_DATA_OUT, ICC_HIT_DATA_OUT,
   output    [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      ICC_ADDR_OUT,
-  output    [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] ICC_DATA_WR_MASK_OUT,
+  output    [NUM_WAYS*RANK_BURST_SIZE-1:0]          ICC_DATA_WR_MASK_OUT,
 
   /*** TO TAG STORE ***/
   output    [INDEX_WIDTH-1:0]                       ICC_TAG_VALID_SET_INDEX,
@@ -63,12 +62,11 @@ module full_cc_off_core #(
   input     [RANK_BIT_WIDTH-1:0]                    DCACHE_RD_DATA,
   input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      DCACHE_RD_PHYS_ADDR,
   input     [WAY_WIDTH-1:0]                         DCACHE_VICT_WAY,
-  input     [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] DCC_DATA_WR_MASK_DEFAULT,
 
   output                                            DCC_STREAM_BUF_HIT, DCC_FSM_FILL_BUSY,
   output    [RANK_BIT_WIDTH-1:0]                    DCC_WR_DATA_OUT, DCC_HIT_DATA_OUT,
   output    [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      DCC_ADDR_OUT,
-  output    [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] DCC_DATA_WR_MASK_OUT,
+  output    [NUM_WAYS*RANK_BURST_SIZE-1:0]          DCC_DATA_WR_MASK_OUT,
 
   /*** TO TAG STORE ***/
   output    [INDEX_WIDTH-1:0]                       DCC_TAG_VALID_SET_INDEX,
@@ -136,7 +134,6 @@ cache_controller icache_controller_inst (
     .CACHE_RD_DATA(ICACHE_RD_DATA),
     .CACHE_PHYS_ADDR(ICACHE_PHYS_ADDR),
     .CACHE_VICT_WAY(ICACHE_VICT_WAY),
-    .CC_DATA_WR_MASK_DEFAULT(ICC_DATA_WR_MASK_DEFAULT),
     .CC_STREAM_BUF_HIT(ICC_STREAM_BUF_HIT),
     .CC_FSM_FILL_BUSY(ICC_FSM_FILL_BUSY),
     .CC_WR_DATA_OUT(ICC_WR_DATA_OUT),
@@ -163,7 +160,6 @@ cache_controller dcache_controller_inst (
     .CACHE_RD_DATA(DCACHE_RD_DATA),
     .CACHE_PHYS_ADDR(DCACHE_RD_PHYS_ADDR),
     .CACHE_VICT_WAY(DCACHE_VICT_WAY),
-    .CC_DATA_WR_MASK_DEFAULT(DCC_DATA_WR_MASK_DEFAULT),
     .CC_STREAM_BUF_HIT(DCC_STREAM_BUF_HIT),
     .CC_FSM_FILL_BUSY(DCC_FSM_FILL_BUSY),
     .CC_WR_DATA_OUT(DCC_WR_DATA_OUT),

@@ -27,7 +27,7 @@ localparam INDEX_WIDTH                  = $clog2(NUM_SETS);
 localparam NUM_WAYS                     = 4;
 localparam WAY_WIDTH                    = $clog2(NUM_WAYS);
 localparam TAG_WIDTH                    = 8;
-localparam MASK_WIDTH                   = NUM_SETS * NUM_WAYS * RANK_BURST_SIZE;
+localparam MASK_WIDTH                   = NUM_WAYS * RANK_BURST_SIZE;
 localparam CYCLE_TIME                   = CYCLE_TIME_X10 / 10.0;
 
 reg                                     clk;
@@ -106,7 +106,6 @@ full_cc_off_core #(
   .ICACHE_RD_DATA            (ICACHE_RD_DATA),
   .ICACHE_PHYS_ADDR          (ICACHE_PHYS_ADDR),
   .ICACHE_VICT_WAY           (ICACHE_VICT_WAY),
-  .ICC_DATA_WR_MASK_DEFAULT  (ICC_DATA_WR_MASK_DEFAULT),
   .ICC_STREAM_BUF_HIT        (ICC_STREAM_BUF_HIT),
   .ICC_FSM_FILL_BUSY         (ICC_FSM_FILL_BUSY),
   .ICC_WR_DATA_OUT           (ICC_WR_DATA_OUT),
@@ -123,7 +122,6 @@ full_cc_off_core #(
   .DCACHE_RD_DATA            (DCACHE_RD_DATA),
   .DCACHE_RD_PHYS_ADDR       (DCACHE_RD_PHYS_ADDR),
   .DCACHE_VICT_WAY           (DCACHE_VICT_WAY),
-  .DCC_DATA_WR_MASK_DEFAULT  (DCC_DATA_WR_MASK_DEFAULT),
   .DCC_STREAM_BUF_HIT        (DCC_STREAM_BUF_HIT),
   .DCC_FSM_FILL_BUSY         (DCC_FSM_FILL_BUSY),
   .DCC_WR_DATA_OUT           (DCC_WR_DATA_OUT),

@@ -37,12 +37,11 @@ module cc_off_core #(
   input     [RANK_BIT_WIDTH-1:0]                    CACHE_RD_DATA,
   input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      CACHE_PHYS_ADDR,
   input     [WAY_WIDTH-1:0]                         CACHE_VICT_WAY,
-  input     [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] CC_DATA_WR_MASK_DEFAULT,
 
   output                                            CC_STREAM_BUF_HIT, CC_FSM_FILL_BUSY,
   output    [RANK_BIT_WIDTH-1:0]                    CC_WR_DATA_OUT, CC_HIT_DATA_OUT,
   output    [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      CC_ADDR_OUT,
-  output    [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] CC_DATA_WR_MASK_OUT,
+  output    [NUM_WAYS*RANK_BURST_SIZE-1:0]          CC_DATA_WR_MASK_OUT,
 
   /*** TO TAG STORE ***/
   output    [INDEX_WIDTH-1:0]                       CC_TAG_VALID_SET_INDEX,
@@ -75,7 +74,6 @@ cache_controller cache_controller_inst (
     .CACHE_RD_DATA(CACHE_RD_DATA),
     .CACHE_PHYS_ADDR(CACHE_PHYS_ADDR),
     .CACHE_VICT_WAY(CACHE_VICT_WAY),
-    .CC_DATA_WR_MASK_DEFAULT(CC_DATA_WR_MASK_DEFAULT),
     .CC_STREAM_BUF_HIT(CC_STREAM_BUF_HIT),
     .CC_FSM_FILL_BUSY(CC_FSM_FILL_BUSY),
     .CC_WR_DATA_OUT(CC_WR_DATA_OUT),

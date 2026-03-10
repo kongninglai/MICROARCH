@@ -27,12 +27,11 @@ module cache_controller #(
   input     [RANK_BIT_WIDTH-1:0]                    CACHE_RD_DATA,
   input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      CACHE_PHYS_ADDR,
   input     [WAY_WIDTH-1:0]                         CACHE_VICT_WAY,
-  input     [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] CC_DATA_WR_MASK_DEFAULT,
 
   output                                            CC_STREAM_BUF_HIT, CC_FSM_FILL_BUSY,
   output    [RANK_BIT_WIDTH-1:0]                    CC_WR_DATA_OUT, CC_HIT_DATA_OUT,
   output    [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      CC_ADDR_OUT,
-  output    [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] CC_DATA_WR_MASK_OUT,
+  output    [NUM_WAYS*RANK_BURST_SIZE-1:0]          CC_DATA_WR_MASK_OUT,
 
   /*** TO TAG STORE ***/
   output    [INDEX_WIDTH-1:0]                       CC_TAG_VALID_SET_INDEX,
@@ -133,6 +132,11 @@ assign  FSM_DATA_BUS_SHF_MUX = counter[1:0];
 
 assign  CC_FSM_VALID_WR_EN_GLOBAL = FSM_TAG_WR_MASK_MUX;
 
+
+wire  [NUM_WAYS*RANK_BURST_SIZE-1:0] CC_DATA_WR_MASK_DEFAULT;
+
+assign CC_DATA_WR_MASK_DEFAULT = {NUM_WAYS*RANK_BURST_SIZE{1'b1}};
+
 /*** DATA BUS SHIFTING LOGIC ***/
 
 wire [RANK_BIT_WIDTH-1:0]  DATA_BUS_ZEXT, DATA_BUS_SHF_01, DATA_BUS_SHF_10, DATA_BUS_SHF_11, DATA_BUS_SHF;
@@ -183,7 +187,7 @@ mux4$   mux4$_DATA_BUS_SHF[RANK_BIT_WIDTH-1:0]  (
 
 /*** REGISTERS ***/
 
-wire  [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] D0_CC_DATA_WR_MASK_OUT_01, D1_CC_DATA_WR_MASK_OUT_01, 
+wire  [NUM_WAYS*RANK_BURST_SIZE-1:0]          D0_CC_DATA_WR_MASK_OUT_01, D1_CC_DATA_WR_MASK_OUT_01, 
                                               D_CC_DATA_WR_MASK_OUT_01, D_CC_DATA_WR_MASK_OUT_11;
 wire  [NUM_WAYS-1:0]                          D_CC_TAG_WR_MASK_OUT_1;
 wire  [INDEX_WIDTH+WAY_WIDTH-1:0]             D_CC_VALID_WR_EN_1;
@@ -197,12 +201,12 @@ we_logic_block we_logic_block_inst (
   .VALID_WR_EN(D_CC_VALID_WR_EN_1)
 );
 
-wire  [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] Q_CC_DATA_WR_MASK_OUT_01, Q_CC_DATA_WR_MASK_OUT_10;
+wire  [NUM_WAYS*RANK_BURST_SIZE-1:0]          Q_CC_DATA_WR_MASK_OUT_01, Q_CC_DATA_WR_MASK_OUT_10;
 wire  [NUM_WAYS-1:0]                          Q_CC_TAG_WR_MASK_OUT_1;
 wire  [INDEX_WIDTH+WAY_WIDTH-1:0]             Q_CC_VALID_WR_EN_1;
 
 lshf_const #(
-  .WIDTH(NUM_SETS*NUM_WAYS*RANK_BURST_SIZE),
+  .WIDTH(NUM_WAYS*RANK_BURST_SIZE),
   .SHF_AMT(1),
   .SHF_ONES(1)
 ) lshf_const_D1_CC_DATA_WR_MASK_OUT_01 (
@@ -210,7 +214,7 @@ lshf_const #(
   .out(D1_CC_DATA_WR_MASK_OUT_01)
 );
 
-mux2$   mux2$_D_CC_DATA_WR_MASK_OUT_01[NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0](
+mux2$   mux2$_D_CC_DATA_WR_MASK_OUT_01[NUM_WAYS*RANK_BURST_SIZE-1:0](
                                                                                 D_CC_DATA_WR_MASK_OUT_01,
                                                                                 D0_CC_DATA_WR_MASK_OUT_01,
                                                                                 D1_CC_DATA_WR_MASK_OUT_01,
@@ -224,22 +228,22 @@ or2$    or2$_LD_CC_DATA_WR_MASK_OUT_01(LD_CC_DATA_WR_MASK_OUT_01,
                                         FSM_LD_REGS);
 
 reg_n #(
-  .WIDTH(NUM_SETS*NUM_WAYS*RANK_BURST_SIZE),
+  .WIDTH(NUM_WAYS*RANK_BURST_SIZE),
   .USE_EN_BAR(0),
   .RESET_TO_ONES(1)
 ) reg_n_Q_CC_DATA_WR_MASK_OUT_01 (
   .clk(clk), .rst(rst),
-  .en({NUM_SETS*NUM_WAYS*RANK_BURST_SIZE{LD_CC_DATA_WR_MASK_OUT_01}}), .d(D_CC_DATA_WR_MASK_OUT_01),
+  .en({NUM_WAYS*RANK_BURST_SIZE{LD_CC_DATA_WR_MASK_OUT_01}}), .d(D_CC_DATA_WR_MASK_OUT_01),
   .q(Q_CC_DATA_WR_MASK_OUT_01)
 );
 
 reg_n #(
-  .WIDTH(NUM_SETS*NUM_WAYS*RANK_BURST_SIZE),
+  .WIDTH(NUM_WAYS*RANK_BURST_SIZE),
   .USE_EN_BAR(0),
   .RESET_TO_ONES(1)
 ) reg_n_Q_CC_DATA_WR_MASK_OUT_10 (
   .clk(clk), .rst(rst),
-  .en({NUM_SETS*NUM_WAYS*RANK_BURST_SIZE{FSM_LD_REGS}}), .d(D_CC_DATA_WR_MASK_OUT_11),
+  .en({NUM_WAYS*RANK_BURST_SIZE{FSM_LD_REGS}}), .d(D_CC_DATA_WR_MASK_OUT_11),
   .q(Q_CC_DATA_WR_MASK_OUT_10)
 );
 
@@ -359,7 +363,7 @@ mux2$   mux2$_CC_HIT_DATA_OUT[RANK_BIT_WIDTH-1:0]          (
                                                               FSM_HIT_DATA_MUX
                                                             );
 
-mux4$   mux4$_CC_DATA_WR_MASK_OUT[NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0]
+mux4$   mux4$_CC_DATA_WR_MASK_OUT[NUM_WAYS*RANK_BURST_SIZE-1:0]
                                                             (
                                                               CC_DATA_WR_MASK_OUT,
 

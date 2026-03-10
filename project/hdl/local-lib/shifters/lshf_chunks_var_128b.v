@@ -1,3 +1,5 @@
+// Designed to shift a 128b wire in 4b chunks
+
 module lshf_chunks_var_128b #(
   parameter WIDTH = 128,
   parameter SHF_ZEROS = 0
@@ -7,7 +9,7 @@ module lshf_chunks_var_128b #(
   output [127:0] out
 );
 
-wire [127:0] lshf_out [127:1];
+wire [127:0] lshf_out [31:1];
 
 wire  [4:0] shf_amt_buf1024;
 

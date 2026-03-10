@@ -15,18 +15,18 @@ localparam NUM_WAYS        = 4;
 localparam WAY_WIDTH       = $clog2(NUM_WAYS);
 localparam CYCLE_TIME      = 10.0;
 
-reg  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      CACHE_PHYS_ADDR;
-reg  [WAY_WIDTH-1:0]                         CACHE_VICT_WAY;
+reg  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] CACHE_PHYS_ADDR;
+reg  [WAY_WIDTH-1:0]                    CACHE_VICT_WAY;
 
-wire [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] DATA_WR_MASK_OUT;
-wire [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] SB_DATA_WR_MASK_OUT;
-wire [NUM_WAYS-1:0]                          TAG_WR_MASK_OUT;
-wire [INDEX_WIDTH+WAY_WIDTH-1:0]             VALID_WR_EN;
+wire [NUM_WAYS*RANK_BURST_SIZE-1:0] DATA_WR_MASK_OUT;
+wire [NUM_WAYS*RANK_BURST_SIZE-1:0] SB_DATA_WR_MASK_OUT;
+wire [NUM_WAYS-1:0]                 TAG_WR_MASK_OUT;
+wire [INDEX_WIDTH+WAY_WIDTH-1:0]    VALID_WR_EN;
 
-wire [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] DATA_WR_MASK_OUT_EXP;
-wire [NUM_SETS*NUM_WAYS*RANK_BURST_SIZE-1:0] SB_DATA_WR_MASK_OUT_EXP;
-wire [NUM_WAYS-1:0]                          TAG_WR_MASK_OUT_EXP;
-wire [INDEX_WIDTH+WAY_WIDTH-1:0]             VALID_WR_EN_EXP;
+wire [NUM_WAYS*RANK_BURST_SIZE-1:0] DATA_WR_MASK_OUT_EXP;
+wire [NUM_WAYS*RANK_BURST_SIZE-1:0] SB_DATA_WR_MASK_OUT_EXP;
+wire [NUM_WAYS-1:0]                 TAG_WR_MASK_OUT_EXP;
+wire [INDEX_WIDTH+WAY_WIDTH-1:0]    VALID_WR_EN_EXP;
 
 we_logic_block #(
   .RANK_BIT_WIDTH(RANK_BIT_WIDTH),
@@ -69,12 +69,17 @@ begin
       (SB_DATA_WR_MASK_OUT !== SB_DATA_WR_MASK_OUT_EXP) ||
       (TAG_WR_MASK_OUT !== TAG_WR_MASK_OUT_EXP) ||
       (VALID_WR_EN !== VALID_WR_EN_EXP)) begin
+
     FAILURES = FAILURES + 1;
+
     $display("FAILURE AT TIME %t", $time);
     $display("  CACHE_PHYS_ADDR = %h", CACHE_PHYS_ADDR);
     $display("  CACHE_VICT_WAY  = %h", CACHE_VICT_WAY);
     $display("  DATA_WR GOT = %h, EXP = %h", DATA_WR_MASK_OUT, DATA_WR_MASK_OUT_EXP);
-    $display("  TAG_WR  GOT = %h, EXP = %h\n", TAG_WR_MASK_OUT, TAG_WR_MASK_OUT_EXP);
+    $display("  SB_DATA GOT = %h, EXP = %h", SB_DATA_WR_MASK_OUT, SB_DATA_WR_MASK_OUT_EXP);
+    $display("  TAG_WR  GOT = %h, EXP = %h", TAG_WR_MASK_OUT, TAG_WR_MASK_OUT_EXP);
+    $display("  VALID   GOT = %h, EXP = %h\n", VALID_WR_EN, VALID_WR_EN_EXP);
+
   end else begin
     SUCCESSES = SUCCESSES + 1;
   end
