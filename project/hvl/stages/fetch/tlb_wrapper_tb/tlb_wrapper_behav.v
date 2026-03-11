@@ -33,8 +33,14 @@ module tlb_wrapper_behav #(
   output      [PFN_BIT_WIDTH-1:0] D_WR_TLB_PFN_OUT,
   output                          D_WR_TLB_WRITE_DISABLE_OUT,
                                   D_WR_TLB_CACHE_ENABLE_OUT,
-                                  D_WR_TLB_PAGE_FAULT_OUT
+                                  D_WR_TLB_PAGE_FAULT_OUT,
+
+  output      [PFN_BIT_WIDTH-1:0] KB_PFN,
+                                  DMA_PFN
 );
+
+assign DMA_PFN = itlb.TLB_ENTRIES_BEHAV[6][6:4];
+assign KB_PFN = itlb.TLB_ENTRIES_BEHAV[7][6:4];
 
 tlb_behav itlb (
   .TLB_VPN(ITLB_VPN),

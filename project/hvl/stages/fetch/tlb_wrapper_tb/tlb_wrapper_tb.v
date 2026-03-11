@@ -3,9 +3,6 @@ module tlb_wrapper_tb;
 initial begin
   $vcdplusfile("tlb_wrapper_tb.dump.vpd");
   $vcdpluson(0, tlb_wrapper_tb);
-  $vcdpluson(0, tlb_wrapper_tb.DUT.itlb.TLB_ENTRIES_BEHAV);
-  $vcdpluson(0, tlb_wrapper_tb.DUT.drdtlb.TLB_ENTRIES_BEHAV);
-  $vcdpluson(0, tlb_wrapper_tb.DUT.dwrtlb.TLB_ENTRIES_BEHAV);
   $vcdpluson(0, tlb_wrapper_tb.REF.itlb.TLB_ENTRIES_BEHAV);
   $vcdpluson(0, tlb_wrapper_tb.REF.drdtlb.TLB_ENTRIES_BEHAV);
   $vcdpluson(0, tlb_wrapper_tb.REF.dwrtlb.TLB_ENTRIES_BEHAV);
@@ -33,6 +30,7 @@ wire D_RD_TLB_WRITE_DISABLE_OUT_BEHAV, D_RD_TLB_CACHE_ENABLE_OUT_BEHAV, D_RD_TLB
 wire [PFN_BIT_WIDTH-1:0]  D_WR_TLB_PFN_OUT, D_WR_TLB_PFN_OUT_BEHAV;
 wire D_WR_TLB_WRITE_DISABLE_OUT, D_WR_TLB_CACHE_ENABLE_OUT, D_WR_TLB_PAGE_FAULT_OUT;
 wire D_WR_TLB_WRITE_DISABLE_OUT_BEHAV, D_WR_TLB_CACHE_ENABLE_OUT_BEHAV, D_WR_TLB_PAGE_FAULT_OUT_BEHAV;
+wire [PFN_BIT_WIDTH-1:0]  DMA_PFN, DMA_PFN_BEHAV, KB_PFN, KB_PFN_BEHAV;
 
 tlb_wrapper DUT (
   .ITLB_VPN(ITLB_VPN),
@@ -51,7 +49,10 @@ tlb_wrapper DUT (
   .D_WR_TLB_PFN_OUT(D_WR_TLB_PFN_OUT),
   .D_WR_TLB_WRITE_DISABLE_OUT(D_WR_TLB_WRITE_DISABLE_OUT),
   .D_WR_TLB_CACHE_ENABLE_OUT(D_WR_TLB_CACHE_ENABLE_OUT),
-  .D_WR_TLB_PAGE_FAULT_OUT(D_WR_TLB_PAGE_FAULT_OUT)
+  .D_WR_TLB_PAGE_FAULT_OUT(D_WR_TLB_PAGE_FAULT_OUT),
+
+  .DMA_PFN(DMA_PFN),
+  .KB_PFN(KB_PFN)
 );
 
 tlb_wrapper_behav REF (
@@ -71,7 +72,10 @@ tlb_wrapper_behav REF (
   .D_WR_TLB_PFN_OUT(D_WR_TLB_PFN_OUT_BEHAV),
   .D_WR_TLB_WRITE_DISABLE_OUT(D_WR_TLB_WRITE_DISABLE_OUT_BEHAV),
   .D_WR_TLB_CACHE_ENABLE_OUT(D_WR_TLB_CACHE_ENABLE_OUT_BEHAV),
-  .D_WR_TLB_PAGE_FAULT_OUT(D_WR_TLB_PAGE_FAULT_OUT_BEHAV)
+  .D_WR_TLB_PAGE_FAULT_OUT(D_WR_TLB_PAGE_FAULT_OUT_BEHAV),
+
+  .DMA_PFN(DMA_PFN_BEHAV),
+  .KB_PFN(KB_PFN_BEHAV)
 );
 
 integer FAILURES  = 0;
@@ -92,13 +96,18 @@ begin
       D_WR_TLB_PFN_OUT           !== D_WR_TLB_PFN_OUT_BEHAV           ||
       D_WR_TLB_WRITE_DISABLE_OUT !== D_WR_TLB_WRITE_DISABLE_OUT_BEHAV ||
       D_WR_TLB_CACHE_ENABLE_OUT  !== D_WR_TLB_CACHE_ENABLE_OUT_BEHAV  ||
-      D_WR_TLB_PAGE_FAULT_OUT    !== D_WR_TLB_PAGE_FAULT_OUT_BEHAV) begin
+      D_WR_TLB_PAGE_FAULT_OUT    !== D_WR_TLB_PAGE_FAULT_OUT_BEHAV    ||
+      
+      DMA_PFN                    !== DMA_PFN_BEHAV                    ||
+      KB_PFN                     !== KB_PFN_BEHAV)                    begin
 
     FAILURES = FAILURES + 1;
     $display("FAILURE AT TIME %t", $time);
     $display("ITLB VPN=%h PFN %h vs %h", ITLB_VPN, ITLB_PFN_OUT, ITLB_PFN_OUT_BEHAV);
     $display("DRD VPN=%h PFN %h vs %h", D_RD_TLB_VPN, D_RD_TLB_PFN_OUT, D_RD_TLB_PFN_OUT_BEHAV);
     $display("DWR VPN=%h PFN %h vs %h\n", D_WR_TLB_VPN, D_WR_TLB_PFN_OUT, D_WR_TLB_PFN_OUT_BEHAV);
+    $display("DMA PFN %h vs %h\n", DMA_PFN, DMA_PFN_BEHAV);
+    $display("KB PFN %h vs %h\n", KB_PFN, KB_PFN_BEHAV);
 
   end else begin
     SUCCESSES = SUCCESSES + 1;

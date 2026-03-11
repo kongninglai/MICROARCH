@@ -126,6 +126,9 @@ initial begin
   end
 end
 
+integer FAILURES = 0;
+integer SUCCESSES = 0;
+
 
 initial begin
 
@@ -181,6 +184,9 @@ initial begin
 
   F_PAGE_OFFSET = 1 << 7;
   #(20 * CYCLE_TIME);
+  
+  $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
 
   $finish;

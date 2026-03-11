@@ -5,6 +5,7 @@ big_eq_tb                      FAILURES=0      SUCCESSES=264
 big_increment_tb               FAILURES=0      SUCCESSES=4097  
 big_neq_tb                     FAILURES=0      SUCCESSES=264   
 big_or_tb                      FAILURES=0      SUCCESSES=4096  
+bit_duplicator_tb              FAILURES=0      SUCCESSES=66560 
 cache_controller_tb            FAILURES=0      SUCCESSES=90112 
 cc_off_core_tb                 FAILURES=0      SUCCESSES=30720 
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
@@ -19,6 +20,7 @@ encoder4_2_tb                  FAILURES=0      SUCCESSES=5
 FA_16b_tb                      FAILURES=0      SUCCESSES=4096  
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
+full_cache_tb                  FAILURES=0      SUCCESSES=0     
 full_cc_off_core_tb            FAILURES=0      SUCCESSES=32063 
 gen_prop_2_tb                  FAILURES=0      SUCCESSES=16    
 gen_prop_tb                    FAILURES=0      SUCCESSES=4     
@@ -61,6 +63,7 @@ stream_buffer_tb               FAILURES=0      SUCCESSES=4130
 tag_hit_logic_tb               FAILURES=0      SUCCESSES=5200  
 tag_store_tb                   FAILURES=0      SUCCESSES=160   
 tlb_tb                         FAILURES=0      SUCCESSES=65538 
+tlb_wrapper_tb                 FAILURES=0      SUCCESSES=65794 
 valid_or_dirty_store_tb        FAILURES=0      SUCCESSES=1056  
 we_logic_block_tb              FAILURES=0      SUCCESSES=132   
 xor3LL_tb                      FAILURES=0      SUCCESSES=8     

@@ -79,177 +79,6 @@ module full_cache #(
                                                           TEST_CASE_NEW_READY_WR  
 );
 
-/************************************************************/
-/********************* INSTRUCTION CACHE ********************/
-/************************************************************/
-
-/*** BETWEEN CACHE CONTROLLER & ICACHE ***/                 
-wire                                                   ICACHE_MISS;
-wire     [RANK_BIT_WIDTH-1:0]                          ICACHE_RD_DATA;
-wire     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]            ICACHE_PHYS_ADDR;
-wire     [WAY_WIDTH-1:0]                               ICACHE_VICT_WAY;     
-wire                                                   ICC_STREAM_BUF_HIT, ICC_FSM_FILL_BUSY;
-wire     [RANK_BIT_WIDTH-1:0]                          ICC_WR_DATA_OUT, ICC_HIT_DATA_OUT;
-wire     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]            ICC_ADDR_OUT;
-wire     [NUM_WAYS*RANK_BURST_SIZE-1:0]                ICC_DATA_WR_MASK_OUT;
-
-/*** TO TAG STORE ***/
-wire     [NUM_WAYS-1:0]                                ICC_TAG_WR_MASK_OUT;
-wire     [TAG_WIDTH-1:0]                               ICC_TAG_IN;
-
-/*** TO VALID STORE ***/
-wire                                                   ICC_VALID_SET_OR_CLR;
-wire     [INDEX_WIDTH+WAY_WIDTH-1:0]                   ICC_VALID_WR_EN;
-wire                                                   ICC_FSM_VALID_WR_EN_GLOBAL;
-
-/************************************************************/
-/************************ EASY  ONES ************************/
-/************************************************************/
-
-assign ICACHE_PHYS_ADDR = {ITLB_PFN_OUT, F_PAGE_OFFSET[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]};
-assign ICACHE_HIT_DATA = ICC_HIT_DATA_OUT;
-
-/************************************************************/
-/************************ DATA STORE ************************/
-/************************************************************/
-
-wire [NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0]  icache_wr_en_bar_one_hot, icache_wr_en_bar_one_hot_gated;
-
-bit_duplicator bit_duplicator_icache_wr_en_bar_one_hot(
-  .in(ICC_DATA_WR_MASK_OUT),
-  .out(icache_wr_en_bar_one_hot)
-);
-
-wire  [NUM_WAYS*RANK_BIT_WIDTH-1:0]   ICACHE_RD_DATA_ALL_WAYS;
-
-wire  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  ICC_ADDR_OUT_buf64;
-
-bufferH64$    bufferH64$_ICC_ADDR_OUT_buf64[MEM_ADDR_WIDTH-1:RANK_BURST_SIZE](ICC_ADDR_OUT_buf64, ICC_ADDR_OUT);
-
-or2$    or2$_icache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](icache_wr_en_bar_one_hot_gated, icache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}});
-
-data_store icache_data_store (
-  .set_index(ICC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
-  .wr_en_bar_one_hot(icache_wr_en_bar_one_hot_gated),
-  .data_in(ICC_WR_DATA_OUT),
-
-  .data_out(ICACHE_RD_DATA_ALL_WAYS)
-);
-
-/************************************************************/
-/************************ TAG  STORE ************************/
-/************************************************************/
-
-wire [NUM_WAYS-1:0] ICACHE_VALID_OUT;
-
-wire  [NUM_WAYS*TAG_WIDTH-1:0]        ICACHE_TAG_OUT_ALL_WAYS;
-
-wire     [NUM_WAYS-1:0]                                ICC_TAG_WR_MASK_OUT_gated;
-
-or2$    or2$_ICC_TAG_WR_MASK_OUT_gated[NUM_WAYS-1:0](ICC_TAG_WR_MASK_OUT_gated, ICC_TAG_WR_MASK_OUT, {(NUM_WAYS){clk}});
-
-tag_store icache_tag_store (
-  .set_index(ICC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
-  .wr_en_bar_one_hot(ICC_TAG_WR_MASK_OUT_gated),
-  .tag_in(ICC_TAG_IN),
-
-  .tag_out(ICACHE_TAG_OUT_ALL_WAYS)
-);
-
-wire    [NUM_WAYS-1:0]    ICACHE_TAG_HIT;
-
-wire    [WAY_WIDTH-1:0]   ICACHE_TAG_HIT_WAY, ICACHE_TAG_HIT_WAY_buf64;
-
-bufferH64$    bufferH64$_ICACHE_TAG_HIT_WAY_buf64[WAY_WIDTH-1:0](ICACHE_TAG_HIT_WAY_buf64, ICACHE_TAG_HIT_WAY);
-
-tag_hit_logic tag_hit_logic_ICACHE_TAG_HIT (
-  .tag_store_out(ICACHE_TAG_OUT_ALL_WAYS),
-  .tag_compare_val(ICC_ADDR_OUT_buf64[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7]),
-  .cache_valid_out(ICACHE_VALID_OUT),
-
-  .tag_hit(ICACHE_TAG_HIT),
-  .tag_hit_way(ICACHE_TAG_HIT_WAY)
-);
-
-genvar j;
-generate
-  for (j = 0; j < 8; j = j + 1) begin : MUX16_16b_GEN
-    mux4_16$ mux4_16_ICACHE_RD_DATA (
-      .IN0 (ICACHE_RD_DATA_ALL_WAYS[(0*RANK_BIT_WIDTH+j*16) +: 16]),
-      .IN1 (ICACHE_RD_DATA_ALL_WAYS[(1*RANK_BIT_WIDTH+j*16) +: 16]),
-      .IN2 (ICACHE_RD_DATA_ALL_WAYS[(2*RANK_BIT_WIDTH+j*16) +: 16]),
-      .IN3 (ICACHE_RD_DATA_ALL_WAYS[(3*RANK_BIT_WIDTH+j*16) +: 16]),
-      .S0(ICACHE_TAG_HIT_WAY_buf64[0]),
-      .S1(ICACHE_TAG_HIT_WAY_buf64[1]),
-      .Y(ICACHE_RD_DATA[j*16 +: 16])
-    );
-  end
-endgenerate
-
-/************************************************************/
-/************************ LRU  STORE ************************/
-/************************************************************/
-
-wire    ICACHE_HIT;
-
-lru_store lru_store_ICACHE_VICT_WAY (
-  .rst(rst),
-  .clk(clk),
-  .TAG_HIT_WAY(ICACHE_TAG_HIT_WAY_buf64),
-  .CACHE_HIT(ICACHE_HIT),
-  .CC_ADDR_OUT(ICC_ADDR_OUT_buf64),
-
-  .VICT_WAY(ICACHE_VICT_WAY)
-);
-
-/************************************************************/
-/*********************** VALID  STORE ***********************/
-/************************************************************/
-
-valid_or_dirty_store icache_valid_store (
-  .clk(clk), .rst(rst),
-  .set_index(ICC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
-  .set_or_clr(ICC_VALID_SET_OR_CLR),
-  .wr_en(ICC_VALID_WR_EN),
-  .wr_en_global(ICC_FSM_VALID_WR_EN_GLOBAL),
-
-  .out(ICACHE_VALID_OUT)
-);
-
-wire  [NUM_WAYS-1:0]  ICACHE_HIT_ALL_WAYS;
-
-generate 
-  for (j = 0; j < NUM_WAYS; j = j + 1) begin : VALID_AND_TAG_HIT_GEN
-    and2$   and2$_ICACHE_HIT_ALL_WAYS(ICACHE_HIT_ALL_WAYS[j], ICACHE_TAG_HIT[j], ICACHE_VALID_OUT[j]);
-  end
-endgenerate
-
-mux4$   mux4$_ICACHE_HIT( ICACHE_HIT, 
-                          ICACHE_HIT_ALL_WAYS[0], ICACHE_HIT_ALL_WAYS[1], ICACHE_HIT_ALL_WAYS[2], ICACHE_HIT_ALL_WAYS[3],
-                          ICACHE_TAG_HIT_WAY_buf64[0], ICACHE_TAG_HIT_WAY_buf64[1]);
-
-inv1$   inv1$_ICACHE_MISS(ICACHE_MISS, ICACHE_HIT);
-
-/************************************************************/
-/********************** ICACHE OUTPUTS **********************/
-/************************************************************/
-
-assign ICACHE_EXCEPTION = {1'b0, ITLB_PAGE_FAULT_OUT};
-
-wire ICACHE_GENERAL_MISS;
-nor2$     nor2$_ICACHE_GENERAL_MISS(ICACHE_GENERAL_MISS, ICACHE_HIT, ICC_STREAM_BUF_HIT);
-
-nor3$     nor3$_ICACHE_VALID(ICACHE_VALID, ICACHE_GENERAL_MISS, ICACHE_EXCEPTION[0], ICC_FSM_FILL_BUSY);
-
-
-
-
-
-
-
-
-
-
 
 /************************************************************/
 /************************************************************/
@@ -424,6 +253,183 @@ wire DCACHE_GENERAL_MISS;
 nor2$     nor2$_DCACHE_GENERAL_MISS(DCACHE_GENERAL_MISS, DCACHE_HIT, DCC_STREAM_BUF_HIT);
 
 nor3$     nor3$_DCACHE_VALID(DCACHE_VALID, DCACHE_GENERAL_MISS, DCACHE_EXCEPTION[0], DCC_FSM_FILL_BUSY);
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************/
+/********************* INSTRUCTION CACHE ********************/
+/************************************************************/
+
+/*** BETWEEN CACHE CONTROLLER & ICACHE ***/                 
+wire                                                   ICACHE_MISS;
+wire     [RANK_BIT_WIDTH-1:0]                          ICACHE_RD_DATA;
+wire     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]            ICACHE_PHYS_ADDR;
+wire     [WAY_WIDTH-1:0]                               ICACHE_VICT_WAY;     
+wire                                                   ICC_STREAM_BUF_HIT, ICC_FSM_FILL_BUSY;
+wire     [RANK_BIT_WIDTH-1:0]                          ICC_WR_DATA_OUT, ICC_HIT_DATA_OUT;
+wire     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]            ICC_ADDR_OUT;
+wire     [NUM_WAYS*RANK_BURST_SIZE-1:0]                ICC_DATA_WR_MASK_OUT;
+
+/*** TO TAG STORE ***/
+wire     [NUM_WAYS-1:0]                                ICC_TAG_WR_MASK_OUT;
+wire     [TAG_WIDTH-1:0]                               ICC_TAG_IN;
+
+/*** TO VALID STORE ***/
+wire                                                   ICC_VALID_SET_OR_CLR;
+wire     [INDEX_WIDTH+WAY_WIDTH-1:0]                   ICC_VALID_WR_EN;
+wire                                                   ICC_FSM_VALID_WR_EN_GLOBAL;
+
+/************************************************************/
+/************************ EASY  ONES ************************/
+/************************************************************/
+
+assign ICACHE_PHYS_ADDR = {ITLB_PFN_OUT, F_PAGE_OFFSET[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]};
+assign ICACHE_HIT_DATA = ICC_HIT_DATA_OUT;
+
+/************************************************************/
+/************************ DATA STORE ************************/
+/************************************************************/
+
+wire [NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0]  icache_wr_en_bar_one_hot, icache_wr_en_bar_one_hot_gated;
+
+bit_duplicator bit_duplicator_icache_wr_en_bar_one_hot(
+  .in(ICC_DATA_WR_MASK_OUT),
+  .out(icache_wr_en_bar_one_hot)
+);
+
+wire  [NUM_WAYS*RANK_BIT_WIDTH-1:0]   ICACHE_RD_DATA_ALL_WAYS;
+
+wire  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  ICC_ADDR_OUT_buf64;
+
+bufferH64$    bufferH64$_ICC_ADDR_OUT_buf64[MEM_ADDR_WIDTH-1:RANK_BURST_SIZE](ICC_ADDR_OUT_buf64, ICC_ADDR_OUT);
+
+or2$    or2$_icache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](icache_wr_en_bar_one_hot_gated, icache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}});
+
+data_store icache_data_store (
+  .set_index(ICC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
+  .wr_en_bar_one_hot(icache_wr_en_bar_one_hot_gated),
+  .data_in(ICC_WR_DATA_OUT),
+
+  .data_out(ICACHE_RD_DATA_ALL_WAYS)
+);
+
+/************************************************************/
+/************************ TAG  STORE ************************/
+/************************************************************/
+
+wire [NUM_WAYS-1:0] ICACHE_VALID_OUT;
+
+wire  [NUM_WAYS*TAG_WIDTH-1:0]        ICACHE_TAG_OUT_ALL_WAYS;
+
+wire     [NUM_WAYS-1:0]                                ICC_TAG_WR_MASK_OUT_gated;
+
+or2$    or2$_ICC_TAG_WR_MASK_OUT_gated[NUM_WAYS-1:0](ICC_TAG_WR_MASK_OUT_gated, ICC_TAG_WR_MASK_OUT, {(NUM_WAYS){clk}});
+
+tag_store icache_tag_store (
+  .set_index(ICC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
+  .wr_en_bar_one_hot(ICC_TAG_WR_MASK_OUT_gated),
+  .tag_in(ICC_TAG_IN),
+
+  .tag_out(ICACHE_TAG_OUT_ALL_WAYS)
+);
+
+wire    [NUM_WAYS-1:0]    ICACHE_TAG_HIT;
+
+wire    [WAY_WIDTH-1:0]   ICACHE_TAG_HIT_WAY, ICACHE_TAG_HIT_WAY_buf64;
+
+bufferH64$    bufferH64$_ICACHE_TAG_HIT_WAY_buf64[WAY_WIDTH-1:0](ICACHE_TAG_HIT_WAY_buf64, ICACHE_TAG_HIT_WAY);
+
+tag_hit_logic tag_hit_logic_ICACHE_TAG_HIT (
+  .tag_store_out(ICACHE_TAG_OUT_ALL_WAYS),
+  .tag_compare_val(ICC_ADDR_OUT_buf64[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7]),
+  .cache_valid_out(ICACHE_VALID_OUT),
+
+  .tag_hit(ICACHE_TAG_HIT),
+  .tag_hit_way(ICACHE_TAG_HIT_WAY)
+);
+
+genvar j;
+generate
+  for (j = 0; j < 8; j = j + 1) begin : MUX16_16b_GEN
+    mux4_16$ mux4_16_ICACHE_RD_DATA (
+      .IN0 (ICACHE_RD_DATA_ALL_WAYS[(0*RANK_BIT_WIDTH+j*16) +: 16]),
+      .IN1 (ICACHE_RD_DATA_ALL_WAYS[(1*RANK_BIT_WIDTH+j*16) +: 16]),
+      .IN2 (ICACHE_RD_DATA_ALL_WAYS[(2*RANK_BIT_WIDTH+j*16) +: 16]),
+      .IN3 (ICACHE_RD_DATA_ALL_WAYS[(3*RANK_BIT_WIDTH+j*16) +: 16]),
+      .S0(ICACHE_TAG_HIT_WAY_buf64[0]),
+      .S1(ICACHE_TAG_HIT_WAY_buf64[1]),
+      .Y(ICACHE_RD_DATA[j*16 +: 16])
+    );
+  end
+endgenerate
+
+/************************************************************/
+/************************ LRU  STORE ************************/
+/************************************************************/
+
+wire    ICACHE_HIT;
+
+lru_store lru_store_ICACHE_VICT_WAY (
+  .rst(rst),
+  .clk(clk),
+  .TAG_HIT_WAY(ICACHE_TAG_HIT_WAY_buf64),
+  .CACHE_HIT(ICACHE_HIT),
+  .CC_ADDR_OUT(ICC_ADDR_OUT_buf64),
+
+  .VICT_WAY(ICACHE_VICT_WAY)
+);
+
+/************************************************************/
+/*********************** VALID  STORE ***********************/
+/************************************************************/
+
+valid_or_dirty_store icache_valid_store (
+  .clk(clk), .rst(rst),
+  .set_index(ICC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
+  .set_or_clr(ICC_VALID_SET_OR_CLR),
+  .wr_en(ICC_VALID_WR_EN),
+  .wr_en_global(ICC_FSM_VALID_WR_EN_GLOBAL),
+
+  .out(ICACHE_VALID_OUT)
+);
+
+wire  [NUM_WAYS-1:0]  ICACHE_HIT_ALL_WAYS;
+
+generate 
+  for (j = 0; j < NUM_WAYS; j = j + 1) begin : VALID_AND_TAG_HIT_GEN
+    and2$   and2$_ICACHE_HIT_ALL_WAYS(ICACHE_HIT_ALL_WAYS[j], ICACHE_TAG_HIT[j], ICACHE_VALID_OUT[j]);
+  end
+endgenerate
+
+mux4$   mux4$_ICACHE_HIT( ICACHE_HIT, 
+                          ICACHE_HIT_ALL_WAYS[0], ICACHE_HIT_ALL_WAYS[1], ICACHE_HIT_ALL_WAYS[2], ICACHE_HIT_ALL_WAYS[3],
+                          ICACHE_TAG_HIT_WAY_buf64[0], ICACHE_TAG_HIT_WAY_buf64[1]);
+
+inv1$   inv1$_ICACHE_MISS(ICACHE_MISS, ICACHE_HIT);
+
+/************************************************************/
+/********************** ICACHE OUTPUTS **********************/
+/************************************************************/
+
+assign ICACHE_EXCEPTION = {1'b0, ITLB_PAGE_FAULT_OUT};
+
+wire ICACHE_GENERAL_MISS;
+nor2$     nor2$_ICACHE_GENERAL_MISS(ICACHE_GENERAL_MISS, ICACHE_HIT, ICC_STREAM_BUF_HIT);
+
+nor3$     nor3$_ICACHE_VALID(ICACHE_VALID, ICACHE_GENERAL_MISS, ICACHE_EXCEPTION[0], ICC_FSM_FILL_BUSY);
+
+
+
+
+
 
 
 
