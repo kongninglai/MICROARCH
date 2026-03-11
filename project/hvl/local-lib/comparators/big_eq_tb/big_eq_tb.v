@@ -5,7 +5,7 @@ initial begin
   $vcdpluson(0, big_eq_tb); 
 end
 
-localparam WIDTH = 8;
+localparam WIDTH = 32;
 
 reg   [WIDTH-1:0]   in0, in1;
 wire                out, out_exp;
@@ -40,7 +40,10 @@ initial begin
   in0 = {WIDTH{1'b1}}; in1 = {WIDTH{1'b1}} >> 16; #40; check(out, out_exp);
   in0 = {WIDTH{1'b1}}; in1 = {WIDTH{1'b1}} >> 24; #40; check(out, out_exp);
   in0 = 0; in1 = {WIDTH{1'b1}}; #40; check(out, out_exp);
-  in0 = 0; in1 = 1;
+  in0 = 0; in1 = 1; #40; check(out, out_exp);
+  in0 = 0; in1 = {WIDTH{1'b1}}; #40; check(out, out_exp);
+  in0 = 0; in1 = 0; #40; check(out, out_exp);
+  in0 = 0; in1 = 1; 
   repeat (1 << 8) begin
     #40;
     check(out, out_exp);

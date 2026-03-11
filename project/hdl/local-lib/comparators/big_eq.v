@@ -435,29 +435,29 @@ generate
       assign eq = and_0_0_out;
     end
     32: begin
-      wire and_0_0_out;
-      wire and_0_1_out;
-      wire and_0_2_out;
-      wire and_0_3_out;
-      wire and_0_4_out;
-      wire and_0_5_out;
-      wire and_0_6_out;
-      wire and_0_7_out;
-      wire and_0_8_out;
-      wire and_0_9_out;
-      wire and_0_10_out;
-      and4$ and_0_0(and_0_0_out,and_0_1_out,and_0_2_out,and_0_3_out,and_0_4_out);
-      and4$ and_0_1(and_0_1_out,in[0],in[1],in[2],in[3]);
-      and4$ and_0_2(and_0_2_out,in[4],in[5],in[6],in[7]);
-      and4$ and_0_3(and_0_3_out,in[8],in[9],in[10],in[11]);
-      and4$ and_0_4(and_0_4_out,in[12],in[13],in[14],and_0_5_out);
-      and4$ and_0_5(and_0_5_out,and_0_6_out,and_0_7_out,and_0_8_out,and_0_9_out);
-      and4$ and_0_6(and_0_6_out,in[15],in[16],in[17],in[18]);
-      and4$ and_0_7(and_0_7_out,in[19],in[20],in[21],in[22]);
-      and4$ and_0_8(and_0_8_out,in[23],in[24],in[25],in[26]);
-      and4$ and_0_9(and_0_9_out,in[27],in[28],in[29],and_0_10_out);
-      and2$ and_0_10(and_0_10_out,in[30],in[31]);
-      assign eq = and_0_0_out;
+      // Optimized for 32-bit compares
+      wire nor_0_0_out;
+      wire nor_0_1_out;
+      wire nand_0_0_out;
+      wire nand_0_1_out;
+      wire nand_0_2_out;
+      wire nand_0_3_out;
+      wire nand_0_4_out;
+      wire nand_0_5_out;
+      wire nand_0_6_out;
+      wire nand_0_7_out;
+
+      and2$   and_eq(eq, nor_0_0_out, nor_0_1_out);
+      nor4$   nor_0_0(nor_0_0_out,nand_0_0_out,nand_0_1_out,nand_0_3_out,nand_0_3_out);
+      nor4$   nor_0_1(nor_0_1_out,nand_0_4_out,nand_0_5_out,nand_0_6_out,nand_0_7_out);
+      nand4$  nand_0_0(nand_0_0_out,in[0],in[1],in[2],in[3]);
+      nand4$  nand_0_1(nand_0_1_out,in[4],in[5],in[6],in[7]);
+      nand4$  nand_0_2(nand_0_2_out,in[8],in[9],in[10],in[11]);
+      nand4$  nand_0_3(nand_0_3_out,in[12],in[13],in[14],in[15]);
+      nand4$  nand_0_4(nand_0_4_out,in[16],in[17],in[18],in[19]);
+      nand4$  nand_0_5(nand_0_5_out,in[20],in[21],in[22],in[23]);
+      nand4$  nand_0_6(nand_0_6_out,in[24],in[25],in[26],in[27]);
+      nand4$  nand_0_7(nand_0_7_out,in[28],in[29],in[30],in[31]);
     end
   endcase
 endgenerate
