@@ -44,7 +44,6 @@ wire [RANK_BIT_WIDTH-1:0]               CC_WR_DATA_OUT, CC_HIT_DATA_OUT;
 wire [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] CC_ADDR_OUT;
 wire [MASK_WIDTH-1:0]                   CC_DATA_WR_MASK_OUT;
 
-wire [INDEX_WIDTH-1:0]                  CC_TAG_VALID_SET_INDEX;
 wire [NUM_WAYS-1:0]                     CC_TAG_WR_MASK_OUT;
 wire [TAG_WIDTH-1:0]                    CC_TAG_IN;
 wire                                    CC_VALID_SET_OR_CLR;
@@ -89,7 +88,6 @@ cache_controller #(
     .CC_HIT_DATA_OUT(CC_HIT_DATA_OUT),
     .CC_ADDR_OUT(CC_ADDR_OUT),
     .CC_DATA_WR_MASK_OUT(CC_DATA_WR_MASK_OUT),
-    .CC_TAG_VALID_SET_INDEX(CC_TAG_VALID_SET_INDEX),
     .CC_TAG_WR_MASK_OUT(CC_TAG_WR_MASK_OUT),
     .CC_TAG_IN(CC_TAG_IN),
     .CC_VALID_SET_OR_CLR(CC_VALID_SET_OR_CLR),
@@ -105,7 +103,6 @@ task check;
   input [RANK_BIT_WIDTH-1:0]                    CC_HIT_DATA_OUT_EXP;
   input [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      CC_ADDR_OUT_EXP;
   input [NUM_WAYS*RANK_BURST_SIZE-1:0]          CC_DATA_WR_MASK_OUT_EXP;
-  input [INDEX_WIDTH-1:0]                       CC_TAG_VALID_SET_INDEX_EXP;
   input [NUM_WAYS-1:0]                          CC_TAG_WR_MASK_OUT_EXP;
   input [TAG_WIDTH-1:0]                         CC_TAG_IN_EXP;
   input                                         CC_VALID_SET_OR_CLR_EXP;
@@ -144,10 +141,6 @@ task check;
       FAILURES = FAILURES + 1;
       $display("FAILURE AT TIME %t: CC_DATA_WR_MASK_OUT exp=%h got=%h", $time, CC_DATA_WR_MASK_OUT_EXP, CC_DATA_WR_MASK_OUT);
     end
-    if (CC_TAG_VALID_SET_INDEX !== CC_TAG_VALID_SET_INDEX_EXP) begin
-      FAILURES = FAILURES + 1;
-      $display("FAILURE AT TIME %t: CC_TAG_VALID_SET_INDEX exp=%h got=%h", $time, CC_TAG_VALID_SET_INDEX_EXP, CC_TAG_VALID_SET_INDEX);
-    end
     if (CC_TAG_WR_MASK_OUT !== CC_TAG_WR_MASK_OUT_EXP) begin
       FAILURES = FAILURES + 1;
       $display("FAILURE AT TIME %t: CC_TAG_WR_MASK_OUT exp=%h got=%h", $time, CC_TAG_WR_MASK_OUT_EXP, CC_TAG_WR_MASK_OUT);
@@ -175,7 +168,6 @@ task check;
         CC_HIT_DATA_OUT === CC_HIT_DATA_OUT_EXP &&
         CC_ADDR_OUT === CC_ADDR_OUT_EXP &&
         CC_DATA_WR_MASK_OUT === CC_DATA_WR_MASK_OUT_EXP &&
-        CC_TAG_VALID_SET_INDEX === CC_TAG_VALID_SET_INDEX_EXP &&
         CC_TAG_WR_MASK_OUT === CC_TAG_WR_MASK_OUT_EXP &&
         CC_TAG_IN === CC_TAG_IN_EXP &&
         CC_VALID_SET_OR_CLR === CC_VALID_SET_OR_CLR_EXP &&
@@ -244,7 +236,7 @@ initial begin
         #(CYCLE_TIME);
         CACHE_MISS                 <= 1'b1;
         check(3'b000, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
-              CC_TAG_VALID_SET_INDEX, {NUM_WAYS{1'b1}},
+              {NUM_WAYS{1'b1}},
               CC_TAG_IN, 1'b1, {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
         #(CYCLE_TIME);
         CACHE_PHYS_ADDR            <= CACHE_PHYS_ADDR + 2;
@@ -252,12 +244,12 @@ initial begin
         #(CYCLE_TIME);
         ACKS <= 3'd0;
         check(3'b001, {MEM_ADDR_WIDTH{1'bz}}, REQS, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], {NUM_WAYS{1'b1}},
+              {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
         #(CYCLE_TIME);
         check(3'b010, {CACHE_PHYS_ADDR_SAVED,4'b0000}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY)),
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], {NUM_WAYS{1'b1}},
+              {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
         #(7 * CYCLE_TIME);
@@ -267,7 +259,7 @@ initial begin
         DATA_driver_enable          <= 1'b1;
         #(CYCLE_TIME);
         check(3'b010, {CACHE_PHYS_ADDR_SAVED,4'b0000}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY)),
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], {NUM_WAYS{1'b1}},
+              {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
         check_wr_data({{96{1'b0}}, DATA_driver});
@@ -276,7 +268,7 @@ initial begin
         DATA_BUS_SAVED[1]           = DATA_driver;
         #(CYCLE_TIME);
         check(3'b011, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY + 1)),
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], {NUM_WAYS{1'b1}},
+              {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
         check_wr_data(({{96{1'b0}}, DATA_driver}) << 32);
@@ -285,7 +277,7 @@ initial begin
         DATA_BUS_SAVED[2]           = DATA_driver;
         #(CYCLE_TIME);
         check(3'b011, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY + 2)),
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], {NUM_WAYS{1'b1}},
+              {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
         check_wr_data(({{96{1'b0}}, DATA_driver}) << 64);
@@ -294,7 +286,7 @@ initial begin
         DATA_BUS_SAVED[3]           = DATA_driver;
         #(CYCLE_TIME);
         check(3'b100, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY + 3)),
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], ~(4'd1 << (CACHE_VICT_WAY)),
+              ~(4'd1 << (CACHE_VICT_WAY)),
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], CACHE_VICT_WAY}, 1'b1);
         check_wr_data(({{96{1'b0}}, DATA_driver}) << 96);
@@ -303,7 +295,7 @@ initial begin
         DATA_BUS_SAVED[4]           = DATA_driver;
         #(CYCLE_TIME);
         check(3'b101, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], {NUM_WAYS{1'b1}},
+              {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
         check_wr_data(({{96{1'b0}}, DATA_driver}));
@@ -313,7 +305,7 @@ initial begin
         DATA_BUS_SAVED[5]           = DATA_driver;
         #(CYCLE_TIME);
         check(3'b101, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], {NUM_WAYS{1'b1}},
+              {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
         check_wr_data(({{96{1'b0}}, DATA_driver}) << 32);
@@ -322,7 +314,7 @@ initial begin
         DATA_BUS_SAVED[6]           = DATA_driver;
         #(CYCLE_TIME);
         check(3'b101, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], {NUM_WAYS{1'b1}},
+              {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
         check_wr_data(({{96{1'b0}}, DATA_driver}) << 64);
@@ -331,7 +323,7 @@ initial begin
         DATA_BUS_SAVED[7]           = DATA_driver;
         #(CYCLE_TIME);
         check(3'b110, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], {NUM_WAYS{1'b1}},
+              {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
         check_wr_data(({{96{1'b0}}, DATA_driver}) << 96);
@@ -351,7 +343,7 @@ initial begin
         #(2 * CYCLE_TIME);
         check(3'b111, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b1, 1'b0, {DATA_BUS_SAVED[7], DATA_BUS_SAVED[6], DATA_BUS_SAVED[5], DATA_BUS_SAVED[4]},
               CACHE_PHYS_ADDR, ~(16'd15 << (NUM_WAYS * CACHE_VICT_WAY)),
-              CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], ~(4'd1 << (CACHE_VICT_WAY)),
+              ~(4'd1 << (CACHE_VICT_WAY)),
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], CACHE_VICT_WAY}, 1'b1);
         check_wr_data({DATA_BUS_SAVED[7], DATA_BUS_SAVED[6], DATA_BUS_SAVED[5], DATA_BUS_SAVED[4]});

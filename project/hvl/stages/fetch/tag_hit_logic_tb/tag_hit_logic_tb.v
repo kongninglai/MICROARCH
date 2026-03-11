@@ -11,13 +11,15 @@ localparam WAY_WIDTH = $clog2(NUM_WAYS);
 
 reg  [NUM_WAYS*TAG_WIDTH-1:0] tag_store_out;
 reg  [TAG_WIDTH-1:0]          tag_compare_val;
+reg  [NUM_WAYS-1:0]           cache_valid_out;
 
-wire tag_hit, tag_hit_exp;
+wire [NUM_WAYS-1:0] tag_hit, tag_hit_exp;
 wire [WAY_WIDTH-1:0] tag_hit_way, tag_hit_way_exp;
 
 tag_hit_logic DUT(
   .tag_store_out(tag_store_out),
   .tag_compare_val(tag_compare_val),
+  .cache_valid_out(cache_valid_out),
   .tag_hit(tag_hit),
   .tag_hit_way(tag_hit_way)
 );
@@ -25,6 +27,7 @@ tag_hit_logic DUT(
 tag_hit_logic_behav REF(
   .tag_store_out(tag_store_out),
   .tag_compare_val(tag_compare_val),
+  .cache_valid_out(cache_valid_out),
   .tag_hit(tag_hit_exp),
   .tag_hit_way(tag_hit_way_exp)
 );
@@ -77,6 +80,7 @@ initial begin
   for (i = 0; i < NUM_WAYS; i = i + 1) used_tags[i] = 0;
   tag_store_out = 0;
   tag_compare_val = 0;
+  cache_valid_out = 4'd15;
 
   for (j = 0; j < 16; j = j + 1) begin
     generate_unique_tags();

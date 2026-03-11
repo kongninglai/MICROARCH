@@ -46,11 +46,10 @@ module full_cc_off_core #(
   output    [NUM_WAYS*RANK_BURST_SIZE-1:0]          ICC_DATA_WR_MASK_OUT,
 
   /*** TO TAG STORE ***/
-  output    [INDEX_WIDTH-1:0]                       ICC_TAG_VALID_SET_INDEX,
   output    [NUM_WAYS-1:0]                          ICC_TAG_WR_MASK_OUT,
   output    [TAG_WIDTH-1:0]                         ICC_TAG_IN,
 
-  /*** TO VALID STORE (ALONG WITH CC_TAG_VALID_SET_INDEX) ***/
+  /*** TO VALID STORE ***/
   output                                            ICC_VALID_SET_OR_CLR,
   output    [INDEX_WIDTH+WAY_WIDTH-1:0]             ICC_VALID_WR_EN,
   output                                            ICC_FSM_VALID_WR_EN_GLOBAL,
@@ -69,11 +68,10 @@ module full_cc_off_core #(
   output    [NUM_WAYS*RANK_BURST_SIZE-1:0]          DCC_DATA_WR_MASK_OUT,
 
   /*** TO TAG STORE ***/
-  output    [INDEX_WIDTH-1:0]                       DCC_TAG_VALID_SET_INDEX,
   output    [NUM_WAYS-1:0]                          DCC_TAG_WR_MASK_OUT,
   output    [TAG_WIDTH-1:0]                         DCC_TAG_IN,
 
-  /*** TO VALID STORE (ALONG WITH CC_TAG_VALID_SET_INDEX) ***/
+  /*** TO VALID STORE ***/
   output                                            DCC_VALID_SET_OR_CLR,
   output    [INDEX_WIDTH+WAY_WIDTH-1:0]             DCC_VALID_WR_EN,
   output                                            DCC_FSM_VALID_WR_EN_GLOBAL,
@@ -140,7 +138,6 @@ cache_controller icache_controller_inst (
     .CC_HIT_DATA_OUT(ICC_HIT_DATA_OUT),
     .CC_ADDR_OUT(ICC_ADDR_OUT),
     .CC_DATA_WR_MASK_OUT(ICC_DATA_WR_MASK_OUT),
-    .CC_TAG_VALID_SET_INDEX(ICC_TAG_VALID_SET_INDEX),
     .CC_TAG_WR_MASK_OUT(ICC_TAG_WR_MASK_OUT),
     .CC_TAG_IN(ICC_TAG_IN),
     .CC_VALID_SET_OR_CLR(ICC_VALID_SET_OR_CLR),
@@ -166,7 +163,6 @@ cache_controller dcache_controller_inst (
     .CC_HIT_DATA_OUT(DCC_HIT_DATA_OUT),
     .CC_ADDR_OUT(DCC_ADDR_OUT),
     .CC_DATA_WR_MASK_OUT(DCC_DATA_WR_MASK_OUT),
-    .CC_TAG_VALID_SET_INDEX(DCC_TAG_VALID_SET_INDEX),
     .CC_TAG_WR_MASK_OUT(DCC_TAG_WR_MASK_OUT),
     .CC_TAG_IN(DCC_TAG_IN),
     .CC_VALID_SET_OR_CLR(DCC_VALID_SET_OR_CLR),

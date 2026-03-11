@@ -47,7 +47,6 @@ wire                                    ICC_STREAM_BUF_HIT, ICC_FSM_FILL_BUSY;
 wire [RANK_BIT_WIDTH-1:0]               ICC_WR_DATA_OUT, ICC_HIT_DATA_OUT;
 wire [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] ICC_ADDR_OUT;
 wire [MASK_WIDTH-1:0]                   ICC_DATA_WR_MASK_OUT;
-wire [INDEX_WIDTH-1:0]                  ICC_TAG_VALID_SET_INDEX;
 wire [NUM_WAYS-1:0]                     ICC_TAG_WR_MASK_OUT;
 wire [TAG_WIDTH-1:0]                    ICC_TAG_IN;
 wire                                    ICC_VALID_SET_OR_CLR;
@@ -64,7 +63,6 @@ wire                                    DCC_STREAM_BUF_HIT, DCC_FSM_FILL_BUSY;
 wire [RANK_BIT_WIDTH-1:0]               DCC_WR_DATA_OUT, DCC_HIT_DATA_OUT;
 wire [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] DCC_ADDR_OUT;
 wire [MASK_WIDTH-1:0]                   DCC_DATA_WR_MASK_OUT;
-wire [INDEX_WIDTH-1:0]                  DCC_TAG_VALID_SET_INDEX;
 wire [NUM_WAYS-1:0]                     DCC_TAG_WR_MASK_OUT;
 wire [TAG_WIDTH-1:0]                    DCC_TAG_IN;
 wire                                    DCC_VALID_SET_OR_CLR;
@@ -112,7 +110,6 @@ full_cc_off_core #(
   .ICC_HIT_DATA_OUT          (ICC_HIT_DATA_OUT),
   .ICC_ADDR_OUT              (ICC_ADDR_OUT),
   .ICC_DATA_WR_MASK_OUT      (ICC_DATA_WR_MASK_OUT),
-  .ICC_TAG_VALID_SET_INDEX   (ICC_TAG_VALID_SET_INDEX),
   .ICC_TAG_WR_MASK_OUT       (ICC_TAG_WR_MASK_OUT),
   .ICC_TAG_IN                (ICC_TAG_IN),
   .ICC_VALID_SET_OR_CLR      (ICC_VALID_SET_OR_CLR),
@@ -128,7 +125,6 @@ full_cc_off_core #(
   .DCC_HIT_DATA_OUT          (DCC_HIT_DATA_OUT),
   .DCC_ADDR_OUT              (DCC_ADDR_OUT),
   .DCC_DATA_WR_MASK_OUT      (DCC_DATA_WR_MASK_OUT),
-  .DCC_TAG_VALID_SET_INDEX   (DCC_TAG_VALID_SET_INDEX),
   .DCC_TAG_WR_MASK_OUT       (DCC_TAG_WR_MASK_OUT),
   .DCC_TAG_IN                (DCC_TAG_IN),
   .DCC_VALID_SET_OR_CLR      (DCC_VALID_SET_OR_CLR),

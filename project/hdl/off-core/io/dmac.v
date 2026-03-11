@@ -345,7 +345,6 @@ wire DMA_MEM_WR_ACK_bar;
 inv1$ inv_2(DMA_MEM_WR_ACK_bar, DMA_MEM_WR_ACK);
 wire LAST_BURST_bar;
 inv1$ inv_3(LAST_BURST_bar, LAST_BURST);
-wire Q2_bar;
 
 /* Product Expressions */
 wire nand_0_0_0_out;

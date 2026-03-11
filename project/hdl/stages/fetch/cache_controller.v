@@ -34,11 +34,10 @@ module cache_controller #(
   output    [NUM_WAYS*RANK_BURST_SIZE-1:0]          CC_DATA_WR_MASK_OUT,
 
   /*** TO TAG STORE ***/
-  output    [INDEX_WIDTH-1:0]                       CC_TAG_VALID_SET_INDEX,
   output    [NUM_WAYS-1:0]                          CC_TAG_WR_MASK_OUT,
   output    [TAG_WIDTH-1:0]                         CC_TAG_IN,
 
-  /*** TO VALID STORE (ALONG WITH CC_TAG_VALID_SET_INDEX) ***/
+  /*** TO VALID STORE ***/
   output                                            CC_VALID_SET_OR_CLR,
   output    [INDEX_WIDTH+WAY_WIDTH-1:0]             CC_VALID_WR_EN,
   output                                            CC_FSM_VALID_WR_EN_GLOBAL
@@ -286,7 +285,6 @@ reg_n #(
 );
 
 assign CC_TAG_IN = Q_CC_ADDR_OUT_1[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7];
-assign CC_TAG_VALID_SET_INDEX = Q_CC_ADDR_OUT_1[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE];
 
 big_increment #(
   .WIDTH(MEM_ADDR_WIDTH-RANK_BURST_SIZE)
@@ -363,9 +361,11 @@ mux2$   mux2$_CC_HIT_DATA_OUT[RANK_BIT_WIDTH-1:0]          (
                                                               FSM_HIT_DATA_MUX
                                                             );
 
-mux4$   mux4$_CC_DATA_WR_MASK_OUT[NUM_WAYS*RANK_BURST_SIZE-1:0]
+wire [NUM_WAYS*RANK_BURST_SIZE-1:0] CC_DATA_WR_MASK_OUT_INT;
+
+mux4$   mux4$_CC_DATA_WR_MASK_OUT_INT[NUM_WAYS*RANK_BURST_SIZE-1:0]
                                                             (
-                                                              CC_DATA_WR_MASK_OUT,
+                                                              CC_DATA_WR_MASK_OUT_INT,
 
                                                               CC_DATA_WR_MASK_DEFAULT,
                                                               Q_CC_DATA_WR_MASK_OUT_01,
@@ -376,14 +376,20 @@ mux4$   mux4$_CC_DATA_WR_MASK_OUT[NUM_WAYS*RANK_BURST_SIZE-1:0]
                                                               FSM_DATA_WR_MASK_MUX[1]
                                                             );
 
-mux2$   mux2$_CC_TAG_WR_MASK_OUT[NUM_WAYS-1:0]             (
-                                                              CC_TAG_WR_MASK_OUT,
+mux2$   mux2$_CC_DATA_WR_MASK_OUT[NUM_WAYS*RANK_BURST_SIZE-1:0](CC_DATA_WR_MASK_OUT, CC_DATA_WR_MASK_DEFAULT, CC_DATA_WR_MASK_OUT_INT, rst);
+
+wire  [NUM_WAYS-1:0] CC_TAG_WR_MASK_OUT_INT;
+
+mux2$   mux2$_CC_TAG_WR_MASK_OUT_INT[NUM_WAYS-1:0]             (
+                                                              CC_TAG_WR_MASK_OUT_INT,
 
                                                               {NUM_WAYS{1'b1}},
                                                               Q_CC_TAG_WR_MASK_OUT_1,
 
                                                               FSM_TAG_WR_MASK_MUX
                                                             );
+
+mux2$   mux2$_CC_TAG_WR_MASK_OUT[NUM_WAYS-1:0](CC_TAG_WR_MASK_OUT, {NUM_WAYS{1'b1}}, CC_TAG_WR_MASK_OUT_INT, rst);
 
 /*** BUS DRIVERS ***/
 

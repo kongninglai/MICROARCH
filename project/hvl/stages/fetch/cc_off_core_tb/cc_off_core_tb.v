@@ -69,7 +69,6 @@ wire [RANK_BIT_WIDTH-1:0]               CC_HIT_DATA_OUT;
 wire [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] CC_ADDR_OUT;
 wire [MASK_WIDTH-1:0]                   CC_DATA_WR_MASK_OUT;
 
-wire [INDEX_WIDTH-1:0]                  CC_TAG_VALID_SET_INDEX;
 wire [NUM_WAYS-1:0]                     CC_TAG_WR_MASK_OUT;
 wire [TAG_WIDTH-1:0]                    CC_TAG_IN;
 
@@ -110,7 +109,6 @@ cc_off_core #(
     .CC_HIT_DATA_OUT           (CC_HIT_DATA_OUT),
     .CC_ADDR_OUT               (CC_ADDR_OUT),
     .CC_DATA_WR_MASK_OUT       (CC_DATA_WR_MASK_OUT),
-    .CC_TAG_VALID_SET_INDEX    (CC_TAG_VALID_SET_INDEX),
     .CC_TAG_WR_MASK_OUT        (CC_TAG_WR_MASK_OUT),
     .CC_TAG_IN                 (CC_TAG_IN),
     .CC_VALID_SET_OR_CLR       (CC_VALID_SET_OR_CLR),

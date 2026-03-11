@@ -35,7 +35,7 @@ generate
     big_eq #(
       .WIDTH(INDEX_WIDTH)
     ) big_eq_touch_valid_gates (
-      .in0(CC_ADDR_OUT[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]), .in1(i[2:0]),
+      .in0(CC_ADDR_OUT_buf16[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]), .in1(i[2:0]),
       .eq(touch_valid_gates[i])
     );
 
