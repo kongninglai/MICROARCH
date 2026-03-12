@@ -28,19 +28,26 @@ module tlb_wrapper_behav #(
                                   D_RD_TLB_CACHE_ENABLE_OUT,
                                   D_RD_TLB_PAGE_FAULT_OUT,
 
-  input       [VPN_BIT_WIDTH-1:0] D_WR_TLB_VPN,
+  input       [VPN_BIT_WIDTH-1:0] D_WR0_TLB_VPN,
 
-  output      [PFN_BIT_WIDTH-1:0] D_WR_TLB_PFN_OUT,
-  output                          D_WR_TLB_WRITE_DISABLE_OUT,
-                                  D_WR_TLB_CACHE_ENABLE_OUT,
-                                  D_WR_TLB_PAGE_FAULT_OUT,
+  output      [PFN_BIT_WIDTH-1:0] D_WR0_TLB_PFN_OUT,
+  output                          D_WR0_TLB_WRITE_DISABLE_OUT,
+                                  D_WR0_TLB_CACHE_ENABLE_OUT,
+                                  D_WR0_TLB_PAGE_FAULT_OUT,
+
+  input       [VPN_BIT_WIDTH-1:0] D_WR1_TLB_VPN,
+
+  output      [PFN_BIT_WIDTH-1:0] D_WR1_TLB_PFN_OUT,
+  output                          D_WR1_TLB_WRITE_DISABLE_OUT,
+                                  D_WR1_TLB_CACHE_ENABLE_OUT,
+                                  D_WR1_TLB_PAGE_FAULT_OUT,
 
   output      [PFN_BIT_WIDTH-1:0] KB_PFN,
                                   DMA_PFN
 );
 
 assign DMA_PFN = itlb.TLB_ENTRIES_BEHAV[6][6:4];
-assign KB_PFN = itlb.TLB_ENTRIES_BEHAV[7][6:4];
+assign KB_PFN  = itlb.TLB_ENTRIES_BEHAV[7][6:4];
 
 tlb_behav itlb (
   .TLB_VPN(ITLB_VPN),
@@ -58,12 +65,20 @@ tlb_behav drdtlb (
   .TLB_PAGE_FAULT_OUT(D_RD_TLB_PAGE_FAULT_OUT)
 );
 
-tlb_behav dwrtlb (
-  .TLB_VPN(D_WR_TLB_VPN),
-  .TLB_PFN_OUT(D_WR_TLB_PFN_OUT),
-  .TLB_WRITE_DISABLE_OUT(D_WR_TLB_WRITE_DISABLE_OUT),
-  .TLB_CACHE_ENABLE_OUT(D_WR_TLB_CACHE_ENABLE_OUT),
-  .TLB_PAGE_FAULT_OUT(D_WR_TLB_PAGE_FAULT_OUT)
+tlb_behav dwr0tlb (
+  .TLB_VPN(D_WR0_TLB_VPN),
+  .TLB_PFN_OUT(D_WR0_TLB_PFN_OUT),
+  .TLB_WRITE_DISABLE_OUT(D_WR0_TLB_WRITE_DISABLE_OUT),
+  .TLB_CACHE_ENABLE_OUT(D_WR0_TLB_CACHE_ENABLE_OUT),
+  .TLB_PAGE_FAULT_OUT(D_WR0_TLB_PAGE_FAULT_OUT)
+);
+
+tlb_behav dwr1tlb (
+  .TLB_VPN(D_WR1_TLB_VPN),
+  .TLB_PFN_OUT(D_WR1_TLB_PFN_OUT),
+  .TLB_WRITE_DISABLE_OUT(D_WR1_TLB_WRITE_DISABLE_OUT),
+  .TLB_CACHE_ENABLE_OUT(D_WR1_TLB_CACHE_ENABLE_OUT),
+  .TLB_PAGE_FAULT_OUT(D_WR1_TLB_PAGE_FAULT_OUT)
 );
 
 endmodule
