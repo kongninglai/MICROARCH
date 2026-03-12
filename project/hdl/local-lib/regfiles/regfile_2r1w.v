@@ -28,7 +28,7 @@ module regfile_2r1w #(
     genvar i;
     generate
         for (i = 0; i < 8; i=i+1) begin 
-            eq_3b wr0_eq_i(.in0(wr_reg0_idx), .in1(i[2:0]), .eq(we0[i]));
+            big_eq #(.WIDTH(3)) wr0_eq_i(.in0(wr_reg0_idx), .in1(i[2:0]), .eq(we0[i]));
             and2$ and_en_i(en[i], we0[i], wr0_en);
             if (WIDTH==16)
                 reg16e reg16e_inst(clk, wr_reg0_data, q[i], qb[i], rst_n, 1'b1, en[i]);
@@ -43,8 +43,8 @@ module regfile_2r1w #(
     wire hit00, hit10;
     wire match00, match10;
 
-    eq_3b rd0_wr0_eq(.in0(rd_reg0_idx), .in1(wr_reg0_idx), .eq(match00));
-    eq_3b rd1_wr0_eq(.in0(rd_reg1_idx), .in1(wr_reg0_idx), .eq(match10));
+    big_eq #(.WIDTH(3)) rd0_wr0_eq(.in0(rd_reg0_idx), .in1(wr_reg0_idx), .eq(match00));
+    big_eq #(.WIDTH(3)) rd1_wr0_eq(.in0(rd_reg1_idx), .in1(wr_reg0_idx), .eq(match10));
 
     and2$ and_hit00(hit00, wr0_en, match00);
     and2$ and_hit10(hit10, wr0_en, match10);

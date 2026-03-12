@@ -160,14 +160,14 @@ module regfile_gp (
     wire hit00, hit10, hit20, hit30, hit01, hit11, hit21, hit31;
     wire match00, match10, match20, match30, match01, match11, match21, match31;
 
-    eq_3b rd0_wr0_eq(.in0(rd0_pidx), .in1(wr0_pidx), .eq(match00));
-    eq_3b rd1_wr0_eq(.in0(rd1_pidx), .in1(wr0_pidx), .eq(match10));
-    eq_3b rd2_wr0_eq(.in0(rd2_pidx), .in1(wr0_pidx), .eq(match20));
-    eq_3b rd3_wr0_eq(.in0(rd3_pidx), .in1(wr0_pidx), .eq(match30));
-    eq_3b rd0_wr1_eq(.in0(rd0_pidx), .in1(wr1_pidx), .eq(match01));
-    eq_3b rd1_wr1_eq(.in0(rd1_pidx), .in1(wr1_pidx), .eq(match11));
-    eq_3b rd2_wr1_eq(.in0(rd2_pidx), .in1(wr1_pidx), .eq(match21));
-    eq_3b rd3_wr1_eq(.in0(rd3_pidx), .in1(wr1_pidx), .eq(match31));
+    big_eq #(.WIDTH(3)) rd0_wr0_eq(.in0(rd0_pidx), .in1(wr0_pidx), .eq(match00));
+    big_eq #(.WIDTH(3)) rd1_wr0_eq(.in0(rd1_pidx), .in1(wr0_pidx), .eq(match10));
+    big_eq #(.WIDTH(3)) rd2_wr0_eq(.in0(rd2_pidx), .in1(wr0_pidx), .eq(match20));
+    big_eq #(.WIDTH(3)) rd3_wr0_eq(.in0(rd3_pidx), .in1(wr0_pidx), .eq(match30));
+    big_eq #(.WIDTH(3)) rd0_wr1_eq(.in0(rd0_pidx), .in1(wr1_pidx), .eq(match01));
+    big_eq #(.WIDTH(3)) rd1_wr1_eq(.in0(rd1_pidx), .in1(wr1_pidx), .eq(match11));
+    big_eq #(.WIDTH(3)) rd2_wr1_eq(.in0(rd2_pidx), .in1(wr1_pidx), .eq(match21));
+    big_eq #(.WIDTH(3)) rd3_wr1_eq(.in0(rd3_pidx), .in1(wr1_pidx), .eq(match31));
 
 
     and2$ and_hit00(hit00, wr0_en, match00);

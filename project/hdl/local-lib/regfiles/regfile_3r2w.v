@@ -53,8 +53,8 @@ module regfile_3r2w (
     genvar i;
     generate
         for (i = 0; i < 8; i=i+1) begin 
-            eq_3b wr0_eq_i(.in0(wr_reg0_idx), .in1(i[2:0]), .eq(we0[i]));
-            eq_3b wr1_eq_i(.in0(wr_reg1_idx), .in1(i[2:0]), .eq(we1[i]));
+            big_eq #(.WIDTH(3)) wr0_eq_i(.in0(wr_reg0_idx), .in1(i[2:0]), .eq(we0[i]));
+            big_eq #(.WIDTH(3)) wr1_eq_i(.in0(wr_reg1_idx), .in1(i[2:0]), .eq(we1[i]));
             check_en check_en_i(.we0_i(we0[i]), .wr0_en(wr0_en), .wr_reg0_data(wr_reg0_data), .we1_i(we1[i]), .wr1_en(wr1_en), .wr_reg1_data(wr_reg1_data), .en_i(en[i]), .din_i(din[i]));
             reg32e$ reg32e$_inst(clk, din[i], q[i], qb[i], rst_n, 1'b1, en[i]);
         end
@@ -64,12 +64,12 @@ module regfile_3r2w (
     wire hit00, hit10, hit20, hit01, hit11, hit21;
     wire match00, match10, match20, match01, match11, match21;
 
-    eq_3b rd0_wr0_eq(.in0(rd_reg0_idx), .in1(wr_reg0_idx), .eq(match00));
-    eq_3b rd1_wr0_eq(.in0(rd_reg1_idx), .in1(wr_reg0_idx), .eq(match10));
-    eq_3b rd2_wr0_eq(.in0(rd_reg2_idx), .in1(wr_reg0_idx), .eq(match20));
-    eq_3b rd0_wr1_eq(.in0(rd_reg0_idx), .in1(wr_reg1_idx), .eq(match01));
-    eq_3b rd1_wr1_eq(.in0(rd_reg1_idx), .in1(wr_reg1_idx), .eq(match11));
-    eq_3b rd2_wr1_eq(.in0(rd_reg2_idx), .in1(wr_reg1_idx), .eq(match21));
+    big_eq #(.WIDTH(3)) rd0_wr0_eq(.in0(rd_reg0_idx), .in1(wr_reg0_idx), .eq(match00));
+    big_eq #(.WIDTH(3)) rd1_wr0_eq(.in0(rd_reg1_idx), .in1(wr_reg0_idx), .eq(match10));
+    big_eq #(.WIDTH(3)) rd2_wr0_eq(.in0(rd_reg2_idx), .in1(wr_reg0_idx), .eq(match20));
+    big_eq #(.WIDTH(3)) rd0_wr1_eq(.in0(rd_reg0_idx), .in1(wr_reg1_idx), .eq(match01));
+    big_eq #(.WIDTH(3)) rd1_wr1_eq(.in0(rd_reg1_idx), .in1(wr_reg1_idx), .eq(match11));
+    big_eq #(.WIDTH(3)) rd2_wr1_eq(.in0(rd_reg2_idx), .in1(wr_reg1_idx), .eq(match21));
 
     and2$ and_hit00(hit00, wr0_en, match00);
     and2$ and_hit10(hit10, wr0_en, match10);

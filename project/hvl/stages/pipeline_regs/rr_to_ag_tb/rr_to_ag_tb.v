@@ -1,8 +1,8 @@
-module stage_rr_tb;
+module rr_to_ag_tb;
 
     initial begin
-        $vcdplusfile("stage_rr_tb.dump.vpd");
-        $vcdpluson(0, stage_rr_tb); 
+        $vcdplusfile("rr_to_ag_tb.dump.vpd");
+        $vcdpluson(0, rr_to_ag_tb); 
     end
 
     integer i;
@@ -107,6 +107,31 @@ module stage_rr_tb;
     wire [2:0] to_dep_MMA_idx;
     wire [2:0] to_dep_MMB_idx;
 
+    wire [52:0] from_rr_control_sigs;
+    wire [2:0] from_rr_dstidA;
+    wire [2:0] from_rr_dstidB;
+    wire [31:0] from_rr_srcregA;
+    wire [31:0] from_rr_srcregB;
+    wire [31:0] from_rr_srcregC;
+    wire [15:0] from_rr_srcSREG;
+    wire [63:0] from_rr_MMA;
+    wire [63:0] from_rr_MMB;
+    wire [31:0] from_rr_imm;
+    wire [15:0] from_rr_sreg1;
+    wire [31:0] from_rr_slim1;
+    wire [31:0] from_rr_base1;
+    wire [31:0] from_rr_index1;
+    wire [31:0] from_rr_disp;
+    wire [1:0] from_rr_scale_mux;
+    wire [15:0] from_rr_sreg2;
+    wire [31:0] from_rr_slim2;
+    wire [31:0] from_rr_base2;
+    wire from_rr_intex_vec;
+    wire [15:0] from_rr_cs;
+    wire [31:0] from_rr_oeip;
+    wire [31:0] from_rr_ieip;
+    wire from_rr_valid;
+
     stage_rr dut_rr (
         .from_de_prefix(from_de_prefix),
         .from_de_ext_opcode(from_de_ext_opcode),
@@ -148,6 +173,61 @@ module stage_rr_tb;
         .from_regunit_CS(from_regunit_CS),
         .from_regunit_MMA(from_regunit_MMA),
         .from_regunit_MMB(from_regunit_MMB),
+        .to_ag_control_sigs(from_rr_control_sigs),
+        .to_ag_dstidA(from_rr_dstidA),
+        .to_ag_dstidB(from_rr_dstidB),
+        .to_ag_srcregA(from_rr_srcregA),
+        .to_ag_srcregB(from_rr_srcregB),
+        .to_ag_srcregC(from_rr_srcregC),
+        .to_ag_srcSREG(from_rr_srcSREG),
+        .to_ag_MMA(from_rr_MMA),
+        .to_ag_MMB(from_rr_MMB),
+        .to_ag_imm(from_rr_imm),
+        .to_ag_sreg1(from_rr_sreg1),
+        .to_ag_slim1(from_rr_slim1),
+        .to_ag_base1(from_rr_base1),
+        .to_ag_index1(from_rr_index1),
+        .to_ag_disp(from_rr_disp),
+        .to_ag_scale_mux(from_rr_scale_mux),
+        .to_ag_sreg2(from_rr_sreg2),
+        .to_ag_slim2(from_rr_slim2),
+        .to_ag_base2(from_rr_base2),
+        .to_ag_intex_vec(from_rr_intex_vec),
+        .to_ag_cs(from_rr_cs),
+        .to_ag_oeip(from_rr_oeip),
+        .to_ag_ieip(from_rr_ieip),
+        .to_ag_valid(from_rr_valid),
+        .to_dep_needREGS(to_dep_needREGS)
+    );
+
+    rr_to_ag dut_rr_to_ag (
+        .clk(clk),
+        .rst_n(rst_n),
+        .we(1'b1),
+        .from_rr_control_sigs(from_rr_control_sigs),
+        .from_rr_dstidA(from_rr_dstidA),
+        .from_rr_dstidB(from_rr_dstidB),
+        .from_rr_srcregA(from_rr_srcregA),
+        .from_rr_srcregB(from_rr_srcregB),
+        .from_rr_srcregC(from_rr_srcregC),
+        .from_rr_srcSREG(from_rr_srcSREG),
+        .from_rr_MMA(from_rr_MMA),
+        .from_rr_MMB(from_rr_MMB),
+        .from_rr_imm(from_rr_imm),
+        .from_rr_sreg1(from_rr_sreg1),
+        .from_rr_slim1(from_rr_slim1),
+        .from_rr_base1(from_rr_base1),
+        .from_rr_index1(from_rr_index1),
+        .from_rr_disp(from_rr_disp),
+        .from_rr_scale_mux(from_rr_scale_mux),
+        .from_rr_sreg2(from_rr_sreg2),
+        .from_rr_slim2(from_rr_slim2),
+        .from_rr_base2(from_rr_base2),
+        .from_rr_intex_vec(from_rr_intex_vec),
+        .from_rr_cs(from_rr_cs),
+        .from_rr_oeip(from_rr_oeip),
+        .from_rr_ieip(from_rr_ieip),
+        .from_rr_valid(from_rr_valid),
         .to_ag_control_sigs(to_ag_control_sigs),
         .to_ag_dstidA(to_ag_dstidA),
         .to_ag_dstidB(to_ag_dstidB),
@@ -171,10 +251,8 @@ module stage_rr_tb;
         .to_ag_cs(to_ag_cs),
         .to_ag_oeip(to_ag_oeip),
         .to_ag_ieip(to_ag_ieip),
-        .to_ag_valid(to_ag_valid),
-        .to_dep_needREGS(to_dep_needREGS)
+        .to_ag_valid(to_ag_valid)
     );
-
     regunit dut_regunit (
         .clk(clk),
         .rst_n(rst_n),
@@ -411,31 +489,43 @@ module stage_rr_tb;
     end
     endtask
 
-    task print_to_ag_outputs;
+    task print_from_rr_outputs;
     begin
+        $display("************************************************");
+        $display("****************FROM RR*************************");
+        $display("************************************************");
         $display("control signals=%b", to_ag_control_sigs);
         print_to_ag_sigs();
-        // $display("dstidA=%0d, dstidB=%0d", to_ag_dstidA, to_ag_dstidB);
-        // $display("srcregA=%08h, srcregB=%08h, srcregC=%08h", to_ag_srcregA, to_ag_srcregB, to_ag_srcregC);
-        // $display("srcSREG=%04h, MMA=%016h, MMB=%016h", to_ag_srcSREG, to_ag_MMA, to_ag_MMB);
-        // $display("imm=%08h", to_ag_imm);
-        // $display("sreg1=%04h, slim1=%05h", to_ag_sreg1, to_ag_slim1);
-        // $display("base1=%08h, index1=%08h, disp=%08h", to_ag_base1, to_ag_index1, to_ag_disp);
-        // $display("sreg2=%04h, slim2=%04h", to_ag_sreg2, to_ag_slim2);
-        // $display("base2=%08h", to_ag_base2);
-        // $display("intex_vec=%0b", to_ag_intex_vec);
-        // $display("oeip=%08h, ieip=%08h", to_ag_oeip, to_ag_ieip);
-        // $display("valie=%0b", to_ag_valid);
-        $display("(%0d)dstidA=%0d, (%0d)dstidB=%0d", ldAB[1], to_ag_dstidA, ldAB[0], to_ag_dstidB);
-        $display("(%0d)srcregA=[%0d]%08h, (%0d)srcregB=[%0d]%08h, (%0d)srcregC=[%0d]%08h", to_dep_needREGS[10], to_dep_srcregA_idx, to_ag_srcregA, to_dep_needREGS[9], to_dep_srcregB_idx, to_ag_srcregB, to_dep_needREGS[8], to_dep_srcregC_idx, to_ag_srcregC);
-        $display("(%0d)srcSREG=[%0d]%04h, (%0d)MMA=[%0d]%016h, (%0d)MMB=[%0d]%016h", to_dep_needREGS[4], to_dep_srcSREG_idx, to_ag_srcSREG, to_dep_needREGS[1], to_dep_MMA_idx, to_ag_MMA, to_dep_needREGS[0], to_dep_MMB_idx, to_ag_MMB);
+        $display("(%0d)dstidA=%0d, (%0d)dstidB=%0d", ldAB[1], from_rr_dstidA, ldAB[0], from_rr_dstidB);
+        $display("(%0d)srcregA=[%0d]%08h, (%0d)srcregB=[%0d]%08h, (%0d)srcregC=[%0d]%08h", to_dep_needREGS[10], to_dep_srcregA_idx, from_rr_srcregA, to_dep_needREGS[9], to_dep_srcregB_idx, from_rr_srcregB, to_dep_needREGS[8], to_dep_srcregC_idx, from_rr_srcregC);
+        $display("(%0d)srcSREG=[%0d]%04h, (%0d)MMA=[%0d]%016h, (%0d)MMB=[%0d]%016h", to_dep_needREGS[4], to_dep_srcSREG_idx, from_rr_srcSREG, to_dep_needREGS[1], to_dep_MMA_idx, from_rr_MMA, to_dep_needREGS[0], to_dep_MMB_idx, from_rr_MMB);
+        $display("imm=%08h", from_rr_imm);
+        $display("(%0d)sreg1=[%0d]%04h, slim1=%05h", to_dep_needREGS[3], to_dep_SREG1_idx, from_rr_sreg1, from_rr_slim1);
+        $display("(%0d)base1=[%0d]%08h, (%0d)index1=[%0d]%08h, scale_mux=%02b, disp=%08h", to_dep_needREGS[7], to_dep_basereg1_idx, from_rr_base1, to_dep_needREGS[5], to_dep_indexreg1_idx, from_rr_index1, from_rr_scale_mux, from_rr_disp);
+        $display("(%0d)sreg2=[%0d]%04h, slim2=%04h", to_dep_needREGS[2], to_dep_SREG2_idx, from_rr_sreg2, from_rr_slim2);
+        $display("(%0d)base2=[%0d]%08h", to_dep_needREGS[6], to_dep_basereg2_idx, from_rr_base2);
+        $display("intex_vec=%0b", from_rr_intex_vec);
+        $display("oeip=%08h, ieip=%08h, cs=%04h", from_rr_oeip, from_rr_ieip, from_rr_cs);
+        $display("valie=%0b", from_rr_valid);
+        $display("\n");
+    end
+    endtask
+
+    task print_to_ag_outputs;
+    begin 
+        $display("************************************************");
+        $display("*******************TO AG************************");
+        $display("************************************************");
+        $display("dstidA=%0d, dstidB=%0d", to_ag_dstidA, to_ag_dstidB);
+        $display("srcregA=%08h, srcregB=%08h, srcregC=%08h", to_ag_srcregA, to_ag_srcregB, to_ag_srcregC);
+        $display("srcSREG=%04h, MMA=%016h, MMB=%016h", to_ag_srcSREG, to_ag_MMA, to_ag_MMB);
         $display("imm=%08h", to_ag_imm);
-        $display("(%0d)sreg1=[%0d]%04h, slim1=%05h", to_dep_needREGS[3], to_dep_SREG1_idx, to_ag_sreg1, to_ag_slim1);
-        $display("(%0d)base1=[%0d]%08h, (%0d)index1=[%0d]%08h, scale_mux=%02b, disp=%08h", to_dep_needREGS[7], to_dep_basereg1_idx, to_ag_base1, to_dep_needREGS[5], to_dep_indexreg1_idx, to_ag_index1, to_ag_scale_mux, to_ag_disp);
-        $display("(%0d)sreg2=[%0d]%04h, slim2=%04h", to_dep_needREGS[2], to_dep_SREG2_idx, to_ag_sreg2, to_ag_slim2);
-        $display("(%0d)base2=[%0d]%08h", to_dep_needREGS[6], to_dep_basereg2_idx, to_ag_base2);
+        $display("sreg1=%04h, slim1=%05h", to_ag_sreg1, to_ag_slim1);
+        $display("base1=%08h, index1=%08h, scale_mux=%02b, disp=%08h", to_ag_base1, to_ag_index1, to_ag_scale_mux, to_ag_disp);
+        $display("sreg2=%04h, slim2=%04h", to_ag_sreg2, to_ag_slim2);
+        $display("base2=%08h", to_ag_base2);
         $display("intex_vec=%0b", to_ag_intex_vec);
-        $display("oeip=%08h, ieip=%08h, cs=%04h", to_ag_oeip, to_ag_ieip, to_ag_cs);
+        $display("oeip=%08h, ieip=%08h", to_ag_oeip, to_ag_ieip);
         $display("valie=%0b", to_ag_valid);
     end
     endtask
@@ -498,12 +588,12 @@ module stage_rr_tb;
         // 01 C8
         // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
-        @(negedge clk);
+        @(posedge clk);
         apply_de_inputs(5'b00011, 1'b0, 8'h01, 8'hc8, 8'bx, 32'bx, 2'b00,
                         48'bx, 2'bx, 2'b01, 32'h0, 32'h2, 1'b1);
-        @(negedge clk);
+        #4
+        print_from_rr_outputs();
         print_to_ag_outputs();
-        @(negedge clk);
         $display("\n");
         
         $display("======================================");
@@ -512,12 +602,12 @@ module stage_rr_tb;
         // 00 2b=00000000 00101011
         // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
-        @(negedge clk);
+        @(posedge clk);
         apply_de_inputs(5'b00011, 1'b0, 8'h00, 8'h2b, 8'bx, 32'bx, 2'b00,
                         48'bx, 2'b00, 2'b01, 32'h0, 32'h2, 1'b1);
-        @(negedge clk);
+        #4
+        print_from_rr_outputs();
         print_to_ag_outputs();
-        @(negedge clk);
         $display("\n");
 
         $display("======================================");
@@ -526,12 +616,12 @@ module stage_rr_tb;
         // 08 ac 4b 78 56 34 12
         // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
-        @(negedge clk);
+        @(posedge clk);
         apply_de_inputs(5'b00011, 1'b0, 8'h08, 8'hac, 8'h4b, 32'h1234_5678, 2'b10,
                         48'bx, 2'b00, 2'b11, 32'h0, 32'h2, 1'b1);
-        @(negedge clk);
+        #4
+        print_from_rr_outputs();
         print_to_ag_outputs();
-        @(negedge clk);
         $display("\n");
 
         $display("======================================");
@@ -540,12 +630,12 @@ module stage_rr_tb;
         // 0e
         // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
-        @(negedge clk);
+        @(posedge clk);
         apply_de_inputs(5'b00011, 1'b0, 8'h0e, 8'bx, 8'bx, 32'bx, 2'b00,
                         48'bx, 2'bx, 2'b00, 32'h0, 32'h2, 1'b1);
-        @(negedge clk);
+        #4
+        print_from_rr_outputs();
         print_to_ag_outputs();
-        @(negedge clk);
         $display("\n");
 
         $display("======================================");
@@ -554,12 +644,12 @@ module stage_rr_tb;
         // 1f
         // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
-        @(negedge clk);
+        @(posedge clk);
         apply_de_inputs(5'b00011, 1'b0, 8'h1f, 8'bx, 8'bx, 32'bx, 2'b00,
                         48'bx, 2'bx, 2'b00, 32'h0, 32'h2, 1'b1);
-        @(negedge clk);
+        #4
+        print_from_rr_outputs();
         print_to_ag_outputs();
-        @(negedge clk);
         $display("\n");
 
         $display("======================================");
@@ -568,12 +658,12 @@ module stage_rr_tb;
         // 66 ff b4 d1 78 56 34 12
         // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
-        @(negedge clk);
+        @(posedge clk);
         apply_de_inputs(5'b01011, 1'b0, 8'hff, 8'hb4, 8'hd1, 32'h12345678, 2'b10,
                         48'bx, 2'b00, 2'b11, 32'h0, 32'h8, 1'b1);
-        @(negedge clk);
+        #4
+        print_from_rr_outputs();
         print_to_ag_outputs();
-        @(negedge clk);
         $display("\n");
 
         $display("======================================");
@@ -582,12 +672,12 @@ module stage_rr_tb;
         // 0f b1 b4 d4 78 56 34 12
         // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
-        @(negedge clk);
+        @(posedge clk);
         apply_de_inputs(5'b00011, 1'b1, 8'hb1, 8'hb4, 8'hd4, 32'h12345678, 2'b10,
                         48'bx, 2'b00, 2'b11, 32'h0, 32'h8, 1'b1);
-        @(negedge clk);
+        #4
+        print_from_rr_outputs();
         print_to_ag_outputs();
-        @(negedge clk);
         $display("\n");
 
         $display("======================================");
@@ -596,12 +686,12 @@ module stage_rr_tb;
         // d2 fb
         // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
-        @(negedge clk);
+        @(posedge clk);
         apply_de_inputs(5'b00011, 1'b0, 8'hd2, 8'hfb, 8'bx, 32'bx, 2'b00,
                         48'bx, 2'bx, 2'b00, 32'h0, 32'h2, 1'b1);
-        @(negedge clk);
+        #4
+        print_from_rr_outputs();
         print_to_ag_outputs();
-        @(negedge clk);
         $display("\n");
 
         $display("======================================");
@@ -610,12 +700,12 @@ module stage_rr_tb;
         // d94
         // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
-        @(negedge clk);
+        @(posedge clk);
         apply_de_inputs(5'b00011, 1'b0, 8'h94, 8'bx, 8'bx, 32'bx, 2'b00,
                         48'bx, 2'bx, 2'b00, 32'h0, 32'h2, 1'b1);
-        @(negedge clk);
+        #4
+        print_from_rr_outputs();
         print_to_ag_outputs();
-        @(negedge clk);
         $display("\n");
 
         $display("======================================");
@@ -624,12 +714,12 @@ module stage_rr_tb;
         // 26 0f 7f 39
         // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
-        @(negedge clk);
+        @(posedge clk);
         apply_de_inputs(5'b00000, 1'b1, 8'h7f, 8'h39, 8'bx, 32'bx, 2'b00,
                         48'bx, 2'bx, 2'b01, 32'h0, 32'h4, 1'b1);
-        @(negedge clk);
+        #4
+        print_from_rr_outputs();
         print_to_ag_outputs();
-        @(negedge clk);
         $display("\n");
 
         $finish;
