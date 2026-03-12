@@ -1,0 +1,212 @@
+module regunit(
+    input clk,
+    input rst_n,
+
+    input [7:0]  from_rr_opcode,
+    input [5:0]  from_rr_modrm,
+    input [5:0]  from_rr_sib,
+    input        from_rr_has_sib,
+    input [2:0]  from_rr_sig_gprd0_mux,
+    input [1:0]  from_rr_sig_gprd2_mux,
+    input        from_rr_sig_srcregA_mux,
+    input        from_rr_sig_srcregB_mux,
+    input [1:0]  from_rr_sig_ds,
+
+    output [31:0] to_rr_srcregA,
+    output [31:0] to_rr_srcregB,
+    output [31:0] to_rr_srcregC,
+    output [31:0] to_rr_basereg1,
+    output [31:0] to_rr_indexreg1,
+    output [31:0] to_rr_basereg2,
+
+    output [2:0] to_dep_srcregA_idx,
+    output [2:0] to_dep_srcregB_idx,
+    output [2:0] to_dep_srcregC_idx,
+    output [2:0] to_dep_basereg1_idx,
+    output [2:0] to_dep_indexreg1_idx,
+    output [2:0] to_dep_basereg2_idx,
+
+    input  from_rr_sig_srcsreg_mux,
+    input [2:0] from_rr_seg_prefix,
+    input from_rr_sig_segrd0_mux,
+    input from_rr_sig_segrd1_mux,
+    output [15:0] to_rr_srcSREG,
+    output [15:0] to_rr_SREG1,
+    output [15:0] to_rr_SREG2,
+    output [19:0] to_rr_SLIM1,
+    output [19:0] to_rr_SLIM2,
+    output [15:0] CS,
+
+    output [2:0] to_dep_srcSREG_idx,
+    output [2:0] to_dep_SREG1_idx,
+    output [2:0] to_dep_SREG2_idx,
+
+    output [63:0] to_rr_MMA,
+    output [63:0] to_rr_MMB,
+
+    output [2:0] to_dep_MMA_idx,
+    output [2:0] to_dep_MMB_idx,
+
+    input [2:0]  from_wb_gpwr0_idx,
+    input [31:0] from_wb_gpwr0_data,
+    input [1:0]  from_wb_gpwr0_size,
+    input        from_wb_gpwr0_en,
+    input [2:0]  from_wb_gpwr1_idx,
+    input [31:0] from_wb_gpwr1_data,
+    input [1:0]  from_wb_gpwr1_size,
+    input        from_wb_gpwr1_en,
+
+    input [2:0]  from_wb_segwr_idx,
+    input [15:0] from_wb_segwr_data,
+    input from_wb_segwr_en,
+    input [15:0] from_ex_cs_wr_data,
+    input from_ex_cs_wr_en,
+
+    input [2:0]  from_wb_mmxwr_idx,
+    input [63:0] from_wb_mmxwr_data,
+    input from_wb_mmxwr_en
+);
+    wire [2:0] gprd0_idx, gprd1_idx, gprd2_idx, gprd3_idx;
+    wire [31:0] gprd0_data, gprd1_data, gprd2_data, gprd3_data;
+    wire [1:0] gprd0_ds, gprd1_ds, gprd2_ds, gprd3_ds;
+    wire [2:0] gp_base;
+    mux2$ mux2_base[2:0](gp_base, from_rr_modrm[2:0], from_rr_sib[2:0], from_rr_has_sib);
+    // gprd0_idx: 0(EAX/000), 1(ECX/001), 2(EDI/111), 3(ESP/100), 4(opr[2:0]) 
+    // gprd1_idx: reg(modrm[5:3])
+    // gprd2_idx: 0(mod=modrm[2:0]), 1(ESI/110), 2(base)
+    // gprd3_idx: index(sib[5:3])
+    mux8 mux8_gprd0_idx[2:0](gprd0_idx, 3'b000, 3'b001, 3'b111, 3'b100, from_rr_opcode[2:0], , , , from_rr_sig_gprd0_mux[0], from_rr_sig_gprd0_mux[1], from_rr_sig_gprd0_mux[2]);
+    mux8 mux8_gprd0_ds[1:0](gprd0_ds, from_rr_sig_ds, 2'b10, 2'b10, 2'b10, from_rr_sig_ds, , , , from_rr_sig_gprd0_mux[0], from_rr_sig_gprd0_mux[1], from_rr_sig_gprd0_mux[2]);
+    
+    assign gprd1_idx = from_rr_modrm[5:3];
+    assign gprd1_ds = from_rr_sig_ds;
+    
+    mux4$ mux4_gprd2_idx[2:0](gprd2_idx, from_rr_modrm[2:0], 3'b110, gp_base, 3'b000, from_rr_sig_gprd2_mux[0], from_rr_sig_gprd2_mux[1]);
+    mux4$ mux4_gprd2_ds[1:0](gprd2_ds, from_rr_sig_ds, 2'b10, 2'b10, 2'b10, from_rr_sig_gprd2_mux[0], from_rr_sig_gprd2_mux[1]);
+    
+    assign gprd3_idx = from_rr_sib[5:3];
+    assign gprd3_ds = 2'b10;
+
+    // wire [1:0] srcregA_ds, srcregB_ds, srcregC_ds;
+    // srcregA: 0(gprd0), 1(gprd2)
+    // srcregB: 0(gprd0), 1(gprd1)
+    // srcregC: gprd0
+    // base1: gprd2
+    // index1: gprd3
+    // base2: gprd0
+    mux2_32 mux2_32_srcregA(.out(to_rr_srcregA), .in0(gprd0_data), .in1(gprd2_data), .s0(from_rr_sig_srcregA_mux));
+    // mux2$ mux2_sregA_ds[1:0](srcregA_ds, gprd0_ds, gprd2_ds, from_rr_sig_srcregA_mux);
+    mux2$ mux2_sregA_idx[2:0](to_dep_srcregA_idx, gprd0_idx, gprd2_idx, from_rr_sig_srcregA_mux);
+
+    mux2_32 mux2_32_srcregB(.out(to_rr_srcregB), .in0(gprd0_data), .in1(gprd1_data), .s0(from_rr_sig_srcregB_mux));
+    // mux2$ mux2_sregB_ds[1:0](srcregB_ds, gprd0_ds, gprd1_ds, from_rr_sig_srcregB_mux);
+    mux2$ mux2_sregB_idx[2:0](to_dep_srcregB_idx, gprd0_idx, gprd1_idx, from_rr_sig_srcregB_mux);
+
+    assign to_rr_srcregC = gprd0_data;
+    // assign srcregC_ds = gprd0_ds;
+    assign to_dep_srcregC_idx = gprd0_idx;
+
+    assign to_rr_basereg1 = gprd2_data;
+    assign to_dep_basereg1_idx = gprd2_idx;
+
+    assign to_rr_indexreg1 = gprd3_data;
+    assign to_dep_indexreg1_idx = gprd3_idx;
+
+    assign to_rr_basereg2 = gprd0_data;
+    assign to_dep_basereg2_idx = gprd0_idx;
+    
+
+    regfile_gp gprf (
+        .clk(clk),
+        .rst_n(rst_n),
+
+        .rd_reg0_idx(gprd0_idx),
+        .rd_reg1_idx(gprd1_idx),
+        .rd_reg2_idx(gprd2_idx),
+        .rd_reg3_idx(gprd3_idx),
+
+        .rd_reg0_data(gprd0_data),
+        .rd_reg1_data(gprd1_data),
+        .rd_reg2_data(gprd2_data),
+        .rd_reg3_data(gprd3_data),
+
+        .rd_reg0_ds(gprd0_ds),
+        .rd_reg1_ds(gprd1_ds),
+        .rd_reg2_ds(gprd2_ds),
+        .rd_reg3_ds(gprd3_ds),
+        
+        .wr_reg0_idx(from_wb_gpwr0_idx),
+        .wr_reg0_data(from_wb_gpwr0_data),
+        .wr_reg0_ds(from_wb_gpwr0_size),
+        .wr0_en(from_wb_gpwr0_en),
+
+        .wr_reg1_idx(from_wb_gpwr1_idx),
+        .wr_reg1_data(from_wb_gpwr1_data),
+        .wr_reg1_ds(from_wb_gpwr1_size),
+        .wr1_en(from_wb_gpwr1_en)
+    ); 
+
+    wire [2:0] segrd0_idx, segrd1_idx;
+    wire [15:0] segrd0_data, segrd1_data;
+    wire [19:0] segrd0_limit, segrd1_limit;
+    // sregrd0_idx: According to srcsreg_mux: 0(based on base1_idx), 1(opcode[5:3])
+    // sregrd1_idx: srcsreg_mux = 1 ? modrm[5:3] : (gprd0_mux==010? ES : SS), means if base1=edi, use es
+    wire [2:0] base1_seg_idx;
+    get_segreg_idx get_base1_seg(.seg_idx(base1_seg_idx), .base_reg_idx(to_dep_basereg1_idx), .seg_override(from_rr_seg_prefix));
+    mux2$ mux2_sregrd0_idx[2:0](segrd0_idx, base1_seg_idx, from_rr_opcode[5:3], from_rr_sig_segrd0_mux);
+
+    wire gprd0_mux_1_inv, gprd0_is_edi;
+    inv1$ inv_gprd0_mux1(gprd0_mux_1_inv, from_rr_sig_gprd0_mux[1]);
+    nor3$ nor_gprd0_is_edi(gprd0_is_edi, from_rr_sig_gprd0_mux[2], gprd0_mux_1_inv, from_rr_sig_gprd0_mux[0]);
+
+    wire [2:0] es_ss_idx;
+    mux2$ mux2_es_ss[2:0](es_ss_idx, 3'b010, 3'b000, gprd0_is_edi);
+    mux2$ mux2_sregrd1_idx[2:0](segrd1_idx, from_rr_modrm[5:3], es_ss_idx, from_rr_sig_segrd1_mux);
+
+    mux2_16$ mux2_srcsreg(to_rr_srcSREG, segrd0_data, segrd1_data, from_rr_sig_srcsreg_mux);
+    mux2$ mux2_srcsreg_idx[2:0](to_dep_srcSREG_idx, segrd0_idx, segrd1_idx, from_rr_sig_srcsreg_mux);
+
+    assign to_rr_SREG1 = segrd0_data;
+    assign to_rr_SLIM1 = segrd0_limit;
+    assign to_dep_SREG1_idx = segrd0_idx;
+
+    assign to_rr_SREG2 = segrd1_data;
+    assign to_rr_SLIM2 = segrd1_limit;
+    assign to_dep_SREG2_idx = segrd1_idx;
+
+    regfile_seg segrf(  
+        .clk(clk),
+        .rst_n(rst_n),
+
+        .segrd0_idx(segrd0_idx),
+        .segrd1_idx(segrd1_idx),
+        .segrd0_data(segrd0_data),
+        .segrd1_data(segrd1_data),
+        .segrd0_limit(segrd0_limit),
+        .segrd1_limit(segrd1_limit),
+        .cs(CS),
+        .segwr_idx(from_wb_segwr_idx),
+        .segwr_data(from_wb_segwr_data),
+        .segwr_en(from_wb_segwr_en),
+        .cs_wr_data(from_ex_cs_wr_data),
+        .cs_wr_en(from_ex_cs_wr_en)
+    );
+
+    wire [2:0] mmxrd0_idx, mmxrd1_idx;
+    assign mmxrd0_idx = from_rr_modrm[5:3];
+    assign mmxrd1_idx = from_rr_modrm[2:0];
+    regfile_mmx mmxrf(
+        .clk(clk),
+        .rst_n(rst_n),
+        .mmxrd0_idx(mmxrd0_idx),
+        .mmxrd1_idx(mmxrd1_idx),
+        .mmxrd0_data(to_rr_MMA),
+        .mmxrd1_data(to_rr_MMB),
+        .mmxwr_idx(from_wb_mmxwr_idx),
+        .mmxwr_data(from_wb_mmxwr_data),
+        .mmxwr_en(from_wb_mmxwr_en)
+    );
+    assign to_dep_MMA_idx = mmxrd0_idx;
+    assign to_dep_MMB_idx = mmxrd1_idx;
+    
+endmodule

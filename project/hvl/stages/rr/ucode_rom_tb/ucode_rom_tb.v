@@ -19,7 +19,8 @@ ucode_controller dut(
     .has_modrm(has_modrm)
 );
 
-wire [1:0] ldAB, dstidB_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw;
+wire srcsreg_mux;
+wire [1:0] ldAB, dstidB_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds;
 wire [2:0] dstidA_mux, gprd0_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
 wire srcregA_mux, srcregB_mux, ldEFLAGS, alu_srcb_mux, ldEIP, ldCS, seg_dst_mux;
 wire [10:0] needREGS;
@@ -34,6 +35,7 @@ rr_sig rr_sig_dut(
     .srcregB_mux(srcregB_mux),
     .gprd0_mux(gprd0_mux),
     .gprd2_mux(gprd2_mux),
+    .srcsreg_mux(srcsreg_mux),
     .ldREGS(ldREGS),
     .needREGS(needREGS),
     .ldEFLAGS(ldEFLAGS),
@@ -49,7 +51,8 @@ rr_sig rr_sig_dut(
     .seg_dst_mux(seg_dst_mux),
     .mm_dst_mux(mm_dst_mux),
     .store_data_mux(store_data_mux),
-    .rw(rw)
+    .rw(rw),
+    .ds(ds)
 );
 
 task apply_test; 
@@ -65,7 +68,7 @@ begin
     $display("opcode=%02h, ext_opcode=%d, modrm=%d, has_modrm=%d", test_opcode, test_ext_opcode, test_modrm, test_has_modrm);
     #2
     $display("ucode=%64b", ucode_sig);
-    $display("ldAB=%02b, gprd0_mux=%03b, gprd2_mux=%02b, eflags_mux=%03b, gp_dsta_mux=%04b, store_data_mux=%04b, rw=%02b\n", ldAB, gprd0_mux, gprd2_mux, eflags_mux, gp_dsta_mux, store_data_mux, rw);
+    $display("ldAB=%02b, gprd0_mux=%03b, gprd2_mux=%02b, eflags_mux=%03b, gp_dsta_mux=%04b, store_data_mux=%04b, rw=%02b, ds=%02b\n", ldAB, gprd0_mux, gprd2_mux, eflags_mux, gp_dsta_mux, store_data_mux, rw, ds);
 end
 endtask
 
