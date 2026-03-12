@@ -43,6 +43,7 @@ module full_cache #(
   input                                                   STOREQ_STORING,
   input     [RANK_BIT_WIDTH-1:0]                          STOREQ_DATA,
   input     [NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0]  STOREQ_DATA_WR_MASK,
+  input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]            STOREQ_PHYS_ADDR,
 
   /*** BETWEEN TLB & CACHE, for READS ***/
   input     [PFN_BIT_WIDTH-1:0]                           ITLB_PFN_OUT,
@@ -56,7 +57,6 @@ module full_cache #(
   input     [PAGE_BIT_WIDTH-1:0]                          F_PAGE_OFFSET,
 
   output    [RANK_BIT_WIDTH-1:0]                          ICACHE_HIT_DATA,
-  output    [1:0]                                         ICACHE_EXCEPTION,
   output                                                  ICACHE_VALID,
   
   input     [PAGE_BIT_WIDTH-1:0]                          MEM_PAGE_OFFSET,
@@ -413,18 +413,16 @@ mux4$   mux4$_ICACHE_HIT( ICACHE_HIT,
                           ICACHE_HIT_ALL_WAYS[0], ICACHE_HIT_ALL_WAYS[1], ICACHE_HIT_ALL_WAYS[2], ICACHE_HIT_ALL_WAYS[3],
                           ICACHE_TAG_HIT_WAY_buf64[0], ICACHE_TAG_HIT_WAY_buf64[1]);
 
-inv1$   inv1$_ICACHE_MISS(ICACHE_MISS, ICACHE_HIT);
+nor2$   nor2$_ICACHE_MISS(ICACHE_MISS, ICACHE_HIT, ITLB_PAGE_FAULT_OUT);
 
 /************************************************************/
 /********************** ICACHE OUTPUTS **********************/
 /************************************************************/
 
-assign ICACHE_EXCEPTION = {1'b0, ITLB_PAGE_FAULT_OUT};
-
 wire ICACHE_GENERAL_MISS;
 nor2$     nor2$_ICACHE_GENERAL_MISS(ICACHE_GENERAL_MISS, ICACHE_HIT, ICC_STREAM_BUF_HIT);
 
-nor3$     nor3$_ICACHE_VALID(ICACHE_VALID, ICACHE_GENERAL_MISS, ICACHE_EXCEPTION[0], ICC_FSM_FILL_BUSY);
+nor3$     nor3$_ICACHE_VALID(ICACHE_VALID, ICACHE_GENERAL_MISS, ITLB_PAGE_FAULT_OUT, ICC_FSM_FILL_BUSY);
 
 
 

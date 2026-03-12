@@ -41,6 +41,7 @@ endgenerate
 /* One-hot encoding of which entry has a HIT */
 wire [NUM_TLB_ENTRIES-1:0]  TLB_ENTRY_SEL;
 
+// Critical path of big_eq, WIDTH=20 is xor2 + nor4 + nand2 + nor3 = 0.3 + 0.35 + 0.2 + 0.25 = 1.1 ns
 genvar i;
 generate
   for (i = 0; i < NUM_TLB_ENTRIES; i = i + 1) begin : VPN_COMPARE_GEN
@@ -56,6 +57,8 @@ endgenerate
 
 /* One-hot mux */
 
+// Critical path of bufferH16 = 0.24 ns
+// Critical path of bufferHInv16 = 0.15 ns
 wire [NUM_TLB_ENTRIES-1:0]    TLB_ENTRY_SEL_buf16, TLB_ENTRY_SEL_buf16_inv;
 bufferH16$        bufferH16$_TLB_ENTRY_SEL_buf16[NUM_TLB_ENTRIES-1:0](TLB_ENTRY_SEL_buf16, TLB_ENTRY_SEL);
 bufferHInv16$     bufferHInv16$_TLB_ENTRY_SEL_buf16_inv[NUM_TLB_ENTRIES-1:0](TLB_ENTRY_SEL_buf16_inv, TLB_ENTRY_SEL);
@@ -65,6 +68,7 @@ wire [TLB_OUT_BIT_WIDTH-1:0]  TLB_OUT_GATED[0:NUM_TLB_ENTRIES-1];
 
 wire [TLB_OUT_BIT_WIDTH-1:0]  TLB_OUT_COMBINED;
 
+// Critical path of nor2 = 0.2 ns
 genvar j;
 generate
   for (j = 0; j < NUM_TLB_ENTRIES; j = j + 1) begin : TLB_OUT_GATED_GEN
@@ -73,6 +77,7 @@ generate
   end
 endgenerate
 
+// Critical path of big_or, WIDTH=8 = nor4 + nand2 = 0.35 + 0.2 = 0.55 ns
 genvar k;
 generate
   for (k = 0; k < TLB_OUT_BIT_WIDTH; k = k + 1) begin : TLB_OUT_COMBINED_GEN
@@ -92,6 +97,7 @@ endgenerate
 
 wire    TLB_HIT;
 
+// Critical path of big_or, WIDTH=8 = nor4 + nand2 = 0.35 + 0.2 = 0.55 ns
 big_or #(
   .WIDTH(NUM_TLB_ENTRIES)
 ) big_or_TLB_HIT (
@@ -105,6 +111,7 @@ assign TLB_PFN_OUT            = TLB_OUT_COMBINED[TLB_OUT_BIT_WIDTH-1:TLB_OUT_BIT
 assign TLB_WRITE_DISABLE_OUT  = TLB_OUT_COMBINED[PAGE_LEVEL_WRITE_DISABLE_BIT_POS];
 assign TLB_CACHE_ENABLE_OUT   = TLB_OUT_COMBINED[PAGE_LEVEL_CACHE_ENABLE_BIT_POS];
 
+// Critical path of nand3 = 0.2 ns
 nand3$  nand3$_TLB_PAGE_FAULT_OUT(TLB_PAGE_FAULT_OUT, TLB_HIT, TLB_OUT_COMBINED[VALID_BIT_POS], TLB_OUT_COMBINED[PRESENT_BIT_POS]);
 
 endmodule

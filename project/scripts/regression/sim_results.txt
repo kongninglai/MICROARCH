@@ -59,6 +59,7 @@ rank_tb                        FAILURES=0      SUCCESSES=2048
 reg_n_tb                       FAILURES=0      SUCCESSES=1000  
 rshfa_const_tb                 FAILURES=0      SUCCESSES=1024  
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
+seg_limit_cmp_tb               FAILURES=0      SUCCESSES=65543 
 se_tb                          FAILURES=0      SUCCESSES=258   
 stream_buffer_tb               FAILURES=0      SUCCESSES=4130  
 tag_hit_logic_tb               FAILURES=0      SUCCESSES=5200  

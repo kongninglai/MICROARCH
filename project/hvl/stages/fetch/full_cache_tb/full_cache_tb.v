@@ -43,7 +43,6 @@ reg                     D_RD_TLB_PAGE_FAULT_OUT;
 reg        [PAGE_BIT_WIDTH-1:0]  F_PAGE_OFFSET;
 
 wire       [RANK_BIT_WIDTH-1:0]  ICACHE_HIT_DATA;
-wire       [1:0]                 ICACHE_EXCEPTION;
 wire                             ICACHE_VALID;
 
 reg        [PAGE_BIT_WIDTH-1:0]  MEM_PAGE_OFFSET;
@@ -98,7 +97,6 @@ full_cache #(
   .F_PAGE_OFFSET(F_PAGE_OFFSET),
 
   .ICACHE_HIT_DATA(ICACHE_HIT_DATA),
-  .ICACHE_EXCEPTION(ICACHE_EXCEPTION),
   .ICACHE_VALID(ICACHE_VALID),
 
   .MEM_PAGE_OFFSET(MEM_PAGE_OFFSET),

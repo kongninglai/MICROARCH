@@ -18,7 +18,7 @@ integer FAILURES  = 0;
 integer SUCCESSES = 0;
 
 task check;
-  input [WIDTH-1:0] out, out_exp;
+  input out, out_exp;
   if (out !== out_exp) begin
     FAILURES = FAILURES + 1;
     $display("FAILURE AT TIME %t. out_exp = %h, out = %h\n", 

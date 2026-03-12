@@ -448,7 +448,7 @@ generate
       wire nand_0_7_out;
 
       and2$   and_eq(eq, nor_0_0_out, nor_0_1_out);
-      nor4$   nor_0_0(nor_0_0_out,nand_0_0_out,nand_0_1_out,nand_0_3_out,nand_0_3_out);
+      nor4$   nor_0_0(nor_0_0_out,nand_0_0_out,nand_0_1_out,nand_0_2_out,nand_0_3_out);
       nor4$   nor_0_1(nor_0_1_out,nand_0_4_out,nand_0_5_out,nand_0_6_out,nand_0_7_out);
       nand4$  nand_0_0(nand_0_0_out,in[0],in[1],in[2],in[3]);
       nand4$  nand_0_1(nand_0_1_out,in[4],in[5],in[6],in[7]);
