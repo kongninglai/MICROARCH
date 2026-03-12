@@ -6,7 +6,7 @@ big_increment_tb               FAILURES=0      SUCCESSES=4097
 big_neq_tb                     FAILURES=0      SUCCESSES=264   
 big_or_tb                      FAILURES=0      SUCCESSES=4096  
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=262   
-dmac_tb                        COMPILE_ERROR
+dmac_tb                        FAILURES=0      SUCCESSES=1040  
 dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
 dmu_tb                         FAILURES=0      SUCCESSES=4     
 FA_16b_tb                      FAILURES=0      SUCCESSES=4096  
@@ -33,6 +33,7 @@ mux32_tb                       FAILURES=0      SUCCESSES=256
 mux64_tb                       FAILURES=0      SUCCESSES=256   
 mux8_tb                        FAILURES=0      SUCCESSES=2048  
 negate_32b_tb                  FAILURES=0      SUCCESSES=258   
+off_core_top_tb                FAILURES=0      SUCCESSES=17444 
 PA_16b_tb                      FAILURES=0      SUCCESSES=1024  
 PA_32b_tb                      FAILURES=0      SUCCESSES=1030  
 PA_4b_tb                       FAILURES=0      SUCCESSES=258   

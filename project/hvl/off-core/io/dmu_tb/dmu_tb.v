@@ -53,12 +53,7 @@ wire  [14:0]  ADDR_BUS = ADDR_driver_enable ? ADDR_driver : {15{1'bz}};
 
 wire  [RANK_BIT_WIDTH-1:0]    DMA_config;
 
-wire          DMAC_BUSY, DATA_VALID_BAR;
-
-reg    [7:0]  TEST_CASE_NEW_CHAR      ;
-reg    [7:0]  TEST_CASE_NEW_CHAR_WR   ;  
-reg           TEST_CASE_NEW_READY     ;
-reg           TEST_CASE_NEW_READY_WR  ;    
+wire          DMAC_BUSY, DATA_VALID_BAR;  
 
 
 dmu #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DUT (
@@ -229,8 +224,6 @@ endtask
 
 initial begin
   rst                     <= 1'b0;
-  TEST_CASE_NEW_CHAR_WR   <= 1'b0;
-  TEST_CASE_NEW_READY_WR  <= 1'b0;
   deassertAll();
   stopAllDrivers();
   #(1.5 * CYCLE_TIME);

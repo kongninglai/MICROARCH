@@ -7,7 +7,7 @@ ROOT="$HOME/MICROARCH/project/hvl/"
 RESULTS="$HOME/MICROARCH/project/scripts/regression/sim_results.txt"
 TMP_RESULTS="$(mktemp -d)"
 
-MAX_JOBS=40
+MAX_JOBS=50
 
 : > "$RESULTS"
 ./clean_sim.sh
@@ -50,6 +50,10 @@ run_one_sim() {
 
     failures=${failures:-999}
     successes=${successes:-0}
+
+    if grep -qF "Timing violation" sim.log; then
+        failures=$((failures + 1))
+    fi
 
     printf "%-30s FAILURES=%-6s SUCCESSES=%-6s\n" \
       "$tb_name" "$failures" "$successes" > "$out"

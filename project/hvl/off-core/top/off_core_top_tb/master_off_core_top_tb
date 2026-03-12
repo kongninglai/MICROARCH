@@ -3,6 +3,10 @@
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib6
+~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
+~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks.v
+~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_256b.v
 ~/MICROARCH/project/hdl/local-lib/gates/big_or.v
 ~/MICROARCH/project/hdl/local-lib/gates/big_and.v
 ~/MICROARCH/project/hdl/local-lib/adders/big_decrement.v
@@ -17,7 +21,13 @@
 ~/MICROARCH/project/hdl/off-core/io/dma_disk_buffer.v
 ~/MICROARCH/project/hdl/off-core/io/dmu.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_const.v
-~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_var_16b.v
 ~/MICROARCH/project/hdl/off-core/io/dmac.v
-~/MICROARCH/project/hvl/off-core/io/dmac_tb/dmac_tb.v
+~/MICROARCH/project/hdl/off-core/io/kb.v
+~/MICROARCH/project/hdl/off-core/memory/rank.v
+~/MICROARCH/project/hdl/off-core/memory/main_memory.v
+~/MICROARCH/project/hdl/off-core/memory/mcu_ctrl.v
+~/MICROARCH/project/hdl/off-core/memory/mcu.v
+~/MICROARCH/project/hdl/off-core/arbiter/arbiter.v
+~/MICROARCH/project/hdl/off-core/top/off_core_top.v
+~/MICROARCH/project/hvl/off-core/top/off_core_top_tb/off_core_top_tb.v
