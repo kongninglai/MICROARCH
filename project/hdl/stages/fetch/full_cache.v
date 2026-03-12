@@ -27,7 +27,9 @@ module full_cache #(
   parameter TAG_WIDTH=8,
   parameter PAGE_SIZE_BYTES=4096,
   parameter PAGE_BIT_WIDTH=$clog2(PAGE_SIZE_BYTES),
-  parameter PFN_BIT_WIDTH=MEM_ADDR_WIDTH-PAGE_BIT_WIDTH
+  parameter PFN_BIT_WIDTH=MEM_ADDR_WIDTH-PAGE_BIT_WIDTH,
+
+  parameter TRUE_LRU=0
 ) (
   input                                                   rst,
                                                           clk,
@@ -50,8 +52,7 @@ module full_cache #(
   input                                                   ITLB_PAGE_FAULT_OUT,
 
   input     [PFN_BIT_WIDTH-1:0]                           D_RD_TLB_PFN_OUT,
-  input                                                   D_RD_TLB_CACHE_ENABLE_OUT, 
-  input                                                   D_RD_TLB_PAGE_FAULT_OUT,
+  input                                                   D_RD_TLB_CACHE_ENABLE_OUT,
 
   /*** BETWEEN THE PIPELINE REGISTERS & CACHE ***/
   input     [PAGE_BIT_WIDTH-1:0]                          F_PAGE_OFFSET,
@@ -60,9 +61,9 @@ module full_cache #(
   output                                                  ICACHE_VALID,
   
   input     [PAGE_BIT_WIDTH-1:0]                          MEM_PAGE_OFFSET,
-  input     [1:0]                                         MEM_RD_OR_WR_OHE,
-                                                          MEM_EXCEPTION,
-  input                                                   MEM_VALID,
+                                                          MEM_VALID_LOAD_INST,
+
+  input                                                   WB_VALID_IO_STORE_INST,
 
   output    [RANK_BIT_WIDTH-1:0]                          DCACHE_HIT_DATA,
   output    [1:0]                                         DCACHE_EXCEPTION,
@@ -203,17 +204,18 @@ endgenerate
 
 wire    DCACHE_HIT;
 
-lru_store lru_store_DCACHE_VICT_WAY (
+lru_store #(.TRUE_LRU(TRUE_LRU)) lru_store_DCACHE_VICT_WAY (
   .rst(rst),
   .clk(clk),
   .TAG_HIT_WAY(DCACHE_TAG_HIT_WAY_buf64),
   .CACHE_HIT(DCACHE_HIT),
   .CC_ADDR_OUT(DCC_ADDR_OUT_buf64),
+  .CC_STREAM_BUF_HIT(DCC_STREAM_BUF_HIT),
 
   .VICT_WAY(DCACHE_VICT_WAY)
 );
 
-/************************************************************/
+/*********************************************SS***************/
 /*********************** VALID  STORE ***********************/
 /************************************************************/
 
@@ -377,12 +379,13 @@ endgenerate
 
 wire    ICACHE_HIT;
 
-lru_store lru_store_ICACHE_VICT_WAY (
+lru_store #(.TRUE_LRU(TRUE_LRU)) lru_store_ICACHE_VICT_WAY (
   .rst(rst),
   .clk(clk),
   .TAG_HIT_WAY(ICACHE_TAG_HIT_WAY_buf64),
   .CACHE_HIT(ICACHE_HIT),
   .CC_ADDR_OUT(ICC_ADDR_OUT_buf64),
+  .CC_STREAM_BUF_HIT(ICC_STREAM_BUF_HIT),
 
   .VICT_WAY(ICACHE_VICT_WAY)
 );
@@ -422,7 +425,7 @@ nor2$   nor2$_ICACHE_MISS(ICACHE_MISS, ICACHE_HIT, ITLB_PAGE_FAULT_OUT);
 wire ICACHE_GENERAL_MISS;
 nor2$     nor2$_ICACHE_GENERAL_MISS(ICACHE_GENERAL_MISS, ICACHE_HIT, ICC_STREAM_BUF_HIT);
 
-nor3$     nor3$_ICACHE_VALID(ICACHE_VALID, ICACHE_GENERAL_MISS, ITLB_PAGE_FAULT_OUT, ICC_FSM_FILL_BUSY);
+nor2$     nor2$_ICACHE_VALID(ICACHE_VALID, ICACHE_GENERAL_MISS, ICC_FSM_FILL_BUSY);
 
 
 

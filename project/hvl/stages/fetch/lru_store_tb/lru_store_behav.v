@@ -5,13 +5,15 @@ module lru_store_behav #(
   parameter WAY_WIDTH=$clog2(NUM_WAYS),
   parameter TAG_WIDTH=8,
   parameter RANK_BURST_SIZE=4,
-  parameter MEM_ADDR_WIDTH=15
+  parameter MEM_ADDR_WIDTH=15,
+  parameter TRUE_LRU=0
 ) (
   input                                             rst,
                                                     clk,
   input     [WAY_WIDTH-1:0]                         TAG_HIT_WAY,
   input                                             CACHE_HIT,
   input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      CC_ADDR_OUT,
+  input                                             CC_STREAM_BUF_HIT,
   output reg [WAY_WIDTH-1:0]                        VICT_WAY
 );
 
@@ -20,12 +22,25 @@ assign set_index = CC_ADDR_OUT[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE];
 
 wire [NUM_SETS-1:0] touch_valids;
 
+wire HIT_CONDITION;
+wire [WAY_WIDTH-1:0] TOUCHED_WAY;
+
+assign HIT_CONDITION = (TRUE_LRU == 0) ?
+                       CACHE_HIT :
+                       (CACHE_HIT | CC_STREAM_BUF_HIT);
+
+assign TOUCHED_WAY = (TRUE_LRU == 0) ?
+                     TAG_HIT_WAY :
+                     (CACHE_HIT ? TAG_HIT_WAY : VICT_WAY);
+
+
 genvar i;
 generate
   for (i = 0; i < NUM_SETS; i = i + 1) begin : TOUCH
-    assign touch_valids[i] = CACHE_HIT && (set_index == i);
+    assign touch_valids[i] = HIT_CONDITION && (set_index == i);
   end
 endgenerate
+
 
 wire [NUM_SETS-1:0] VICT_WAYS_BIT1, VICT_WAYS_BIT0;
 
@@ -35,13 +50,14 @@ generate
       .rst(rst),
       .clk(clk),
       .valid(touch_valids[i]),
-      .T1(TAG_HIT_WAY[WAY_WIDTH-1]),
-      .T0(TAG_HIT_WAY[0]),
+      .T1(TOUCHED_WAY[WAY_WIDTH-1]),
+      .T0(TOUCHED_WAY[0]),
       .V1(VICT_WAYS_BIT1[i]),
       .V0(VICT_WAYS_BIT0[i])
     );
   end
 endgenerate
+
 
 always @(*) begin
   case (set_index)
