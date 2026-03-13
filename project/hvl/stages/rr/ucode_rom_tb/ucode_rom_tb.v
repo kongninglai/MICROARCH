@@ -19,40 +19,20 @@ ucode_controller dut(
     .has_modrm(has_modrm)
 );
 
-wire srcsreg_mux;
 wire [1:0] ldAB, dstidB_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds;
 wire [2:0] dstidA_mux, gprd0_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
-wire srcregA_mux, srcregB_mux, ldEFLAGS, alu_srcb_mux, ldEIP, ldCS, seg_dst_mux;
+wire srcregA_mux, srcregB_mux, ldEFLAGS, alu_srcb_mux, ldEIP, ldCS, seg_dst_mux, srcsreg_mux, segrd0_mux, segrd1_mux;
 wire [10:0] needREGS;
 wire [3:0] gp_dsta_mux, store_data_mux;
 
 rr_sig rr_sig_dut(
-    .ucode_sig(ucode_sig),
-    .ldAB(ldAB),
-    .dstidA_mux(dstidA_mux),
-    .dstidB_mux(dstidB_mux),
-    .srcregA_mux(srcregA_mux),
-    .srcregB_mux(srcregB_mux),
-    .gprd0_mux(gprd0_mux),
-    .gprd2_mux(gprd2_mux),
-    .srcsreg_mux(srcsreg_mux),
-    .ldREGS(ldREGS),
-    .needREGS(needREGS),
-    .ldEFLAGS(ldEFLAGS),
-    .alu_srcb_mux(alu_srcb_mux),
-    .shf_srcb_mux(shf_srcb_mux),
-    .ldEIP(ldEIP),
-    .ldCS(ldCS),
-    .eflags_mux(eflags_mux),
-    .eip_mux(eip_mux),
-    .cs_mux(cs_mux),
-    .gp_dsta_mux(gp_dsta_mux),
-    .gp_dstb_mux(gp_dstb_mux),
-    .seg_dst_mux(seg_dst_mux),
-    .mm_dst_mux(mm_dst_mux),
-    .store_data_mux(store_data_mux),
-    .rw(rw),
-    .ds(ds)
+.ucode_sig(ucode_sig), .ldAB(ldAB), .dstidA_mux(dstidA_mux), .dstidB_mux(dstidB_mux),
+.srcregA_mux(srcregA_mux), .srcregB_mux(srcregB_mux), .gprd0_mux(gprd0_mux), .gprd2_mux(gprd2_mux), .srcsreg_mux(srcsreg_mux), .segrd0_mux(segrd0_mux), .segrd1_mux(segrd1_mux),
+.ldREGS(ldREGS), .needREGS(needREGS), .ldEFLAGS(ldEFLAGS),
+.alu_srcb_mux(alu_srcb_mux), .shf_srcb_mux(shf_srcb_mux),
+.ldEIP(ldEIP), .ldCS(ldCS), .eflags_mux(eflags_mux), .eip_mux(eip_mux), .cs_mux(cs_mux),
+.gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
+.store_data_mux(store_data_mux), .rw(rw), .ds(ds)
 );
 
 task apply_test; 

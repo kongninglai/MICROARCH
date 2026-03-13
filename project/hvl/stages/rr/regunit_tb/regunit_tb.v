@@ -30,6 +30,8 @@ module regunit_tb;
     wire [2:0] to_dep_basereg2_idx;
     reg from_rr_sig_srcsreg_mux;
     reg [2:0] from_rr_seg_prefix;
+    reg from_rr_sig_segrd0_mux;
+    reg from_rr_sig_segrd1_mux;
     wire [15:0] to_rr_srcSREG;
     wire [15:0] to_rr_SREG1;
     wire [15:0] to_rr_SREG2;
@@ -86,6 +88,8 @@ module regunit_tb;
         .to_dep_basereg2_idx(to_dep_basereg2_idx),
         .from_rr_sig_srcsreg_mux(from_rr_sig_srcsreg_mux),
         .from_rr_seg_prefix(from_rr_seg_prefix),
+        .from_rr_sig_segrd0_mux(from_rr_sig_segrd0_mux),
+        .from_rr_sig_segrd1_mux(from_rr_sig_segrd1_mux),
         .to_rr_srcSREG(to_rr_srcSREG),
         .to_rr_SREG1(to_rr_SREG1),
         .to_rr_SREG2(to_rr_SREG2),
@@ -132,6 +136,8 @@ module regunit_tb;
             from_rr_sig_ds = 2'd0;
             from_rr_sig_srcsreg_mux = 1'b0;
             from_rr_seg_prefix = 3'd0;
+            from_rr_sig_segrd0_mux = 1'b0;
+            from_rr_sig_segrd1_mux = 1'b0;
             from_wb_gpwr0_idx = 3'd0;
             from_wb_gpwr0_data = 32'd0;
             from_wb_gpwr0_size = 2'd0;
