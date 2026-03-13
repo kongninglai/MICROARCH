@@ -4,6 +4,9 @@ module regfile_seg_tb;
         $vcdpluson(0, regfile_seg_tb); 
     end
 
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
+
     reg clk;
     reg rst_n;
 
@@ -79,12 +82,13 @@ module regfile_seg_tb;
     begin
         if (got_bh !== exp) begin
             $display("[BEHAVIORAL FAIL] %s: got_bh=%h exp=%h time=%0t", msg, got_bh, exp, $time);
-            $finish;
+            FAILURES = FAILURES + 1;
         end else if (got_st !== got_bh) begin 
             $display("[STRUCTURAL FAIL] %s: got_bh=%h got_st=%h time=%0t", msg, got_bh, got_st, $time);
-            $finish;
+            FAILURES = FAILURES + 1;
         end else begin
             $display("[PASS] %s: %h=%h", msg, got_bh, got_st);
+            SUCCESSES = SUCCESSES + 1;
         end
     end
     endtask
@@ -97,12 +101,13 @@ module regfile_seg_tb;
     begin
         if (got_bh !== exp) begin
             $display("[BEHAVIORAL FAIL] %s: got_bh=%h exp=%h time=%0t", msg, got_bh, exp, $time);
-            $finish;
+            FAILURES = FAILURES + 1;
         end else if (got_st !== got_bh) begin 
             $display("[STRUCTURAL FAIL] %s: got_bh=%h got_st=%h time=%0t", msg, got_bh, got_st, $time);
-            $finish;
+            FAILURES = FAILURES + 1;
         end else begin
             $display("[PASS] %s: %h=%h", msg, got_bh, got_st);
+            SUCCESSES = SUCCESSES + 1;
         end
     end
     endtask
@@ -199,6 +204,8 @@ module regfile_seg_tb;
         $display("======================================");
         $display("All requested tests passed.");
         $display("======================================");
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 

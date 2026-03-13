@@ -4,7 +4,8 @@ initial begin
   $vcdplusfile("ucode_rom_tb.dump.vpd");
   $vcdpluson(0, ucode_rom_tb); 
 end
-
+integer FAILURES  = 0;
+integer SUCCESSES = 0;
 reg [7:0] opcode;
 reg ext_opcode;
 reg [1:0] modrm;
@@ -58,6 +59,10 @@ initial begin
     apply_test(8'h7F, 1'b1, 2'b11, 1'b1);
     apply_test(8'h7F, 1'b1, 2'b00, 1'b1);
     apply_test(8'h85, 1'b1, 2'b00, 1'b0);
+
+    $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+    $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+
     $finish;
 end
 endmodule

@@ -6,7 +6,9 @@ module stage_rr_tb;
     end
 
     integer i;
-
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
+    
     reg clk;
     reg rst_n;
 
@@ -631,6 +633,10 @@ module stage_rr_tb;
         print_to_ag_outputs();
         @(negedge clk);
         $display("\n");
+
+
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
         $finish;
     end

@@ -6,7 +6,8 @@ module rr_to_ag_tb;
     end
 
     integer i;
-
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
     reg clk;
     reg rst_n;
 
@@ -722,6 +723,8 @@ module rr_to_ag_tb;
         print_to_ag_outputs();
         $display("\n");
 
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 

@@ -4,6 +4,8 @@ module regunit_tb;
         $vcdpluson(0, regunit_tb); 
     end
 
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     reg clk;
     reg rst_n;
@@ -300,6 +302,9 @@ module regunit_tb;
         #8
         print_all_outputs();
 
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+        
         $finish;
     end
 endmodule

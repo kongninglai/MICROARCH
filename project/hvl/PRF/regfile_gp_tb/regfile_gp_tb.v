@@ -5,6 +5,8 @@ module regfile_gp_tb;
     $vcdpluson(0, regfile_gp_tb); 
     end
 
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
     reg clk;
     reg rst_n;
 
@@ -310,6 +312,9 @@ module regfile_gp_tb;
         $display("========================================");
         $display("All tests passed.");
         $display("========================================");
+
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 
