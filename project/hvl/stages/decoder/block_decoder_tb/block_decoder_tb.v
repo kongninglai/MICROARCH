@@ -15,7 +15,7 @@ module tb_block_decoder();
     wire [7:0] sib; 
     wire [1:0] disp_size_mux;
     wire [31:0] disp; 
-    wire [1:0] imm_size_mux;
+    wire [1:0] imm_size;
     wire [47:0] imm;
     wire [1:0] addressing_mode;
 
@@ -35,7 +35,7 @@ module tb_block_decoder();
         .sib(sib),
         .disp_size_mux(disp_size_mux),
         .disp(disp),
-        .imm_size_mux(imm_size_mux),
+        .imm_size(imm_size),
         .imm(imm),
         .addressing_mode(addressing_mode)
     );
@@ -54,7 +54,7 @@ module tb_block_decoder();
         input [7:0] exp_sib;
         input [1:0] exp_disp_size_mux;
         input [31:0] exp_disp;
-        input [1:0] exp_imm_size_mux;
+        input [1:0] exp_imm_size;
         input [47:0] exp_imm;
         input [1:0] exp_addr_mode;
         begin
@@ -70,15 +70,16 @@ module tb_block_decoder();
                 (exp_addr_mode[0] === 1'b1 && modrm !== exp_modrm) || 
                 (exp_addr_mode[1] === 1'b1 && sib !== exp_sib) ||     
                 disp_size_mux !== exp_disp_size_mux || disp !== exp_disp ||
-                imm_size_mux !== exp_imm_size_mux || imm !== exp_imm || 
+                imm_size !== exp_imm_size || imm !== exp_imm || 
                 addressing_mode !== exp_addr_mode) begin
                 
                 $display("❌ FAIL: Decoder Mismatch!");
                 $display("  [PREFIXES] Exp: OS=%b | Got: OS=%b", exp_op_size, prefix_op_size);
                 $display("  [BYTES]    Exp: Op=%h, ModRM_Sig=%b, ModRM=%h | Got: Op=%h, ModRM_Sig=%b, ModRM=%h", 
                          exp_opcode, exp_addr_mode[0], exp_modrm, opcode, addressing_mode[0], modrm);
-                $display("  [IMM]      Exp: Size=%b, Data=%h | Got: Size=%b, Data=%h", 
-                         exp_imm_size_mux, exp_imm, imm_size_mux, imm);
+                $display("  [IMM]      Exp: Size=%b, Data=%h | Got: Size=%b, Data=%h (imm_size_inbytes: %0d)", 
+                         exp_imm_size, exp_imm, imm_size, imm, 
+                         uut.imm_size_inbytes_true);
                 $display("  [ADDR MODE]Exp: %b | Got: %b", exp_addr_mode, addressing_mode);
                 error_count = error_count + 1;
             end else begin

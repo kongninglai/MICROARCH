@@ -1,113 +1,91 @@
+# This script reads the `instr_info.csv` file, processes the opcode information, 
+# and generates 8 ROM `.data` files that can be directly used in the Verilog testbench. 
+# Each ROM file contains 32 lines, with each line representing a 4-byte word (8 hex characters) 
+# corresponding to 4 opcodes. The script handles both standard and extended opcodes, as well as 
+# OSO variants, by mapping them to their respective ROM files based on the provided CSV data.
+# At the bottom of this file, you can specify the input CSV filename if needed: 
+#       input_filename = "instr_info.csv" #CHANGE IF NEEDED
+# The info per byte is in the following format: 
+#       bit 7: MRM, bits 6-4: IMM, bits 3-1: SUM Opcode Cnt (1 or 2) + IMM_in_bytes + MODRM Cnt (0 or 1), bit 0: FAR.BR (0 or 1)
+
+# To run: <python3 rom_gen.py>
+
 import csv
+import os
 
 def rom_gen(input_csv):
-    # Initialize 4 distinct maps for the 256 opcodes
-    opcode_map_std     = ["00"] * 256
-    opcode_map_oso     = ["00"] * 256
-    opcode_map_ext     = ["00"] * 256
-    opcode_map_ext_oso = ["00"] * 256
+    folder_name = "rom_data"
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
 
+    # Phase 1: Initialize maps with "XX" to represent 'X' in Verilog [cite: 375, 376]
+    opcode_map_std = ["XX"] * 256
+    opcode_map_ext = ["XX"] * 256
+
+    instructions = []
     with open(input_csv, mode='r', encoding='utf-8-sig') as f:
         reader = csv.DictReader(f)
-        
-        for row_num, row in enumerate(reader, start=2):
-            if not row or not row.get('Opcode') or row['Opcode'].strip() == '':
-                continue
-                
-            try:
-                # Determine the exact hex opcode index.
-                if 'OP' in row and row['OP'].strip():
-                    op_hex = row['OP'].strip()
-                else:
-                    op_hex = row['Opcode'].strip().split()[0]
-                    
-                opcode_idx = int(op_hex, 16)
-                
-                # Extract values (Fixed copy-paste errors here)
-                tbop_str   = row.get('2BOP', '0').strip() if row.get('2BOP') else '0'
-                oso_str    = row.get('OSO', '0').strip() if row.get('OSO') else '0'
-                mrm_str    = row.get('MRM', '0').strip() if row.get('MRM') else '0'
-                imm_str    = row.get('IMM', '0').strip() if row.get('IMM') else '0'
-                far_br_str = row.get('FAR.BR', '0').strip() if row.get('FAR.BR') else '0'
-                
-                # Clean strings to integers
-                tbop   = int(float(tbop_str))   if tbop_str.replace('.','',1).isdigit() else 0
-                oso    = int(float(oso_str))    if oso_str.replace('.','',1).isdigit() else 0
-                mrm    = int(float(mrm_str))    if mrm_str.replace('.','',1).isdigit() else 0
-                imm    = int(float(imm_str))    if imm_str.replace('.','',1).isdigit() else 0
-                far_br = int(float(far_br_str)) if far_br_str.replace('.','',1).isdigit() else 0
-                
-                # Mask values
-                tbop   = tbop & 0x1       # 1 bit
-                oso    = oso & 0x1        # 1 bit
-                mrm    = mrm & 0x1        # 1 bit
-                imm    = imm & 0x7        # 3 bits
-                far_br = far_br & 0x1     # 1 bit
-                
-                # Compute MRM + IMM
-                sum_mrm_imm_std = (mrm + imm + 1) & 0x7     # always add 1 to represent opcode
-                sum_mrm_imm_ifext = (mrm + imm + 2) & 0x7   # always add 2 to represent extended opcode
-                
-                # Assemble the byte
-                assembled_byte_std = (mrm << 7) | (imm << 4) | (sum_mrm_imm_std << 1) | far_br
-                assembled_byte_ifext = (mrm << 7) | (imm << 4) | (sum_mrm_imm_ifext << 1) | far_br
+        for row in reader:
+            if not row or not row.get('Opcode'): continue
+            instructions.append(row)
 
-                # Format as a 2-character uppercase Hex string
-                hex_byte_std = f"{assembled_byte_std:02X}"
-                hex_byte_ifext = f"{assembled_byte_ifext:02X}"
-                
-                # Map it to the exact index (Fixed "else if" syntax here)
-                if oso == 0x0:
-                    if tbop == 0x0: 
-                        opcode_map_std[opcode_idx] = hex_byte_std
-                    else: 
-                        opcode_map_ext[opcode_idx] = hex_byte_ifext
-                elif oso == 0x1:
-                    if tbop == 0x0: 
-                        opcode_map_oso[opcode_idx] = hex_byte_std
-                    else: 
-                        opcode_map_ext_oso[opcode_idx] = hex_byte_ifext
-                
-            except Exception as e:
-                # Ignore rows that fail parsing
-                continue
+    def parse_row(row, overhead):
+        # bit 7: MRM, bits 6-4: IMM, bits 3-1: SUM, bit 0: FAR.BR
+        mrm = int(float(row.get('MRM', 0) or 0)) & 0x1
+        imm = int(float(row.get('IMM', 0) or 0)) & 0x7
+        far = int(float(row.get('FAR.BR', 0) or 0)) & 0x1
+        sum_val = (mrm + imm + overhead) & 0x7
+        assembled = (mrm << 7) | (imm << 4) | (sum_val << 1) | far
+        return f"{assembled:02X}"
 
-    # Helper function to write exactly 32 lines (128 opcodes) to a specific ROM file
+    # Phase 2: Populate Standard/Extended (OSO=0)
+    for row in instructions:
+        try:
+            op_hex = row['OP'].strip() if row.get('OP') else row['Opcode'].strip().split()[0]
+            idx = int(op_hex, 16)
+            tbop = int(float(row.get('2BOP', 0) or 0))
+            oso = int(float(row.get('OSO', 0) or 0))
+            if oso == 0:
+                if tbop == 0: opcode_map_std[idx] = parse_row(row, 1)
+                else: opcode_map_ext[idx] = parse_row(row, 2)
+        except: continue
+
+    # Phase 3: Create OSO maps as COPIES (preserving the "XX" logic)
+    opcode_map_oso = list(opcode_map_std)
+    opcode_map_ext_oso = list(opcode_map_ext)
+
+    # Phase 4: Overwrite OSO (OSO=1)
+    for row in instructions:
+        try:
+            op_hex = row['OP'].strip() if row.get('OP') else row['Opcode'].strip().split()[0]
+            idx = int(op_hex, 16)
+            tbop = int(float(row.get('2BOP', 0) or 0))
+            oso = int(float(row.get('OSO', 0) or 0))
+            if oso == 1:
+                if tbop == 0: opcode_map_oso[idx] = parse_row(row, 1)
+                else: opcode_map_ext_oso[idx] = parse_row(row, 2)
+        except: continue
+
+    # Phase 5: Writing Helper
     def write_rom_file(filename, data_map, start_idx):
-        with open(filename, 'w') as f:
-            for i in range(32):  # 32 lines
-                # Calculate the exact opcode index based on which half (LO or HI) we are in
+        file_path = os.path.join(folder_name, filename)
+        with open(file_path, 'w') as f:
+            for i in range(32):
                 base_op = start_idx + (i * 4)
-                
-                b0 = data_map[base_op + 0]
-                b1 = data_map[base_op + 1]
-                b2 = data_map[base_op + 2]
-                b3 = data_map[base_op + 3]
-                
-                # Combine bytes (Highest index on the left, lowest on the right)
-                word_hex = f"{b3}{b2}{b1}{b0}"
-                
-                # Add comments so you can still read them easily (Verilog ignores them)
-                comment = f"// Address {i:02d} (Opcodes {base_op+3:02X}, {base_op+2:02X}, {base_op+1:02X}, {base_op+0:02X})"
-                f.write(f"{word_hex}  {comment}\n")
+                # Word construction b3b2b1b0
+                word = "".join([data_map[base_op + j] for j in range(3, -1, -1)])
+                ops = [f"{base_op + j:02X}" for j in range(3, -1, -1)]
+                comment = f"// Address {i:02d}: Opcodes {ops[0]}, {ops[1]}, {ops[2]}, {ops[3]}"
+                f.write(f"{word}  {comment}\n")
 
-    # Write the 8 files needed by Verilog
-    # LO files cover opcodes 0x00 to 0x7F (Start index 0)
-    # HI files cover opcodes 0x80 to 0xFF (Start index 128)
     write_rom_file("rom_std_lo.data", opcode_map_std, 0)
     write_rom_file("rom_std_hi.data", opcode_map_std, 128)
-    
     write_rom_file("rom_oso_lo.data", opcode_map_oso, 0)
     write_rom_file("rom_oso_hi.data", opcode_map_oso, 128)
-    
     write_rom_file("rom_ext_lo.data", opcode_map_ext, 0)
     write_rom_file("rom_ext_hi.data", opcode_map_ext, 128)
-    
     write_rom_file("rom_ext_oso_lo.data", opcode_map_ext_oso, 0)
     write_rom_file("rom_ext_oso_hi.data", opcode_map_ext_oso, 128)
+    print(f"Successfully generated X-padded ROMs in {folder_name}/")
 
-    print("Successfully assembled 8 ROM `.data` files (32 words each)!")
-
-# --- Run the script ---
-input_filename = "instr_info.csv"
-process_opcodes(input_filename)
+rom_gen("instr_info.csv")

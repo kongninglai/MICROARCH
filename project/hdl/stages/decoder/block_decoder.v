@@ -9,7 +9,7 @@ module block_decoder(
     output wire [7:0] sib, 
     output wire [1:0] disp_size_mux,
     output wire [31:0] disp, 
-    output wire [1:0] imm_size_mux,
+    output wire [1:0] imm_size,
     output wire [47:0] imm,
     output wire [1:0] addressing_mode
 );      
@@ -142,8 +142,9 @@ module block_decoder(
         .imm_size(imm_size_true),
         .imm_bytes(imm_bytes)
     );  
-    assign imm_size_mux = imm_size_true;
+    assign imm_size = imm_size_true;
     assign imm = imm_bytes;
     
 
 endmodule
+
