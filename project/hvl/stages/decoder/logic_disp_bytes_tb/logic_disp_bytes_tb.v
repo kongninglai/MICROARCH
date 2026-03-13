@@ -17,6 +17,8 @@ module tb_logic_disp_bytes();
 
     // Error tracking
     integer error_count = 0;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // Instantiate the Unit Under Test (UUT)
     logic_disp_bytes uut (
@@ -42,6 +44,7 @@ module tb_logic_disp_bytes();
             if (disp_size !== exp_size_bits || disp_size_inbytes !== exp_size_bytes || 
                 disp_bytes !== exp_disp_bytes || disp_offset !== exp_disp_offset) begin
                 $display("❌ FAIL [Test %0d]:", test_num);
+                FAILURES = FAILURES + 1;
                 $display("    Expected: SizeBits=%b, Bytes=%0d, Data=0x%h, FinalOffset=%0d", 
                          exp_size_bits, exp_size_bytes, exp_disp_bytes, exp_disp_offset);
                 $display("    Actual:   SizeBits=%b, Bytes=%0d, Data=0x%h, FinalOffset=%0d", 
@@ -50,6 +53,7 @@ module tb_logic_disp_bytes();
             end else begin
                 $display("✅ PASS [Test %0d]: Extracted 0x%h (%0d bytes) | Final Offset = %0d", 
                          test_num, disp_bytes, disp_size_inbytes, disp_offset);
+                SUCCESSES = SUCCESSES + 1;
             end
         end
     endtask
@@ -144,6 +148,8 @@ module tb_logic_disp_bytes();
         end
         $display("===============================================================");
 
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 endmodule

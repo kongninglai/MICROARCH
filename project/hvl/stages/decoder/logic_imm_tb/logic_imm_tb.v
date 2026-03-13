@@ -12,6 +12,8 @@ module tb_logic_imm();
 
     // Test tracking
     integer error_count = 0;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // UUT Instantiation
     logic_imm uut (
@@ -31,9 +33,11 @@ module tb_logic_imm();
                 $display("❌ FAIL [Test %0d] | Offset: %0d | Size: %b | Expected: %h | Got: %h", 
                          test_num, total_offset, imm_size, expected_val, imm_bytes);
                 error_count = error_count + 1;
+                FAILURES = FAILURES + 1;
             end else begin
                 $display("✅ PASS [Test %0d] | Offset: %0d | Size: %b | Got Expected: %h", 
                          test_num, total_offset, imm_size, imm_bytes);
+                SUCCESSES = SUCCESSES + 1;
             end
         end
     endtask
@@ -96,7 +100,9 @@ module tb_logic_imm();
             $display("💥 TEST SUITE FAILED! (%0d Errors Found)", error_count);
         end
         $display("===============================================================");
-        
+
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 endmodule

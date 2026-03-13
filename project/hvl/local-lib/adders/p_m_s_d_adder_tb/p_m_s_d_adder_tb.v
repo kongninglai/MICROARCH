@@ -13,6 +13,8 @@ module tb_p_m_s_d_adder();
     integer i, j;
     reg [3:0] expected_sum;
     integer error_count = 0;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // Instantiate the Unit Under Test (UUT)
     p_m_s_d_adder uut (
@@ -54,9 +56,11 @@ module tb_p_m_s_d_adder();
                     $display("❌ [%4t] |     %0d    |     %0d     |    %0d    |     %0d      | FAIL", 
                              $time, p_m_s_in, disp_size_inbytes, expected_sum, total_offset);
                     error_count = error_count + 1;
+                    FAILURES = FAILURES + 1;
                 end else begin
                     $display("✅ [%4t] |     %0d    |     %0d     |    %0d    |     %0d      | PASS", 
                              $time, p_m_s_in, disp_size_inbytes, expected_sum, total_offset);
+                    SUCCESSES = SUCCESSES + 1;
                 end
             end
         end
@@ -69,7 +73,8 @@ module tb_p_m_s_d_adder();
             $display("💥 TEST SUITE FAILED! (%0d Errors Found)", error_count);
         end
         $display("=======================================================================");
-
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 endmodule

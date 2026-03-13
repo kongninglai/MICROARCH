@@ -9,6 +9,8 @@ module logic_is_prefix_tb();
     
     // Self-checking variables
     integer error_count = 0;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // 2. Instantiate the Unit Under Test (UUT)
     logic_is_prefix uut (
@@ -52,6 +54,9 @@ module logic_is_prefix_tb();
             $display(">>> TEST FAILED: %0d errors detected. <<<", error_count);
         end
         $display("------------------------------------------------------------\n");
+
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 
@@ -66,6 +71,10 @@ module logic_is_prefix_tb();
                 $display("  !! ERROR: mismatch at input %h! Expected is_any_prefix=%b, got %b", 
                          candidate_prefix, expected_any, is_any_prefix);
                 error_count = error_count + 1;
+                FAILURES = FAILURES + 1;
+            end
+            else begin
+                SUCCESSES = SUCCESSES + 1;
             end
         end
     endtask

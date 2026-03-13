@@ -1,3 +1,8 @@
+/*
+imm_size = 00 (1 byte), 01(2 bytes), 10(4 bytes), 11(6 bytes)
+*/
+
+
 `timescale 1ns / 1ps
 
 module tb_logic_true_modrm_golden();
@@ -35,6 +40,11 @@ module tb_logic_true_modrm_golden();
     integer i_op;
     reg [31:0] row;
     reg [7:0]  exp_byte;
+    reg [2:0]  expected_imm_size_bytes;
+
+    // Error Checking
+    integer FAILURES = 0;
+    integer SUCCESSES = 0;
     
     // Kept original 8-bit check against ROM data
     wire [7:0] hw_res = {is_modrm_true, imm_size_inbytes_true, sum_true, is_far_br_true};
@@ -44,7 +54,6 @@ module tb_logic_true_modrm_golden();
         input [127:0] msg;
         reg [7:0] target_op;
         reg [7:0] expected_modrm; 
-        reg [1:0] exp_imm_size_bits; 
         begin
             target_op = c[prefix_num]; 
             expected_modrm = c[prefix_num + 1]; // ModRM is always Opcode + 1
@@ -69,27 +78,33 @@ module tb_logic_true_modrm_golden();
                 2'b11: exp_byte = row[31:24];
             endcase
 
-            // Convert ROM's 3-bit byte count (bits 6:4) into the 2-bit expected output
-            case(exp_byte[6:4])
-                3'd0: exp_imm_size_bits = 2'b00; // 0 bytes
-                3'd1: exp_imm_size_bits = 2'b01; // 1 byte
-                3'd2: exp_imm_size_bits = 2'b10; // 2 bytes
-                3'd4: exp_imm_size_bits = 2'b11; // 4 bytes 
-                default: exp_imm_size_bits = 2'b00;
-            endcase
-
             #10; // Wait for UUT delay 
 
             $display("SCENARIO: %s", msg);
-            if (modrm_byte_true !== expected_modrm) 
+            if (modrm_byte_true !== expected_modrm) begin
                 $display("  [FAIL] MUX chose wrong ModRM byte: Got %h, Exp %h", modrm_byte_true, expected_modrm);
-            else if (hw_res !== exp_byte)
+                FAILURES = FAILURES + 1;
+            end
+            else if (hw_res !== exp_byte) begin 
                 $display("  [FAIL] ROM Props wrong: HW %b, ROM File %b", hw_res, exp_byte);
-            else if (imm_size_true !== exp_imm_size_bits)
-                $display("  [FAIL] imm_size (2-bit) mismatch: Got %b, Exp %b (from ROM %0d bytes)", 
-                          imm_size_true, exp_imm_size_bits, exp_byte[6:4]);
-            else
+                FAILURES = FAILURES + 1;
+            end
+            else if (imm_size_inbytes_true !== expected_imm_size_bytes) begin
+                $display("  [FAIL] imm_size_inbytes mismatch: Got %0d, Exp %0d", 
+                          imm_size_inbytes_true, expected_imm_size_bytes);
+                FAILURES = FAILURES + 1;
+            end
+            // Check the 2-bit mux signal logic (begin/end added here)
+            else if ((expected_imm_size_bytes == 3'b001 && imm_size_true !== 2'b00) ||
+                     (expected_imm_size_bytes == 3'b010 && imm_size_true !== 2'b01) ||
+                     (expected_imm_size_bytes == 3'b100 && imm_size_true !== 2'b10)) begin
+                $display("  [FAIL] imm_size_true (2-bit mux) mismatch for byte count %0d", expected_imm_size_bytes);
+                FAILURES = FAILURES + 1;
+            end
+            else begin
                 $display("  [PASS] Opcode %h matches ROM data perfectly.", target_op);
+                SUCCESSES = SUCCESSES + 1;
+            end
             $display("---------------------------------------------------------");
         end
     endtask
@@ -110,23 +125,34 @@ module tb_logic_true_modrm_golden();
 
         // CASE 1: 0 Prefixes. Opcode 0x90 at index 0. ModRM at index 1.
         c[0]=8'h90; c[1]=8'hAA; c[2]=8'h00; c[3]=8'h00; c[4]=8'h00; c[5]=8'h00;
-        ext=0; op_size=0; prefix_num=0;
+        ext=0; op_size=0; prefix_num=0; expected_imm_size_bytes = 3'b000; 
         verify_against_rom("NOP at Index 0");
 
         // CASE 2: 2 Prefixes. Opcode 0x89 at index 2. ModRM at index 3.
         c[0]=8'hF3; c[1]=8'h66; c[2]=8'h89; c[3]=8'hBB; c[4]=8'h00; c[5]=8'h00;
-        ext=0; op_size=0; prefix_num=2;
+        ext=0; op_size=0; prefix_num=2; expected_imm_size_bytes = 3'b000;
         verify_against_rom("MOV at Index 2");
 
         // CASE 3: 1 Prefix. Opcode 0x05 at index 1. ModRM at index 2.
         c[0]=8'h66; c[1]=8'h05; c[2]=8'hCC; c[3]=8'h00; c[4]=8'h00; c[5]=8'h00;
-        ext=0; op_size=1; prefix_num=1;
+        ext=0; op_size=1; prefix_num=1; expected_imm_size_bytes = 3'b010; 
         verify_against_rom("ADD (OSO) at Index 1");
 
         // CASE 4: 4 Prefixes. Opcode 0xC3 at index 4. ModRM at index 5.
+        // RET doesnt have an immediate encoded into the instruction
         c[0]=8'hF3; c[1]=8'h66; c[2]=8'h2E; c[3]=8'h3E; c[4]=8'hC3; c[5]=8'hDD;
-        ext=0; op_size=0; prefix_num=4;
+        ext=0; op_size=0; prefix_num=4; expected_imm_size_bytes = 3'b000;
         verify_against_rom("RET at Index 4");
+
+        // CASE 5: OR AL, imm8 (0C) with OSO Prefix (66); Instruction: 66 0C 12
+        c[0]=8'h66; c[1]=8'h0C; c[2]=8'h12; c[3]=8'h00; c[4]=8'h00; c[5]=8'h00;
+        ext=0; op_size=1; prefix_num=1; 
+        expected_imm_size_bytes = 3'b001; // Should be 1 byte
+        verify_against_rom("OR AL (0C) with OSO Trap");
+        // Expected values: imm_size_inbytes_true should be 1 (3'b001), imm_size_true (the 2-bit mux) should be 0 (2'b00)
+                
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
         $finish;
     end

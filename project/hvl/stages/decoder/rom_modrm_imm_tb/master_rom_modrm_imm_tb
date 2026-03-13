@@ -25,4 +25,4 @@
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder
 
 // Testbench for Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/rom_modrm_imm_tb/logic_modrm_imm_tb.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/rom_modrm_imm_tb/rom_modrm_imm_tb.v

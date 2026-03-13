@@ -14,6 +14,8 @@ module tb_mux8_8();
     integer errors;
     reg [7:0] test_data [0:7]; // Array to store input values for easy comparison
     reg [7:0] expected_Y;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // Instantiate the Unit Under Test (UUT)
     mux8_8 uut (
@@ -54,8 +56,10 @@ module tb_mux8_8();
             if (Y !== expected_Y) begin
                 $display("[ERROR] Select: %b | Expected: %h | Got: %h", {S2, S1, S0}, expected_Y, Y);
                 errors = errors + 1;
+                FAILURES = FAILURES + 1;
             end else begin
                 $display("[PASS]  Select: %b | Output: %h", {S2, S1, S0}, Y);
+                SUCCESSES = SUCCESSES + 1;
             end
         end
 
@@ -69,7 +73,8 @@ module tb_mux8_8();
             $display("Total Mismatches: %0d", errors);
         end
         $display("--------------------------------------------------");
-        
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
       

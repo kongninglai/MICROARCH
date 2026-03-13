@@ -13,7 +13,11 @@ module tb_mux8_32();
         .IN0(in[0]), .IN1(in[1]), .IN2(in[2]), .IN3(in[3]),
         .IN4(in[4]), .IN5(in[5]), .IN6(in[6]), .IN7(in[7]),
         .S0(sel[0]), .S1(sel[1]), .S2(sel[2])
-    );
+    );  
+
+    //Error checking
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // 3. Test Logic
     integer i;
@@ -39,8 +43,10 @@ module tb_mux8_32();
 
             if (out === in[i]) begin
                 $display("[PASS] Sel: %0d | Out: %h", i, out);
+                SUCCESSES = SUCCESSES + 1;
             end else begin
                 $display("[FAIL] Sel: %0d | Got: %h | Exp: %h", i, out, in[i]);
+                FAILURES = FAILURES + 1;
             end
         end
 
@@ -55,6 +61,8 @@ module tb_mux8_32();
         $display("---------------------------------------------------------");
         $display("TEST COMPLETE");
         $display("---------------------------------------------------------");
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 

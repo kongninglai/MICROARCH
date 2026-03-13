@@ -14,6 +14,10 @@ module tb_logic_seg_ov();
     wire is_seg_ov;
     wire [2:0] seg_id;
 
+    //Error Checking
+    integer FAILURES = 0;
+    integer SUCCESSES = 0;
+
     // 2. Instantiate the DUT
     logic_seg_ov dut (
         .is_es0(is_es0), .is_es1(is_es1), .is_es2(is_es2), .is_es3(is_es3),
@@ -37,8 +41,10 @@ module tb_logic_seg_ov();
                 // Using %s will still work for the reg array
                 $display("FAIL: %s | Expected OV: %b ID: %d | Got OV: %b ID: %d", 
                         test_name, expected_ov, expected_id, is_seg_ov, seg_id);
+                FAILURES = FAILURES + 1;
             end else begin
                 $display("PASS: %s", test_name);
+                SUCCESSES = SUCCESSES + 1;
             end
         end
     endtask
@@ -79,6 +85,9 @@ module tb_logic_seg_ov();
         check_results(1'b1, 3'd4, "FS in Slot 3");
 
         $display("Tests Completed.");
+
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 

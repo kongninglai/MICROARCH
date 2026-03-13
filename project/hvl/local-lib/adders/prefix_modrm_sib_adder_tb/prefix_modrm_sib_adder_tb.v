@@ -14,6 +14,8 @@ module tb_prefix_modrm_sib_adder();
     integer error_count = 0;
     integer i, j, k; // ADDED 'k' for the new loop
     reg [2:0] expected_val;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // Instantiate the Unit Under Test (UUT)
     prefix_modrm_sib_adder uut (
@@ -61,9 +63,11 @@ module tb_prefix_modrm_sib_adder();
                         $display("❌ FAIL [%4t]:      %0d      |     %0d     |    %0d    |      %0d       |       %0d", 
                                  $time, prefix_num, has_modrm, has_sib, expected_val, total_offset);
                         error_count = error_count + 1;
+                        FAILURES = FAILURES + 1;
                     end else begin
                         $display("✅ PASS [%4t]:      %0d      |     %0d     |    %0d    |      %0d       |       %0d", 
                                  $time, prefix_num, has_modrm, has_sib, expected_val, total_offset);
+                        SUCCESSES = SUCCESSES + 1;
                     end
                 end
             end
@@ -77,7 +81,8 @@ module tb_prefix_modrm_sib_adder();
             $display("💥 TEST SUITE FAILED! (%0d Errors Found)", error_count);
         end
         $display("=========================================================================");
-
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 endmodule

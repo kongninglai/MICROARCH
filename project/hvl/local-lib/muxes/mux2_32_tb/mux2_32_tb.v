@@ -12,9 +12,11 @@ module tb_mux2_32();
 
     // Error tracking
     integer error_count = 0;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // Instantiate the Unit Under Test (UUT)
-    mux2_32$ uut (
+    mux2_32 uut (
         .Y(Y),
         .IN0(IN0),
         .IN1(IN1),
@@ -40,8 +42,10 @@ module tb_mux2_32();
         if (Y !== IN0) begin
             $display("❌ FAIL [Test 1]: S0=0 | Expected Y=%h, Got Y=%h", IN0, Y);
             error_count = error_count + 1;
+            FAILURES = FAILURES + 1;
         end else begin
             $display("✅ PASS [Test 1]: S0=0 | Y correctly matched IN0 (%h)", Y);
+            SUCCESSES = SUCCESSES + 1;
         end
 
         // Test 2: Select IN1
@@ -50,8 +54,10 @@ module tb_mux2_32();
         if (Y !== IN1) begin
             $display("❌ FAIL [Test 2]: S0=1 | Expected Y=%h, Got Y=%h", IN1, Y);
             error_count = error_count + 1;
+            FAILURES = FAILURES + 1;
         end else begin
             $display("✅ PASS [Test 2]: S0=1 | Y correctly matched IN1 (%h)", Y);
+            SUCCESSES = SUCCESSES + 1;
         end
 
         // Test 3: Change IN1 data while it is selected
@@ -60,8 +66,10 @@ module tb_mux2_32();
         if (Y !== IN1) begin
             $display("❌ FAIL [Test 3]: S0=1 (Data update) | Expected Y=%h, Got Y=%h", IN1, Y);
             error_count = error_count + 1;
+            FAILURES = FAILURES + 1;
         end else begin
             $display("✅ PASS [Test 3]: S0=1 (Data update) | Y successfully tracked IN1 change (%h)", Y);
+            SUCCESSES = SUCCESSES + 1;
         end
 
         // Test 4: Select IN0 and change its data
@@ -71,8 +79,10 @@ module tb_mux2_32();
         if (Y !== IN0) begin
             $display("❌ FAIL [Test 4]: S0=0 (Select & Data update) | Expected Y=%h, Got Y=%h", IN0, Y);
             error_count = error_count + 1;
+            FAILURES = FAILURES + 1;
         end else begin
             $display("✅ PASS [Test 4]: S0=0 (Select & Data update) | Y successfully tracked IN0 change (%h)", Y);
+            SUCCESSES = SUCCESSES + 1;
         end
 
         // Final Result Summary
@@ -83,7 +93,8 @@ module tb_mux2_32();
             $display("💥 TEST SUITE FAILED! (%0d Errors Found)", error_count);
         end
         $display("===============================================================");
-
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 endmodule

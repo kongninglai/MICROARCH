@@ -18,6 +18,8 @@ module logic_true_prefix_tb();
 
     // Error Tracking
     integer errors;
+    integer FAILURES = 0;
+    integer SUCCESSES = 0;
 
     // Instantiate the Unit Under Test (UUT)
     logic_true_prefix uut (
@@ -76,8 +78,10 @@ module logic_true_prefix_tb();
                 $display("  ------------------------------------------------\n");
 
                 errors = errors + 1;
+                FAILURES = FAILURES + 1;
             end else begin
                 $display("PASS : %s", test_name);
+                SUCCESSES = SUCCESSES + 1;  
             end
         end
     endtask
@@ -122,6 +126,9 @@ module logic_true_prefix_tb();
         end
 
         #10;
+        
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 

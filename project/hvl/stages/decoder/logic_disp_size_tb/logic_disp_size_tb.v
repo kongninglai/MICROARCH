@@ -13,6 +13,8 @@ module tb_logic_disp_size();
 
     // Self-checking variables
     integer error_count = 0;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // Instantiate the Unit Under Test (UUT)
     logic_disp_size uut (
@@ -33,9 +35,11 @@ module tb_logic_disp_size();
                 $display("❌ FAIL [Test %0d]: ModR/M=%b, is_modrm=%b | Exp SizeBits=%b, Bytes=%0d | Got SizeBits=%b, Bytes=%0d", 
                          test_num, modrm_byte, is_modrm_true, expected_size_bits, expected_size_bytes, disp_size, disp_size_inbytes);
                 error_count = error_count + 1;
+                FAILURES = FAILURES + 1;
             end else begin
                 $display("✅ PASS [Test %0d]: ModR/M=%b, is_modrm=%b -> Validly output %0d Bytes", 
                          test_num, modrm_byte, is_modrm_true, disp_size_inbytes);
+                SUCCESSES = SUCCESSES + 1;  
             end
         end
     endtask
@@ -89,6 +93,8 @@ module tb_logic_disp_size();
         end
         $display("===============================================================");
 
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 endmodule

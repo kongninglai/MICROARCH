@@ -25,6 +25,10 @@ module tb_logic_sib_byte();
         .is_sib_true(is_sib_true)
     );
 
+    // Error Checking
+    integer FAILURES = 0;
+    integer SUCCESSES = 0;
+
     // 3. Verification Task
     task verify_scenario(
         input [128:0] desc,
@@ -42,12 +46,18 @@ module tb_logic_sib_byte();
         $display("SCENARIO: %s", desc);
         $display("  Prefix Count: %0d | SIB_Valid: %b | SIB_Byte: %h", p_num, is_sib_true, sib_byte_true);
         
-        if (is_sib_true !== expected_flag)
+        if (is_sib_true !== expected_flag) begin
             $display("  [FAIL] SIB Flag mismatch! Got: %b, Exp: %b", is_sib_true, expected_flag);
-        else if (expected_flag && (sib_byte_true !== expected_sib))
+            FAILURES = FAILURES + 1;
+        end
+        else if (expected_flag && (sib_byte_true !== expected_sib)) begin
             $display("  [FAIL] SIB Byte mismatch! Got: %h, Exp: %h", sib_byte_true, expected_sib);
-        else
+            FAILURES = FAILURES + 1;
+        end
+        else begin
             $display("  [PASS]");
+            SUCCESSES = SUCCESSES + 1;
+        end
         $display("---------------------------------------------------------");
     end
     endtask
@@ -83,6 +93,9 @@ module tb_logic_sib_byte();
 
         $display("ALL TESTS COMPLETED.");
         $display("---------------------------------------------------------");
+
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 endmodule

@@ -14,6 +14,8 @@ module tb_mux16_32();
     integer i;
     integer error_count = 0;
     reg [31:0] expected_val;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // Instantiate the UUT
     mux16_32 uut (
@@ -65,8 +67,10 @@ module tb_mux16_32();
             if (Y !== expected_val) begin
                 $display("%2d  | %h | %h | ❌ FAIL", S, expected_val, Y);
                 error_count = error_count + 1;
+                FAILURES = FAILURES + 1;
             end else begin
                 $display("%2d  | %h | %h | ✅ PASS", S, expected_val, Y);
+                SUCCESSES = SUCCESSES + 1;
             end
         end
 
@@ -78,7 +82,8 @@ module tb_mux16_32();
             $display("💥 TEST SUITE FAILED! (%0d Errors Found)", error_count);
         end
         $display("==========================================================");
-
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 endmodule

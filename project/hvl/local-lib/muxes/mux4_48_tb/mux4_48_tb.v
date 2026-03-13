@@ -13,6 +13,8 @@ module tb_mux4_48();
     integer error_count = 0;
     integer i;
     reg [47:0] expected_Y;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
 
     // Instantiate UUT
     mux4_48 uut (
@@ -58,8 +60,10 @@ module tb_mux4_48();
             if (Y !== expected_Y) begin
                 $display("❌ FAIL | S1:S0 = %b%b | Expected: %h | Got: %h", S1, S0, expected_Y, Y);
                 error_count = error_count + 1;
+                FAILURES = FAILURES + 1;
             end else begin
                 $display("✅ PASS | S1:S0 = %b%b | Successfully selected %h", S1, S0, expected_Y);
+                SUCCESSES = SUCCESSES + 1;
             end
         end
 
@@ -71,7 +75,8 @@ module tb_mux4_48();
             $display("💥 TEST SUITE FAILED! (%0d Errors Found)", error_count);
         end
         $display("===============================================================");
-        
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 endmodule

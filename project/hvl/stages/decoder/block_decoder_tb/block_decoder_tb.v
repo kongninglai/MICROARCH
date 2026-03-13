@@ -21,6 +21,8 @@ module tb_block_decoder();
 
     // 3. Test Tracking
     integer error_count = 0;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
     integer i;
 
     // 4. Instantiate the Unit Under Test (UUT)
@@ -72,7 +74,7 @@ module tb_block_decoder();
                 disp_size_mux !== exp_disp_size_mux || disp !== exp_disp ||
                 imm_size !== exp_imm_size || imm !== exp_imm || 
                 addressing_mode !== exp_addr_mode) begin
-                
+                FAILURES = FAILURES + 1;
                 $display("❌ FAIL: Decoder Mismatch!");
                 $display("  [PREFIXES] Exp: OS=%b | Got: OS=%b", exp_op_size, prefix_op_size);
                 $display("  [BYTES]    Exp: Op=%h, ModRM_Sig=%b, ModRM=%h | Got: Op=%h, ModRM_Sig=%b, ModRM=%h", 
@@ -83,6 +85,7 @@ module tb_block_decoder();
                 $display("  [ADDR MODE]Exp: %b | Got: %b", exp_addr_mode, addressing_mode);
                 error_count = error_count + 1;
             end else begin
+                SUCCESSES = SUCCESSES + 1;
                 $display("✅ PASS: Opcode %h | ModRM Sig: %b | ModRM: %h", opcode, addressing_mode[0], modrm);
             end
         end
@@ -285,6 +288,8 @@ module tb_block_decoder();
         end
         $display("===============================================================");
 
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 endmodule

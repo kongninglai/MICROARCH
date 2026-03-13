@@ -10,6 +10,8 @@ module comb_logic_gen_tb();
     // Internal tracking
     integer i;
     integer errors;
+    integer FAILURES  = 0;
+    integer SUCCESSES = 0;
     reg [2:0] expected_val;
 
     // Concatenate for easier display
@@ -36,8 +38,10 @@ module comb_logic_gen_tb();
             if (result !== exp_out) begin
                 $display("ERROR at %0t: %s | Expected: %b, Got: %b", $time, msg, exp_out, result);
                 errors = errors + 1;
+                FAILURES = FAILURES + 1;
             end else begin
                 $display("PASS  at %0t: %s | Result: %b", $time, msg, result);
+                SUCCESSES = SUCCESSES + 1;
             end
         end
     endtask
@@ -82,6 +86,8 @@ module comb_logic_gen_tb();
             $display("************************************");
         end
 
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 
