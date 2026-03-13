@@ -341,7 +341,7 @@ initial begin
   DCACHE_WR_PHYS_ADDR        <= {KB_PFN, 8'd0}; // KBER in bit [0], KBSR in bit [64]
   #(CYCLE_TIME);
   DCACHE_NEED_WR_BUS         <= 1'b0;
-  @(negedge WBE_BUSY);
+  @(negedge WBE_BUSY); @(negedge WBE_BUSY); @(posedge clk);
   @(posedge clk);
 
   // Verify only KBER was updated
@@ -401,7 +401,7 @@ initial begin
   DCACHE_WR_PHYS_ADDR        <= {DMA_PFN, 8'd0}; // KBER in bit [0], KBSR in bit [64]
   #(CYCLE_TIME);
   DCACHE_NEED_WR_BUS         <= 1'b0;
-  @(negedge WBE_BUSY);
+  @(negedge WBE_BUSY); @(negedge WBE_BUSY); @(posedge clk);
   @(posedge clk);
 
   DCACHE_RD_PHYS_ADDR         <= {DMA_PFN, 8'd0};
@@ -478,6 +478,8 @@ initial begin
     check_wr_data(DATA_NEXT_EXP);
   end
 
+  ICACHE_MISS                 <= 1'b0;
+
   /*** MEMORY CONTROLLER TESTING ***/
   for (i = 0; i < 2048; i = i + 2) begin
     if (i[10:8] !== DMA_PFN && i[10:8] !== KB_PFN) begin
@@ -486,17 +488,20 @@ initial begin
       DCACHE_WR_PHYS_ADDR        <= i[10:0];
       #(CYCLE_TIME);
       DCACHE_NEED_WR_BUS         <= 1'b0;
-      @(negedge WBE_BUSY);
+      @(negedge WBE_BUSY); @(negedge WBE_BUSY); @(posedge clk);
       @(posedge clk);
       DCACHE_NEED_WR_BUS         <= 1'b1;
       DCACHE_WBE_DATA            <= {i+7, i+6, i+5, i+4};
       DCACHE_WR_PHYS_ADDR        <= (i[10:0]) + 11'd1;
       #(CYCLE_TIME);
       DCACHE_NEED_WR_BUS         <= 1'b0;
-      @(negedge WBE_BUSY);
+      @(negedge WBE_BUSY); @(negedge WBE_BUSY); @(posedge clk);
       @(posedge clk);
     end
   end
+
+  #(CYCLE_TIME);
+  ICACHE_MISS                 <= 1'b1;
   
   for (i = 0; i < 2048; i = i + 2) begin
     if (i[10:8] !== DMA_PFN && i[10:8] !== KB_PFN) begin

@@ -21,7 +21,7 @@ encoder4_2_tb                  FAILURES=0      SUCCESSES=5
 FA_16b_tb                      FAILURES=0      SUCCESSES=4096  
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
-full_cache_tb                  COMPILE_ERROR
+full_cache_tb                  FAILURES=0      SUCCESSES=0     
 full_cc_off_core_tb            FAILURES=0      SUCCESSES=32063 
 gen_prop_2_tb                  FAILURES=0      SUCCESSES=16    
 gen_prop_tb                    FAILURES=0      SUCCESSES=4     
@@ -61,6 +61,7 @@ rshfa_const_tb                 FAILURES=0      SUCCESSES=1024
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
 seg_limit_cmp_tb               FAILURES=0      SUCCESSES=65543 
 se_tb                          FAILURES=0      SUCCESSES=258   
+sticky_bit_fsm_tb              FAILURES=0      SUCCESSES=4112  
 stream_buffer_tb               FAILURES=0      SUCCESSES=4130  
 tag_hit_logic_tb               FAILURES=0      SUCCESSES=5200  
 tag_store_tb                   FAILURES=0      SUCCESSES=160   

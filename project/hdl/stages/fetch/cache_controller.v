@@ -361,11 +361,9 @@ mux2$   mux2$_CC_HIT_DATA_OUT[RANK_BIT_WIDTH-1:0]          (
                                                               FSM_HIT_DATA_MUX
                                                             );
 
-wire [NUM_WAYS*RANK_BURST_SIZE-1:0] CC_DATA_WR_MASK_OUT_INT;
-
-mux4$   mux4$_CC_DATA_WR_MASK_OUT_INT[NUM_WAYS*RANK_BURST_SIZE-1:0]
+mux4$   mux4$_CC_DATA_WR_MASK_OUT[NUM_WAYS*RANK_BURST_SIZE-1:0]
                                                             (
-                                                              CC_DATA_WR_MASK_OUT_INT,
+                                                              CC_DATA_WR_MASK_OUT,
 
                                                               CC_DATA_WR_MASK_DEFAULT,
                                                               Q_CC_DATA_WR_MASK_OUT_01,
@@ -376,20 +374,14 @@ mux4$   mux4$_CC_DATA_WR_MASK_OUT_INT[NUM_WAYS*RANK_BURST_SIZE-1:0]
                                                               FSM_DATA_WR_MASK_MUX[1]
                                                             );
 
-mux2$   mux2$_CC_DATA_WR_MASK_OUT[NUM_WAYS*RANK_BURST_SIZE-1:0](CC_DATA_WR_MASK_OUT, CC_DATA_WR_MASK_DEFAULT, CC_DATA_WR_MASK_OUT_INT, rst);
-
-wire  [NUM_WAYS-1:0] CC_TAG_WR_MASK_OUT_INT;
-
-mux2$   mux2$_CC_TAG_WR_MASK_OUT_INT[NUM_WAYS-1:0]             (
-                                                              CC_TAG_WR_MASK_OUT_INT,
+mux2$   mux2$_CC_TAG_WR_MASK_OUT[NUM_WAYS-1:0]             (
+                                                              CC_TAG_WR_MASK_OUT,
 
                                                               {NUM_WAYS{1'b1}},
                                                               Q_CC_TAG_WR_MASK_OUT_1,
 
                                                               FSM_TAG_WR_MASK_MUX
                                                             );
-
-mux2$   mux2$_CC_TAG_WR_MASK_OUT[NUM_WAYS-1:0](CC_TAG_WR_MASK_OUT, {NUM_WAYS{1'b1}}, CC_TAG_WR_MASK_OUT_INT, rst);
 
 /*** BUS DRIVERS ***/
 

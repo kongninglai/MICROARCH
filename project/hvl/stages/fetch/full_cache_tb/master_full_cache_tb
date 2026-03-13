@@ -49,5 +49,6 @@
 ~/MICROARCH/project/hdl/stages/fetch/valid_or_dirty_store.v
 ~/MICROARCH/project/hdl/stages/fetch/data_store.v
 ~/MICROARCH/project/hdl/local-lib/extenders/bit_duplicator.v
+~/MICROARCH/project/hdl/stages/memory/sticky_bit_fsm.v
 ~/MICROARCH/project/hdl/stages/fetch/full_cache.v
 ~/MICROARCH/project/hvl/stages/fetch/full_cache_tb/full_cache_tb.v

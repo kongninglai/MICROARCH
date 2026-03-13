@@ -259,10 +259,8 @@ initial begin
         CACHE_MISS                 <= 1'b1;
         #(CYCLE_TIME);
         CACHE_PHYS_ADDR            <= CACHE_PHYS_ADDR + 2;
-        #(CYCLE_TIME);
-        #(CYCLE_TIME);
-        #(7 * CYCLE_TIME);
-        #(CYCLE_TIME);
+        @(negedge DUT.DATA_VALID_BAR);
+        @(posedge clk);
         check_wr_data({{96{1'b0}}, i+0});
         #(CYCLE_TIME);
         check_wr_data(({{96{1'b0}}, i+1}) << 32);

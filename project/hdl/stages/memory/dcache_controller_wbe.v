@@ -54,11 +54,13 @@ reg_n #(
 
 /*** STATE MACHINE INPUTS ***/
 
-wire ARB_ACK_RECV, WB_DONE;
+wire ARB_ACK_RECV, WB_DONE, CTR_NOT_DONE, STATE_10_DONE_COND;
 
 or3$    or3$_ARB_ACK_RECV(ARB_ACK_RECV, DC_MEM_WR_ACK, DC_DMA_WR_ACK, DC_KB_WR_ACK);
 and2$   and2$_WB_DONE(WB_DONE, counter[0], counter[1]);
-or2$    or2$_WBE_BUSY(WBE_BUSY, Q1, Q0);
+nand2$  nand2$_CTR_NOT_DONE(CTR_NOT_DONE, counter[0], counter[1]);
+and2$   and2$_STATE_10_DONE_COND(STATE_10_DONE_COND, CTR_NOT_DONE, Q1);
+or2$    or2$_WBE_BUSY(WBE_BUSY, STATE_10_DONE_COND, Q0);
 
 /*** REGISTERS ***/
 
