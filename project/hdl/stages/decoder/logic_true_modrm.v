@@ -2,8 +2,8 @@
 This module outputs the final modrm byte and the associated immediate information. 
 
 Delay: 
-0.24 + 2.69 (2.93 total) + 0.47 + 0.8ns = 4.2ns total delay
-Must wait until 3.38 to get output of first stage (3.38 - 2.91 = 0.47ns wait)
+0.24 + 2.69 + 0.47 (prefix num ready) + 0.8ns = 4.2ns total delay
+Must wait until 3.38 to get output of prefix_num (3.38 - 2.91 = 0.47ns wait)
 
 */
 module logic_true_modrm(

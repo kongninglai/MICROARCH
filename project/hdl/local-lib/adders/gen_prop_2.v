@@ -1,3 +1,6 @@
+/*
+Delay: 0.35ns through Pij, 0.6ns through Gi_j
+*/
 module gen_prop_2(Gi_j, Pi_j, Pi_k, Pkm1_j, Gi_k, Gkm1_j);
 	
 	input		Pi_k, Pkm1_j, Gi_k, Gkm1_j;

@@ -6,7 +6,7 @@
 # At the bottom of this file, you can specify the input CSV filename if needed: 
 #       input_filename = "instr_info.csv" #CHANGE IF NEEDED
 # The info per byte is in the following format: 
-#       bit 7: MRM, bits 6-4: IMM, bits 3-1: SUM Opcode Cnt (1 or 2) + IMM_in_bytes + MODRM Cnt (0 or 1), bit 0: FAR.BR (0 or 1)
+#       bit 7: MRM, bits 6-4: IMM, bits 3-1: SUM Opcode Cnt (1) + IMM_in_bytes + MODRM Cnt (0 or 1), bit 0: FAR.BR (0 or 1)
 
 # To run: <python3 rom_gen.py>
 
@@ -29,12 +29,12 @@ def rom_gen(input_csv):
             if not row or not row.get('Opcode'): continue
             instructions.append(row)
 
-    def parse_row(row, overhead):
+    def parse_row(row, ops):
         # bit 7: MRM, bits 6-4: IMM, bits 3-1: SUM, bit 0: FAR.BR
         mrm = int(float(row.get('MRM', 0) or 0)) & 0x1
         imm = int(float(row.get('IMM', 0) or 0)) & 0x7
         far = int(float(row.get('FAR.BR', 0) or 0)) & 0x1
-        sum_val = (mrm + imm + overhead) & 0x7
+        sum_val = (mrm + imm + 1) & 0x7
         assembled = (mrm << 7) | (imm << 4) | (sum_val << 1) | far
         return f"{assembled:02X}"
 
@@ -46,8 +46,8 @@ def rom_gen(input_csv):
             tbop = int(float(row.get('2BOP', 0) or 0))
             oso = int(float(row.get('OSO', 0) or 0))
             if oso == 0:
-                if tbop == 0: opcode_map_std[idx] = parse_row(row, 1)
-                else: opcode_map_ext[idx] = parse_row(row, 2)
+                if tbop == 0: opcode_map_std[idx] = parse_row(row, op_hex)
+                else: opcode_map_ext[idx] = parse_row(row, op_hex)
         except: continue
 
     # Phase 3: Create OSO maps as COPIES (preserving the "XX" logic)
@@ -62,8 +62,8 @@ def rom_gen(input_csv):
             tbop = int(float(row.get('2BOP', 0) or 0))
             oso = int(float(row.get('OSO', 0) or 0))
             if oso == 1:
-                if tbop == 0: opcode_map_oso[idx] = parse_row(row, 1)
-                else: opcode_map_ext_oso[idx] = parse_row(row, 2)
+                if tbop == 0: opcode_map_oso[idx] = parse_row(row, op_hex)
+                else: opcode_map_ext_oso[idx] = parse_row(row, op_hex)
         except: continue
 
     # Phase 5: Writing Helper
@@ -74,7 +74,7 @@ def rom_gen(input_csv):
                 base_op = start_idx + (i * 4)
                 # Word construction b3b2b1b0
                 word = "".join([data_map[base_op + j] for j in range(3, -1, -1)])
-                ops = [f"{base_op + j:02X}" for j in range(3, -1, -1)]
+                ops = [f"{base_op + j:02X}" for j in range(3, -1, -1)]                    
                 comment = f"// Address {i:02d}: Opcodes {ops[0]}, {ops[1]}, {ops[2]}, {ops[3]}"
                 f.write(f"{word}  {comment}\n")
 

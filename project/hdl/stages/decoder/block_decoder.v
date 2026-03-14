@@ -11,7 +11,8 @@ module block_decoder(
     output wire [31:0] disp, 
     output wire [1:0] imm_size,
     output wire [47:0] imm,
-    output wire [1:0] addressing_mode
+    output wire [1:0] addressing_mode,
+    output wire [3:0] instr_length
 );      
 
 
@@ -111,7 +112,7 @@ module block_decoder(
         .is_modrm_true(is_modrm_true),
         .prefix_num(prefix_num),
         .sib_byte_true(sib_byte_true),
-        .is_sib_true(is_sib_true) //ready at 6.2ns
+        .is_sib_true(is_sib_true) //ready at 4.55ns
     );  
     assign sib = sib_byte_true;
     assign addressing_mode[0] = is_modrm_true;
@@ -144,6 +145,14 @@ module block_decoder(
     );  
     assign imm_size = imm_size_true;
     assign imm = imm_bytes;
+
+    logic_incr_amt EIP_INCR_AMT(
+        .rom_sum(sum_modrm_imm_true), //Ready at 4.2ns
+        .disp_size_inbytes(disp_size_inbytes), //Ready at 5.05ns
+        .prefix_amount(prefix_num), //Ready at 3.38ns
+        .sib_present(is_sib_true), //Ready at 4.55ns
+        .incr_amt(instr_length)
+    );
     
 
 endmodule

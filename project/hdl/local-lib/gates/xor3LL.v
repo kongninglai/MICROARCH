@@ -1,3 +1,7 @@
+/*
+Delay: 0.6ns
+*/
+
 module xor3LL(
   output  out,
   input   in0, in1, in2

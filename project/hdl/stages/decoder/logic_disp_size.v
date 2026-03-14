@@ -15,7 +15,6 @@ module logic_disp_size(
     output wire [1:0] disp_size
 );
 
-    wire [31:0] active_row;
     wire [1:0] mod_bits;
     wire [2:0] rm_bits;
     assign mod_bits = modrm_byte[7:6];
@@ -25,7 +24,6 @@ module logic_disp_size(
     wire eq_rm_100, eq_rm_101;
     wire eq_mod_00, eq_mod_01, eq_mod_10, eq_mod_11;
     big_eq #(3) check_rm_101(.in0(rm_bits), .in1(3'b101), .eq(eq_rm_101));
-
     big_eq #(2) check_mod_00(.in0(mod_bits), .in1(2'b00), .eq(eq_mod_00)); // 0 byte displacement
     big_eq #(2) check_mod_01(.in0(mod_bits), .in1(2'b01), .eq(eq_mod_01)); // 1 byte displacement
     big_eq #(2) check_mod_10(.in0(mod_bits), .in1(2'b10), .eq(eq_mod_10)); // 4 byte displacement

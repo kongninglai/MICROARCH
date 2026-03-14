@@ -47,12 +47,6 @@ module logic_sib_byte(
         .candidate_modrm(candidate_modrm6),
         .is_sib(is_sib6)
     );
-
-    // Output each is_sib signal when it changes
-    always @(is_sib1, is_sib2, is_sib3, is_sib4, is_sib5, is_sib6) begin
-        $display("is_sib1=%b, is_sib2=%b, is_sib3=%b, is_sib4=%b, is_sib5=%b, is_sib6=%b", 
-                 is_sib1, is_sib2, is_sib3, is_sib4, is_sib5, is_sib6);
-    end
     
     //Layer 2: 0.8ns
     wire is_any_sib;
