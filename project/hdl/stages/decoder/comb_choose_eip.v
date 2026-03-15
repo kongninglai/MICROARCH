@@ -1,5 +1,5 @@
 /* AUTO GENERATED COMBINATIONAL LOGIC */
-module comb_logic_gen(P2,P1,P0,OUT1,OUT0);
+module comb_choose_eip(P2,P1,P0,OUT1,OUT0);
 
 	/* I/Os */
 	input P2,P1,P0;
@@ -22,4 +22,4 @@ module comb_logic_gen(P2,P1,P0,OUT1,OUT0);
 	or2$ or_1_0(OUT0,and_0_0_out,and_2_0_out);
 
 endmodule
-
+
