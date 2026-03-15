@@ -13,40 +13,40 @@ xor2$	   xor2$_0[WIDTH-1:0](in_inv, in0, in1);
 
 generate
   case (WIDTH)
-    1: begin
+    1: begin : width1_gen
       assign eq = in[0];
     end
-    2: begin
+    2: begin : width2_gen
       and2$ and_0_0(eq,in[0],in[1]);
     end
-    3: begin
+    3: begin : width3_gen
       and3$ and_0_0(eq,in[0],in[1],in[2]);
     end
-    4: begin
+    4: begin : width4_gen
       and4$ and_0_0(eq,in[0],in[1],in[2],in[3]);
     end
-    5: begin
+    5: begin : width5_gen
       wire and_0_0_out;
       wire and_0_1_out;
       and4$ and_0_0(and_0_0_out,and_0_1_out,in[0],in[1],in[2]);
       and2$ and_0_1(and_0_1_out,in[3],in[4]);
       assign eq = and_0_0_out;
     end
-    6: begin
+    6: begin : width6_gen
       wire and_0_0_out;
       wire and_0_1_out;
       and4$ and_0_0(and_0_0_out,and_0_1_out,in[0],in[1],in[2]);
       and3$ and_0_1(and_0_1_out,in[3],in[4],in[5]);
       assign eq = and_0_0_out;
     end
-    7: begin
+    7: begin : width7_gen
       wire and_0_0_out;
       wire and_0_1_out;
       and4$ and_0_0(and_0_0_out,and_0_1_out,in[0],in[1],in[2]);
       and4$ and_0_1(and_0_1_out,in[3],in[4],in[5],in[6]);
       assign eq = and_0_0_out;
     end
-    8: begin
+    8: begin : width8_gen
       // Optimized for cache tag compares
       wire nor_0_0_out;
       wire nand_0_0_out;
@@ -56,7 +56,7 @@ generate
       nand4$  nand_0_1(nand_0_1_out,in[4],in[5],in[6],in[7]);
       assign eq = nor_0_0_out;
     end
-    9: begin
+    9: begin : width9_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -65,7 +65,7 @@ generate
       and3$ and_0_2(and_0_2_out,in[6],in[7],in[8]);
       assign eq = and_0_0_out;
     end
-    10: begin
+    10: begin : width10_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -74,7 +74,7 @@ generate
       and4$ and_0_2(and_0_2_out,in[6],in[7],in[8],in[9]);
       assign eq = and_0_0_out;
     end
-    11: begin
+    11: begin : width11_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -85,7 +85,7 @@ generate
       and2$ and_0_3(and_0_3_out,in[9],in[10]);
       assign eq = and_0_0_out;
     end
-    12: begin
+    12: begin : width12_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -96,7 +96,7 @@ generate
       and3$ and_0_3(and_0_3_out,in[9],in[10],in[11]);
       assign eq = and_0_0_out;
     end
-    13: begin
+    13: begin : width13_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -107,7 +107,7 @@ generate
       and4$ and_0_3(and_0_3_out,in[9],in[10],in[11],in[12]);
       assign eq = and_0_0_out;
     end
-    14: begin
+    14: begin : width14_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -120,7 +120,7 @@ generate
       and2$ and_0_4(and_0_4_out,in[12],in[13]);
       assign eq = and_0_0_out;
     end
-    15: begin
+    15: begin : width15_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -133,7 +133,7 @@ generate
       and3$ and_0_4(and_0_4_out,in[12],in[13],in[14]);
       assign eq = and_0_0_out;
     end
-    16: begin
+    16: begin : width16_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -146,7 +146,7 @@ generate
       and4$ and_0_4(and_0_4_out,in[12],in[13],in[14],in[15]);
       assign eq = and_0_0_out;
     end
-    17: begin
+    17: begin : width17_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -161,7 +161,7 @@ generate
       and2$ and_0_5(and_0_5_out,in[15],in[16]);
       assign eq = and_0_0_out;
     end
-    18: begin
+    18: begin : width18_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -176,7 +176,7 @@ generate
       and3$ and_0_5(and_0_5_out,in[15],in[16],in[17]);
       assign eq = and_0_0_out;
     end
-    19: begin
+    19: begin : width19_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -191,7 +191,7 @@ generate
       and4$ and_0_5(and_0_5_out,in[15],in[16],in[17],in[18]);
       assign eq = and_0_0_out;
     end
-    20: begin
+    20: begin : width20_gen
       // Optimized for TLB lookups
       wire nor_0_0_out;
       wire nor_0_1_out;
@@ -211,7 +211,7 @@ generate
       or4$     or_0_0(or_0_0_out,in_inv[16],in_inv[17],in_inv[18],in_inv[19]);
       assign eq = nor_0_0_out;
     end
-    21: begin
+    21: begin : width21_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -228,7 +228,7 @@ generate
       and3$ and_0_6(and_0_6_out,in[18],in[19],in[20]);
       assign eq = and_0_0_out;
     end
-    22: begin
+    22: begin : width22_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -245,7 +245,7 @@ generate
       and4$ and_0_6(and_0_6_out,in[18],in[19],in[20],in[21]);
       assign eq = and_0_0_out;
     end
-    23: begin
+    23: begin : width23_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -264,7 +264,7 @@ generate
       and2$ and_0_7(and_0_7_out,in[21],in[22]);
       assign eq = and_0_0_out;
     end
-    24: begin
+    24: begin : width24_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -283,7 +283,7 @@ generate
       and3$ and_0_7(and_0_7_out,in[21],in[22],in[23]);
       assign eq = and_0_0_out;
     end
-    25: begin
+    25: begin : width25_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -302,7 +302,7 @@ generate
       and4$ and_0_7(and_0_7_out,in[21],in[22],in[23],in[24]);
       assign eq = and_0_0_out;
     end
-    26: begin
+    26: begin : width26_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -323,7 +323,7 @@ generate
       and2$ and_0_8(and_0_8_out,in[24],in[25]);
       assign eq = and_0_0_out;
     end
-    27: begin
+    27: begin : width27_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -344,7 +344,7 @@ generate
       and3$ and_0_8(and_0_8_out,in[24],in[25],in[26]);
       assign eq = and_0_0_out;
     end
-    28: begin
+    28: begin : width28_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -365,7 +365,7 @@ generate
       and4$ and_0_8(and_0_8_out,in[24],in[25],in[26],in[27]);
       assign eq = and_0_0_out;
     end
-    29: begin
+    29: begin : width29_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -388,7 +388,7 @@ generate
       and2$ and_0_9(and_0_9_out,in[27],in[28]);
       assign eq = and_0_0_out;
     end
-    30: begin
+    30: begin : width30_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -411,7 +411,7 @@ generate
       and3$ and_0_9(and_0_9_out,in[27],in[28],in[29]);
       assign eq = and_0_0_out;
     end
-    31: begin
+    31: begin : width31_gen
       wire and_0_0_out;
       wire and_0_1_out;
       wire and_0_2_out;
@@ -434,7 +434,7 @@ generate
       and4$ and_0_9(and_0_9_out,in[27],in[28],in[29],in[30]);
       assign eq = and_0_0_out;
     end
-    32: begin
+    32: begin : width32_gen
       // Optimized for 32-bit compares
       wire nor_0_0_out;
       wire nor_0_1_out;

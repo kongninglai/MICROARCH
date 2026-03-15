@@ -13,7 +13,7 @@ localparam TAG_WIDTH = 8;
 localparam RANK_BURST_SIZE = 4;
 localparam MEM_ADDR_WIDTH = 15;
 
-localparam IN_WIDTH = 7;
+localparam IN_WIDTH = 8;
 localparam CYCLE_TIME = 10.0;
 
 reg  [IN_WIDTH-1:0] in;
@@ -22,9 +22,10 @@ reg  clk, rst;
 wire [WAY_WIDTH-1:0] TAG_HIT_WAY = in[1:0];
 wire CACHE_HIT = in[2];
 wire CC_STREAM_BUF_HIT = in[3];
+wire CC_FSM_VALID_WR_EN_GLOBAL = in[4];
 
 wire [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] CC_ADDR_OUT;
-assign CC_ADDR_OUT = { {(MEM_ADDR_WIDTH-RANK_BURST_SIZE-3){1'b0}}, in[6:4] };
+assign CC_ADDR_OUT = { {(MEM_ADDR_WIDTH-RANK_BURST_SIZE-3){1'b0}}, in[7:5] };
 
 wire [WAY_WIDTH-1:0] VICT_WAY, VICT_WAY_EXP;
 
@@ -37,6 +38,7 @@ lru_store #(.TRUE_LRU(TRUE_LRU)) DUT(
   .CACHE_HIT(CACHE_HIT),
   .CC_ADDR_OUT(CC_ADDR_OUT),
   .CC_STREAM_BUF_HIT(CC_STREAM_BUF_HIT),
+  .CC_FSM_VALID_WR_EN_GLOBAL(CC_FSM_VALID_WR_EN_GLOBAL),
   .VICT_WAY(VICT_WAY)
 );
 
@@ -47,6 +49,7 @@ lru_store_behav #(.TRUE_LRU(TRUE_LRU)) REF(
   .CACHE_HIT(CACHE_HIT),
   .CC_ADDR_OUT(CC_ADDR_OUT),
   .CC_STREAM_BUF_HIT(CC_STREAM_BUF_HIT),
+  .CC_FSM_VALID_WR_EN_GLOBAL(CC_FSM_VALID_WR_EN_GLOBAL),
   .VICT_WAY(VICT_WAY_EXP)
 );
 

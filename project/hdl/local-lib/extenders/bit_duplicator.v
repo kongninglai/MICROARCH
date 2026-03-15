@@ -14,7 +14,7 @@ genvar i;
 generate
   if (MULTIPLIER > 4) begin : INPUT_BUF_GEN
     bufferH16$  bufferH16$_in_buf16[IN_WIDTH-1:0](in_buf16, in);
-  end else begin
+  end else begin : INPUT_NO_BUF_GEN
     assign in_buf16 = in;
   end
 

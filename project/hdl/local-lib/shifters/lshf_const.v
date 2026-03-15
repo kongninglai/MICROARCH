@@ -8,9 +8,9 @@ module lshf_const #(
 );
 
 generate
-  if (SHF_ONES) begin
+  if (SHF_ONES) begin : SHIFT_ONES_GEN
     assign out[SHF_AMT-1:0]     = {SHF_AMT{1'b1}};
-  end else begin
+  end else begin : SHIFT_ZEROS_GEN
     assign out[SHF_AMT-1:0]     = {SHF_AMT{1'b0}};
   end
 endgenerate

@@ -14,6 +14,7 @@ module lru_store_behav #(
   input                                             CACHE_HIT,
   input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      CC_ADDR_OUT,
   input                                             CC_STREAM_BUF_HIT,
+  input                                             CC_FSM_VALID_WR_EN_GLOBAL,
   output reg [WAY_WIDTH-1:0]                        VICT_WAY
 );
 
@@ -27,11 +28,11 @@ wire [WAY_WIDTH-1:0] TOUCHED_WAY;
 
 assign HIT_CONDITION = (TRUE_LRU == 0) ?
                        CACHE_HIT :
-                       (CACHE_HIT | CC_STREAM_BUF_HIT);
+                       (CACHE_HIT | (CC_STREAM_BUF_HIT && CC_FSM_VALID_WR_EN_GLOBAL));
 
 assign TOUCHED_WAY = (TRUE_LRU == 0) ?
                      TAG_HIT_WAY :
-                     (CACHE_HIT ? TAG_HIT_WAY : VICT_WAY);
+                     ((CC_STREAM_BUF_HIT && CC_FSM_VALID_WR_EN_GLOBAL) ? VICT_WAY : TAG_HIT_WAY);
 
 
 genvar i;

@@ -7,10 +7,10 @@ module lshf_chunks #(
   input       [WIDTH-1:0]   in,
   output      [WIDTH-1:0]   out
 );
-  generate
-  if (SHF_ZEROS) begin
+generate
+  if (SHF_ZEROS) begin : zero_shift_gen
     assign out[CHUNK_WIDTH*SHF_AMT-1:0]     = {CHUNK_WIDTH*SHF_AMT{1'b0}};
-  end else begin
+  end else begin : ones_shift_gen
     assign out[CHUNK_WIDTH*SHF_AMT-1:0]     = {CHUNK_WIDTH*SHF_AMT{1'b1}};
   end
 endgenerate

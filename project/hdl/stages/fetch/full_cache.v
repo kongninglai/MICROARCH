@@ -44,7 +44,7 @@ module full_cache #(
   /*** BETWEEN STORE QUEUE & CACHE, for WRITES ***/
   input                                                   STOREQ_STORING,
   input     [RANK_BIT_WIDTH-1:0]                          STOREQ_DATA,
-  input     [NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0]  STOREQ_DATA_WR_MASK,
+  input     [RANK_BURST_SIZE*BYTES_PER_BUS-1:0]           STOREQ_DATA_WR_MASK,
   input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]            STOREQ_PHYS_ADDR,
 
   /*** BETWEEN TLB & CACHE, for READS ***/
@@ -150,13 +150,49 @@ wire    DCACHE_HIT;
 and2$   and2$_STOREQ_STORE_COND(STOREQ_STORE_COND, STOREQ_STORING, DCACHE_HIT);
 bufferH1024$  bufferH1024$_STOREQ_STORE_COND_buf1024(STOREQ_STORE_COND_buf1024, STOREQ_STORE_COND);
 
-mux2$   mux2$_final_dcache_wr_en_bar_one_hot[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](final_dcache_wr_en_bar_one_hot, dcache_wr_en_bar_one_hot, STOREQ_DATA_WR_MASK, STOREQ_STORE_COND_buf1024);
-or2$    or2$_final_dcache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](final_dcache_wr_en_bar_one_hot_gated, final_dcache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}});
+wire [NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0] STOREQ_DATA_WR_MASK_SHF, STOREQ_DATA_WR_MASK_SHF_GATED;
 
-wire    [RANK_BIT_WIDTH-1:0]  FINAL_DCACHE_WR_DATA_OUT;
-mux2$   mux2$_FINAL_DCACHE_WR_DATA_OUT[RANK_BIT_WIDTH-1:0](FINAL_DCACHE_WR_DATA_OUT, DCC_WR_DATA_OUT, STOREQ_DATA, STOREQ_STORE_COND_buf1024);
+wire    [WAY_WIDTH-1:0]   DCACHE_TAG_HIT_WAY, DCACHE_TAG_HIT_WAY_buf16;
 
-mux2$   mux2$_DCACHE_PHYS_ADDR[MEM_ADDR_WIDTH-1:RANK_BURST_SIZE](DCACHE_PHYS_ADDR, {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]}, STOREQ_PHYS_ADDR, STOREQ_STORE_COND_buf1024);
+lshf_chunks_var_64b lshf_chunks_var_64b_STOREQ_DATA_WR_MASK_SHF (
+  .in({{48{1'b1}}, STOREQ_DATA_WR_MASK}),
+  .shf_amt(DCACHE_TAG_HIT_WAY_buf16),
+  .out(STOREQ_DATA_WR_MASK_SHF)
+);
+
+mux2$   mux2$_STOREQ_DATA_WR_MASK_SHF_GATED[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](STOREQ_DATA_WR_MASK_SHF_GATED, STOREQ_DATA_WR_MASK_SHF, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){1'b1}}, DCACHE_VALID);
+
+mux2$   mux2$_final_dcache_wr_en_bar_one_hot[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](final_dcache_wr_en_bar_one_hot, dcache_wr_en_bar_one_hot, STOREQ_DATA_WR_MASK_SHF, STOREQ_STORE_COND_buf1024);
+
+/* You can also just gate DCACHE_HIT with whether or not SET[2:0] changed from last cycle using a reg_n and a 3-bit comparator...
+   can force STOREQ writes to take 2 cycles if really necessary */
+
+wire    clk_bar, clk_buf4096;
+
+bufferHInv4096$   bufferHInv4096$_clk_bar(clk_bar, clk);
+
+bufferHInv4096$   bufferHInv4096$_clk_buf4096(clk_buf4096, clk_bar);
+
+
+or3$    or3$_final_dcache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](final_dcache_wr_en_bar_one_hot_gated, final_dcache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}}, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk_buf4096}});
+
+wire    clk_bar_unbuf;
+
+inv1$   inv1$_clk_bar_unbuf(clk_bar_unbuf, clk);
+wire    [RANK_BIT_WIDTH-1:0]  FINAL_DCACHE_WR_DATA_OUT, STOREQ_DATA_REG;
+
+reg_n #(
+  .WIDTH(RANK_BIT_WIDTH),
+  .USE_EN_BAR(0)
+) reg_n_counter (
+  .clk(clk_bar_unbuf), .rst(rst),
+  .en({RANK_BIT_WIDTH{1'b1}}), .d(STOREQ_DATA),
+  .q(STOREQ_DATA_REG)
+);
+
+mux2$   mux2$_FINAL_DCACHE_WR_DATA_OUT[RANK_BIT_WIDTH-1:0](FINAL_DCACHE_WR_DATA_OUT, DCC_WR_DATA_OUT, STOREQ_DATA_REG, STOREQ_STORE_COND_buf1024);
+
+mux2$   mux2$_DCACHE_PHYS_ADDR[MEM_ADDR_WIDTH-1:RANK_BURST_SIZE](DCACHE_PHYS_ADDR, {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]}, STOREQ_PHYS_ADDR, STOREQ_STORING);
 
 mux2$   mux2$_final_dcache_wr_en_bar_one_hot_gated_rst[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](
                                                                                                       final_dcache_wr_en_bar_one_hot_gated_rst,
@@ -192,17 +228,35 @@ mux2$   mux2$_DCC_TAG_WR_MASK_OUT_gated_rst[NUM_WAYS-1:0] (
                                                               rst
                                                           );
 
+
+wire  [RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE] DCACHE_TAG_SET;
+
+wire  DCACHE_TAG_SET_SEL;
+
+wire DCC_FSM_VALID_WR_EN_GLOBAL_REG, DCC_FSM_VALID_WR_EN_GLOBAL_BAR;
+
+inv1$ inv1$_DCC_FSM_VALID_WR_EN_GLOBAL_BAR(DCC_FSM_VALID_WR_EN_GLOBAL_BAR, DCC_FSM_VALID_WR_EN_GLOBAL);
+
+dff$  dff$_DCC_FSM_VALID_WR_EN_GLOBAL_REG(clk, DCC_FSM_VALID_WR_EN_GLOBAL, DCC_FSM_VALID_WR_EN_GLOBAL_REG, , rst, 1'b1);
+
+nor2$ nor2$_DCACHE_TAG_SET_SEL(DCACHE_TAG_SET_SEL, DCC_FSM_VALID_WR_EN_GLOBAL_REG, DCC_FSM_VALID_WR_EN_GLOBAL_BAR);
+
+/* Originally had simply DCC_FSM_VALID_WR_EN_GLOBAL as sel here, but HAD to save 0.2 ns */
+mux2$   mux2$_DCACHE_TAG_SET[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE](DCACHE_TAG_SET, DCACHE_PHYS_ADDR[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], DCC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], DCACHE_TAG_SET_SEL);
+
+
 tag_store dcache_tag_store (
-  .set_index(DCC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
+  .set_index(DCACHE_TAG_SET),
   .wr_en_bar_one_hot(DCC_TAG_WR_MASK_OUT_gated_rst),
   .tag_in(DCC_TAG_IN),
 
   .tag_out(DCACHE_TAG_OUT_ALL_WAYS)
 );
 
-wire    [NUM_WAYS-1:0]    DCACHE_TAG_HIT;
+wire    [NUM_WAYS-1:0]    DCACHE_TAG_HIT, DCACHE_TAG_HIT_FINAL;
 
-wire    [WAY_WIDTH-1:0]   DCACHE_TAG_HIT_WAY;
+
+bufferH16$    bufferH16$_DCACHE_TAG_HIT_WAY_buf16[WAY_WIDTH-1:0](DCACHE_TAG_HIT_WAY_buf16, DCACHE_TAG_HIT_WAY);
 
 tag_hit_logic tag_hit_logic_DCACHE_TAG_HIT (
   .tag_store_out(DCACHE_TAG_OUT_ALL_WAYS),
@@ -213,16 +267,18 @@ tag_hit_logic tag_hit_logic_DCACHE_TAG_HIT (
   .tag_hit_way(DCACHE_TAG_HIT_WAY)
 );
 
-wire    [WAY_WIDTH-1:0]   FINAL_DCACHE_RD_DATA_MUX_SEL, FINAL_DCACHE_RD_DATA_MUX_SEL_buf64;
+mux2$   mux2$_DCACHE_TAG_HIT_FINAL[NUM_WAYS-1:0](DCACHE_TAG_HIT_FINAL, DCACHE_TAG_HIT, {NUM_WAYS{1'b0}}, DCC_FSM_VALID_WR_EN_GLOBAL);
+
+wire    [WAY_WIDTH-1:0]   FINAL_DCACHE_RD_DATA_MUX_SEL, FINAL_DCACHE_RD_DATA_MUX_SEL_buf16;
 
 wire    DIRTY_WB_NEEDED;
 
 wire    [WAY_WIDTH-1:0]   DCACHE_VICT_WAY_buf16;
 bufferH16$    bufferH16$_DCACHE_VICT_WAY_buf16[WAY_WIDTH-1:0](DCACHE_VICT_WAY_buf16, DCACHE_VICT_WAY);
 
-mux2$         mux2$_FINAL_DCACHE_RD_DATA_MUX_SEL[WAY_WIDTH-1:0](FINAL_DCACHE_RD_DATA_MUX_SEL, DCACHE_TAG_HIT_WAY, DCACHE_VICT_WAY_buf16, DIRTY_WB_NEEDED);
+mux2$         mux2$_FINAL_DCACHE_RD_DATA_MUX_SEL[WAY_WIDTH-1:0](FINAL_DCACHE_RD_DATA_MUX_SEL, DCACHE_TAG_HIT_WAY_buf16, DCACHE_VICT_WAY_buf16, DIRTY_WB_NEEDED);
 
-bufferH64$    bufferH64$_FINAL_DCACHE_RD_DATA_MUX_SEL_buf64[WAY_WIDTH-1:0](FINAL_DCACHE_RD_DATA_MUX_SEL_buf64, FINAL_DCACHE_RD_DATA_MUX_SEL);
+bufferH16$    bufferH16$_FINAL_DCACHE_RD_DATA_MUX_SEL_buf16[WAY_WIDTH-1:0](FINAL_DCACHE_RD_DATA_MUX_SEL_buf16, FINAL_DCACHE_RD_DATA_MUX_SEL);
 
 genvar j;
 generate
@@ -232,8 +288,8 @@ generate
       .IN1 (DCACHE_RD_DATA_ALL_WAYS[(1*RANK_BIT_WIDTH+j*16) +: 16]),
       .IN2 (DCACHE_RD_DATA_ALL_WAYS[(2*RANK_BIT_WIDTH+j*16) +: 16]),
       .IN3 (DCACHE_RD_DATA_ALL_WAYS[(3*RANK_BIT_WIDTH+j*16) +: 16]),
-      .S0(FINAL_DCACHE_RD_DATA_MUX_SEL_buf64[0]),
-      .S1(FINAL_DCACHE_RD_DATA_MUX_SEL_buf64[1]),
+      .S0(FINAL_DCACHE_RD_DATA_MUX_SEL_buf16[0]),
+      .S1(FINAL_DCACHE_RD_DATA_MUX_SEL_buf16[1]),
       .Y(DCACHE_RD_DATA[j*16 +: 16])
     );
   end
@@ -243,17 +299,16 @@ endgenerate
 /************************ LRU  STORE ************************/
 /************************************************************/
 
-wire  [WAY_WIDTH-1:0]   DCACHE_TAG_HIT_WAY_buf64;
-
-bufferH64$    bufferH64$_DCACHE_TAG_HIT_WAY_buf64[WAY_WIDTH-1:0](DCACHE_TAG_HIT_WAY_buf64, DCACHE_TAG_HIT_WAY);
+wire DCACHE_VALID;
 
 lru_store #(.TRUE_LRU(TRUE_LRU)) lru_store_DCACHE_VICT_WAY (
   .rst(rst),
   .clk(clk),
-  .TAG_HIT_WAY(DCACHE_TAG_HIT_WAY_buf64),
-  .CACHE_HIT(DCACHE_HIT),
+  .TAG_HIT_WAY(DCACHE_TAG_HIT_WAY_buf16),
+  .CACHE_HIT(DCACHE_VALID),
   .CC_ADDR_OUT(DCC_ADDR_OUT_buf64),
   .CC_STREAM_BUF_HIT(DCC_STREAM_BUF_HIT),
+  .CC_FSM_VALID_WR_EN_GLOBAL(DCC_FSM_VALID_WR_EN_GLOBAL),
 
   .VICT_WAY(DCACHE_VICT_WAY)
 );
@@ -264,7 +319,7 @@ lru_store #(.TRUE_LRU(TRUE_LRU)) lru_store_DCACHE_VICT_WAY (
 
 valid_or_dirty_store dcache_valid_store (
   .clk(clk), .rst(rst),
-  .set_index(DCC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
+  .set_index(DCACHE_TAG_SET),
   .set_or_clr(DCC_VALID_SET_OR_CLR),
   .wr_en(DCC_VALID_WR_EN),
   .wr_en_global(DCC_FSM_VALID_WR_EN_GLOBAL),
@@ -276,13 +331,13 @@ wire  [NUM_WAYS-1:0]  DCACHE_HIT_ALL_WAYS;
 
 generate 
   for (j = 0; j < NUM_WAYS; j = j + 1) begin : DCACHE_VALID_AND_TAG_HIT_GEN
-    and2$   and2$_DCACHE_HIT_ALL_WAYS(DCACHE_HIT_ALL_WAYS[j], DCACHE_TAG_HIT[j], DCACHE_VALID_OUT[j]);
+    and2$   and2$_DCACHE_HIT_ALL_WAYS(DCACHE_HIT_ALL_WAYS[j], DCACHE_TAG_HIT_FINAL[j], DCACHE_VALID_OUT[j]);
   end
 endgenerate
 
 mux4$   mux4$_DCACHE_HIT( DCACHE_HIT, 
                           DCACHE_HIT_ALL_WAYS[0], DCACHE_HIT_ALL_WAYS[1], DCACHE_HIT_ALL_WAYS[2], DCACHE_HIT_ALL_WAYS[3],
-                          DCACHE_TAG_HIT_WAY_buf64[0], DCACHE_TAG_HIT_WAY_buf64[1]);
+                          DCACHE_TAG_HIT_WAY_buf16[0], DCACHE_TAG_HIT_WAY_buf16[1]);
 
 /************************************************************/
 /*********************** DIRTY  STORE ***********************/
@@ -293,7 +348,7 @@ wire [NUM_WAYS-1:0] DCACHE_DIRTY_OUT;
 wire    [INDEX_WIDTH+WAY_WIDTH-1:0] FINAL_DCACHE_DIRTY_WR_EN;
 
 mux2$   mux2$_FINAL_DCACHE_DIRTY_WR_EN[INDEX_WIDTH+WAY_WIDTH-1:0](FINAL_DCACHE_DIRTY_WR_EN, 
-                                                                  {DCC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE],DCACHE_TAG_HIT_WAY_buf64},
+                                                                  {DCC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE],DCACHE_TAG_HIT_WAY_buf16},
                                                                   DCC_VALID_WR_EN,
                                                                   DCC_FSM_VALID_WR_EN_GLOBAL);
 
@@ -303,7 +358,7 @@ or2$    or2$_FINAL_DCACHE_DIRTY_WR_EN_GLOBAL(FINAL_DCACHE_DIRTY_WR_EN_GLOBAL, DC
 
 valid_or_dirty_store dcache_dirty_store (
   .clk(clk), .rst(rst),
-  .set_index(DCC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
+  .set_index(DCACHE_TAG_SET),
   .set_or_clr(STOREQ_STORE_COND_buf1024),
   .wr_en(FINAL_DCACHE_DIRTY_WR_EN),
   .wr_en_global(FINAL_DCACHE_DIRTY_WR_EN_GLOBAL),
@@ -399,10 +454,16 @@ and3$   and3$_MEM_NO_IO_MISS(MEM_NO_IO_MISS, MEM_VALID_LOAD_INST, DCACHE_GENERAL
 wire    D_RD_TLB_CACHE_DISABLE;
 wire    STICKY_BAR;
 
+inv1$   inv1$_D_RD_TLB_CACHE_DISABLE(D_RD_TLB_CACHE_DISABLE, D_RD_TLB_CACHE_ENABLE_OUT);
 inv1$   inv1$_STICKY_BAR(STICKY_BAR, STICKY);
 and4$   and4$_MEM_IO_MISS(MEM_IO_MISS, MEM_VALID_LOAD_INST, DCACHE_GENERAL_MISS, D_RD_TLB_CACHE_DISABLE, STICKY_BAR);
 
 or4$    or4$_DCACHE_STALL(DCACHE_STALL, TWO_STALL_REASONS, STOREQ_MISS, MEM_NO_IO_MISS, MEM_IO_MISS);
+
+wire DCACHE_VALID_INT;
+nor4$   nor4$_DCACHE_VALID_INT(DCACHE_VALID_INT, TWO_STALL_REASONS, STOREQ_MISS, MEM_NO_IO_MISS, MEM_IO_MISS);
+
+and2$   and2$_DCACHE_VALID(DCACHE_VALID, DCACHE_VALID_INT, VALID_CACHE_OPERATION);
 
 
 /************************************************************/
@@ -452,7 +513,7 @@ wire  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  ICC_ADDR_OUT_buf64;
 
 bufferH64$    bufferH64$_ICC_ADDR_OUT_buf64[MEM_ADDR_WIDTH-1:RANK_BURST_SIZE](ICC_ADDR_OUT_buf64, ICC_ADDR_OUT);
 
-or2$    or2$_icache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](icache_wr_en_bar_one_hot_gated, icache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}});
+or3$    or3$_icache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](icache_wr_en_bar_one_hot_gated, icache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}}, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk_buf4096}});
 
 mux2$   mux2$_icache_wr_en_bar_one_hot_gated_rst[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](
                                                                                                 icache_wr_en_bar_one_hot_gated_rst,
@@ -488,19 +549,34 @@ mux2$   mux2$_ICC_TAG_WR_MASK_OUT_gated_rst[NUM_WAYS-1:0](
                                                             rst
                                                          );
 
+wire  [RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE] ICACHE_TAG_SET;
+
+wire  ICACHE_TAG_SET_SEL;
+
+wire ICC_FSM_VALID_WR_EN_GLOBAL_REG, ICC_FSM_VALID_WR_EN_GLOBAL_BAR;
+
+inv1$ inv1$_ICC_FSM_VALID_WR_EN_GLOBAL_BAR(ICC_FSM_VALID_WR_EN_GLOBAL_BAR, ICC_FSM_VALID_WR_EN_GLOBAL);
+
+dff$  dff$_ICC_FSM_VALID_WR_EN_GLOBAL_REG(clk, ICC_FSM_VALID_WR_EN_GLOBAL, ICC_FSM_VALID_WR_EN_GLOBAL_REG, , rst, 1'b1);
+
+nor2$ nor2$_ICACHE_TAG_SET_SEL(ICACHE_TAG_SET_SEL, ICC_FSM_VALID_WR_EN_GLOBAL_REG, ICC_FSM_VALID_WR_EN_GLOBAL_BAR);
+
+/* Originally had simply ICC_FSM_VALID_WR_EN_GLOBAL as sel here, but HAD to save 0.2 ns */
+mux2$   mux2$_ICACHE_TAG_SET[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE](ICACHE_TAG_SET, ICACHE_PHYS_ADDR[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], ICC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], ICACHE_TAG_SET_SEL);
+
 tag_store icache_tag_store (
-  .set_index(ICC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
+  .set_index(ICACHE_TAG_SET),
   .wr_en_bar_one_hot(ICC_TAG_WR_MASK_OUT_gated_rst),
   .tag_in(ICC_TAG_IN),
 
   .tag_out(ICACHE_TAG_OUT_ALL_WAYS)
 );
 
-wire    [NUM_WAYS-1:0]    ICACHE_TAG_HIT;
+wire    [NUM_WAYS-1:0]    ICACHE_TAG_HIT, ICACHE_TAG_HIT_FINAL;
 
-wire    [WAY_WIDTH-1:0]   ICACHE_TAG_HIT_WAY, ICACHE_TAG_HIT_WAY_buf64;
+wire    [WAY_WIDTH-1:0]   ICACHE_TAG_HIT_WAY, ICACHE_TAG_HIT_WAY_buf16;
 
-bufferH64$    bufferH64$_ICACHE_TAG_HIT_WAY_buf64[WAY_WIDTH-1:0](ICACHE_TAG_HIT_WAY_buf64, ICACHE_TAG_HIT_WAY);
+bufferH16$    bufferH16$_ICACHE_TAG_HIT_WAY_buf16[WAY_WIDTH-1:0](ICACHE_TAG_HIT_WAY_buf16, ICACHE_TAG_HIT_WAY);
 
 tag_hit_logic tag_hit_logic_ICACHE_TAG_HIT (
   .tag_store_out(ICACHE_TAG_OUT_ALL_WAYS),
@@ -511,6 +587,8 @@ tag_hit_logic tag_hit_logic_ICACHE_TAG_HIT (
   .tag_hit_way(ICACHE_TAG_HIT_WAY)
 );
 
+mux2$   mux2$_ICACHE_TAG_HIT_FINAL[NUM_WAYS-1:0](ICACHE_TAG_HIT_FINAL, ICACHE_TAG_HIT, {NUM_WAYS{1'b0}}, ICC_FSM_VALID_WR_EN_GLOBAL);
+
 generate
   for (j = 0; j < 8; j = j + 1) begin : MUX16_16b_GEN
     mux4_16$ mux4_16_ICACHE_RD_DATA (
@@ -518,8 +596,8 @@ generate
       .IN1 (ICACHE_RD_DATA_ALL_WAYS[(1*RANK_BIT_WIDTH+j*16) +: 16]),
       .IN2 (ICACHE_RD_DATA_ALL_WAYS[(2*RANK_BIT_WIDTH+j*16) +: 16]),
       .IN3 (ICACHE_RD_DATA_ALL_WAYS[(3*RANK_BIT_WIDTH+j*16) +: 16]),
-      .S0(ICACHE_TAG_HIT_WAY_buf64[0]),
-      .S1(ICACHE_TAG_HIT_WAY_buf64[1]),
+      .S0(ICACHE_TAG_HIT_WAY_buf16[0]),
+      .S1(ICACHE_TAG_HIT_WAY_buf16[1]),
       .Y(ICACHE_RD_DATA[j*16 +: 16])
     );
   end
@@ -534,10 +612,11 @@ wire    ICACHE_HIT;
 lru_store #(.TRUE_LRU(TRUE_LRU)) lru_store_ICACHE_VICT_WAY (
   .rst(rst),
   .clk(clk),
-  .TAG_HIT_WAY(ICACHE_TAG_HIT_WAY_buf64),
-  .CACHE_HIT(ICACHE_HIT),
+  .TAG_HIT_WAY(ICACHE_TAG_HIT_WAY_buf16),
+  .CACHE_HIT(ICACHE_VALID),
   .CC_ADDR_OUT(ICC_ADDR_OUT_buf64),
   .CC_STREAM_BUF_HIT(ICC_STREAM_BUF_HIT),
+  .CC_FSM_VALID_WR_EN_GLOBAL(ICC_FSM_VALID_WR_EN_GLOBAL),
 
   .VICT_WAY(ICACHE_VICT_WAY)
 );
@@ -548,7 +627,7 @@ lru_store #(.TRUE_LRU(TRUE_LRU)) lru_store_ICACHE_VICT_WAY (
 
 valid_or_dirty_store icache_valid_store (
   .clk(clk), .rst(rst),
-  .set_index(ICC_ADDR_OUT_buf64[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE]),
+  .set_index(ICACHE_TAG_SET),
   .set_or_clr(ICC_VALID_SET_OR_CLR),
   .wr_en(ICC_VALID_WR_EN),
   .wr_en_global(ICC_FSM_VALID_WR_EN_GLOBAL),
@@ -560,13 +639,13 @@ wire  [NUM_WAYS-1:0]  ICACHE_HIT_ALL_WAYS;
 
 generate 
   for (j = 0; j < NUM_WAYS; j = j + 1) begin : VALID_AND_TAG_HIT_GEN
-    and2$   and2$_ICACHE_HIT_ALL_WAYS(ICACHE_HIT_ALL_WAYS[j], ICACHE_TAG_HIT[j], ICACHE_VALID_OUT[j]);
+    and2$   and2$_ICACHE_HIT_ALL_WAYS(ICACHE_HIT_ALL_WAYS[j], ICACHE_TAG_HIT_FINAL[j], ICACHE_VALID_OUT[j]);
   end
 endgenerate
 
 mux4$   mux4$_ICACHE_HIT( ICACHE_HIT, 
                           ICACHE_HIT_ALL_WAYS[0], ICACHE_HIT_ALL_WAYS[1], ICACHE_HIT_ALL_WAYS[2], ICACHE_HIT_ALL_WAYS[3],
-                          ICACHE_TAG_HIT_WAY_buf64[0], ICACHE_TAG_HIT_WAY_buf64[1]);
+                          ICACHE_TAG_HIT_WAY_buf16[0], ICACHE_TAG_HIT_WAY_buf16[1]);
 
 nor2$   nor2$_ICACHE_MISS(ICACHE_MISS, ICACHE_HIT, ITLB_PAGE_FAULT_OUT);
 
@@ -577,7 +656,7 @@ nor2$   nor2$_ICACHE_MISS(ICACHE_MISS, ICACHE_HIT, ITLB_PAGE_FAULT_OUT);
 wire ICACHE_GENERAL_MISS;
 nor2$     nor2$_ICACHE_GENERAL_MISS(ICACHE_GENERAL_MISS, ICACHE_HIT, ICC_STREAM_BUF_HIT);
 
-nor2$     nor2$_ICACHE_VALID(ICACHE_VALID, ICACHE_GENERAL_MISS, ICC_FSM_FILL_BUSY);
+nor3$     nor3$_ICACHE_VALID(ICACHE_VALID, ICACHE_GENERAL_MISS, ICC_FSM_FILL_BUSY, ICC_FSM_VALID_WR_EN_GLOBAL);
 
 
 

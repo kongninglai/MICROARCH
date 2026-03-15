@@ -14,6 +14,7 @@ module lru_store #(
   input                                             CACHE_HIT,
   input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]      CC_ADDR_OUT,
   input                                             CC_STREAM_BUF_HIT,
+  input                                             CC_FSM_VALID_WR_EN_GLOBAL,
 
   output    [WAY_WIDTH-1:0]                         VICT_WAY
 );
@@ -42,15 +43,16 @@ generate
       .eq(touch_valid_gates[i])
     );
 
-    wire                      HIT_CONDITION, HIT_CONDITION_buf16;
+    wire                      SB_HIT_CONDITION, HIT_CONDITION, HIT_CONDITION_buf16;
     wire    [WAY_WIDTH-1:0]   TOUCHED_WAY, TOUCHED_WAY_buf16;
 
-    if (TRUE_LRU == 0) begin
+    if (TRUE_LRU == 0) begin : PSEUDO_LRU_GEN
       assign HIT_CONDITION = CACHE_HIT_buf16;
       assign TOUCHED_WAY = TAG_HIT_WAY_buf16;
-    end else begin
-      or2$    or2$_HIT_CONDITION(HIT_CONDITION, CACHE_HIT_buf16, CC_STREAM_BUF_HIT);
-      mux2$   mux2$_TOUCHED_WAY[WAY_WIDTH-1:0](TOUCHED_WAY, VICT_WAY, TAG_HIT_WAY_buf16, CACHE_HIT_buf16);
+    end else begin : TRUE_LRU_GEN
+      and2$   and2$_SB_HIT_CONDITION(SB_HIT_CONDITION, CC_STREAM_BUF_HIT, CC_FSM_VALID_WR_EN_GLOBAL);
+      or2$    or2$_HIT_CONDITION(HIT_CONDITION, CACHE_HIT_buf16, SB_HIT_CONDITION);
+      mux2$   mux2$_TOUCHED_WAY[WAY_WIDTH-1:0](TOUCHED_WAY, TAG_HIT_WAY_buf16, VICT_WAY, SB_HIT_CONDITION);
     end
 
     bufferH16$    bufferH16$_HIT_CONDITION_buf16(HIT_CONDITION_buf16, HIT_CONDITION);
