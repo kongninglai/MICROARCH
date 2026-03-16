@@ -6,6 +6,7 @@ module block_decoder(
     output wire prefix_ext,
     output wire [7:0] opcode,
     output wire [7:0] modrm,
+    output wire modrm_v,
     output wire [7:0] sib, 
     output wire [1:0] disp_size_mux,
     output wire [31:0] disp, 
@@ -98,6 +99,7 @@ module block_decoder(
         .is_far_br_true(is_far_br_true)
     );
     assign modrm = modrm_byte_true;
+    assign modrm_v = is_modrm_true;
 
     //Sib logic
     wire is_sib_true;
