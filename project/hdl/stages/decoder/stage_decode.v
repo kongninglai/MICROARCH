@@ -11,6 +11,12 @@ module stage_decode(
     input wire stall_mem, //comes from memory stage
     input wire stall_wb, //comes from writeback stage
 
+    input wire clk, 
+    input wire rst_bar,
+    input wire br_t_nt_ex_d, //comes from execute stage (taken not taken signal)
+    input wire br_valid_ex_d, //comes from execute stage (branch valid signal)
+    input wire [3:0] pht_idx_ex_d, //comes from execute stage:
+
     output wire exptn_prot,
     output wire [31:0] i_eip,
     output wire pr_de_rr_valid, //to rr stage pipeline regs are valid
@@ -75,7 +81,7 @@ module stage_decode(
 
     wire [1:0] branch_type;
     wire is_branch;
-    logic_branch(
+    logic_branch BRANCH_TYPE( //for instruction in decode (if branch)
         .opcode(opcode),
         .modrm(modrm), 
         .v_modrm(modrm_v),
@@ -101,6 +107,20 @@ module stage_decode(
         .branch_type(branch_type),
         .ld_eip(ld_eip),
         .eip_true(eip_true)
+    );
+
+    wire cur_instr_prediction;
+    bp BP(
+        .clk(clk),
+        .rst_bar(rst_bar),
+        .is_branch(is_branch),
+        .o_eip(o_eip), //used to predict cur instruction in decode
+        .br_t_nt_ex_d(br_t_nt_ex_d), //used to update pht for instr in execute stage
+        .br_valid_ex_d(br_valid_ex_d), //used to update pht for instr in execute stage
+        .ext_pht_idx(pht_idx_ex_d), //used to update pht for instr in execute stage
+
+        .cur_instr_prediction(cur_instr_prediction),
+        .ghr_out() //used internally only
     );
 
 endmodule
