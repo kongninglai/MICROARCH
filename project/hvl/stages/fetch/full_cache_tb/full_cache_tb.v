@@ -626,6 +626,7 @@ initial begin
     #(20 * CYCLE_TIME);
   end
 
+  // Random store of 1 byte to address 0
   {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = 0;
   MEM_VALID_LOAD_INST = 1'b0;
   STOREQ_STORING = 1;
@@ -634,7 +635,6 @@ initial begin
   STOREQ_PHYS_ADDR = 0;
 
   #(CYCLE_TIME);
-  STOREQ_STORING = 0;
 
   #(20 * CYCLE_TIME);
   
@@ -648,6 +648,7 @@ initial begin
     CHECK_DCACHE = 1'b0;
   end
 
+  STOREQ_STORING = 0;
 
 
   // for (i = 0; i < 32; i = i + 1) begin
@@ -714,6 +715,8 @@ initial begin
   @(negedge DCACHE_STALL);
   @(posedge clk);
   MEM_VALID_LOAD_INST = 1'b0;
+
+  #(2 * CYCLE_TIME);
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
