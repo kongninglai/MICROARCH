@@ -543,7 +543,7 @@ initial begin
   ITLB_PAGE_FAULT_OUT = 0;
 
   D_RD_TLB_PFN_OUT = 0;
-  D_RD_TLB_CACHE_ENABLE_OUT = 0;
+  D_RD_TLB_CACHE_ENABLE_OUT = 1'b1;
 
   F_PAGE_OFFSET = 0;
 
@@ -629,16 +629,19 @@ initial begin
   {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = 0;
   MEM_VALID_LOAD_INST = 1'b0;
   STOREQ_STORING = 1;
-  STOREQ_DATA = {4{{17{1'b1}}, {11{1'b0}}, 4'd0}};
-  STOREQ_DATA_WR_MASK = 0;
+  STOREQ_DATA = {4{{16{1'b1}}, {12{1'b0}}, 4'd0}};
+  STOREQ_DATA_WR_MASK = 16'h7FFF;
   STOREQ_PHYS_ADDR = 0;
+
+  #(CYCLE_TIME);
+  STOREQ_STORING = 0;
 
   #(20 * CYCLE_TIME);
   
   for (i = 0; i < 8; i = i + 1) begin
     // Fill 4 ways
-    STOREQ_PHYS_ADDR = 0 + (i << 4);
-    STOREQ_DATA = {4{{17{1'b1}}, STOREQ_PHYS_ADDR, 4'd0}};
+    STOREQ_PHYS_ADDR = 0 + (i << 3);
+    STOREQ_DATA = {4{{16{1'b1}}, 1'b0, STOREQ_PHYS_ADDR, 4'd0}};
     #(28 * CYCLE_TIME);
     CHECK_DCACHE = 1'b1;
     #(2 * CYCLE_TIME);
@@ -679,8 +682,38 @@ initial begin
   // end
   // #(20 * CYCLE_TIME);
 
-  #(2 * CYCLE_TIME);
+  #(30 * CYCLE_TIME);
 
+  WB_PR_ST_ADDR_L0 = {DMA_PFN, 8'd1};
+  WB_SHF_ST_DATA_L0 = {4{17'd0, {DMA_PFN, 8'd1}, 4'd0}};
+  WB_VALID_IO_STORE_INST = 1'b1;
+
+  @(negedge DUT.WBE_BUSY); @(negedge DUT.WBE_BUSY);
+  @(posedge clk);
+  WB_VALID_IO_STORE_INST = 1'b0;
+
+  #(30 * CYCLE_TIME);
+
+  WB_PR_ST_ADDR_L0 = {KB_PFN, 8'b00000010};
+  WB_SHF_ST_DATA_L0 = {4{17'd0, {KB_PFN, 8'b00000010}, 4'd1}};
+  WB_VALID_IO_STORE_INST = 1'b1;
+
+  @(negedge DUT.WBE_BUSY); @(negedge DUT.WBE_BUSY);
+  @(posedge clk);
+  WB_VALID_IO_STORE_INST = 1'b0;
+
+  #(30 * CYCLE_TIME);
+  MEM_VALID_LOAD_INST = 1'b1;
+  D_RD_TLB_CACHE_ENABLE_OUT = 1'b0;
+
+  // Fill 4 ways
+  {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = {DMA_PFN, 8'd1, 4'b0000};
+  @(negedge DCACHE_STALL);
+  @(posedge clk);
+  {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = {KB_PFN, 8'b00000010, 4'b0000};
+  @(negedge DCACHE_STALL);
+  @(posedge clk);
+  MEM_VALID_LOAD_INST = 1'b0;
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
