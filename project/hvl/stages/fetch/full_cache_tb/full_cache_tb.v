@@ -767,6 +767,10 @@ initial begin
   @(negedge DCACHE_STALL);
   @(posedge clk);
   check_dcache_io_data(128'd103); // 0x67 = 103
+  {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = {KB_PFN, 8'b00000010, 4'b0000};
+  @(negedge DCACHE_STALL);
+  @(posedge clk);
+  check_dcache_io_data(128'd1); // Self-clearing ready
   MEM_VALID_LOAD_INST = 1'b0;
 
   /* DMA CONFIG INIT */
