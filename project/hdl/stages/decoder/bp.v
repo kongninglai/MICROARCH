@@ -14,6 +14,9 @@ module bp(
     input wire br_valid_ex_d, //comes from execute stage (branch valid signal)
     input wire [3:0] ext_pht_idx, //comes from execute stage: branch counter TO UPDATE
 
+    output wire [31:0] bp_eip_target, //to decode stage for current instruction if bp says taken
+    output wire hit, //to decode stage to indicate if we have a bp target or not (currently hardcoded to 0)
+
     output wire cur_instr_prediction, //to decode stage 
     output wire [7:0] ghr_out
 );
@@ -45,5 +48,11 @@ module bp(
         .br_t_nt_out(cur_instr_prediction)
     );
 
+    br_target BR_TARGET(
+        .o_eip (o_eip),
+        .hit(hit), //currently not used since we're hardcoding to not hit
+        .bp_eip_target (bp_eip_target)
+    );
+    
 endmodule
 

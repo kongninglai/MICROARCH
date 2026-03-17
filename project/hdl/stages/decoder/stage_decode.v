@@ -3,6 +3,7 @@ module stage_decode(
     input wire [31:0] o_eip, 
     input wire [3:0] tail_ptr,
     input wire [19:0] cs_limit_reg,
+    input wire [31:0] eip_target_ex, //comes from execute stage
     input wire mispredict_src_ex, //comes from execute stage
     input wire v_excptn_src_wb, //comes from writeback stage
     input wire v_ld_cs_src_ex, //comes from execute stage
@@ -21,6 +22,10 @@ module stage_decode(
     output wire [31:0] i_eip,
     output wire pr_de_rr_valid, //to rr stage pipeline regs are valid
 
+    //to fetch output
+    output wire ld_eip, //to fetch stage to load new eip
+    output wire [31:0] eip_true, //to fetch stage new eip
+
     //decoder output
     output wire prefix_rep,
     output wire prefix_op_size, 
@@ -38,7 +43,6 @@ module stage_decode(
 
 );
 
-    wire [31:0] i_eip;
     wire modrm_v;
     block_decoder DECODER(
         .cache_line(cache_line),
@@ -48,7 +52,7 @@ module stage_decode(
         .prefix_ext(prefix_ext),
         .opcode(opcode),
         .modrm(modrm),
-        .modrm_v(modrm_v)
+        .modrm_v(modrm_v),
         .sib(sib),
         .disp_size_mux(disp_size_mux),
         .disp(disp),
@@ -72,13 +76,14 @@ module stage_decode(
             .stall_ex(stall_ex), //comes from execute stage
             .stall_rr(stall_rr), //comes from register read stage
             .stall_mem(stall_mem), //comes from memory stage
-            .stall_wb(stall_wb) //comes from writeback stage
+            .stall_wb(stall_wb), //comes from writeback stage
 
             .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal
             .instr_valid(pr_de_rr_valid),
             .exptn_prot(exptn_prot)
     );
 
+    //Decode logic tells what type of branch is currently being decoded
     wire [1:0] branch_type;
     wire is_branch;
     logic_branch BRANCH_TYPE( //for instruction in decode (if branch)
@@ -86,25 +91,27 @@ module stage_decode(
         .modrm(modrm), 
         .v_modrm(modrm_v),
         .ext_opcode(prefix_ext),       
-        .is_branch(is_branch), //unused
+        .is_branch(is_branch), 
         .branch_type(branch_type)
     );
 
-    wire ld_eip;
-    wire [31:0] eip_true;
+    wire hit;
+    wire [31:0] bp_eip_target;
     choose_eip EIP_LOGIC(
-    //eip incr logic
+        //eip incr logic
         .instr_length(instr_length),
         .o_eip(o_eip),
         .i_eip(i_eip),
 
         .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal
-        .instr_valid(instr_valid),
+        .instr_valid(pr_de_rr_valid),
         .mispredict_src_ex(mispredict_src_ex),
         .v_ld_cs_src_ex(v_ld_cs_src_ex),
+        .cur_instr_prediction(cur_instr_prediction),
         .bp_eip_target(bp_eip_target),
-        .ex_eip_target(ex_eip_target),
+        .ex_eip_target(eip_target_ex),
         .branch_type(branch_type),
+        .hit(hit),
         .ld_eip(ld_eip),
         .eip_true(eip_true)
     );
@@ -119,8 +126,12 @@ module stage_decode(
         .br_valid_ex_d(br_valid_ex_d), //used to update pht for instr in execute stage
         .ext_pht_idx(pht_idx_ex_d), //used to update pht for instr in execute stage
 
+        .bp_eip_target(bp_eip_target), 
+        .hit(hit),
+
         .cur_instr_prediction(cur_instr_prediction),
         .ghr_out() //used internally only
     );
 
 endmodule
+

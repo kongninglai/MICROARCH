@@ -14,6 +14,8 @@ module tb_bp();
     // 2. Outputs
     wire cur_instr_prediction;
     wire [7:0] ghr_out;
+    wire hit;                   // NEW: BTB Hit
+    wire [31:0] bp_eip_target;  // NEW: BTB Target
 
     // Error Tracking
     integer FAILURES  = 0;
@@ -23,11 +25,13 @@ module tb_bp();
     bp uut (
         .clk(clk),
         .rst_bar(rst_bar),
-        .is_branch(is_branch), // Hooked up new input
+        .is_branch(is_branch), 
         .o_eip(o_eip),
         .br_t_nt_ex_d(br_t_nt_ex_d),
         .br_valid_ex_d(br_valid_ex_d),
         .ext_pht_idx(ext_pht_idx),
+        .bp_eip_target(bp_eip_target), // NEW port mapped
+        .hit(hit),                     // NEW port mapped
         .cur_instr_prediction(cur_instr_prediction),
         .ghr_out(ghr_out)
     );
@@ -40,14 +44,16 @@ module tb_bp();
         input [8*25:1] test_name; 
         input [7:0] exp_ghr;
         input exp_pred;
+        input exp_hit;
+        input [31:0] exp_target;
         begin
-            if (ghr_out === exp_ghr && cur_instr_prediction === exp_pred) begin
-                $display("  ✅ PASS | %0s | GHR: %b | Pred: %b", test_name, ghr_out, cur_instr_prediction);
+            if (ghr_out === exp_ghr && cur_instr_prediction === exp_pred && hit === exp_hit && bp_eip_target === exp_target) begin
+                $display("  ✅ PASS | %0s | GHR: %b | Pred: %b | Hit: %b", test_name, ghr_out, cur_instr_prediction, hit);
                 SUCCESSES = SUCCESSES + 1;
             end else begin
                 $display("  ❌ FAIL | %0s", test_name);
-                $display("     EXPECTED: GHR=%b | Pred=%b", exp_ghr, exp_pred);
-                $display("     ACTUAL  : GHR=%b | Pred=%b", ghr_out, cur_instr_prediction);
+                $display("     EXPECTED: GHR=%b | Pred=%b | Hit=%b | Target=%h", exp_ghr, exp_pred, exp_hit, exp_target);
+                $display("     ACTUAL  : GHR=%b | Pred=%b | Hit=%b | Target=%h", ghr_out, cur_instr_prediction, hit, bp_eip_target);
                 FAILURES = FAILURES + 1;
             end
         end
@@ -76,9 +82,9 @@ module tb_bp();
         rst_bar = 1;
         
         // Check Reset state after the rising edge
-        // Note: is_branch=0, so prediction should be X
+        // Note: o_eip is 0, so expected target is 0.
         @(posedge clk); #1; 
-        check_result("Reset State        ", 8'b0000_0000, 1'bx);
+        check_result("Reset State        ", 8'b0000_0000, 1'bx, 1'b0, 32'h0000_0000);
 
         // --------------------------------------------------------
         // TEST 1: Non-branch Decode, No EX valid signal
@@ -90,7 +96,8 @@ module tb_bp();
         br_t_nt_ex_d = 1;  // Even if high, GHR shouldn't shift!
         
         @(posedge clk); #1; 
-        check_result("Hold State (No Val)", 8'b0000_0000, 1'bx);
+        // Note: o_eip is now 0004, so expected target is 0004
+        check_result("Hold State (No Val)", 8'b0000_0000, 1'bx, 1'b0, 32'h0000_0004);
 
         // --------------------------------------------------------
         // TEST 2: Decode Branch, EX Updates Taken
@@ -102,7 +109,8 @@ module tb_bp();
         br_t_nt_ex_d = 1;  // EX: TAKEN
         
         @(posedge clk); #1;
-        check_result("Decode Br, EX Taken", 8'b0000_0001, 1'b0);
+        // Note: o_eip is now 0008, so expected target is 0008
+        check_result("Decode Br, EX Taken", 8'b0000_0001, 1'b0, 1'b0, 32'h0000_0008);
 
         // --------------------------------------------------------
         // TEST 3: Decode Non-Branch, EX Updates Not Taken
@@ -111,9 +119,10 @@ module tb_bp();
         is_branch = 0;     // Decode: Not a branch (Pred should be X)
         br_valid_ex_d = 1; // EX: VALID UPDATE
         br_t_nt_ex_d = 0;  // EX: NOT TAKEN
+        // o_eip remains 0008
         
         @(posedge clk); #1;
-        check_result("Decode NoBr, EX NT ", 8'b0000_0010, 1'bx);
+        check_result("Decode NoBr, EX NT ", 8'b0000_0010, 1'bx, 1'b0, 32'h0000_0008);
 
         // --------------------------------------------------------
         // TEST 4: Decode Branch, EX Updates Taken
@@ -122,9 +131,10 @@ module tb_bp();
         is_branch = 1;     // Decode: IS A BRANCH! (Pred should be 0)
         br_valid_ex_d = 1; // EX: VALID UPDATE
         br_t_nt_ex_d = 1;  // EX: TAKEN
+        // o_eip remains 0008
         
         @(posedge clk); #1;
-        check_result("Decode Br, EX Taken", 8'b0000_0101, 1'b0);
+        check_result("Decode Br, EX Taken", 8'b0000_0101, 1'b0, 1'b0, 32'h0000_0008);
 
         $display("=======================================");
         $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
