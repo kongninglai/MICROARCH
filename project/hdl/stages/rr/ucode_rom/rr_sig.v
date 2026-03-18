@@ -1,5 +1,5 @@
 module rr_sig(
-    input [63:0] ucode_sig,
+    input [95:0] ucode_sig,
     output [1:0] ldAB,
     output [2:0] dstidA_mux,
     output [1:0] dstidB_mux,
@@ -26,10 +26,13 @@ module rr_sig(
     output [1:0] mm_dst_mux,
     output [3:0] store_data_mux,
     output [1:0] rw,
-    output [1:0] ds
+    output [1:0] ds,
+    output [1:0] mem_ds,
+    output [1:0] imm_mux,
+    output [1:0] addr_mux
 ); 
-    wire dummy;
+    wire [26:0] dummy;
     assign {ldAB, dstidA_mux, dstidB_mux, srcregA_mux, srcregB_mux, gprd0_mux, gprd2_mux, srcsreg_mux, segrd0_mux, segrd1_mux,
             ldREGS, needREGS, ldEFLAGS, alu_srcb_mux, shf_srcb_mux, ldEIP, ldCS, eflags_mux, eip_mux,
-            cs_mux, gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, store_data_mux, rw, ds, dummy} = ucode_sig;
+            cs_mux, gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, store_data_mux, rw, ds, mem_ds, imm_mux, addr_mux, dummy} = ucode_sig;
 endmodule

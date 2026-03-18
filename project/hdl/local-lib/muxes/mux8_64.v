@@ -1,0 +1,21 @@
+module mux8_64(
+    output [63:0] out,
+    input [63:0] in0,
+    input [63:0] in1,
+    input [63:0] in2,
+    input [63:0] in3,
+    input [63:0] in4,
+    input [63:0] in5,
+    input [63:0] in6,
+    input [63:0] in7,
+    input s0, 
+    input s1,
+    input s2
+); 
+
+    wire [63:0] mux4_64_out0, mux4_64_out1;
+
+    mux4_64 mux4_64_0(in0, in1, in2, in3, s0, s1, mux4_64_out0);
+    mux4_64 mux4_64_1(in4, in5, in6, in7, s0, s1, mux4_64_out1);
+    mux2_64 mux2_64_out(mux4_64_out0, mux4_64_out1, s2, out);
+endmodule
