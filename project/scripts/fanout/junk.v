@@ -263,3 +263,15 @@ module sram32x32$(A,DIO,OE,WR,CE);
 input [4:0] A; inout [31:0] DIO;
 input OE,WR,CE;
 endmodule
+
+module dma_disk_buffer (
+  input              clk, rst, start_xfer,
+  input      [31:0]  disk_addr, start_mem_addr,
+  input      [7:0]   buf_addr,
+
+  output reg         buf_valid,
+  output reg         busy,
+
+  output     [127:0] buf_data
+);
+endmodule

@@ -76,12 +76,12 @@ wire        D3,D2,D1,D0;
 assign STATE        = {Q3, Q2, Q1, Q0};
 assign NEXT_STATE   = {D3, D2, D1, D0};
 
-bufferH1024$  bufferH1024$_Q3(Q3, Q3_prebuf);
-bufferH1024$  bufferH1024$_Q2(Q2, Q2_prebuf);
-bufferH1024$  bufferH1024$_Q1(Q1, Q1_prebuf);
-bufferH1024$  bufferH1024$_Q0(Q0, Q0_prebuf);
+bufferH64$  bufferH64$_Q3(Q3, Q3_prebuf);
+bufferH64$  bufferH64$_Q2(Q2, Q2_prebuf);
+bufferH64$  bufferH64$_Q1(Q1, Q1_prebuf);
+bufferH64$  bufferH64$_Q0(Q0, Q0_prebuf);
 
-assign MEM_CTRL_Q_MUX = {Q2, Q1, Q0};
+buffer$ buffer$_MEM_CTRL_Q_MUX[2:0](MEM_CTRL_Q_MUX, {Q2_prebuf, Q1_prebuf, Q0_prebuf});
 
 wire  [2:0] counter, counter_buf16, inc_counter, next_counter;
 bufferH16$  bufferH16$_counter_buf16[2:0](counter_buf16, counter);
