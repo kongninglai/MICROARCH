@@ -74,19 +74,25 @@ module tb_stage_decode();
     endtask
 
     task check_result;
-        input [8*25:1] test_name; 
+        input [8*35:1] test_name; 
         input exp_ld_eip;
         input [31:0] exp_eip_true;
         input exp_valid;
+        reg eip_target_ok;
         begin
             @(negedge clk); // Check outputs after combinational logic settles
-            if (ld_eip === exp_ld_eip && eip_true === exp_eip_true && pr_de_rr_valid === exp_valid) begin
+            
+            // If ld_eip is 0, the CPU ignores eip_true, so we can pass the check automatically.
+            // Otherwise, we strictly compare eip_true to the expected value.
+            eip_target_ok = (ld_eip === 1'b0) || (eip_true === exp_eip_true);
+
+            if (ld_eip === exp_ld_eip && eip_target_ok && pr_de_rr_valid === exp_valid) begin
                 $display("  ✅ PASS | %0s | ld_eip: %b | eip_true: %h | valid: %b", test_name, ld_eip, eip_true, pr_de_rr_valid);
                 SUCCESSES = SUCCESSES + 1;
             end else begin
                 $display("  ❌ FAIL | %0s", test_name);
-                $display("     EXPECTED: ld_eip=%b | eip_true=%h | valid=%b", exp_ld_eip, exp_eip_true, exp_valid);
-                $display("     ACTUAL  : ld_eip=%b | eip_true=%h | valid=%b", ld_eip, eip_true, pr_de_rr_valid);
+                $display("     EXPECTED: ld_eip=%b | eip_true=%h (or ignored) | valid=%b", exp_ld_eip, exp_eip_true, exp_valid);
+                $display("     ACTUAL  : ld_eip=%b | eip_true=%h              | valid=%b", ld_eip, eip_true, pr_de_rr_valid);
                 FAILURES = FAILURES + 1;
             end
         end
@@ -121,6 +127,7 @@ module tb_stage_decode();
         // TEST 1: Normal Sequential Instruction (MOV r/m32, r32 -> 89 C8)
         // 2 bytes long. Expected: PC advances by 2, pipeline valid.
         // --------------------------------------------------------
+        #10
         cache_line = 128'd0;
         load_cache_byte(0, 8'h89); load_cache_byte(1, 8'hC8); 
         o_eip = 32'h0000_1000;
@@ -131,7 +138,7 @@ module tb_stage_decode();
         // Pipeline should pause. ld_eip=0, valid=1 (instruction is still valid, just waiting).
         // --------------------------------------------------------
         stall_rr = 1; 
-        check_result("Stall Condition (RR)   ", 1'b0, 32'h0000_1000, 1'b1); // <--- FIXED HERE
+        check_result("Stall Condition (RR)   ", 1'b0, 32'h0000_1000, 1'b1); 
         stall_rr = 0; // Release stall
 
         // --------------------------------------------------------
@@ -154,6 +161,65 @@ module tb_stage_decode();
         load_cache_byte(0, 8'hEB); load_cache_byte(1, 8'h05); 
         o_eip = 32'h0000_2000;
         check_result("JMP rel8 (No BTB Hit)  ", 1'b1, 32'h0000_2002, 1'b1);
+
+        // Ensure tail_ptr is high enough for all normal instructions
+        tail_ptr = 4'd15;
+
+        // --------------------------------------------------------
+        // TEST 5: Length = 1 Byte Branch (RET -> C3)
+        // BP defaults to 0 (Not Taken), so it increments sequentially.
+        // --------------------------------------------------------
+        cache_line = 128'd0;
+        load_cache_byte(0, 8'hC3); 
+        o_eip = 32'h0000_1000;
+        check_result("1-Byte Inst (RET)      ", 1'b1, 32'h0000_1001, 1'b1);
+
+        // --------------------------------------------------------
+        // TEST 6: Length = 3 Bytes: o16 JNE rel8 (66 75 05)
+        // --------------------------------------------------------
+        cache_line = 128'd0;
+        load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h75); load_cache_byte(2, 8'h05);
+        o_eip = 32'h0000_1003; 
+        check_result("3-Byte Br (o16 JNE)    ", 1'b1, 32'h0000_1006, 1'b1);
+
+        // --------------------------------------------------------
+        // TEST 7: Length = 5 Bytes: CALL rel32 (E8 44 33 22 11)
+        // --------------------------------------------------------
+        cache_line = 128'd0;
+        load_cache_byte(0, 8'hE8); load_cache_byte(1, 8'h44); load_cache_byte(2, 8'h33); load_cache_byte(3, 8'h22); load_cache_byte(4, 8'h11);
+        o_eip = 32'h0000_1006; 
+        check_result("5-Byte Br (CALL rel32) ", 1'b1, 32'h0000_100B, 1'b1);
+
+        // --------------------------------------------------------
+        // TEST 8: Length = 6 Bytes: JNE rel32 (0F 85 44 33 22 11)
+        // --------------------------------------------------------
+        cache_line = 128'd0;
+        load_cache_byte(0, 8'h0F); load_cache_byte(1, 8'h85); load_cache_byte(2, 8'h44); load_cache_byte(3, 8'h33); load_cache_byte(4, 8'h22); load_cache_byte(5, 8'h11);
+        o_eip = 32'h0000_100B; 
+        check_result("6-Byte Br (JNE rel32)  ", 1'b1, 32'h0000_1011, 1'b1);
+
+        // --------------------------------------------------------
+        // TEST 9: INVALID INSTRUCTION (Insufficient Bytes in Buffer)
+        // --------------------------------------------------------
+        // Let's use the 5-byte JMP rel32 (E9 44 33 22 11)
+        cache_line = 128'd0;
+        load_cache_byte(0, 8'hE9); load_cache_byte(1, 8'h44); load_cache_byte(2, 8'h33); load_cache_byte(3, 8'h22); load_cache_byte(4, 8'h11);
+        o_eip = 32'h0000_1011; 
+        
+        // BUT, we tell the Decode stage it only has 2 valid bytes left
+        tail_ptr = 4'd2; 
+        
+        // Expected: The decoder figures out it's 5 bytes long, but tail_ptr is 2.
+        // Therefore, logic_stall_flush must mark this as INVALID. 
+        // ld_eip = 0 (don't increment PC), pr_de_rr_valid = 0 (bubble).
+        check_result("Invalid (Len > tail)   ", 1'b0, 32'h0000_1011, 1'b0);
+
+        // --------------------------------------------------------
+        // TEST 10: Valid Instruction Restored
+        // Provide enough bytes to successfully decode the previous inst.
+        // --------------------------------------------------------
+        tail_ptr = 4'd15;
+        check_result("Valid Inst Restored    ", 1'b1, 32'h0000_1016, 1'b1);
 
         $display("=======================================");
         $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
