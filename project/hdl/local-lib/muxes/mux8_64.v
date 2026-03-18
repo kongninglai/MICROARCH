@@ -17,7 +17,7 @@ module mux8_64(
     wire s0_buffered, s1_buffered;
     bufferH16$ buffer16_s0(s0_buffered, s0);
     bufferH16$ buffer16_s1(s1_buffered, s1);
-    mux4_64 mux4_64_0(in0, in1, in2, in3, s0_buffered, s1_buffered, mux4_64_out0);
-    mux4_64 mux4_64_1(in4, in5, in6, in7, s0_buffered, s1_buffered, mux4_64_out1);
-    mux2_64 mux2_64_out(mux4_64_out0, mux4_64_out1, s2, out);
+    mux4_64 mux4_64_0(mux4_64_out0, in0, in1, in2, in3, s0_buffered, s1_buffered);
+    mux4_64 mux4_64_1(mux4_64_out1, in4, in5, in6, in7, s0_buffered, s1_buffered);
+    mux2_64 mux2_64_out(out, mux4_64_out0, mux4_64_out1, s2);
 endmodule
