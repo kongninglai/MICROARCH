@@ -616,16 +616,21 @@ initial begin
   #(1.5*CYCLE_TIME);
   rst = 1;
 
-  @(negedge DUT.WBE_BUSY); @(negedge DUT.WBE_BUSY);
+  #(3 * CYCLE_TIME);
   @(posedge clk);
+  while (DCACHE_STALL === 1'b1) begin
+    @(posedge clk);
+  end
 
   /*** BEGIN Populate NON-IO memory locations ***/
   for (i = 1; i < 2048; i = i + 1) begin
     if (i[10:8] != KB_PFN && i[10:8] != DMA_PFN) begin
       WB_PR_ST_ADDR_L0 = i[10:0];
       WB_SHF_ST_DATA_L0 = {4{17'd0, i[10:0], 4'd0}};
-      @(negedge DUT.WBE_BUSY); @(negedge DUT.WBE_BUSY);
-      @(posedge clk);
+      #(CYCLE_TIME);
+      while (DCACHE_STALL === 1'b1) begin
+        @(posedge clk);
+      end
     end
   end
   WB_VALID_IO_STORE_INST = 1'b0;
@@ -677,7 +682,6 @@ initial begin
       while (DCACHE_STALL === 1'b1) begin
         @(posedge clk);
       end
-      #(CYCLE_TIME);
       check_dcache_write_data(i[10:0]);
     end
   end
@@ -783,6 +787,7 @@ initial begin
   WB_VALID_IO_STORE_INST = 1'b0;
   
   @(posedge DMA_INT);
+  @(posedge clk);
 
   /*** END I/O TEST ***/
 
@@ -800,10 +805,47 @@ initial begin
   /*** END I$ Re-Read (Inspection of DMA transfer) ***/
 
 
+  /*** BEGIN D$ I/O Reads with Flushes ***/
+  #(CYCLE_TIME);
 
+  MEM_VALID_LOAD_INST = 1'b1;
+  D_RD_TLB_CACHE_ENABLE_OUT = 1'b0;
 
-
-
+  {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = {DMA_PFN, 8'd1, 4'b0000};
+  @(negedge DCACHE_STALL);
+  @(posedge clk);
+  check_dcache_io_data({32'd1, 32'd3988, 32'h00000067, 32'hFFFFFF67});
+  {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = 0;
+  @(negedge DCACHE_STALL);
+  @(posedge clk);
+  {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = {DMA_PFN, 8'd1, 4'b0000};
+  #(CYCLE_TIME);
+  EX_FLUSH = 1'b1;
+  {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = 0;
+  MEM_VALID_LOAD_INST = 1'b0;
+  #(CYCLE_TIME);
+  EX_FLUSH = 1'b0;
+  while (DCACHE_STALL === 1'b1) begin
+    @(DCACHE_STALL);
+  end
+  @(posedge clk);
+  MEM_VALID_LOAD_INST = 1'b1;
+  {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = {DMA_PFN, 8'd1, 4'b0000};
+  @(negedge DCACHE_STALL);
+  @(posedge clk);
+  check_dcache_io_data({32'd1, 32'd3988, 32'h00000067, 32'hFFFFFF67});
+  @(negedge DCACHE_STALL);
+  @(posedge clk);
+  check_dcache_io_data({32'd1, 32'd3988, 32'h00000067, 32'hFFFFFF67});
+  {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = {KB_PFN, 8'b00000010, 4'b0000};
+  @(negedge DCACHE_STALL);
+  @(posedge clk);
+  check_dcache_io_data(128'd1);
+  {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET} = {KB_PFN, 8'b00000101, 4'b0000};
+  @(negedge DCACHE_STALL);
+  @(posedge clk);
+  check_dcache_io_data(128'd103);
+  /*** END D$ I/O Reads with Flushes ***/
 
 
   // for (i = 0; i < 8; i = i + 1) begin
