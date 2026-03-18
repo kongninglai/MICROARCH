@@ -18,6 +18,7 @@
 ~/MICROARCH/project/hdl/stages/memory/io_addr_logic_block.v
 ~/MICROARCH/project/hdl/stages/fetch/cache_controller.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_16b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_16b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_256b.v

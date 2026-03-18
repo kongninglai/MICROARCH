@@ -81,7 +81,7 @@ wire          FSM_LD_REGS, FSM_SHF_DATA_WR_MASK, FSM_TAG_WR_MASK_MUX,
               FSM_ADDR_BUS_ENBAR, 
               FSM_IN_010;
 
-wire  [1:0]   FSM_DATA_WR_MASK_MUX, FSM_DATA_BUS_SHF_MUX;
+wire  [1:0]   FSM_DATA_WR_MASK_MUX, FSM_DATA_BUS_SHF_MUX_buf256;
 
 /* COUNTER */
 
@@ -139,7 +139,7 @@ and2$         and2$_FSM_HIT_DATA_MUX(FSM_HIT_DATA_MUX, CACHE_MISS, CC_STREAM_BUF
 wire  FSM_HIT_DATA_MUX_buf16;
 bufferH16$    bufferH16$_FSM_HIT_DATA_MUX_buf16(FSM_HIT_DATA_MUX_buf16, FSM_HIT_DATA_MUX);
 
-assign  FSM_DATA_BUS_SHF_MUX = counter_buf256[1:0];
+assign  FSM_DATA_BUS_SHF_MUX_buf256 = counter_buf256[1:0];
 
 assign  CC_FSM_VALID_WR_EN_GLOBAL = FSM_TAG_WR_MASK_MUX;
 
@@ -184,17 +184,25 @@ lshf_const #(
   .out(DATA_BUS_SHF_11)
 );
 
-mux4$   mux4$_DATA_BUS_SHF[RANK_BIT_WIDTH-1:0]  (
-                                                  DATA_BUS_SHF,
 
-                                                  DATA_BUS_ZEXT,
-                                                  DATA_BUS_SHF_01,
-                                                  DATA_BUS_SHF_10,
-                                                  DATA_BUS_SHF_11,
+genvar j;
 
-                                                  FSM_DATA_BUS_SHF_MUX[0],
-                                                  FSM_DATA_BUS_SHF_MUX[1]
-                                                );
+generate
+  for (j = 0; j < 8; j = j + 1) begin : mux4_16_GEN_DATA_BUS_SHF
+    mux4_16$   mux4_16$_DATA_BUS_SHF  
+                                        (
+                                          DATA_BUS_SHF[j*16 +: 16],
+
+                                          DATA_BUS_ZEXT[j*16 +: 16],
+                                          DATA_BUS_SHF_01[j*16 +: 16],
+                                          DATA_BUS_SHF_10[j*16 +: 16],
+                                          DATA_BUS_SHF_11[j*16 +: 16],
+
+                                          FSM_DATA_BUS_SHF_MUX_buf256[0],
+                                          FSM_DATA_BUS_SHF_MUX_buf256[1]
+                                        );
+  end
+endgenerate
 
 /*** REGISTERS ***/
 
@@ -371,7 +379,6 @@ wire    FSM_WR_DATA_MUX_buf16;
 
 bufferH16$    bufferH16$_FSM_WR_DATA_MUX_buf16(FSM_WR_DATA_MUX_buf16, FSM_WR_DATA_MUX);
 
-genvar j;
 generate
   for (j = 0; j < 8; j = j + 1) begin : MUX2_16b_GEN_DATA
     mux2_16$   mux2_16$_CC_WR_DATA_OUT  (

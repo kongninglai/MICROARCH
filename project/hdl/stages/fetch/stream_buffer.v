@@ -68,7 +68,7 @@ reg_n #(
 
 /*** HIT / MISS LOGIC ***/
 
-wire stream_buffer_hit_int, stream_buffer_miss_int, not_writing;
+wire stream_buffer_hit_int, stream_buffer_miss_int, writing, not_writing;
 
 big_eq #(
   .WIDTH(MEM_ADDR_WIDTH-RANK_BURST_SIZE+1)

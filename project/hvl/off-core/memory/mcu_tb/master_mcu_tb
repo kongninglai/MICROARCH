@@ -4,6 +4,7 @@
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib6
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_16b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_16b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks.v

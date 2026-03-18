@@ -434,53 +434,62 @@ tristateL$  tristateL$_STORE_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADD
 
 /* Now, pick which OE, CE, and WR goes to memory */
 
-mux8   mux8_OE[RANK_COUNT*CHIPS_PER_RANK-1:0]
-                                              ( 
-                                                OE,
+genvar j;
+generate
+  for (j = 0; j < 16; j = j + 1) begin : MEMORY_ENABLE_GEN
+    mux8_16b   mux8_OE
+                        ( 
+                          OE[j*16 +: 16],
 
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                STORE_BUFFER_OE,
-                                                LOAD_BUFFER_OE_DEMAND,
-                                                LOAD_BUFFER_OE_DEMAND_AND_PREFETCH,
-                                                LOAD_BUFFER_OE_PREFETCH,    
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          STORE_BUFFER_OE[j*16 +: 16],
+                          LOAD_BUFFER_OE_DEMAND[j*16 +: 16],
+                          LOAD_BUFFER_OE_DEMAND_AND_PREFETCH[j*16 +: 16],
+                          LOAD_BUFFER_OE_PREFETCH[j*16 +: 16],    
+
+                          MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
+                        );
+
+    mux8_16b   mux8_CE
+                                              ( 
+                                                CE[j*16 +: 16],
+
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                STORE_BUFFER_CE[j*16 +: 16],
+                                                LOAD_BUFFER_CE_DEMAND[j*16 +: 16],
+                                                LOAD_BUFFER_CE_DEMAND_AND_PREFETCH[j*16 +: 16],
+                                                LOAD_BUFFER_CE_PREFETCH[j*16 +: 16],    
 
                                                 MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
                                               );
 
-mux8   mux8_CE[RANK_COUNT*CHIPS_PER_RANK-1:0]
+    mux8_16b   mux8_WR
                                               ( 
-                                                CE,
+                                                WR[j*16 +: 16],
 
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                STORE_BUFFER_CE,
-                                                LOAD_BUFFER_CE_DEMAND,
-                                                LOAD_BUFFER_CE_DEMAND_AND_PREFETCH,
-                                                LOAD_BUFFER_CE_PREFETCH,    
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                STORE_BUFFER_WR[j*16 +: 16],
+                                                LOAD_BUFFER_WR_DEMAND[j*16 +: 16],
+                                                LOAD_BUFFER_WR_DEMAND_AND_PREFETCH[j*16 +: 16],
+                                                LOAD_BUFFER_WR_PREFETCH[j*16 +: 16],    
 
                                                 MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
                                               );
+  end
+endgenerate
 
-mux8   mux8_WR[RANK_COUNT*CHIPS_PER_RANK-1:0]
-                                              ( 
-                                                WR,
 
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                STORE_BUFFER_WR,
-                                                LOAD_BUFFER_WR_DEMAND,
-                                                LOAD_BUFFER_WR_DEMAND_AND_PREFETCH,
-                                                LOAD_BUFFER_WR_PREFETCH,    
 
-                                                MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
-                                              );
+
 
 /*** MAIN MEMORY INSTANTIATION ***/
 main_memory #(
