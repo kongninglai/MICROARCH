@@ -115,20 +115,22 @@ reg_n #(
 );
 
 
-wire        [7:0]     buf_addr, buf_addr_next;
+wire        [7:0]     buf_addr, buf_addr_buf16, buf_addr_next;
 wire        [7:0]     buf_addr_inc;
+
+bufferH16$    bufferH16$_buf_addr_buf16[7:0](buf_addr_buf16, buf_addr);
 
 big_increment #(
   .WIDTH(8)
 ) big_increment_inc_counter (
-  .a(buf_addr),
+  .a(buf_addr_buf16),
   .s(buf_addr_inc)
 );
 
 wire                  inc_trig, inc_trig_buf64;
 and2$   and2$_inc_trig(inc_trig, IN_011_buf256, D2);
 bufferH64$    bufferH64$_inc_trig_buf64(inc_trig_buf64, inc_trig);
-mux3_8$   mux3_8$_buf_addr(buf_addr_next, buf_addr, {8{1'b1}}, buf_addr_inc, IN_010_buf256, inc_trig_buf64);
+mux3_8$   mux3_8$_buf_addr(buf_addr_next, buf_addr_buf16, {8{1'b1}}, buf_addr_inc, IN_010_buf256, inc_trig_buf64);
 
 reg_n #(
   .WIDTH(8),
@@ -153,14 +155,16 @@ reg_n #(
   .q(bytes_to_transfer)
 );
 
-wire        [7:0]     bursts_left, bursts_left_next;
+wire        [7:0]     bursts_left, bursts_left_buf16, bursts_left_next;
 wire        [7:0]     bursts_left_orig, bursts_left_orig_next;
 wire        [7:0]     bursts_left_dec, bursts_left_calc;
+
+bufferH16$    bufferH16$_bursts_left_buf16[7:0](bursts_left_buf16, bursts_left);
 
 big_decrement #(
   .WIDTH(8)
 ) big_decrement_bursts_left_dec (
-  .a(bursts_left),
+  .a(bursts_left_buf16),
   .s(bursts_left_dec)
 );
 
@@ -183,7 +187,7 @@ reg_n #(
   .q(bursts_left_orig)
 );
 
-mux3_8$       mux3_8$_bursts_left(bursts_left_next, bursts_left, bursts_left_calc, bursts_left_dec, IN_010_buf256, inc_trig_buf64);
+mux3_8$       mux3_8$_bursts_left(bursts_left_next, bursts_left_buf16, bursts_left_calc, bursts_left_dec, IN_010_buf256, inc_trig_buf64);
 
 reg_n #(
   .WIDTH(8),
@@ -203,7 +207,7 @@ tristate_bus_driver16$  DATA_BUS_DRIVER_H(.enbar(TRANSFERRING_N), .in(DATA_FOR_B
 tristate_bus_driver16$  DATA_BUS_DRIVER_L(.enbar(TRANSFERRING_N), .in(DATA_FOR_BUS[15:0]),  .out(DATA_BUS[15:0]));
 
 wire       [14:4]     ADDR_FOR_BUS_INC;
-wire       [14:4]     ADDR_FOR_BUS, ADDR_FOR_BUS_NEXT, ADDR_FOR_BUS_CALC;
+wire       [14:4]     ADDR_FOR_BUS, ADDR_FOR_BUS_buf16, ADDR_FOR_BUS_NEXT, ADDR_FOR_BUS_CALC;
 
 big_decrement #(
   .WIDTH(11)
@@ -215,11 +219,13 @@ big_decrement #(
 big_increment #(
   .WIDTH(11)
 ) big_increment_ADDR_FOR_BUS_CALC (
-  .a(ADDR_FOR_BUS),
+  .a(ADDR_FOR_BUS_buf16),
   .s(ADDR_FOR_BUS_INC)
 );
 
-mux3$       mux3$_ADDR_FOR_BUS[14:4](ADDR_FOR_BUS_NEXT, ADDR_FOR_BUS, ADDR_FOR_BUS_CALC, ADDR_FOR_BUS_INC, IN_010_buf256, inc_trig_buf64);
+bufferH16$  bufferH16$_ADDR_FOR_BUS_buf16[14:4](ADDR_FOR_BUS_buf16, ADDR_FOR_BUS);
+
+mux3$       mux3$_ADDR_FOR_BUS[14:4](ADDR_FOR_BUS_NEXT, ADDR_FOR_BUS_buf16, ADDR_FOR_BUS_CALC, ADDR_FOR_BUS_INC, IN_010_buf256, inc_trig_buf64);
 
 reg_n #(
   .WIDTH(11),
@@ -230,7 +236,7 @@ reg_n #(
   .q(ADDR_FOR_BUS)
 );
 
-tristate_bus_driver1$  ADDR_BUS_DRIVER[MEM_ADDR_WIDTH-1:0](.enbar(TRANSFERRING_N), .in({ADDR_FOR_BUS, 4'b0000}),  .out(ADDR_BUS));
+tristate_bus_driver1$  ADDR_BUS_DRIVER[MEM_ADDR_WIDTH-1:0](.enbar(TRANSFERRING_N), .in({ADDR_FOR_BUS_buf16, 4'b0000}),  .out(ADDR_BUS));
 
 wire                  FIRST_BURST, LAST_BURST;
 
@@ -246,14 +252,14 @@ big_decrement #(
 big_eq #(
   .WIDTH(8)
 ) big_eq_FIRST_BURST (
-  .in0(bursts_left), .in1(bursts_left_orig_m1),
+  .in0(bursts_left_buf16), .in1(bursts_left_orig_m1),
   .eq(FIRST_BURST)
 );
 
 big_eq #(
   .WIDTH(8)
 ) big_eq_LAST_BURST (
-  .in0(bursts_left), .in1(8'd0),
+  .in0(bursts_left_buf16), .in1(8'd0),
   .eq(LAST_BURST)
 );
 
@@ -273,14 +279,22 @@ lshf_var_16b  lshf_var_16b_LAST_INT_WRMASK(
   .out(LAST_WRMASK_INT)
 );
 
+wire    [15:0]    LAST_WRMASK_INT_buf16;
+
+bufferH16$    bufferH16$_LAST_WRMASK_INT_buf16[15:0](LAST_WRMASK_INT_buf16,LAST_WRMASK_INT);
+
 lshf_var_16b  lshf_var_16b_LAST_WRMASK(
-  .in(LAST_WRMASK_INT),
+  .in(LAST_WRMASK_INT_buf16),
   .shf_amt(start_mem_addr[3:0]),
   .out(LAST_WRMASK)
 );
 
+wire    [15:0]    SHIFTED_FIRST_buf16;
+
+bufferH16$    bufferH16$_SHIFTED_FIRST_buf16[15:0](SHIFTED_FIRST_buf16,SHIFTED_FIRST);
+
 lshf_var_16b  lshf_var_16b_FIRST_LAST_WRMASK(
-  .in(SHIFTED_FIRST),
+  .in(SHIFTED_FIRST_buf16),
   .shf_amt(bytes_to_transfer[3:0]),
   .out(SHIFTED_FIRST_LAST)
 );
@@ -308,7 +322,7 @@ wire buf_valid;
 dma_disk_buffer DISK_INST (
                             .clk(clk), .rst(rst), .start_xfer(start_xfer),
                             .disk_addr(disk_addr), .start_mem_addr(start_mem_addr),
-                            .buf_addr(buf_addr),
+                            .buf_addr(buf_addr_buf16),
 
                             .buf_valid(buf_valid),
                             .busy(),

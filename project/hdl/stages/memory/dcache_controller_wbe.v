@@ -32,12 +32,14 @@ assign NEXT_STATE   = {D1, D0};
 wire          FSM_LD_REGS, FSM_BUS_ENBAR, WBE_FSM_BUSY, FSM_CLR_CTR, FSM_GATE_RQ;
 
 /* COUNTER */
-wire  [1:0] counter, inc_counter, next_counter;
+wire  [1:0] counter, counter_buf16, inc_counter, next_counter;
+
+bufferH16$    bufferH16$_counter_buf16[1:0](counter_buf16, counter);
 
 big_increment #(
   .WIDTH(2)
 ) big_increment_inc_counter (
-  .a(counter),
+  .a(counter_buf16),
   .s(inc_counter)
 );
 
@@ -57,7 +59,7 @@ reg_n #(
 wire ARB_ACK_RECV, WB_DONE, CTR_NOT_DONE, STATE_10_DONE_COND;
 
 or3$    or3$_ARB_ACK_RECV(ARB_ACK_RECV, DC_MEM_WR_ACK, DC_DMA_WR_ACK, DC_KB_WR_ACK);
-nand2$  nand2$_CTR_NOT_DONE(CTR_NOT_DONE, counter[0], counter[1]);
+nand2$  nand2$_CTR_NOT_DONE(CTR_NOT_DONE, counter_buf16[0], counter_buf16[1]);
 inv1$   inv1$_WB_DONE(WB_DONE, CTR_NOT_DONE);
 and2$   and2$_STATE_10_DONE_COND(STATE_10_DONE_COND, CTR_NOT_DONE, Q1);
 or2$    or2$_WBE_BUSY(WBE_BUSY, STATE_10_DONE_COND, Q0);
@@ -126,16 +128,16 @@ mux4_16$   mux4_16$_WBE_BUS_DATA_HIGH(  WBE_BUS_DATA[31:16],
                                         Q_WBE_DATA[63:48],
                                         Q_WBE_DATA[95:80],
                                         Q_WBE_DATA[127:112],
-                                        counter[0],
-                                        counter[1]);
+                                        counter_buf16[0],
+                                        counter_buf16[1]);
 
 mux4_16$   mux4_16$_WBE_BUS_DATA_LOW(   WBE_BUS_DATA[15:0],
                                         Q_WBE_DATA[15:0],
                                         Q_WBE_DATA[47:32],
                                         Q_WBE_DATA[79:64],
                                         Q_WBE_DATA[111:96],
-                                        counter[0],
-                                        counter[1]);
+                                        counter_buf16[0],
+                                        counter_buf16[1]);
 
 /*** BUS DRIVERS ***/
 
