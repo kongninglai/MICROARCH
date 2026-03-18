@@ -350,7 +350,9 @@ reg_n #(
 
 /* mcu_ctrl determines which OE, CE, and WR gets picked */
 
-wire  [2:0] MEM_CTRL_Q_MUX;
+wire  [2:0] MEM_CTRL_Q_MUX, MEM_CTRL_Q_MUX_buf1024;
+
+bufferH1024$    bufferH1024$_MEM_CTRL_Q_MUX_buf1024[2:0](MEM_CTRL_Q_MUX_buf1024, MEM_CTRL_Q_MUX);
 
 mcu_ctrl #(
   .MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY),
@@ -445,7 +447,7 @@ mux8   mux8_OE[RANK_COUNT*CHIPS_PER_RANK-1:0]
                                                 LOAD_BUFFER_OE_DEMAND_AND_PREFETCH,
                                                 LOAD_BUFFER_OE_PREFETCH,    
 
-                                                MEM_CTRL_Q_MUX[0], MEM_CTRL_Q_MUX[1], MEM_CTRL_Q_MUX[2]
+                                                MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
                                               );
 
 mux8   mux8_CE[RANK_COUNT*CHIPS_PER_RANK-1:0]
@@ -461,7 +463,7 @@ mux8   mux8_CE[RANK_COUNT*CHIPS_PER_RANK-1:0]
                                                 LOAD_BUFFER_CE_DEMAND_AND_PREFETCH,
                                                 LOAD_BUFFER_CE_PREFETCH,    
 
-                                                MEM_CTRL_Q_MUX[0], MEM_CTRL_Q_MUX[1], MEM_CTRL_Q_MUX[2]
+                                                MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
                                               );
 
 mux8   mux8_WR[RANK_COUNT*CHIPS_PER_RANK-1:0]
@@ -477,7 +479,7 @@ mux8   mux8_WR[RANK_COUNT*CHIPS_PER_RANK-1:0]
                                                 LOAD_BUFFER_WR_DEMAND_AND_PREFETCH,
                                                 LOAD_BUFFER_WR_PREFETCH,    
 
-                                                MEM_CTRL_Q_MUX[0], MEM_CTRL_Q_MUX[1], MEM_CTRL_Q_MUX[2]
+                                                MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
                                               );
 
 /*** MAIN MEMORY INSTANTIATION ***/

@@ -1,5 +1,6 @@
 /home/projects/courses/spring_22/ee382n19_16785/lib/time
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
 ~/MICROARCH/project/hdl/stages/fetch/lru_store_per_set.v
 ~/MICROARCH/project/hvl/stages/fetch/lru_store_per_set_tb/lru_store_per_set_behav.v
 ~/MICROARCH/project/hvl/stages/fetch/lru_store_per_set_tb/lru_store_per_set_tb.v

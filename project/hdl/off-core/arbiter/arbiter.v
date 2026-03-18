@@ -34,12 +34,23 @@ bufferH16$  bufferH16$_Q2(Q2, Q2_prebuf);
 bufferH16$  bufferH16$_Q1(Q1, Q1_prebuf);
 bufferH16$  bufferH16$_Q0(Q0, Q0_prebuf);
 
-wire    NOBODY_BUSY;
+wire    NOBODY_BUSY, NOBODY_BUSY_buf16;
 
 nor3$   nor3$_NOBODY_BUSY(NOBODY_BUSY,
                           MEM_BUSY,
                           DMAC_BUSY,
                           KB_BUSY);
+
+bufferH16$    bufferH16$_NOBODY_BUSY_buf16(NOBODY_BUSY_buf16, NOBODY_BUSY);
+
+wire DC_MEM_RD_ACK ;
+wire DC_DMA_RD_ACK ;
+wire DC_KB_RD_ACK  ;
+wire DC_MEM_WR_ACK ;
+wire DC_DMA_WR_ACK ;
+wire DC_KB_WR_ACK  ;
+wire IC_MEM_RD_ACK ;
+wire DMA_MEM_WR_ACK;
 
 tristate_bus_driver1$ tristate_bus_driver1$_DC_MEM_RD_ACK_BUS     (.enbar(1'b0), .in(DC_MEM_RD_ACK ), .out(DC_MEM_RD_ACK_BUS ));
 tristate_bus_driver1$ tristate_bus_driver1$_DC_DMA_RD_ACK_BUS     (.enbar(1'b0), .in(DC_DMA_RD_ACK ), .out(DC_DMA_RD_ACK_BUS ));
@@ -75,7 +86,7 @@ wire and_0_1_out;
 wire and_0_2_out;
 wire and_0_3_out;
 and4$ and_0_0(and_0_0_out,and_0_1_out,and_0_2_out,and_0_3_out,Q2_bar);
-and4$ and_0_1(and_0_1_out,Q1_bar,Q0_bar,NOBODY_BUSY,DC_MEM_RD_RQ_bar);
+and4$ and_0_1(and_0_1_out,Q1_bar,Q0_bar,NOBODY_BUSY_buf16,DC_MEM_RD_RQ_bar);
 and4$ and_0_2(and_0_2_out,DC_DMA_RD_RQ_bar,DC_KB_RD_RQ_bar,DC_MEM_WR_RQ_bar,DC_DMA_WR_RQ_bar);
 and3$ and_0_3(and_0_3_out,DC_KB_WR_RQ_bar,IC_MEM_RD_RQ_bar,DMA_MEM_WR_RQ);
 wire and_1_0_out;
@@ -83,21 +94,21 @@ wire and_1_1_out;
 wire and_1_2_out;
 wire and_1_3_out;
 and4$ and_1_0(and_1_0_out,and_1_1_out,and_1_2_out,and_1_3_out,Q2_bar);
-and4$ and_1_1(and_1_1_out,Q1_bar,Q0_bar,NOBODY_BUSY,DC_MEM_RD_RQ_bar);
+and4$ and_1_1(and_1_1_out,Q1_bar,Q0_bar,NOBODY_BUSY_buf16,DC_MEM_RD_RQ_bar);
 and4$ and_1_2(and_1_2_out,DC_DMA_RD_RQ_bar,DC_KB_RD_RQ_bar,DC_MEM_WR_RQ_bar,DC_DMA_WR_RQ_bar);
 and2$ and_1_3(and_1_3_out,DC_KB_WR_RQ_bar,IC_MEM_RD_RQ);
 wire and_2_0_out;
 wire and_2_1_out;
 and4$ and_2_0(and_2_0_out,and_2_1_out,Q2_bar,Q1_bar,Q0_bar);
-and2$ and_2_1(and_2_1_out,NOBODY_BUSY,DC_KB_WR_RQ);
+and2$ and_2_1(and_2_1_out,NOBODY_BUSY_buf16,DC_KB_WR_RQ);
 wire and_3_0_out;
 wire and_3_1_out;
 and4$ and_3_0(and_3_0_out,and_3_1_out,Q2_bar,Q1_bar,Q0_bar);
-and2$ and_3_1(and_3_1_out,NOBODY_BUSY,DC_DMA_WR_RQ);
+and2$ and_3_1(and_3_1_out,NOBODY_BUSY_buf16,DC_DMA_WR_RQ);
 wire and_4_0_out;
 wire and_4_1_out;
 and4$ and_4_0(and_4_0_out,and_4_1_out,Q2_bar,Q1_bar,Q0_bar);
-and2$ and_4_1(and_4_1_out,NOBODY_BUSY,DC_MEM_WR_RQ);
+and2$ and_4_1(and_4_1_out,NOBODY_BUSY_buf16,DC_MEM_WR_RQ);
 wire and_5_0_out;
 and4$ and_5_0(and_5_0_out,Q2_bar,Q1,Q0,DC_MEM_RD_RQ);
 wire and_6_0_out;
@@ -117,15 +128,15 @@ and3$ and_12_0(and_12_0_out,Q2,Q1_bar,Q0);
 wire and_13_0_out;
 wire and_13_1_out;
 and4$ and_13_0(and_13_0_out,and_13_1_out,Q2_bar,Q1_bar,Q0_bar);
-and2$ and_13_1(and_13_1_out,NOBODY_BUSY,DC_KB_RD_RQ);
+and2$ and_13_1(and_13_1_out,NOBODY_BUSY_buf16,DC_KB_RD_RQ);
 wire and_14_0_out;
 wire and_14_1_out;
 and4$ and_14_0(and_14_0_out,and_14_1_out,Q2_bar,Q1_bar,Q0_bar);
-and2$ and_14_1(and_14_1_out,NOBODY_BUSY,DC_DMA_RD_RQ);
+and2$ and_14_1(and_14_1_out,NOBODY_BUSY_buf16,DC_DMA_RD_RQ);
 wire and_15_0_out;
 wire and_15_1_out;
 and4$ and_15_0(and_15_0_out,and_15_1_out,Q2_bar,Q1_bar,Q0_bar);
-and2$ and_15_1(and_15_1_out,NOBODY_BUSY,DC_MEM_RD_RQ);
+and2$ and_15_1(and_15_1_out,NOBODY_BUSY_buf16,DC_MEM_RD_RQ);
 
 /* Sum Expressions */
 or2$ or_0_0(D2,and_0_0_out,and_1_0_out);

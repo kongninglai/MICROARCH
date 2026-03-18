@@ -57,8 +57,8 @@ reg_n #(
 wire ARB_ACK_RECV, WB_DONE, CTR_NOT_DONE, STATE_10_DONE_COND;
 
 or3$    or3$_ARB_ACK_RECV(ARB_ACK_RECV, DC_MEM_WR_ACK, DC_DMA_WR_ACK, DC_KB_WR_ACK);
-and2$   and2$_WB_DONE(WB_DONE, counter[0], counter[1]);
 nand2$  nand2$_CTR_NOT_DONE(CTR_NOT_DONE, counter[0], counter[1]);
+inv1$   inv1$_WB_DONE(WB_DONE, CTR_NOT_DONE);
 and2$   and2$_STATE_10_DONE_COND(STATE_10_DONE_COND, CTR_NOT_DONE, Q1);
 or2$    or2$_WBE_BUSY(WBE_BUSY, STATE_10_DONE_COND, Q0);
 
@@ -72,12 +72,16 @@ io_addr_logic_block io_addr_logic_block_inst (
   .WHICH_IO(D_DC_WR_RQ)
 );
 
+wire    FSM_LD_REGS_buf256;
+
+bufferH256$   FSM_LD_REGS_buf256$_FSM_LD_REGS_buf256(FSM_LD_REGS_buf256, FSM_LD_REGS);
+
 reg_n #(
   .WIDTH(3),
   .USE_EN_BAR(0)
 ) reg_n_Q_DC_WR_RQ (
   .clk(clk), .rst(rst),
-  .en({(3){FSM_LD_REGS}}), .d(D_DC_WR_RQ),
+  .en({(3){FSM_LD_REGS_buf256}}), .d(D_DC_WR_RQ),
   .q(Q_DC_WR_RQ)
 );
 
@@ -89,7 +93,7 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_Q_WBE_ADDR_OUT (
   .clk(clk), .rst(rst),
-  .en({(MEM_ADDR_WIDTH-RANK_BURST_SIZE){FSM_LD_REGS}}), .d(DCACHE_PHYS_ADDR),
+  .en({(MEM_ADDR_WIDTH-RANK_BURST_SIZE){FSM_LD_REGS_buf256}}), .d(DCACHE_PHYS_ADDR),
   .q(Q_WBE_ADDR_OUT)
 );
 
@@ -100,7 +104,7 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_Q_WBE_WR_MASK (
   .clk(clk), .rst(rst),
-  .en({(CHIPS_PER_RANK){FSM_LD_REGS}}), .d(DCACHE_WR_MASK),
+  .en({(CHIPS_PER_RANK){FSM_LD_REGS_buf256}}), .d(DCACHE_WR_MASK),
   .q(Q_WBE_WR_MASK)
 );
 
@@ -111,42 +115,61 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_Q_WBE_DATA (
   .clk(clk), .rst(rst),
-  .en({(RANK_BIT_WIDTH){FSM_LD_REGS}}), .d(DCACHE_WBE_DATA),
+  .en({(RANK_BIT_WIDTH){FSM_LD_REGS_buf256}}), .d(DCACHE_WBE_DATA),
   .q(Q_WBE_DATA)
 );
 
 wire  [BUS_BIT_WIDTH-1:0]   WBE_BUS_DATA;
 
-mux4$   mux4$_WBE_BUS_DATA[BUS_BIT_WIDTH-1:0](WBE_BUS_DATA,
-                                              Q_WBE_DATA[31:0],
-                                              Q_WBE_DATA[63:32],
-                                              Q_WBE_DATA[95:64],
-                                              Q_WBE_DATA[127:96],
-                                              counter[0],
-                                              counter[1]);
+mux4_16$   mux4_16$_WBE_BUS_DATA_HIGH(  WBE_BUS_DATA[31:16],
+                                        Q_WBE_DATA[31:16],
+                                        Q_WBE_DATA[63:48],
+                                        Q_WBE_DATA[95:80],
+                                        Q_WBE_DATA[127:112],
+                                        counter[0],
+                                        counter[1]);
+
+mux4_16$   mux4_16$_WBE_BUS_DATA_LOW(   WBE_BUS_DATA[15:0],
+                                        Q_WBE_DATA[15:0],
+                                        Q_WBE_DATA[47:32],
+                                        Q_WBE_DATA[79:64],
+                                        Q_WBE_DATA[111:96],
+                                        counter[0],
+                                        counter[1]);
 
 /*** BUS DRIVERS ***/
 
-tristate_bus_driver16$   tristate_bus_driver16$_WR_mask[CHIPS_PER_RANK-1:0]
+tristate_bus_driver16$   tristate_bus_driver16$_WR_mask
                                                        (
                                                           .enbar(FSM_BUS_ENBAR),
                                                           .in(Q_WBE_WR_MASK),
                                                           .out(WR_mask)
                                                        );
 
-tristate_bus_driver1$   tristate_bus_driver1$_DATA_BUS[BUS_BIT_WIDTH-1:0]
+tristate_bus_driver16$   tristate_bus_driver16$_DATA_BUS_TOP
                                                        (
                                                           .enbar(FSM_BUS_ENBAR),
-                                                          .in(WBE_BUS_DATA),
-                                                          .out(DATA_BUS)
+                                                          .in(WBE_BUS_DATA[31:16]),
+                                                          .out(DATA_BUS[31:16])
                                                        );
 
-tristate_bus_driver1$   tristate_bus_driver1$_ADDR_BUS[MEM_ADDR_WIDTH-1:0]
+tristate_bus_driver16$   tristate_bus_driver16$_DATA_BUS_BOT
                                                        (
                                                           .enbar(FSM_BUS_ENBAR),
-                                                          .in({Q_WBE_ADDR_OUT, 4'b0000}),
-                                                          .out(ADDR_BUS)
+                                                          .in(WBE_BUS_DATA[15:0]),
+                                                          .out(DATA_BUS[15:0])
                                                        );
+
+wire ADDR_BUS_DUMMY;
+
+tristate_bus_driver16$   tristate_bus_driver16$_ADDR_BUS
+                                                       (
+                                                          .enbar(FSM_BUS_ENBAR),
+                                                          .in({1'b0, Q_WBE_ADDR_OUT, 4'b0000}),
+                                                          .out({ADDR_BUS_DUMMY, ADDR_BUS})
+                                                       );
+
+wire DC_MEM_WR_RQ_GATED, DC_DMA_WR_RQ_GATED, DC_KB_WR_RQ_GATED;
 
 and2$   and2$_DC_MEM_WR_RQ_GATED(DC_MEM_WR_RQ_GATED, Q_DC_WR_RQ[2], FSM_GATE_RQ);
 

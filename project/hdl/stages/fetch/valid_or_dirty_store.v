@@ -22,7 +22,7 @@ wire                  wr_en_global_buf64;
 bufferH64$    bufferH64$_wr_en_global_buf64(wr_en_global_buf64, wr_en_global);
 
 wire  [NUM_SETS-1:0]  wr_en_one_hot_set;
-wire  [NUM_WAYS-1:0]  wr_en_one_hot_way;
+wire  [NUM_WAYS-1:0]  wr_en_one_hot_way, wr_en_one_hot_way_buf16;
 
 decoder3_8$   decoder3_8$_wr_en_one_hot_set(.SEL(wr_en[INDEX_WIDTH+WAY_WIDTH-1:WAY_WIDTH]), 
                                             .Y(wr_en_one_hot_set), 
@@ -31,6 +31,8 @@ decoder3_8$   decoder3_8$_wr_en_one_hot_set(.SEL(wr_en[INDEX_WIDTH+WAY_WIDTH-1:W
 decoder2_4$   decoder2_4$_wr_en_one_hot_way(.SEL(wr_en[WAY_WIDTH-1:0]), 
                                             .Y(wr_en_one_hot_way), 
                                             .YBAR());
+
+bufferH16$    bufferH16$_wr_en_one_hot_way_buf16[NUM_WAYS-1:0](wr_en_one_hot_way_buf16, wr_en_one_hot_way);
 
 wire  [NUM_SETS*NUM_WAYS-1:0] full_store;
 
@@ -42,7 +44,7 @@ generate
 
       and3$   and3$_active_cache_line(active_cache_line, 
                                       wr_en_one_hot_set[i],
-                                      wr_en_one_hot_way[j],
+                                      wr_en_one_hot_way_buf16[j],
                                       wr_en_global_buf64);
 
       reg_n #(
