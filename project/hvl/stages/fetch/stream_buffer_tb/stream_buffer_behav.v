@@ -67,10 +67,13 @@ always @(posedge clk or negedge rst) begin
     stream_buffer_next_line_addr <= next_line_addr_d;
 end
 
-assign stream_buffer_hit  =
-  stream_buffer_valid &&
-  (stream_buffer_next_line_addr == cache_addr);
+assign stream_buffer_hit =
+    stream_buffer_valid &&
+    (stream_buffer_next_line_addr == cache_addr) &&
+    ~(|stream_buffer_wr_mask);
 
-assign stream_buffer_miss = ~stream_buffer_hit;
+assign stream_buffer_miss =
+    ~stream_buffer_hit ||
+    (|stream_buffer_wr_mask);
 
 endmodule

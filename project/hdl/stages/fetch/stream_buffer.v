@@ -68,18 +68,28 @@ reg_n #(
 
 /*** HIT / MISS LOGIC ***/
 
+wire stream_buffer_hit_int, stream_buffer_miss_int, not_writing;
+
 big_eq #(
   .WIDTH(MEM_ADDR_WIDTH-RANK_BURST_SIZE+1)
-) big_eq_stream_buffer_hit (
+) big_eq_stream_buffer_hit_int (
   .in0({stream_buffer_valid, stream_buffer_next_line_addr}), .in1({1'b1, cache_addr}),
-  .eq(stream_buffer_hit)
+  .eq(stream_buffer_hit_int)
 );
 
 big_neq #(
   .WIDTH(MEM_ADDR_WIDTH-RANK_BURST_SIZE+1)
-) big_neq_stream_buffer_miss (
+) big_neq_stream_buffer_miss_int (
   .in0({stream_buffer_valid, stream_buffer_next_line_addr}), .in1({1'b1, cache_addr}),
-  .neq(stream_buffer_miss)
+  .neq(stream_buffer_miss_int)
 );
+
+nor4$   nor4$_not_writing(not_writing, stream_buffer_wr_mask[0], stream_buffer_wr_mask[1],
+                                       stream_buffer_wr_mask[2], stream_buffer_wr_mask[3]);
+or4$         or4$_writing(writing,     stream_buffer_wr_mask[0], stream_buffer_wr_mask[1],
+                                       stream_buffer_wr_mask[2], stream_buffer_wr_mask[3]);
+
+and2$   and2$_stream_buffer_hit(stream_buffer_hit, stream_buffer_hit_int, not_writing);
+or2$    or2$_stream_buffer_miss(stream_buffer_miss, stream_buffer_miss_int, writing);
 
 endmodule
