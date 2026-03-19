@@ -50,10 +50,25 @@ module regfile_2r1w #(
     and2$ and_hit10(hit10, wr0_en, match10);
 
     wire [WIDTH-1:0] rd_reg0_raw, rd_reg1_raw;
-    mux8 mux_reg0_raw[WIDTH-1:0](rd_reg0_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg0_idx[0], rd_reg0_idx[1], rd_reg0_idx[2]);
-    mux8 mux_reg1_raw[WIDTH-1:0](rd_reg1_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg1_idx[0], rd_reg1_idx[1], rd_reg1_idx[2]);
-
-    mux2$ mux_reg0[WIDTH-1:0](rd_reg0_data, rd_reg0_raw, wr_reg0_data, hit00);
-    mux2$ mux_reg1[WIDTH-1:0](rd_reg1_data, rd_reg1_raw, wr_reg0_data, hit10);
+    generate 
+        if (WIDTH==16) begin 
+            mux8_16 mux16_reg0_raw(rd_reg0_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg0_idx[0], rd_reg0_idx[1], rd_reg0_idx[2]);
+            mux8_16 mux16_reg1_raw(rd_reg1_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg1_idx[0], rd_reg1_idx[1], rd_reg1_idx[2]);
+            mux2_16$ mux16_reg0(rd_reg0_data, rd_reg0_raw, wr_reg0_data, hit00);
+            mux2_16$ mux16_reg1(rd_reg1_data, rd_reg1_raw, wr_reg0_data, hit10);
+        end else if (WIDTH==32) begin 
+            mux8_32 mux32_reg0_raw(rd_reg0_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg0_idx[0], rd_reg0_idx[1], rd_reg0_idx[2]);
+            mux8_32 mux32_reg1_raw(rd_reg1_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg1_idx[0], rd_reg1_idx[1], rd_reg1_idx[2]);
+            mux2_32 mux32_reg0(rd_reg0_data, rd_reg0_raw, wr_reg0_data, hit00);
+            mux2_32 mux32_reg1(rd_reg1_data, rd_reg1_raw, wr_reg0_data, hit10);
+        end else if (WIDTH==64) begin 
+            mux8_64 mux64_reg0_raw(rd_reg0_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg0_idx[0], rd_reg0_idx[1], rd_reg0_idx[2]);
+            mux8_64 mux64_reg1_raw(rd_reg1_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd_reg1_idx[0], rd_reg1_idx[1], rd_reg1_idx[2]);
+            mux2_64 mux64_reg0(rd_reg0_data, rd_reg0_raw, wr_reg0_data, hit00);
+            mux2_64 mux64_reg1(rd_reg1_data, rd_reg1_raw, wr_reg0_data, hit10);
+        end
+            
+            
+    endgenerate
 
 endmodule

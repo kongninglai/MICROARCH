@@ -8,6 +8,8 @@ PA_16b_tb                      FAILURES=0      SUCCESSES=1024
 PA_32b_tb                      FAILURES=0      SUCCESSES=1030  
 PA_4b_tb                       FAILURES=0      SUCCESSES=258   
 PA_8b_tb                       FAILURES=0      SUCCESSES=65536 
+address_adder_tb               FAILURES=0      SUCCESSES=256   
+ag_to_mem_tb                   FAILURES=0      SUCCESSES=0     
 arbiter_tb                     FAILURES=0      SUCCESSES=16    
 big_and_tb                     FAILURES=0      SUCCESSES=4096  
 big_decrement_tb               FAILURES=0      SUCCESSES=4097  
@@ -38,6 +40,7 @@ mux32_tb                       FAILURES=0      SUCCESSES=256
 mux4_64_tb                     FAILURES=0      SUCCESSES=256   
 mux64_tb                       FAILURES=0      SUCCESSES=256   
 mux8_32_tb                     FAILURES=0      SUCCESSES=256   
+mux8_64_tb                     FAILURES=0      SUCCESSES=256   
 mux8_tb                        FAILURES=0      SUCCESSES=2048  
 negate_32b_tb                  FAILURES=0      SUCCESSES=258   
 off_core_top_tb                FAILURES=0      SUCCESSES=17444 
@@ -45,7 +48,7 @@ rank_tb                        FAILURES=0      SUCCESSES=2048
 reg_n_tb                       FAILURES=0      SUCCESSES=1000  
 regfile_2r1w_tb                FAILURES=0      SUCCESSES=520   
 regfile_3r2w_tb                FAILURES=0      SUCCESSES=114   
-regfile_gp_tb                  FAILURES=0      SUCCESSES=0     
+regfile_gp_tb                  FAILURES=0      SUCCESSES=1043  
 regfile_mmx_tb                 FAILURES=0      SUCCESSES=520   
 regfile_seg_tb                 FAILURES=0      SUCCESSES=19    
 regunit_tb                     FAILURES=0      SUCCESSES=0     
@@ -53,6 +56,7 @@ rr_to_ag_tb                    FAILURES=0      SUCCESSES=0
 rshfa_const_tb                 FAILURES=0      SUCCESSES=1024  
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
 se_tb                          FAILURES=0      SUCCESSES=258   
+stage_ag_tb                    FAILURES=0      SUCCESSES=0     
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
 ucode_rom_tb                   FAILURES=0      SUCCESSES=0     
 xor3LL_tb                      FAILURES=0      SUCCESSES=8     

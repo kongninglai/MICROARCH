@@ -58,6 +58,9 @@ def build_tb_helper(verilog_text):
     inst = []
     clear = []
 
+    input_ports = []
+    output_ports = []
+
     for p in ports:
 
         name = p["name"]
@@ -67,9 +70,11 @@ def build_tb_helper(verilog_text):
         width_str = f" {width}" if width else ""
 
         if direction == "input":
+
             decl.append(f"reg{width_str} {name};")
 
             if name not in ["clk", "rst", "rst_n"]:
+                input_ports.append(p)
 
                 bits = width_to_bits(width)
 
@@ -80,6 +85,7 @@ def build_tb_helper(verilog_text):
 
         else:
             decl.append(f"wire{width_str} {name};")
+            output_ports.append(p)
 
     inst.append(f"{module_name} dut (")
 
@@ -91,19 +97,61 @@ def build_tb_helper(verilog_text):
 
     inst.append(");")
 
-    task = []
-    task.append("task clear_inputs;")
-    task.append("begin")
-    task.extend(clear)
-    task.append("end")
-    task.append("endtask")
+    # clear task
+    clear_task = []
+    clear_task.append("task clear_inputs;")
+    clear_task.append("begin")
+    clear_task.extend(clear)
+    clear_task.append("end")
+    clear_task.append("endtask")
+
+    # set_inputs task
+    set_task = []
+    set_task.append("task set_inputs;")
+
+    # task arguments
+    args = []
+    for p in input_ports:
+        width = p["width"]
+        name = p["name"]
+
+        width_str = f"{width} " if width else ""
+        args.append(f"input {width_str}{name}_i")
+
+    set_task.append("(" + ", ".join(args) + ");")
+    set_task.append("begin")
+
+    for p in input_ports:
+        name = p["name"]
+        set_task.append(f"        {name} = {name}_i;")
+
+    set_task.append("end")
+    set_task.append("endtask")
+
+    # print_outputs task
+    print_task = []
+    print_task.append("task print_outputs;")
+    print_task.append("begin")
+
+    for p in output_ports:
+        name = p["name"]
+        print_task.append(
+            f'        $display("{name} = %h", {name});'
+        )
+
+    print_task.append("end")
+    print_task.append("endtask")
 
     return (
         "\n".join(decl)
         + "\n\n"
         + "\n".join(inst)
         + "\n\n"
-        + "\n".join(task)
+        + "\n".join(clear_task)
+        + "\n\n"
+        + "\n".join(set_task)
+        + "\n\n"
+        + "\n".join(print_task)
     )
 
 

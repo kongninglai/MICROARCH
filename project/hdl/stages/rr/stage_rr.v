@@ -47,7 +47,7 @@ module stage_rr(
 
     output [10:0] to_dep_needREGS,
 
-    output [52:0] to_ag_control_sigs,
+    output [61:0] to_ag_control_sigs,
     output [2:0] to_ag_dstidA,
     output [2:0] to_ag_dstidB,
     output [31:0] to_ag_srcregA,
@@ -66,13 +66,13 @@ module stage_rr(
     output [15:0] to_ag_sreg2,
     output [31:0] to_ag_slim2,
     output [31:0] to_ag_base2,
-    output to_ag_intex_vec,
+    output [3:0] to_ag_intex_vec,
     output [15:0] to_ag_cs,
     output [31:0] to_ag_oeip,
     output [31:0] to_ag_ieip,
     output to_ag_valid
 ); 
-    wire [63:0] ucode_sig;
+    wire [95:0] ucode_sig;
     ucode_controller uctlr (.ucode_sig(ucode_sig), 
                             .opcode(from_de_opcode), 
                             .ext_opcode(from_de_ext_opcode),
@@ -80,12 +80,12 @@ module stage_rr(
                             .has_modrm(from_de_addr_mode[0])
                            );
 
-    wire [1:0] ldAB, dstidB_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds;
+    wire [1:0] ldAB, dstidB_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds, mem_ds, imm_mux, addr_mux;
     wire [2:0] dstidA_mux, gprd0_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
     wire srcregA_mux, srcregB_mux, ldEFLAGS, alu_srcb_mux, ldEIP, ldCS, seg_dst_mux, srcsreg_mux, segrd0_mux, segrd1_mux;
     wire [10:0] needREGS;
     wire [3:0] gp_dsta_mux, store_data_mux;
-    
+
     rr_sig rr_sig_dut(
     .ucode_sig(ucode_sig), .ldAB(ldAB), .dstidA_mux(dstidA_mux), .dstidB_mux(dstidB_mux),
     .srcregA_mux(srcregA_mux), .srcregB_mux(srcregB_mux), .gprd0_mux(gprd0_mux), .gprd2_mux(gprd2_mux), .srcsreg_mux(srcsreg_mux), .segrd0_mux(segrd0_mux), .segrd1_mux(segrd1_mux),
@@ -93,15 +93,26 @@ module stage_rr(
     .alu_srcb_mux(alu_srcb_mux), .shf_srcb_mux(shf_srcb_mux),
     .ldEIP(ldEIP), .ldCS(ldCS), .eflags_mux(eflags_mux), .eip_mux(eip_mux), .cs_mux(cs_mux),
     .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
-    .store_data_mux(store_data_mux), .rw(rw), .ds(ds)
+    .store_data_mux(store_data_mux), .rw(rw), .ds(ds), .mem_ds(mem_ds), .imm_mux(imm_mux), .addr_mux(addr_mux)
     );
     
-    wire [1:0] ds_with_override;
+    wire [1:0] ds_with_override, mem_ds_with_override;
     wire ds1_inv, ds_is_32, set_ds_16;
     inv1$ inv_ds1(ds1_inv, ds[1]);
     nor2$ nor2_ds32(ds_is_32, ds1_inv, ds[0]);
     and2$ and_ds16(set_ds_16, ds_is_32, from_de_prefix[3]);
     mux2$ mux_ds_override[1:0](ds_with_override, ds, 2'b01, set_ds_16);
+    mux2$ mux_mem_ds_override[1:0](mem_ds_with_override, mem_ds, 2'b01, set_ds_16);
+
+    wire intex, stack_push;
+
+    assign intex = 1'b0; // TODO: FIX intex
+    
+    wire gp_dstb_mux1_inv, gp_dstb_mux_is_010;
+    inv1$ inv_gp_dstb_mux(gp_dstb_mux1_inv, gp_dstb_mux[1]);
+    nor3$ nor_gp_dstb_mux_is_010(gp_dstb_mux_is_010, gp_dstb_mux[0], gp_dstb_mux1_inv, gp_dstb_mux[2]);
+
+    assign stack_push = gp_dstb_mux_is_010;
 
     assign to_regunit_opcode = from_de_opcode;          
     assign to_regunit_modrm = from_de_modrm[5:0];
@@ -147,10 +158,13 @@ module stage_rr(
     mux2$ mux2_rw[1:0](to_ag_rw, rw, ff_to_ag_rw, opcode_ff);
     mux2$ mux2_ldEIP(to_ag_ldEIP, ldEIP, ff_to_ag_ldEIP, opcode_ff);
 
+    wire ret_with_imm;
+    big_eq #(.WIDTH(7)) eq_ret_with_imm(.eq(ret_with_imm), .in0({from_de_opcode[7:4], from_de_opcode[2:0]}), .in1(7'h62));
     assign to_ag_control_sigs={ldAB, dstA_size, dstB_size, ldREGS, ldEFLAGS,
                      to_ag_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
                      mmx_op, alu_op, shf_op, cmps, con_jmp, cmpxchg, cmovc,
-                     gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, to_ag_store_data_mux, to_ag_rw, ds_with_override};
+                     gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, to_ag_store_data_mux, to_ag_rw, ds_with_override, 
+                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm};
 
     assign mmx_op = {from_de_opcode[7], from_de_opcode[2]};
     assign shf_op = from_de_modrm[5];
@@ -223,7 +237,7 @@ module stage_rr(
     assign to_ag_sreg2=from_regunit_SREG2;
     // assign to_ag_slim2=from_regunit_SLIM2;
     assign to_ag_base2=from_regunit_basereg2;
-    assign to_ag_intex_vec=1'b0; // TODO: ASSIGN intex
+    assign to_ag_intex_vec=4'b0; // TODO: ASSIGN intex
     assign to_ag_oeip=from_de_oeip;
     assign to_ag_ieip=from_de_ieip;
     assign to_ag_cs = from_regunit_CS;

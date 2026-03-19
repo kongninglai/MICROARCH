@@ -51,7 +51,7 @@ module rr_to_ag_tb;
     wire [15:0] from_regunit_CS;
     wire [63:0] from_regunit_MMA;
     wire [63:0] from_regunit_MMB;
-    wire [52:0] to_ag_control_sigs;
+    wire [61:0] to_ag_control_sigs;
     wire [2:0] to_ag_dstidA;
     wire [2:0] to_ag_dstidB;
     wire [31:0] to_ag_srcregA;
@@ -70,7 +70,7 @@ module rr_to_ag_tb;
     wire [15:0] to_ag_sreg2;
     wire [31:0] to_ag_slim2;
     wire [31:0] to_ag_base2;
-    wire to_ag_intex_vec;
+    wire [3:0] to_ag_intex_vec;
     wire [15:0] to_ag_cs;
     wire [31:0] to_ag_oeip;
     wire [31:0] to_ag_ieip;
@@ -108,7 +108,7 @@ module rr_to_ag_tb;
     wire [2:0] to_dep_MMA_idx;
     wire [2:0] to_dep_MMB_idx;
 
-    wire [52:0] from_rr_control_sigs;
+    wire [61:0] from_rr_control_sigs;
     wire [2:0] from_rr_dstidA;
     wire [2:0] from_rr_dstidB;
     wire [31:0] from_rr_srcregA;
@@ -127,7 +127,7 @@ module rr_to_ag_tb;
     wire [15:0] from_rr_sreg2;
     wire [31:0] from_rr_slim2;
     wire [31:0] from_rr_base2;
-    wire from_rr_intex_vec;
+    wire [3:0] from_rr_intex_vec;
     wire [15:0] from_rr_cs;
     wire [31:0] from_rr_oeip;
     wire [31:0] from_rr_ieip;
@@ -339,9 +339,15 @@ module rr_to_ag_tb;
     wire [3:0] store_data_mux;
     wire [1:0] rw;
     wire [1:0] ds;
+    wire [1:0] mem_ds;
+    wire [1:0] imm_mux;
+    wire [1:0] addr_mux;
+    wire stack_push;
+    wire intex;
+    wire ret_with_imm;
 
     ag_sig dut_sig (
-        .ucode_sig(to_ag_control_sigs),
+        .ucode_sig(from_rr_control_sigs),
         .ldAB(ldAB),
         .dstA_size(dstA_size),
         .dstB_size(dstB_size),
@@ -367,7 +373,13 @@ module rr_to_ag_tb;
         .mm_dst_mux(mm_dst_mux),
         .store_data_mux(store_data_mux),
         .rw(rw),
-        .ds(ds)
+        .ds(ds),
+        .mem_ds(mem_ds),
+        .imm_mux(imm_mux),
+        .addr_mux(addr_mux),
+        .stack_push(stack_push),
+        .intex(intex),
+        .ret_with_imm(ret_with_imm)
     );
 
     always #3 clk = ~clk;
@@ -486,6 +498,7 @@ module rr_to_ag_tb;
         $display("gp_dsta_mux=%04b, gp_dstb_mux=%03b, seg_dst_mux=%0b, mm_dst_mux=%02b", gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux);
         $display("store_data_mux=%04b", store_data_mux);
         $display("rw=%02b, ds=%02b", rw, ds);
+        $display("mem_ds=%02b, imm_mux=%02b, addr_mux=%02b, stack_push=%0b, intex=%0b, ret_with_imm=%0b", mem_ds, imm_mux, addr_mux, stack_push, intex, ret_with_imm);
         $display("----------------------------------------------------------------");
     end
     endtask
@@ -505,9 +518,9 @@ module rr_to_ag_tb;
         $display("(%0d)base1=[%0d]%08h, (%0d)index1=[%0d]%08h, scale_mux=%02b, disp=%08h", to_dep_needREGS[7], to_dep_basereg1_idx, from_rr_base1, to_dep_needREGS[5], to_dep_indexreg1_idx, from_rr_index1, from_rr_scale_mux, from_rr_disp);
         $display("(%0d)sreg2=[%0d]%04h, slim2=%04h", to_dep_needREGS[2], to_dep_SREG2_idx, from_rr_sreg2, from_rr_slim2);
         $display("(%0d)base2=[%0d]%08h", to_dep_needREGS[6], to_dep_basereg2_idx, from_rr_base2);
-        $display("intex_vec=%0b", from_rr_intex_vec);
+        $display("intex_vec=%04b", from_rr_intex_vec);
         $display("oeip=%08h, ieip=%08h, cs=%04h", from_rr_oeip, from_rr_ieip, from_rr_cs);
-        $display("valie=%0b", from_rr_valid);
+        $display("valid=%0b", from_rr_valid);
         $display("\n");
     end
     endtask
@@ -525,9 +538,9 @@ module rr_to_ag_tb;
         $display("base1=%08h, index1=%08h, scale_mux=%02b, disp=%08h", to_ag_base1, to_ag_index1, to_ag_scale_mux, to_ag_disp);
         $display("sreg2=%04h, slim2=%04h", to_ag_sreg2, to_ag_slim2);
         $display("base2=%08h", to_ag_base2);
-        $display("intex_vec=%0b", to_ag_intex_vec);
-        $display("oeip=%08h, ieip=%08h", to_ag_oeip, to_ag_ieip);
-        $display("valie=%0b", to_ag_valid);
+        $display("intex_vec=%04b", to_ag_intex_vec);
+        $display("oeip=%08h, ieip=%08h, cs=%04h", to_ag_oeip, to_ag_ieip, to_ag_cs);
+        $display("valid=%0b", to_ag_valid);
     end
     endtask
 

@@ -26,7 +26,7 @@ module check_en (
     and2$ and2$_1(andout_1, we1_i, wr1_en);
     or2$  or2$_0(en_i, andout_0, andout_1);
 
-    mux2$ mux2$_32[31:0] (din_i, wr_reg1_data, wr_reg0_data, andout_0);
+    mux2_32 mux2_32_din(din_i, wr_reg1_data, wr_reg0_data, andout_0);
 endmodule
 
 module regfile_gp (
@@ -89,8 +89,8 @@ module regfile_gp (
     mux2$ mux2_wr1_pidx[2:0](wr1_pidx, wr_reg1_idx, wr_reg1_idx_shifted, wr_reg1_ds_is_8);
 
     wire [31:0] wr0_orig_full, wr1_orig_full;
-    mux8 mux_wr0_orig[31:0](wr0_orig_full, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], wr0_pidx[0], wr0_pidx[1], wr0_pidx[2]);
-    mux8 mux_wr1_orig[31:0](wr1_orig_full, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], wr1_pidx[0], wr1_pidx[1], wr1_pidx[2]);
+    mux8_32 mux32_wr0_orig(wr0_orig_full, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], wr0_pidx[0], wr0_pidx[1], wr0_pidx[2]);
+    mux8_32 mux32_wr1_orig(wr1_orig_full, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], wr1_pidx[0], wr1_pidx[1], wr1_pidx[2]);
 
     wire [31:0] wr0_wrdata_low8, wr0_wrdata_high8, wr0_wrdata_16;
     wire [31:0] wr1_wrdata_low8, wr1_wrdata_high8, wr1_wrdata_16;
@@ -103,12 +103,12 @@ module regfile_gp (
     assign wr1_wrdata_16 = {wr1_orig_full[31:16], wr_reg1_data[15:0]};
 
     wire [31:0] wr0_wrdata_8, wr1_wrdata_8;
-    mux2$ mux2_wr0_in_8[31:0](wr0_wrdata_8, wr0_wrdata_low8, wr0_wrdata_high8, wr_reg0_idx[2]);
-    mux2$ mux2_wr1_in_8[31:0](wr1_wrdata_8, wr1_wrdata_low8, wr1_wrdata_high8, wr_reg1_idx[2]);
+    mux2_32 mux2_wr0_in_8(wr0_wrdata_8, wr0_wrdata_low8, wr0_wrdata_high8, wr_reg0_idx[2]);
+    mux2_32 mux2_wr1_in_8(wr1_wrdata_8, wr1_wrdata_low8, wr1_wrdata_high8, wr_reg1_idx[2]);
 
     wire [31:0] wr0_wrdata, wr1_wrdata;
-    mux4$ mux4_wr0_in[31:0](wr0_wrdata, wr0_wrdata_8, wr0_wrdata_16, wr_reg0_data, wr_reg0_data, wr_reg0_ds[0], wr_reg0_ds[1]);
-    mux4$ mux4_wr1_in[31:0](wr1_wrdata, wr1_wrdata_8, wr1_wrdata_16, wr_reg1_data, wr_reg1_data, wr_reg1_ds[0], wr_reg1_ds[1]);
+    mux4_32 mux4_wr0_in(wr0_wrdata, wr0_wrdata_8, wr0_wrdata_16, wr_reg0_data, wr_reg0_data, wr_reg0_ds[0], wr_reg0_ds[1]);
+    mux4_32 mux4_wr1_in(wr1_wrdata, wr1_wrdata_8, wr1_wrdata_16, wr_reg1_data, wr_reg1_data, wr_reg1_ds[0], wr_reg1_ds[1]);
 
     wire write_both_en, write_same_idx, write_low_high, both_write_8, write_same_low_high;
     and2$ and2_wr_both(write_both_en, wr0_en, wr1_en);
@@ -124,7 +124,7 @@ module regfile_gp (
 
     mux2_32 mux2_wr01_merged(.out(wr01_merged), .in0(wr10), .in1(wr01), .s0(wr_reg0_idx[2]));
     // assign wr01_merged = {wr0_orig_full[31:16], wr_reg1_data[7:0], wr_reg0_data[7:0]};
-    mux2$ mux2_wr0_wrdata_final[31:0](wr0_wrdata_final, wr0_wrdata, wr01_merged, write_same_low_high);
+    mux2_32 mux2_wr0_wrdata_final(wr0_wrdata_final, wr0_wrdata, wr01_merged, write_same_low_high);
 
     genvar i;
     generate
@@ -180,16 +180,16 @@ module regfile_gp (
     and2$ and_hit31(hit31, wr1_en, match31);
 
     wire [31:0] rd_reg0_raw, rd_reg1_raw, rd_reg2_raw, rd_reg3_raw;
-    mux8 mux_reg0_raw[31:0](rd_reg0_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd0_pidx[0], rd0_pidx[1], rd0_pidx[2]);
-    mux8 mux_reg1_raw[31:0](rd_reg1_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd1_pidx[0], rd1_pidx[1], rd1_pidx[2]);
-    mux8 mux_reg2_raw[31:0](rd_reg2_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd2_pidx[0], rd2_pidx[1], rd2_pidx[2]);
-    mux8 mux_reg3_raw[31:0](rd_reg3_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd3_pidx[0], rd3_pidx[1], rd3_pidx[2]);
+    mux8_32 mux_reg0_raw(rd_reg0_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd0_pidx[0], rd0_pidx[1], rd0_pidx[2]);
+    mux8_32 mux_reg1_raw(rd_reg1_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd1_pidx[0], rd1_pidx[1], rd1_pidx[2]);
+    mux8_32 mux_reg2_raw(rd_reg2_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd2_pidx[0], rd2_pidx[1], rd2_pidx[2]);
+    mux8_32 mux_reg3_raw(rd_reg3_raw, q[0], q[1], q[2], q[3], q[4], q[5], q[6], q[7], rd3_pidx[0], rd3_pidx[1], rd3_pidx[2]);
 
     wire [31:0] rd0_data, rd1_data, rd2_data, rd3_data;
-    mux4$ mux_reg0[31:0](rd0_data, rd_reg0_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit01, hit00);
-    mux4$ mux_reg1[31:0](rd1_data, rd_reg1_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit11, hit10);
-    mux4$ mux_reg2[31:0](rd2_data, rd_reg2_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit21, hit20);
-    mux4$ mux_reg3[31:0](rd3_data, rd_reg3_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit31, hit30);
+    mux4_32 mux_reg0(rd0_data, rd_reg0_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit01, hit00);
+    mux4_32 mux_reg1(rd1_data, rd_reg1_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit11, hit10);
+    mux4_32 mux_reg2(rd2_data, rd_reg2_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit21, hit20);
+    mux4_32 mux_reg3(rd3_data, rd_reg3_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit31, hit30);
 
     gpr_shifter extract_r0(rd_reg0_data, rd_reg0_ds, rd_reg0_idx, rd0_data);
     gpr_shifter extract_r1(rd_reg1_data, rd_reg1_ds, rd_reg1_idx, rd1_data);

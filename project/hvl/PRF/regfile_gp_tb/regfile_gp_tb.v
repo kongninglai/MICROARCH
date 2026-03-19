@@ -100,13 +100,28 @@ module regfile_gp_tb;
         input [255:0] msg;
     begin
         if (got_bh !== exp) begin
+            FAILURES = FAILURES + 1;
             $display("[BEHAVIORAL FAIL] %s: got_bh=%h exp=%h time=%0t", msg, got_bh, exp, $time);
-            $finish;
         end else if (got_st !== got_bh) begin 
+            FAILURES = FAILURES + 1;
             $display("[STRUCTURAL FAIL] %s: got_bh=%h got_st=%h time=%0t", msg, got_bh, got_st, $time);
-            $finish;
         end else begin
+            SUCCESSES = SUCCESSES + 1;
             $display("[PASS] %s: %h=%h", msg, got_bh, got_st);
+        end
+    end
+    endtask
+
+    task check_no_exp;
+        input [31:0] got_bh;
+        input [31:0] got_st;
+        input [255:0] msg;
+    begin
+        if (got_st !== got_bh) begin 
+            FAILURES = FAILURES + 1;
+            $display("[STRUCTURAL FAIL] %s: got_bh=%h got_st=%h time=%0t", msg, got_bh, got_st, $time);
+        end else begin
+            SUCCESSES = SUCCESSES + 1;
         end
     end
     endtask
@@ -309,10 +324,28 @@ module regfile_gp_tb;
         check(rd_reg2_data_bh, rd_reg2_data, 32'h33333333, "4-read-port rd2");
         check(rd_reg3_data_bh, rd_reg3_data, 32'h44444444, "4-read-port rd3");
 
-        $display("========================================");
-        $display("All tests passed.");
-        $display("========================================");
 
+        @(negedge clk);
+        clear_inputs();
+
+        repeat (1 << 8) begin
+            @(negedge clk);
+            check_no_exp(rd_reg0_data_bh, rd_reg0_data, "RANDOM TEST rd0");
+            check_no_exp(rd_reg1_data_bh, rd_reg1_data, "RANDOM TEST rd1");
+            check_no_exp(rd_reg2_data_bh, rd_reg2_data, "RANDOM TEST rd2");
+            check_no_exp(rd_reg3_data_bh, rd_reg3_data, "RANDOM TEST rd3");
+
+            @(negedge clk);
+            wr0_en       = 0;
+            wr1_en       = 0;
+            @(negedge clk);
+            rd_reg0_idx = $random; rd_reg1_idx = $random; rd_reg2_idx = $random; rd_reg3_idx = $random;
+            rd_reg0_ds  = $random; rd_reg1_ds  = $random; rd_reg2_ds  = $random; rd_reg3_ds  = $random;
+            wr_reg0_idx = $random; wr_reg1_idx = $random;
+            wr_reg0_data = $random; wr_reg1_data = $random;
+            wr_reg0_ds = $random; wr_reg1_ds = $random;
+            wr0_en = $random; wr1_en = $random;
+        end
         $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
         $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;

@@ -1,7 +1,15 @@
-/home/projects/courses/spring_22/ee382n19_16785/lib/lib1
-/home/projects/courses/spring_22/ee382n19_16785/lib/lib2
-/home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_64.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux4_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux4_64.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_16.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_64.v
 ~/MICROARCH/project/hdl/local-lib/comparators/big_eq.v
 ~/MICROARCH/project/hdl/local-lib/regfiles/reg16e.v
 ~/MICROARCH/project/hdl/local-lib/regfiles/regfile_2r1w.v

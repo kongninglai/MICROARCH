@@ -138,7 +138,7 @@ task bypass_raw_test;
     wr_reg0_data = 64'h4444_4444_4444_4444;
 
     rd_reg0_idx = 3'b100;  
-    #1;
+    #2;
     check(rd_reg0_data_bh, 64'h4444_4444_4444_4444, "write to register 4 and read in the same cycle behavioral check");
     check(rd_reg0_data, rd_reg0_data_bh, "write to register 4 and read in the same cycle");
     @(posedge clk);
