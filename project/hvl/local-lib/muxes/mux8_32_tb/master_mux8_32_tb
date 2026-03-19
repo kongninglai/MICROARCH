@@ -1,0 +1,7 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux4_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_32.v
+~/MICROARCH/project/hvl/local-lib/muxes/mux8_32_tb/mux8_32_behav.v
+~/MICROARCH/project/hvl/local-lib/muxes/mux8_32_tb/mux8_32_tb.v
