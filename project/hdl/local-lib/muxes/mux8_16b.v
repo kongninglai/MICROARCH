@@ -1,3 +1,5 @@
+// Author: VR
+
 module mux8_16b #(
   parameter WIDTH=16
 ) (
