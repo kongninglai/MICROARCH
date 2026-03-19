@@ -79,16 +79,8 @@ begin
   data_in0 = d0;
   data_in1 = d1;
   wr       = w_mask;
-  #(CYCLE_TIME);
+  #(CYCLE_TIME / 2.0);
   wr       = 0;
-end
-endtask
-
-task read_entry;
-begin
-  rd = 1;
-  #(CYCLE_TIME);
-  rd = 0;
 end
 endtask
 
@@ -104,31 +96,52 @@ begin
 end
 endtask
 
+integer i, j;
+integer rd_ctr = 0;
+integer times_to_read;
+
+task read_entry;
+begin
+  #(CYCLE_TIME / 2.0);
+  if (~empty) begin
+    rd = 1;
+  end
+  #(CYCLE_TIME / 2.0);
+  if (rd == 1) begin    
+    check_data({{rd_ctr, rd_ctr, rd_ctr, rd_ctr}, rd_ctr[10:0], rd_ctr[16:0]});
+    rd_ctr = rd_ctr + 1;
+  end
+  rd = 0;
+end
+endtask
+
 initial begin
   reset_dut();
 
-  write_entry({128'd0, 11'd3, 16'hFFFF},
-              {-128'd1, 11'd7, 16'h0000},
-              2'b11);
-  #(CYCLE_TIME);
-  
-  read_entry();
-  check_data({128'd0, 11'd3, 16'hFFFF});
-  // #(CYCLE_TIME);
-  read_entry();
-  check_data({-128'd1, 11'd7, 16'h0000});
+  for (i = 0; i < 2048; i = i + 1) begin
+    j = i + 1;
 
-  #(CYCLE_TIME);
+    #(CYCLE_TIME / 2.0);
+    if (~full) begin
+      if (($random & 32'h7FFFFFFF) % 2 == 0) begin /* One write */
+        write_entry({{i, i, i, i}, i[10:0], i[16:0]}, 
+                    {{j, j, j, j}, j[10:0], j[16:0]},
+                    2'b01);
+      end else begin /* Two writes */
+        write_entry({{i, i, i, i}, i[10:0], i[16:0]}, 
+                    {{j, j, j, j}, j[10:0], j[16:0]},
+                    2'b11);
+        i = i + 1;
+      end
+    end else begin
+      i = i - 1;
+      #(CYCLE_TIME / 2.0);
+    end
 
-  // for (i=0; i<NUM_ENTRIES; i=i+1) begin
-  //   write_entry(i, i+1, 2'b01);
-  //   #(CYCLE_TIME);
-  // end
-
-  // for (i=0; i<NUM_ENTRIES; i=i+1) begin
-  //   read_entry();
-  //   #(CYCLE_TIME);
-  // end
+    repeat (($random & 32'h7FFFFFFF) % 4) begin
+      read_entry();
+    end
+  end
 
   $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);

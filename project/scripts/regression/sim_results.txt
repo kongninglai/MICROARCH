@@ -82,7 +82,7 @@ stage_ag_tb                    FAILURES=0      SUCCESSES=0
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
 sticky_bit_fsm_tb              FAILURES=0      SUCCESSES=4112  
 store_queue_entry_tb           FAILURES=0      SUCCESSES=4112  
-store_queue_tb                 FAILURES=0      SUCCESSES=2     
+store_queue_tb                 FAILURES=0      SUCCESSES=2049  
 stream_buffer_tb               FAILURES=0      SUCCESSES=4130  
 tag_hit_logic_tb               FAILURES=0      SUCCESSES=5200  
 tag_store_tb                   FAILURES=0      SUCCESSES=160   
