@@ -95,7 +95,6 @@ module tb_exhaustive_decoder();
                 end
 
                 #15; // Wait 5ns for the combinational decoder logic to settle
-                cd ..
                 test_count = test_count + 1;
 
                 // Self-Checking Assertions

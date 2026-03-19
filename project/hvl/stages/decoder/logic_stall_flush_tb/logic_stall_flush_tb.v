@@ -19,19 +19,20 @@ module tb_logic_instr_valid();
     wire instr_valid;
     wire exptn_prot;
 
-    // 3. Instantiate UUT (Ensure the module name matches your actual module!)
+    // --- NEW: Signal Mapping Logic ---
+    // Combine the granular testbench signals into the consolidated signals expected by the new module.
+    wire combined_stall = stall_ex | stall_rr | stall_mem | stall_wb;
+    wire combined_flush = mispredict_src_ex | v_excptn_src_wb;
+
+    // 3. Instantiate UUT (Updated to match new port list)
     logic_stall_flush uut (
         .i_eip(i_eip),
         .cs_limit(cs_limit),
         .tail_ptr(tail_ptr),
         .incr_amt(incr_amt),
-        .mispredict_src_ex(mispredict_src_ex),
-        .v_excptn_src_wb(v_excptn_src_wb),
-        .v_ld_cs_src_ex(v_ld_cs_src_ex),
-        .stall_ex(stall_ex),
-        .stall_rr(stall_rr),
-        .stall_mem(stall_mem),
-        .stall_wb(stall_wb),
+        .flush_ex(combined_flush),    // Maps mispredicts/exceptions to flush_ex
+        .ld_cs_ex(v_ld_cs_src_ex),    // Maps directly
+        .stall_rr(combined_stall),    // Maps any pipeline stall to stall_rr
         .ld_pr_rr(ld_pr_rr),
         .instr_valid(instr_valid),
         .exptn_prot(exptn_prot)
@@ -41,7 +42,7 @@ module tb_logic_instr_valid();
     integer FAILURES  = 0;
     integer SUCCESSES = 0;
 
-    // 5. Reusable Checking Task (Completely Rewritten for Readability)
+    // 5. Reusable Checking Task (Unchanged)
     task check_result;
         input exp_ld_pr_rr;
         input exp_valid;
@@ -76,6 +77,7 @@ module tb_logic_instr_valid();
         end
     endtask
 
+    // 6. Test Cases (Unchanged)
     initial begin
         $display("=======================================================================================================");
         $display("                         INSTRUCTION VALIDITY & EXCEPTION LOGIC TEST SUITE                             ");
@@ -112,17 +114,29 @@ module tb_logic_instr_valid();
         #10;
         check_result(1'b1, 1'b1, 1'b1, "TEST 4: Protection Exception (EIP > Limit)");
 
+        //p2
+        tail_ptr = 4'd15; 
+        i_eip = 32'h0000_1004;
+        cs_limit = 20'h01004; // Limit is 1004. A 6-byte inst starting at 1002 crosses it!
+        #10;
+        check_result(1'b1, 1'b1, 1'b0, "TEST 4: Protection Exception (EIP = Limit)");
+
+        //p3
+        i_eip = 32'h0000_1005;
+        #10;
+        check_result(1'b1, 1'b1, 1'b1, "TEST 4: Protection Exception (EIP = Limit)");
+
         // TEST 5: Everything goes wrong at once.
+        i_eip = 32'h0010_0000;
+        cs_limit = 20'h0FFFF;
         stall_wb = 1'b1;
         v_ld_cs_src_ex = 1'b1;
         incr_amt = 4'd15; tail_ptr = 4'd2;
         #10;
         check_result(1'b0, 1'b0, 1'b1, "TEST 5: Total Failure State");
 
-        $display("=======================================================================================================");
         $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
         $display("SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
-        $display("=======================================================================================================");
         $finish;
     end
 

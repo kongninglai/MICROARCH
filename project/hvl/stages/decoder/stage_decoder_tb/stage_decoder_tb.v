@@ -43,11 +43,12 @@ module tb_stage_decode();
     integer SUCCESSES = 0;
 
     // --------------------------------------------------------
-    // 3. Instantiate UUT
+    // 3. Instantiate UUT (Updated port mapping for flush_ex)
     // --------------------------------------------------------
     stage_decode uut (
         .cache_line(cache_line), .o_eip(o_eip), .tail_ptr(tail_ptr), .cs_limit_reg(cs_limit_reg),
-        .eip_target_ex(eip_target_ex), .mispredict_src_ex(mispredict_src_ex), 
+        .eip_target_ex(eip_target_ex), 
+        .flush_ex(mispredict_src_ex),       // FIXED: Mapped mispredict stimulus to new flush_ex port
         .v_excptn_src_wb(v_excptn_src_wb), .v_ld_cs_src_ex(v_ld_cs_src_ex),
         .stall_ex(stall_ex), .stall_rr(stall_rr), .stall_mem(stall_mem), .stall_wb(stall_wb),
         .clk(clk), .rst_bar(rst_bar), .br_t_nt_ex_d(br_t_nt_ex_d), 

@@ -24,20 +24,20 @@ module tb_choose_eip();
     integer FAILURES  = 0;
     integer SUCCESSES = 0;
 
-    // 3. Instantiate UUT
+    // 3. Instantiate UUT (Updated mapping for new ports)
     choose_eip uut (
         .instr_length(instr_length),
         .o_eip(o_eip),
         .i_eip(i_eip),
         .ld_pr_rr(ld_pr_rr),
         .instr_valid(instr_valid),
-        .mispredict_src_ex(mispredict_src_ex),
-        .v_ld_cs_src_ex(v_ld_cs_src_ex),
         .cur_instr_prediction(cur_instr_prediction),
+        .ld_cs_ex(v_ld_cs_src_ex),       // Mapped from TB variable
+        .flush_ex(mispredict_src_ex),    // Mapped from TB variable
         .bp_eip_target(bp_eip_target),
         .ex_eip_target(ex_eip_target),
         .branch_type(branch_type),
-        .hit(hit), // Hooked up new input
+        .hit(hit), 
         .ld_eip(ld_eip),
         .eip_true(eip_true)
     );

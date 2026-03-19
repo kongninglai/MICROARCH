@@ -4,7 +4,7 @@ module stage_decode(
     input wire [3:0] tail_ptr,
     input wire [19:0] cs_limit_reg,
     input wire [31:0] eip_target_ex, //comes from execute stage
-    input wire mispredict_src_ex, //comes from execute stage
+    input wire flush_ex, //comes from execute stage
     input wire v_excptn_src_wb, //comes from writeback stage
     input wire v_ld_cs_src_ex, //comes from execute stage
     input wire stall_ex, //comes from execute stage
@@ -70,13 +70,9 @@ module stage_decode(
             .cs_limit(cs_limit_reg),
             .tail_ptr(tail_ptr),
             .incr_amt(instr_length),
-            .mispredict_src_ex(mispredict_src_ex), //comes from execute stage
-            .v_excptn_src_wb(v_excptn_src_wb), //comes from writeback stage
-            .v_ld_cs_src_ex(v_ld_cs_src_ex), //comes from execute stage
-            .stall_ex(stall_ex), //comes from execute stage
+            .flush_ex(flush_ex), //comes from execute stage
+            .ld_cs_ex(v_ld_cs_src_ex), //comes from execute stage
             .stall_rr(stall_rr), //comes from register read stage
-            .stall_mem(stall_mem), //comes from memory stage
-            .stall_wb(stall_wb), //comes from writeback stage
 
             .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal
             .instr_valid(pr_de_rr_valid),
@@ -105,9 +101,10 @@ module stage_decode(
 
         .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal
         .instr_valid(pr_de_rr_valid),
-        .mispredict_src_ex(mispredict_src_ex),
-        .v_ld_cs_src_ex(v_ld_cs_src_ex),
         .cur_instr_prediction(cur_instr_prediction),
+        .ld_cs_ex(v_ld_cs_src_ex),
+        .flush_ex(flush_ex),
+        
         .bp_eip_target(bp_eip_target),
         .ex_eip_target(eip_target_ex),
         .branch_type(branch_type),
