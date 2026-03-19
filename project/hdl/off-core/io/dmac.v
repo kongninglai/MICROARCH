@@ -59,8 +59,8 @@ wire        Q2_prebuf,Q1_prebuf,Q0_prebuf;
 wire        Q2_bar_prebuf,Q1_bar_prebuf,Q0_bar_prebuf;
 
 bufferH16$  bufferH16$_Q2(Q2, Q2_prebuf);
-bufferH16$  bufferH16$_Q1(Q1, Q1_prebuf);
-bufferH16$  bufferH16$_Q0(Q0, Q0_prebuf);
+bufferH64$  bufferH64$_Q1(Q1, Q1_prebuf);
+bufferH64$  bufferH64$_Q0(Q0, Q0_prebuf);
 
 assign STATE        = {Q2, Q1, Q0};
 assign NEXT_STATE   = {D2, D1, D0};
@@ -71,14 +71,14 @@ wire                  IN_000, IN_001, IN_010, IN_011,
 wire                  IN_000_buf256, IN_001_buf256, IN_010_buf256, IN_011_buf256,
                       IN_100_buf256, IN_101_buf256, IN_110_buf256, IN_111_buf256;
 
-bufferH256$     bufferH256$_IN_000_buf256[2:0](IN_000_buf256, IN_000);
-bufferH256$     bufferH256$_IN_001_buf256[2:0](IN_001_buf256, IN_001);
-bufferH256$     bufferH256$_IN_010_buf256[2:0](IN_010_buf256, IN_010);
-bufferH256$     bufferH256$_IN_011_buf256[2:0](IN_011_buf256, IN_011);
-bufferH256$     bufferH256$_IN_100_buf256[2:0](IN_100_buf256, IN_100);
-bufferH256$     bufferH256$_IN_101_buf256[2:0](IN_101_buf256, IN_101);
-bufferH256$     bufferH256$_IN_110_buf256[2:0](IN_110_buf256, IN_110);
-bufferH256$     bufferH256$_IN_111_buf256[2:0](IN_111_buf256, IN_111);
+bufferH256$     bufferH256$_IN_000_buf256(IN_000_buf256, IN_000);
+bufferH256$     bufferH256$_IN_001_buf256(IN_001_buf256, IN_001);
+bufferH256$     bufferH256$_IN_010_buf256(IN_010_buf256, IN_010);
+bufferH256$     bufferH256$_IN_011_buf256(IN_011_buf256, IN_011);
+bufferH256$     bufferH256$_IN_100_buf256(IN_100_buf256, IN_100);
+bufferH256$     bufferH256$_IN_101_buf256(IN_101_buf256, IN_101);
+bufferH256$     bufferH256$_IN_110_buf256(IN_110_buf256, IN_110);
+bufferH256$     bufferH256$_IN_111_buf256(IN_111_buf256, IN_111);
 
 wire                  TRANSFERRING_N, Q2_bar;
 assign TRANSFERRING_N = Q2_bar;
@@ -115,19 +115,22 @@ reg_n #(
 );
 
 
-wire        [7:0]     buf_addr, buf_addr_next;
+wire        [7:0]     buf_addr, buf_addr_buf16, buf_addr_next;
 wire        [7:0]     buf_addr_inc;
+
+bufferH16$    bufferH16$_buf_addr_buf16[7:0](buf_addr_buf16, buf_addr);
 
 big_increment #(
   .WIDTH(8)
 ) big_increment_inc_counter (
-  .a(buf_addr),
+  .a(buf_addr_buf16),
   .s(buf_addr_inc)
 );
 
-wire                  inc_trig;
+wire                  inc_trig, inc_trig_buf64;
 and2$   and2$_inc_trig(inc_trig, IN_011_buf256, D2);
-mux3$   mux3$_buf_addr[7:0](buf_addr_next, buf_addr, {8{1'b1}}, buf_addr_inc, IN_010_buf256, inc_trig);
+bufferH64$    bufferH64$_inc_trig_buf64(inc_trig_buf64, inc_trig);
+mux3_8$   mux3_8$_buf_addr(buf_addr_next, buf_addr_buf16, {8{1'b1}}, buf_addr_inc, IN_010_buf256, inc_trig_buf64);
 
 reg_n #(
   .WIDTH(8),
@@ -152,14 +155,16 @@ reg_n #(
   .q(bytes_to_transfer)
 );
 
-wire        [7:0]     bursts_left, bursts_left_next;
+wire        [7:0]     bursts_left, bursts_left_buf16, bursts_left_next;
 wire        [7:0]     bursts_left_orig, bursts_left_orig_next;
 wire        [7:0]     bursts_left_dec, bursts_left_calc;
+
+bufferH16$    bufferH16$_bursts_left_buf16[7:0](bursts_left_buf16, bursts_left);
 
 big_decrement #(
   .WIDTH(8)
 ) big_decrement_bursts_left_dec (
-  .a(bursts_left),
+  .a(bursts_left_buf16),
   .s(bursts_left_dec)
 );
 
@@ -171,7 +176,7 @@ PA_8b    PA_8b_bursts_left_calculator(
 	.s(bursts_left_calc)
 );
 
-mux2$   mux2$_bursts_left_orig[7:0](bursts_left_orig_next, bursts_left_orig, bursts_left_calc, IN_010_buf256);
+mux2_8$   mux2_8$_bursts_left_orig(bursts_left_orig_next, bursts_left_orig, bursts_left_calc, IN_010_buf256);
 
 reg_n #(
   .WIDTH(8),
@@ -182,7 +187,7 @@ reg_n #(
   .q(bursts_left_orig)
 );
 
-mux3$       mux3$_bursts_left[7:0](bursts_left_next, bursts_left, bursts_left_calc, bursts_left_dec, IN_010_buf256, inc_trig);
+mux3_8$       mux3_8$_bursts_left(bursts_left_next, bursts_left_buf16, bursts_left_calc, bursts_left_dec, IN_010_buf256, inc_trig_buf64);
 
 reg_n #(
   .WIDTH(8),
@@ -202,7 +207,7 @@ tristate_bus_driver16$  DATA_BUS_DRIVER_H(.enbar(TRANSFERRING_N), .in(DATA_FOR_B
 tristate_bus_driver16$  DATA_BUS_DRIVER_L(.enbar(TRANSFERRING_N), .in(DATA_FOR_BUS[15:0]),  .out(DATA_BUS[15:0]));
 
 wire       [14:4]     ADDR_FOR_BUS_INC;
-wire       [14:4]     ADDR_FOR_BUS, ADDR_FOR_BUS_NEXT, ADDR_FOR_BUS_CALC;
+wire       [14:4]     ADDR_FOR_BUS, ADDR_FOR_BUS_buf16, ADDR_FOR_BUS_NEXT, ADDR_FOR_BUS_CALC;
 
 big_decrement #(
   .WIDTH(11)
@@ -214,11 +219,13 @@ big_decrement #(
 big_increment #(
   .WIDTH(11)
 ) big_increment_ADDR_FOR_BUS_CALC (
-  .a(ADDR_FOR_BUS),
+  .a(ADDR_FOR_BUS_buf16),
   .s(ADDR_FOR_BUS_INC)
 );
 
-mux3$       mux3$_ADDR_FOR_BUS[14:4](ADDR_FOR_BUS_NEXT, ADDR_FOR_BUS, ADDR_FOR_BUS_CALC, ADDR_FOR_BUS_INC, IN_010_buf256, inc_trig);
+bufferH16$  bufferH16$_ADDR_FOR_BUS_buf16[14:4](ADDR_FOR_BUS_buf16, ADDR_FOR_BUS);
+
+mux3$       mux3$_ADDR_FOR_BUS[14:4](ADDR_FOR_BUS_NEXT, ADDR_FOR_BUS_buf16, ADDR_FOR_BUS_CALC, ADDR_FOR_BUS_INC, IN_010_buf256, inc_trig_buf64);
 
 reg_n #(
   .WIDTH(11),
@@ -229,7 +236,7 @@ reg_n #(
   .q(ADDR_FOR_BUS)
 );
 
-tristate_bus_driver1$  ADDR_BUS_DRIVER[MEM_ADDR_WIDTH-1:0](.enbar(TRANSFERRING_N), .in({ADDR_FOR_BUS, 4'b0000}),  .out(ADDR_BUS));
+tristate_bus_driver1$  ADDR_BUS_DRIVER[MEM_ADDR_WIDTH-1:0](.enbar(TRANSFERRING_N), .in({ADDR_FOR_BUS_buf16, 4'b0000}),  .out(ADDR_BUS));
 
 wire                  FIRST_BURST, LAST_BURST;
 
@@ -245,14 +252,14 @@ big_decrement #(
 big_eq #(
   .WIDTH(8)
 ) big_eq_FIRST_BURST (
-  .in0(bursts_left), .in1(bursts_left_orig_m1),
+  .in0(bursts_left_buf16), .in1(bursts_left_orig_m1),
   .eq(FIRST_BURST)
 );
 
 big_eq #(
   .WIDTH(8)
 ) big_eq_LAST_BURST (
-  .in0(bursts_left), .in1(8'd0),
+  .in0(bursts_left_buf16), .in1(8'd0),
   .eq(LAST_BURST)
 );
 
@@ -272,14 +279,22 @@ lshf_var_16b  lshf_var_16b_LAST_INT_WRMASK(
   .out(LAST_WRMASK_INT)
 );
 
+wire    [15:0]    LAST_WRMASK_INT_buf16;
+
+bufferH16$    bufferH16$_LAST_WRMASK_INT_buf16[15:0](LAST_WRMASK_INT_buf16,LAST_WRMASK_INT);
+
 lshf_var_16b  lshf_var_16b_LAST_WRMASK(
-  .in(LAST_WRMASK_INT),
+  .in(LAST_WRMASK_INT_buf16),
   .shf_amt(start_mem_addr[3:0]),
   .out(LAST_WRMASK)
 );
 
+wire    [15:0]    SHIFTED_FIRST_buf16;
+
+bufferH16$    bufferH16$_SHIFTED_FIRST_buf16[15:0](SHIFTED_FIRST_buf16,SHIFTED_FIRST);
+
 lshf_var_16b  lshf_var_16b_FIRST_LAST_WRMASK(
-  .in(SHIFTED_FIRST),
+  .in(SHIFTED_FIRST_buf16),
   .shf_amt(bytes_to_transfer[3:0]),
   .out(SHIFTED_FIRST_LAST)
 );
@@ -288,7 +303,7 @@ or2$      or2$_FIRST_LAST_WRMASK[15:0](FIRST_LAST_WRMASK, SHIFTED_FIRST_LAST, FI
 
 wire       [15:0]   WRMASK_FOR_BUS;
 
-mux4$     mux4$_WRMASK_FOR_BUS[15:0](WRMASK_FOR_BUS, 16'd0, FIRST_WRMASK, LAST_WRMASK, FIRST_LAST_WRMASK, FIRST_BURST, LAST_BURST);
+mux4_16$                mux4_16$_WRMASK_FOR_BUS(WRMASK_FOR_BUS, 16'd0, FIRST_WRMASK, LAST_WRMASK, FIRST_LAST_WRMASK, FIRST_BURST, LAST_BURST);
 tristate_bus_driver16$  WRMASK_BUS_DRIVER(.enbar(TRANSFERRING_N), .in(WRMASK_FOR_BUS),  .out(WR_mask));
 
 
@@ -302,10 +317,12 @@ dmu #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) DMU_inst (
   .DMAC_BUSY      (DMAC_BUSY     )     , .DATA_VALID_BAR(DATA_VALID_BAR), .DMA_config(DMA_config)
 );
 
+wire buf_valid;
+
 dma_disk_buffer DISK_INST (
                             .clk(clk), .rst(rst), .start_xfer(start_xfer),
                             .disk_addr(disk_addr), .start_mem_addr(start_mem_addr),
-                            .buf_addr(buf_addr),
+                            .buf_addr(buf_addr_buf16),
 
                             .buf_valid(buf_valid),
                             .busy(),
@@ -339,57 +356,57 @@ inv1$   inv1$_TR_INIT_delay_BAR(TR_INIT_delay_BAR, TR_INIT_delay);
 and3$   and3$_TR_INIT_confirm(TR_INIT_confirm, TR_INIT_delay_BAR, TR_INIT_config, nonzero_bytes_to_transfer);
 
 /* Inverters */
-wire DMA_MEM_WR_ACK_bar;
-inv1$ inv_0(DMA_MEM_WR_ACK_bar, DMA_MEM_WR_ACK);
-wire Q1_bar;
 wire Q0_bar;
+wire Q1_bar;
+wire DMA_MEM_WR_ACK_bar;
+inv1$ inv_2(DMA_MEM_WR_ACK_bar, DMA_MEM_WR_ACK);
 wire LAST_BURST_bar;
-inv1$ inv_4(LAST_BURST_bar, LAST_BURST);
+inv1$ inv_3(LAST_BURST_bar, LAST_BURST);
 
 /* Product Expressions */
-wire and_0_0_out;
-and3$ and_0_0(and_0_0_out,Q1_bar,Q0_bar,TR_INIT_confirm);
-wire and_1_0_out;
-and3$ and_1_0(and_1_0_out,Q1,Q0_bar,buf_valid);
-wire and_2_0_out;
-and4$ and_2_0(and_2_0_out,Q2_bar,Q1,Q0,DMA_MEM_WR_ACK);
-wire and_3_0_out;
-and3$ and_3_0(and_3_0_out,Q2,Q1,LAST_BURST_bar);
-wire and_4_0_out;
-and3$ and_4_0(and_4_0_out,Q2_bar,Q1_bar,Q0_bar);
-wire and_5_0_out;
-and3$ and_5_0(and_5_0_out,Q2,Q1,Q0);
-wire and_6_0_out;
-and3$ and_6_0(and_6_0_out,Q2_bar,Q1_bar,Q0);
-wire and_7_0_out;
-and4$ and_7_0(and_7_0_out,Q2_bar,Q1,Q0,DMA_MEM_WR_ACK_bar);
-wire and_8_0_out;
-and3$ and_8_0(and_8_0_out,Q2,Q1_bar,Q0_bar);
-wire and_9_0_out;
-and3$ and_9_0(and_9_0_out,Q2,Q1_bar,Q0);
-wire and_10_0_out;
-and3$ and_10_0(and_10_0_out,Q2_bar,Q1,Q0_bar);
-wire and_11_0_out;
-and3$ and_11_0(and_11_0_out,Q2,Q1,Q0_bar);
+wire nand_0_0_0_out;
+nand3$ nand_0_0_0(nand_0_0_0_out,Q1_bar,Q0_bar,TR_INIT_confirm);
+wire nand_1_0_0_out;
+nand3$ nand_1_0_0(nand_1_0_0_out,Q1,Q0_bar,buf_valid);
+wire nand_2_0_0_out;
+nand4$ nand_2_0_0(nand_2_0_0_out,Q2_bar,Q1,Q0,DMA_MEM_WR_ACK);
+wire nand_3_0_0_out;
+nand3$ nand_3_0_0(nand_3_0_0_out,Q2,Q1,LAST_BURST_bar);
+wire nand_4_0_0_out;
+nand3$ nand_4_0_0(nand_4_0_0_out,Q2_bar,Q1_bar,Q0_bar);
+wire nand_5_0_0_out;
+nand3$ nand_5_0_0(nand_5_0_0_out,Q2,Q1,Q0);
+wire nand_6_0_0_out;
+nand3$ nand_6_0_0(nand_6_0_0_out,Q2_bar,Q1_bar,Q0);
+wire nand_7_0_0_out;
+nand4$ nand_7_0_0(nand_7_0_0_out,Q2_bar,Q1,Q0,DMA_MEM_WR_ACK_bar);
+wire nand_8_0_0_out;
+nand3$ nand_8_0_0(nand_8_0_0_out,Q2,Q1_bar,Q0_bar);
+wire nand_9_0_0_out;
+nand3$ nand_9_0_0(nand_9_0_0_out,Q2,Q1_bar,Q0);
+wire nand_10_0_0_out;
+nand3$ nand_10_0_0(nand_10_0_0_out,Q2_bar,Q1,Q0_bar);
+wire nand_11_0_0_out;
+nand3$ nand_11_0_0(nand_11_0_0_out,Q2,Q1,Q0_bar);
 
 /* Sum Expressions */
-or4$ or_0_0(D2,and_2_0_out,and_8_0_out,and_9_0_out,and_11_0_out);
-wire or_1_1_out;
-or4$ or_1_0(D1,or_1_1_out,and_3_0_out,and_6_0_out,and_7_0_out);
-or3$ or_1_1(or_1_1_out,and_9_0_out,and_10_0_out,and_11_0_out);
-wire or_2_1_out;
-or4$ or_2_0(D0,or_2_1_out,and_0_0_out,and_1_0_out,and_3_0_out);
-or3$ or_2_1(or_2_1_out,and_7_0_out,and_8_0_out,and_11_0_out);
-assign IN_000 = and_4_0_out;
-assign IN_001 = and_6_0_out;
-assign IN_010 = and_10_0_out;
-or2$ or_6_0(IN_011,and_2_0_out,and_7_0_out);
-assign IN_100 = and_8_0_out;
-assign IN_101 = and_9_0_out;
-assign IN_110 = and_11_0_out;
-assign IN_111 = and_5_0_out;
-assign start_xfer = and_10_0_out;
-or2$ or_12_0(DMA_MEM_WR_RQ_FOR_BUS,and_2_0_out,and_7_0_out);
+nand4$ nand_0_0_1(D2,nand_2_0_0_out,nand_8_0_0_out,nand_9_0_0_out,nand_11_0_0_out);
+wire nand_1_1_1_out;
+nand4$ nand_1_0_1(D1,nand_1_1_1_out,nand_3_0_0_out,nand_6_0_0_out,nand_7_0_0_out);
+and3$ nand_1_1_1(nand_1_1_1_out,nand_9_0_0_out,nand_10_0_0_out,nand_11_0_0_out);
+wire nand_2_1_1_out;
+nand4$ nand_2_0_1(D0,nand_2_1_1_out,nand_0_0_0_out,nand_1_0_0_out,nand_3_0_0_out);
+and3$ nand_2_1_1(nand_2_1_1_out,nand_7_0_0_out,nand_8_0_0_out,nand_11_0_0_out);
+inv1$ nand_3_0_1(IN_000, nand_4_0_0_out);
+inv1$ nand_4_0_1(IN_001, nand_6_0_0_out);
+inv1$ nand_5_0_1(IN_010, nand_10_0_0_out);
+nand2$ nand_6_0_1(IN_011,nand_2_0_0_out,nand_7_0_0_out);
+inv1$ nand_7_0_1(IN_100, nand_8_0_0_out);
+inv1$ nand_8_0_1(IN_101, nand_9_0_0_out);
+inv1$ nand_9_0_1(IN_110, nand_11_0_0_out);
+inv1$ nand_10_0_1(IN_111, nand_5_0_0_out);
+inv1$ nand_11_0_1(start_xfer, nand_10_0_0_out);
+nand2$ nand_12_0_1(DMA_MEM_WR_RQ_FOR_BUS,nand_2_0_0_out,nand_7_0_0_out);
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);
@@ -398,7 +415,7 @@ dff$ dff_2(clk, D2, Q2_prebuf, Q2_bar_prebuf, rst, 1'b1);
 
 /* INVERT STATE BITS */
 
-bufferH16$  bufferH16$_Q2_bar(Q2_bar, Q2_bar_prebuf);
+bufferH64$  bufferH64$_Q2_bar(Q2_bar, Q2_bar_prebuf);
 bufferH16$  bufferH16$_Q1_bar(Q1_bar, Q1_bar_prebuf);
 bufferH16$  bufferH16$_Q0_bar(Q0_bar, Q0_bar_prebuf);
 

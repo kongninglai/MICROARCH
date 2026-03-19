@@ -279,60 +279,60 @@ big_eq  #(.WIDTH(3)) done_SHORT_BRST_DONE    (.in0(counter_buf1024), .in1(W_CT_S
 /*** BEGIN AUTO-GENERATED CODE ***/
 
 /* Inverters */
-wire Q2_bar;
+wire Q1_bar;
 wire L2B_CTR_bar;
 inv1$ inv_1(L2B_CTR_bar, L2B_CTR);
 wire Q0_bar;
-wire Q1_bar;
-wire SHORT_BRST_DONE_bar;
-inv1$ inv_4(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
 wire WRITE_DONE_bar;
-inv1$ inv_5(WRITE_DONE_bar, WRITE_DONE);
+inv1$ inv_3(WRITE_DONE_bar, WRITE_DONE);
+wire Q2_bar;
+wire SHORT_BRST_DONE_bar;
+inv1$ inv_5(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
 
 /* Product Expressions */
-wire and_0_0_out;
-and3$ and_0_0(and_0_0_out,Q1,Q0_bar,WRITE_DONE_bar);
-wire and_1_0_out;
-and3$ and_1_0(and_1_0_out,Q2,Q0_bar,RD_EN_DONE);
-wire and_2_0_out;
-and4$ and_2_0(and_2_0_out,Q2_bar,Q1_bar,Q0_bar,DC_KB_WR_ACK);
-wire and_3_0_out;
-and4$ and_3_0(and_3_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
-wire and_4_0_out;
-and4$ and_4_0(and_4_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
-wire and_5_0_out;
-and4$ and_5_0(and_5_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE);
-wire and_6_0_out;
-and4$ and_6_0(and_6_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE_bar);
-wire and_7_0_out;
-and4$ and_7_0(and_7_0_out,Q2_bar,Q1_bar,Q0_bar,DC_KB_RD_ACK);
-wire and_8_0_out;
-and3$ and_8_0(and_8_0_out,Q2,Q1,L2B_CTR_bar);
-wire and_9_0_out;
-and3$ and_9_0(and_9_0_out,Q2_bar,Q1,Q0);
-wire and_10_0_out;
-and2$ and_10_0(and_10_0_out,Q1,Q0);
-wire and_11_0_out;
-and3$ and_11_0(and_11_0_out,Q2,Q1_bar,Q0_bar);
-wire and_12_0_out;
-assign and_12_0_out = Q2_bar;
-wire and_13_0_out;
-and3$ and_13_0(and_13_0_out,Q2,Q1,Q0_bar);
+wire nand_0_0_0_out;
+nand3$ nand_0_0_0(nand_0_0_0_out,Q1,Q0_bar,WRITE_DONE_bar);
+wire nand_1_0_0_out;
+nand3$ nand_1_0_0(nand_1_0_0_out,Q2,Q0_bar,RD_EN_DONE);
+wire nand_2_0_0_out;
+nand4$ nand_2_0_0(nand_2_0_0_out,Q2_bar,Q1_bar,Q0_bar,DC_KB_WR_ACK);
+wire nand_3_0_0_out;
+nand4$ nand_3_0_0(nand_3_0_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
+wire nand_4_0_0_out;
+nand4$ nand_4_0_0(nand_4_0_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
+wire nand_5_0_0_out;
+nand4$ nand_5_0_0(nand_5_0_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE);
+wire nand_6_0_0_out;
+nand4$ nand_6_0_0(nand_6_0_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE_bar);
+wire nand_7_0_0_out;
+nand4$ nand_7_0_0(nand_7_0_0_out,Q2_bar,Q1_bar,Q0_bar,DC_KB_RD_ACK);
+wire nand_8_0_0_out;
+nand3$ nand_8_0_0(nand_8_0_0_out,Q2,Q1,L2B_CTR_bar);
+wire nand_9_0_0_out;
+nand3$ nand_9_0_0(nand_9_0_0_out,Q2_bar,Q1,Q0);
+wire nand_10_0_0_out;
+nand2$ nand_10_0_0(nand_10_0_0_out,Q1,Q0);
+wire nand_11_0_0_out;
+nand3$ nand_11_0_0(nand_11_0_0_out,Q2,Q1_bar,Q0_bar);
+wire nand_12_0_0_out;
+inv1$ nand_12_0_0(nand_12_0_0_out, Q2_bar);
+wire nand_13_0_0_out;
+nand3$ nand_13_0_0(nand_13_0_0_out,Q2,Q1,Q0_bar);
 
 /* Sum Expressions */
-wire or_0_1_out;
-or4$ or_0_0(D2,or_0_1_out,and_5_0_out,and_6_0_out,and_8_0_out);
-or3$ or_0_1(or_0_1_out,and_9_0_out,and_11_0_out,and_13_0_out);
-wire or_1_1_out;
-or4$ or_1_0(D1,or_1_1_out,and_0_0_out,and_3_0_out,and_5_0_out);
-or3$ or_1_1(or_1_1_out,and_7_0_out,and_8_0_out,and_13_0_out);
-wire or_2_1_out;
-or4$ or_2_0(D0,or_2_1_out,and_1_0_out,and_2_0_out,and_4_0_out);
-or4$ or_2_1(or_2_1_out,and_6_0_out,and_7_0_out,and_8_0_out,and_13_0_out);
-or3$ or_3_0(DATA_BUS_GATE,and_10_0_out,and_11_0_out,and_12_0_out);
-or2$ or_4_0(STORE_BUF_LD_EN,and_3_0_out,and_4_0_out);
-or2$ or_5_0(LOAD_BUF_LD_EN,and_11_0_out,and_13_0_out);
-assign LOAD_ADDR_LD_EN = and_9_0_out;
+wire nand_0_1_1_out;
+nand4$ nand_0_0_1(D2,nand_0_1_1_out,nand_5_0_0_out,nand_6_0_0_out,nand_8_0_0_out);
+and3$ nand_0_1_1(nand_0_1_1_out,nand_9_0_0_out,nand_11_0_0_out,nand_13_0_0_out);
+wire nand_1_1_1_out;
+nand4$ nand_1_0_1(D1,nand_1_1_1_out,nand_0_0_0_out,nand_3_0_0_out,nand_5_0_0_out);
+and3$ nand_1_1_1(nand_1_1_1_out,nand_7_0_0_out,nand_8_0_0_out,nand_13_0_0_out);
+wire nand_2_1_1_out;
+nand4$ nand_2_0_1(D0,nand_2_1_1_out,nand_1_0_0_out,nand_2_0_0_out,nand_4_0_0_out);
+and4$ nand_2_1_1(nand_2_1_1_out,nand_6_0_0_out,nand_7_0_0_out,nand_8_0_0_out,nand_13_0_0_out);
+nand3$ nand_3_0_1(DATA_BUS_GATE,nand_10_0_0_out,nand_11_0_0_out,nand_12_0_0_out);
+nand2$ nand_4_0_1(STORE_BUF_LD_EN,nand_3_0_0_out,nand_4_0_0_out);
+nand2$ nand_5_0_1(LOAD_BUF_LD_EN,nand_11_0_0_out,nand_13_0_0_out);
+inv1$ nand_6_0_1(LOAD_ADDR_LD_EN, nand_9_0_0_out);
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);

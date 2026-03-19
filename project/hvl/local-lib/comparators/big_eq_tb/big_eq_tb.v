@@ -40,7 +40,10 @@ initial begin
   in0 = {WIDTH{1'b1}}; in1 = {WIDTH{1'b1}} >> 16; #40; check(out, out_exp);
   in0 = {WIDTH{1'b1}}; in1 = {WIDTH{1'b1}} >> 24; #40; check(out, out_exp);
   in0 = 0; in1 = {WIDTH{1'b1}}; #40; check(out, out_exp);
-  in0 = 0; in1 = 1;
+  in0 = 0; in1 = 1; #40; check(out, out_exp);
+  in0 = 0; in1 = {WIDTH{1'b1}}; #40; check(out, out_exp);
+  in0 = 0; in1 = 0; #40; check(out, out_exp);
+  in0 = 0; in1 = 1; 
   repeat (1 << 8) begin
     #40;
     check(out, out_exp);

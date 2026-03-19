@@ -25,7 +25,7 @@ endgenerate
 // Sum bits
 genvar j;
 generate
-  for (j = 0; j < WIDTH; j = j + 1) begin
+  for (j = 0; j < WIDTH; j = j + 1) begin : sum_generation
     xor2$ xor2$_sum(s[j], a[j], c[j]);
   end
 endgenerate

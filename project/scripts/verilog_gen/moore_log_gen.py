@@ -89,7 +89,8 @@ with open("moore_logic_gen.v", "w") as f:
     for output in my_v_info.outputs:
       f.write(f"\twire {output};\n")
     if (len(product_inputs[i]) == 0):
-      f.write(f"\tbuffer$ buffer_empty_{i}({output}, 1'b1);\n")
+      f.write(f"\tassign {output} = 1'b1;\n")
+      # f.write(f"\tbuffer$ buffer_empty_{i}({output}, 1'b1);\n")
     else:
       for gate in my_v_info.gates:
         f.write(gate)
@@ -100,7 +101,8 @@ with open("moore_logic_gen.v", "w") as f:
     my_v_info = V_info(0, [], [], output_contributions[i], 0, i, "or")   
     gate_structure(len(output_contributions[i]), my_v_info)
     if (len(output_contributions[i]) == 0):
-      f.write(f"\tbuffer$ buffer_empty_cont_{i}({output_list[i]}, 1'b0);\n")
+      f.write(f"\tassign {output_list[i]} = 1'b0;\n")
+      # f.write(f"\tbuffer$ buffer_empty_cont_{i}({output_list[i]}, 1'b0);\n")
     else:
       for output in my_v_info.outputs:
         if (int(output.split('_')[2]) != 0):

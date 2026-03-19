@@ -1,0 +1,5 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+~/MICROARCH/project/hdl/local-lib/extenders/bit_duplicator.v
+~/MICROARCH/project/hvl/local-lib/extenders/bit_duplicator_tb/bit_duplicator_behav.v
+~/MICROARCH/project/hvl/local-lib/extenders/bit_duplicator_tb/bit_duplicator_tb.v

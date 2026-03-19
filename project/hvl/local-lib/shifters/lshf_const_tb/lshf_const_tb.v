@@ -6,13 +6,15 @@ initial begin
 end
 
 localparam WIDTH = 32;
+localparam SHF_ONES = 0;
 
 reg   [WIDTH-1:0]   in;
 wire  [WIDTH-1:0]   out, out_exp;
 
 lshf_const #(
   .WIDTH(32),
-  .SHF_AMT(16)
+  .SHF_AMT(16),
+  .SHF_ONES(SHF_ONES)
 ) DUT (
   .in(in),
   .out(out)
@@ -20,7 +22,8 @@ lshf_const #(
 
 lshf_const_behav #(
   .WIDTH(32),
-  .SHF_AMT(16)
+  .SHF_AMT(16),
+  .SHF_ONES(SHF_ONES)
 ) REF (
   .in(in),
   .out(out_exp)

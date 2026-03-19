@@ -1,36 +1,53 @@
-module cmp_gen_32b(
-  // WARNING: Fanout = 4 on in1[31]
+module cmp_gen_32b (
   input		[31:0]	in0, in1,
 	output	 [0:0]	lt, gt, eq
 );	
-	
-wire 		[31:0]	not_in1, difference, xnor_out, cout;
 
-wire					  gt_long, lt_long, gt_short, lt_short;
+wire AGB3, AGB2, AGB1, AGB0;
+wire BGA3, BGA2, BGA1, BGA0;
 
-inv1$           inv1$_not_in1[31:0](not_in1, in1);
+wire EQ3, EQ2, EQ1;
 
-FA_32b FA_32b_0 (
-  .in0(in0), .in1(not_in1),
-  .cin(1'b1),
-  .s(difference), .cout()
-);
+wire t6a, t5a, t4a;
+wire t6b, t5b, t4b;
 
-assign lt_long = difference[31];
+wire nAGB3, nBGA3;
 
-big_eq		#(.WIDTH(32)) big_eq_0(.in0(in0), .in1(in1), .eq(eq));
+/* 8b magnitude comparators */
 
-// nor2$(out, in0, in1);
-nor2$	nor2$_0(gt_long, lt_long, eq);
+mag_comp8$ mag_comp8$_3(.A(in0[31:24]), .B(in1[31:24]), .AGB(AGB3), .BGA(BGA3));
+mag_comp8$ mag_comp8$_2(.A(in0[23:16]), .B(in1[23:16]), .AGB(AGB2), .BGA(BGA2));
+mag_comp8$ mag_comp8$_1(.A(in0[15:8]),  .B(in1[15:8]),  .AGB(AGB1), .BGA(BGA1));
+mag_comp8$ mag_comp8$_0(.A(in0[7:0]),   .B(in1[7:0]),   .AGB(AGB0), .BGA(BGA0));
 
-wire	diff_msb;
+/* INTERMEDIATE EQUALITY */
 
-xor2$ xor2$_0(diff_msb, in0[31], in1[31]);
+big_eq	#(.WIDTH(8)) big_eq_3(.in0(in0[31:24]), .in1(in1[31:24]), .eq(EQ3));
+big_eq	#(.WIDTH(8)) big_eq_2(.in0(in0[23:16]), .in1(in1[23:16]), .eq(EQ2));
+big_eq	#(.WIDTH(8)) big_eq_1(.in0(in0[15:8]),  .in1(in1[15:8]),  .eq(EQ1));
 
-and2$ and2$_0(lt_short, diff_msb, in1[31]);
-nor2$	nor2$_1(gt_short, lt_short, eq);
+/* active-low decision terms, reversed polarity into final NAND4s */
 
-mux2$	mux2$_0(lt, lt_long, lt_short, diff_msb);
-mux2$	mux2$_1(gt, gt_long, gt_short, diff_msb);
-	
+nand2$	nand2$_t6a(t6a, EQ3, AGB2);
+nand3$	nand3$_t5a(t5a, EQ3, EQ2, AGB1);
+nand4$	nand4$_t4a(t4a, EQ3, EQ2, EQ1, AGB0);
+
+nand2$	nand2$_t6b(t6b, EQ3, BGA2);
+nand3$	nand3$_t5b(t5b, EQ3, EQ2, BGA1);
+nand4$	nand4$_t4b(t4b, EQ3, EQ2, EQ1, BGA0);
+
+/* invert MSB results to preseve polarity into the final NAND4s */
+
+inv1$	inv1$_nAGB3(nAGB3, AGB3);
+inv1$	inv1$_nBGA3(nBGA3, BGA3);
+
+/* final magnitude results */
+
+nand4$	nand4$_gt(gt, nAGB3, t6a, t5a, t4a);
+nand4$	nand4$_lt(lt, nBGA3, t6b, t5b, t4b);
+
+/* OVERALL EQUALITY */
+
+big_eq	#(.WIDTH(32)) big_eq_0(.in0(in0), .in1(in1), .eq(eq));
+
 endmodule

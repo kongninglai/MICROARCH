@@ -21,7 +21,8 @@ def gate_structure(num_inputs, my_v_info):
 
       ret_val += (f"{my_v_info.gate_name}{num_inputs}({','.join(input_list_1)})")
       my_v_info.outputs.append(f"{my_v_info.gate_name}_{my_v_info.prod_num}_{my_v_info.gate_num}_out")
-      my_v_info.gates.append(f"\tbuffer$ buffer_{my_v_info.gate_name}_{my_v_info.prod_num}_{my_v_info.gate_num}({my_v_info.gate_name}_{my_v_info.prod_num}_{my_v_info.gate_num}_out,{','.join(input_list)});\n")
+      # my_v_info.gates.append(f"\tbuffer$ buffer_{my_v_info.gate_name}_{my_v_info.prod_num}_{my_v_info.gate_num}({my_v_info.gate_name}_{my_v_info.prod_num}_{my_v_info.gate_num}_out,{','.join(input_list)});\n")
+      my_v_info.gates.append(f"\tassign {my_v_info.gate_name}_{my_v_info.prod_num}_{my_v_info.gate_num}_out = {','.join(input_list)};\n")
       return ret_val
 
     elif (num_inputs <= 4):

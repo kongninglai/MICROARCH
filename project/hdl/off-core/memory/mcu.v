@@ -350,7 +350,9 @@ reg_n #(
 
 /* mcu_ctrl determines which OE, CE, and WR gets picked */
 
-wire  [2:0] MEM_CTRL_Q_MUX;
+wire  [2:0] MEM_CTRL_Q_MUX, MEM_CTRL_Q_MUX_buf1024;
+
+bufferH1024$    bufferH1024$_MEM_CTRL_Q_MUX_buf1024[2:0](MEM_CTRL_Q_MUX_buf1024, MEM_CTRL_Q_MUX);
 
 mcu_ctrl #(
   .MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY),
@@ -432,53 +434,62 @@ tristateL$  tristateL$_STORE_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADD
 
 /* Now, pick which OE, CE, and WR goes to memory */
 
-mux8   mux8_OE[RANK_COUNT*CHIPS_PER_RANK-1:0]
+genvar j;
+generate
+  for (j = 0; j < 16; j = j + 1) begin : MEMORY_ENABLE_GEN
+    mux8_16b   mux8_OE
+                        ( 
+                          OE[j*16 +: 16],
+
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          STORE_BUFFER_OE[j*16 +: 16],
+                          LOAD_BUFFER_OE_DEMAND[j*16 +: 16],
+                          LOAD_BUFFER_OE_DEMAND_AND_PREFETCH[j*16 +: 16],
+                          LOAD_BUFFER_OE_PREFETCH[j*16 +: 16],    
+
+                          MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
+                        );
+
+    mux8_16b   mux8_CE
                                               ( 
-                                                OE,
+                                                CE[j*16 +: 16],
 
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                STORE_BUFFER_OE,
-                                                LOAD_BUFFER_OE_DEMAND,
-                                                LOAD_BUFFER_OE_DEMAND_AND_PREFETCH,
-                                                LOAD_BUFFER_OE_PREFETCH,    
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                STORE_BUFFER_CE[j*16 +: 16],
+                                                LOAD_BUFFER_CE_DEMAND[j*16 +: 16],
+                                                LOAD_BUFFER_CE_DEMAND_AND_PREFETCH[j*16 +: 16],
+                                                LOAD_BUFFER_CE_PREFETCH[j*16 +: 16],    
 
-                                                MEM_CTRL_Q_MUX[0], MEM_CTRL_Q_MUX[1], MEM_CTRL_Q_MUX[2]
+                                                MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
                                               );
 
-mux8   mux8_CE[RANK_COUNT*CHIPS_PER_RANK-1:0]
+    mux8_16b   mux8_WR
                                               ( 
-                                                CE,
+                                                WR[j*16 +: 16],
 
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                STORE_BUFFER_CE,
-                                                LOAD_BUFFER_CE_DEMAND,
-                                                LOAD_BUFFER_CE_DEMAND_AND_PREFETCH,
-                                                LOAD_BUFFER_CE_PREFETCH,    
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                {CHIPS_PER_RANK{1'b1}},
+                                                STORE_BUFFER_WR[j*16 +: 16],
+                                                LOAD_BUFFER_WR_DEMAND[j*16 +: 16],
+                                                LOAD_BUFFER_WR_DEMAND_AND_PREFETCH[j*16 +: 16],
+                                                LOAD_BUFFER_WR_PREFETCH[j*16 +: 16],    
 
-                                                MEM_CTRL_Q_MUX[0], MEM_CTRL_Q_MUX[1], MEM_CTRL_Q_MUX[2]
+                                                MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
                                               );
+  end
+endgenerate
 
-mux8   mux8_WR[RANK_COUNT*CHIPS_PER_RANK-1:0]
-                                              ( 
-                                                WR,
 
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                {RANK_COUNT*CHIPS_PER_RANK{1'b1}},
-                                                STORE_BUFFER_WR,
-                                                LOAD_BUFFER_WR_DEMAND,
-                                                LOAD_BUFFER_WR_DEMAND_AND_PREFETCH,
-                                                LOAD_BUFFER_WR_PREFETCH,    
 
-                                                MEM_CTRL_Q_MUX[0], MEM_CTRL_Q_MUX[1], MEM_CTRL_Q_MUX[2]
-                                              );
+
 
 /*** MAIN MEMORY INSTANTIATION ***/
 main_memory #(
@@ -495,75 +506,75 @@ main_memory #(
 /*** BEGIN AUTO-GENERATED CODE ***/
 
 /* Inverters */
+wire Q0_bar;
+wire Q1_bar;
+wire L2B_CTR_bar;
+inv1$ inv_2(L2B_CTR_bar, L2B_CTR);
 wire WRITE_DONE_bar;
-inv1$ inv_0(WRITE_DONE_bar, WRITE_DONE);
+inv1$ inv_3(WRITE_DONE_bar, WRITE_DONE);
 wire Q2_bar;
 wire SHORT_BRST_DONE_bar;
-inv1$ inv_2(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
-wire Q1_bar;
-wire Q0_bar;
-wire L2B_CTR_bar;
-inv1$ inv_5(L2B_CTR_bar, L2B_CTR);
+inv1$ inv_5(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
 
 /* Product Expressions */
-wire and_0_0_out;
-and3$ and_0_0(and_0_0_out,Q1,Q0_bar,WRITE_DONE_bar);
-wire and_1_0_out;
-and4$ and_1_0(and_1_0_out,Q2_bar,Q1_bar,Q0_bar,DMA_MEM_WR_ACK);
-wire and_2_0_out;
-and4$ and_2_0(and_2_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_WR_ACK);
-wire and_3_0_out;
-and4$ and_3_0(and_3_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
-wire and_4_0_out;
-and3$ and_4_0(and_4_0_out,Q2,Q0_bar,RD_EN_DONE);
-wire and_5_0_out;
-and3$ and_5_0(and_5_0_out,Q2_bar,Q1,Q0);
-wire and_6_0_out;
-and4$ and_6_0(and_6_0_out,Q2_bar,Q1_bar,Q0_bar,IC_MEM_RD_ACK);
-wire and_7_0_out;
-and4$ and_7_0(and_7_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_RD_ACK);
-wire and_8_0_out;
-and4$ and_8_0(and_8_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
-wire and_9_0_out;
-and4$ and_9_0(and_9_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE);
-wire and_10_0_out;
-and4$ and_10_0(and_10_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE_bar);
-wire and_11_0_out;
-and3$ and_11_0(and_11_0_out,Q2,Q1,L2B_CTR_bar);
-wire and_12_0_out;
-and2$ and_12_0(and_12_0_out,Q2,Q0_bar);
-wire and_13_0_out;
-and2$ and_13_0(and_13_0_out,Q1,Q0);
-wire and_14_0_out;
-assign and_14_0_out = Q2_bar;
-wire and_15_0_out;
-and3$ and_15_0(and_15_0_out,Q2,Q1,Q0_bar);
-wire and_16_0_out;
-and2$ and_16_0(and_16_0_out,Q1_bar,Q0_bar);
+wire nand_0_0_0_out;
+nand3$ nand_0_0_0(nand_0_0_0_out,Q1,Q0_bar,WRITE_DONE_bar);
+wire nand_1_0_0_out;
+nand4$ nand_1_0_0(nand_1_0_0_out,Q2_bar,Q1_bar,Q0_bar,DMA_MEM_WR_ACK);
+wire nand_2_0_0_out;
+nand4$ nand_2_0_0(nand_2_0_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_WR_ACK);
+wire nand_3_0_0_out;
+nand4$ nand_3_0_0(nand_3_0_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
+wire nand_4_0_0_out;
+nand3$ nand_4_0_0(nand_4_0_0_out,Q2,Q0_bar,RD_EN_DONE);
+wire nand_5_0_0_out;
+nand3$ nand_5_0_0(nand_5_0_0_out,Q2_bar,Q1,Q0);
+wire nand_6_0_0_out;
+nand4$ nand_6_0_0(nand_6_0_0_out,Q2_bar,Q1_bar,Q0_bar,IC_MEM_RD_ACK);
+wire nand_7_0_0_out;
+nand4$ nand_7_0_0(nand_7_0_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_RD_ACK);
+wire nand_8_0_0_out;
+nand4$ nand_8_0_0(nand_8_0_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
+wire nand_9_0_0_out;
+nand4$ nand_9_0_0(nand_9_0_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE);
+wire nand_10_0_0_out;
+nand4$ nand_10_0_0(nand_10_0_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE_bar);
+wire nand_11_0_0_out;
+nand3$ nand_11_0_0(nand_11_0_0_out,Q2,Q1,L2B_CTR_bar);
+wire nand_12_0_0_out;
+nand2$ nand_12_0_0(nand_12_0_0_out,Q2,Q0_bar);
+wire nand_13_0_0_out;
+nand2$ nand_13_0_0(nand_13_0_0_out,Q1,Q0);
+wire nand_14_0_0_out;
+inv1$ nand_14_0_0(nand_14_0_0_out, Q2_bar);
+wire nand_15_0_0_out;
+nand3$ nand_15_0_0(nand_15_0_0_out,Q2,Q1,Q0_bar);
+wire nand_16_0_0_out;
+nand2$ nand_16_0_0(nand_16_0_0_out,Q1_bar,Q0_bar);
 
 /* Sum Expressions */
-wire or_0_1_out;
-or4$ or_0_0(D2,or_0_1_out,and_5_0_out,and_9_0_out,and_10_0_out);
-or2$ or_0_1(or_0_1_out,and_11_0_out,and_12_0_out);
-wire or_1_1_out;
-or4$ or_1_0(D1,or_1_1_out,and_0_0_out,and_3_0_out,and_6_0_out);
-or4$ or_1_1(or_1_1_out,and_7_0_out,and_9_0_out,and_11_0_out,and_15_0_out);
-wire or_2_1_out;
-wire or_2_2_out;
-or4$ or_2_0(D0,or_2_1_out,or_2_2_out,and_1_0_out,and_2_0_out);
-or4$ or_2_1(or_2_1_out,and_4_0_out,and_6_0_out,and_7_0_out,and_8_0_out);
-or3$ or_2_2(or_2_2_out,and_10_0_out,and_11_0_out,and_15_0_out);
-wire or_3_1_out;
-or4$ or_3_0(MEM_ADDR_GATE_ST,or_3_1_out,and_9_0_out,and_10_0_out,and_13_0_out);
-or2$ or_3_1(or_3_1_out,and_15_0_out,and_16_0_out);
-or2$ or_4_0(MEM_ADDR_GATE_LD,and_13_0_out,and_14_0_out);
-wire or_5_1_out;
-or4$ or_5_0(MEM_DIO_GATE,or_5_1_out,and_3_0_out,and_8_0_out,and_9_0_out);
-or4$ or_5_1(or_5_1_out,and_10_0_out,and_13_0_out,and_15_0_out,and_16_0_out);
-or2$ or_6_0(DATA_BUS_GATE,and_14_0_out,and_16_0_out);
-or2$ or_7_0(STORE_BUF_LD_EN,and_3_0_out,and_8_0_out);
-assign LOAD_BUF_LD_EN = and_12_0_out;
-assign LOAD_ADDR_LD_EN = and_5_0_out;
+wire nand_0_1_1_out;
+nand4$ nand_0_0_1(D2,nand_0_1_1_out,nand_5_0_0_out,nand_9_0_0_out,nand_10_0_0_out);
+and2$ nand_0_1_1(nand_0_1_1_out,nand_11_0_0_out,nand_12_0_0_out);
+wire nand_1_1_1_out;
+nand4$ nand_1_0_1(D1,nand_1_1_1_out,nand_0_0_0_out,nand_3_0_0_out,nand_6_0_0_out);
+and4$ nand_1_1_1(nand_1_1_1_out,nand_7_0_0_out,nand_9_0_0_out,nand_11_0_0_out,nand_15_0_0_out);
+wire nand_2_1_1_out;
+wire nand_2_2_1_out;
+nand4$ nand_2_0_1(D0,nand_2_1_1_out,nand_1_0_0_out,nand_2_0_0_out,nand_4_0_0_out);
+and4$ nand_2_1_1(nand_2_1_1_out,nand_2_2_1_out,nand_6_0_0_out,nand_7_0_0_out,nand_8_0_0_out);
+and3$ nand_2_2_1(nand_2_2_1_out,nand_10_0_0_out,nand_11_0_0_out,nand_15_0_0_out);
+wire nand_3_1_1_out;
+nand4$ nand_3_0_1(MEM_ADDR_GATE_ST,nand_3_1_1_out,nand_9_0_0_out,nand_10_0_0_out,nand_13_0_0_out);
+and2$ nand_3_1_1(nand_3_1_1_out,nand_15_0_0_out,nand_16_0_0_out);
+nand2$ nand_4_0_1(MEM_ADDR_GATE_LD,nand_13_0_0_out,nand_14_0_0_out);
+wire nand_5_1_1_out;
+nand4$ nand_5_0_1(MEM_DIO_GATE,nand_5_1_1_out,nand_3_0_0_out,nand_8_0_0_out,nand_9_0_0_out);
+and4$ nand_5_1_1(nand_5_1_1_out,nand_10_0_0_out,nand_13_0_0_out,nand_15_0_0_out,nand_16_0_0_out);
+nand2$ nand_6_0_1(DATA_BUS_GATE,nand_14_0_0_out,nand_16_0_0_out);
+nand2$ nand_7_0_1(STORE_BUF_LD_EN,nand_3_0_0_out,nand_8_0_0_out);
+inv1$ nand_8_0_1(LOAD_BUF_LD_EN, nand_12_0_0_out);
+inv1$ nand_9_0_1(LOAD_ADDR_LD_EN, nand_5_0_0_out);
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);

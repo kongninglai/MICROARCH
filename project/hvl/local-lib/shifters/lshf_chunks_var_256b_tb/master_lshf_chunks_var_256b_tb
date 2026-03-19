@@ -2,7 +2,7 @@
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
-~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_16b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_256b.v
 ~/MICROARCH/project/hvl/local-lib/shifters/lshf_chunks_var_256b_tb/lshf_chunks_var_256b_behav.v

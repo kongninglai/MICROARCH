@@ -6,16 +6,17 @@ initial begin
 end
 
 localparam WIDTH = 256;
+localparam SHF_ZEROS = 0;
 
 reg   [WIDTH-1:0]   in;
 wire  [WIDTH-1:0]   out, out_exp;
 
-lshf_chunks #(.SHF_AMT(8))  DUT (
+lshf_chunks #(.SHF_AMT(8), .SHF_ZEROS(SHF_ZEROS))  DUT (
   .in(in),
   .out(out)
 );
 
-lshf_chunks_behav #(.SHF_AMT(8)) REF (
+lshf_chunks_behav #(.SHF_AMT(8), .SHF_ZEROS(SHF_ZEROS)) REF (
   .in(in),
   .out(out_exp)
 );
