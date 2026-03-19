@@ -1,0 +1,5 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib3
+~/MICROARCH/project/hdl/cache/tag_stores/tag_store.v
+~/MICROARCH/project/hvl/cache/tag_stores/tag_store_tb/tag_store_behav.v
+~/MICROARCH/project/hvl/cache/tag_stores/tag_store_tb/tag_store_tb.v
