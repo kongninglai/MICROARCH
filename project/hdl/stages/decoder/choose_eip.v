@@ -57,13 +57,13 @@ module choose_eip(
     comb_choose_eip EIP_SELECT_GN(.P2(flush), .P1(stall), .P0(take_branch), .OUT1(eip_sel[1]), .OUT0(eip_sel[0]));
     
     mux4_32 MUX_CHOOSE_EIP(
-        .IN0(i_eip), 
-        .IN1(bp_eip_target), 
-        .IN2(o_eip), 
-        .IN3(ex_eip_target), 
-        .S0(eip_sel[0]), //Select incremented EIP if we're loading RR pipeline registers
-        .S1(eip_sel[1]), //Currently unused, can be used to select other EIP sources in the future
-        .Y(eip_true) //Output EIP to be used in the rest of the decode logic
+        .in0(i_eip), 
+        .in1(bp_eip_target), 
+        .in2(o_eip), 
+        .in3(ex_eip_target), 
+        .s0(eip_sel[0]), //Select incremented EIP if we're loading RR pipeline registers
+        .s1(eip_sel[1]), //Currently unused, can be used to select other EIP sources in the future
+        .out(eip_true) //Output EIP to be used in the rest of the decode logic
     );
 
 

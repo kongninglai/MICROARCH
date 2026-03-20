@@ -14,7 +14,7 @@ module eip_incr(
         end
     endgenerate
 
-    mux16_32 (
+    mux16_32 CHOOSE_INCR(
         .Y(incr_eip),
         .IN0(mux_in[0]), .IN1(mux_in[1]), .IN2(mux_in[2]), .IN3(mux_in[3]), .IN4(mux_in[4]), .IN5(mux_in[5]), .IN6(mux_in[6]), .IN7(mux_in[7]),
         .IN8(mux_in[8]), .IN9(mux_in[9]), .IN10(mux_in[10]), .IN11(mux_in[11]), .IN12(mux_in[12]), .IN13(mux_in[13]), .IN14(mux_in[14]), .IN15(mux_in[15]),

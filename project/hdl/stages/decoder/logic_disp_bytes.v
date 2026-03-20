@@ -53,24 +53,24 @@ module logic_disp_bytes(
     //Layer 2: takes 0.8ns (starts running at 4.49 + 0.8ns = 5.29ns done)
     wire [31:0] disp_bytes8, disp_bytes32;
     mux8_32 disp8_byte_mux(
-        .Y(disp_bytes8), 
-        .IN0(32'd0), .IN1({24'd0, cache_bytes[2]}), .IN2({24'd0, cache_bytes[3]}), 
-        .IN3({24'd0, cache_bytes[4]}), .IN4({24'd0, cache_bytes[5]}), .IN5({24'd0, cache_bytes[6]}), 
-        .IN6({24'd0, cache_bytes[7]}), .IN7({24'd0, cache_bytes[8]}), 
-        .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2])
+        .out(disp_bytes8), 
+        .in0(32'd0), .in1({24'd0, cache_bytes[2]}), .in2({24'd0, cache_bytes[3]}), 
+        .in3({24'd0, cache_bytes[4]}), .in4({24'd0, cache_bytes[5]}), .in5({24'd0, cache_bytes[6]}), 
+        .in6({24'd0, cache_bytes[7]}), .in7({24'd0, cache_bytes[8]}), 
+        .s0(total_offset[0]), .s1(total_offset[1]), .s2(total_offset[2])
     );
     
     mux8_32 disp32_byte_mux(
-        .Y(disp_bytes32), 
-        .IN0(32'd0),
-        .IN1({cache_bytes[5], cache_bytes[4], cache_bytes[3], cache_bytes[2]}), 
-        .IN2({cache_bytes[6], cache_bytes[5], cache_bytes[4], cache_bytes[3]}), 
-        .IN3({cache_bytes[7], cache_bytes[6], cache_bytes[5], cache_bytes[4]}), 
-        .IN4({cache_bytes[8], cache_bytes[7], cache_bytes[6], cache_bytes[5]}), 
-        .IN5({cache_bytes[9], cache_bytes[8], cache_bytes[7], cache_bytes[6]}), 
-        .IN6({cache_bytes[10], cache_bytes[9], cache_bytes[8], cache_bytes[7]}), 
-        .IN7({cache_bytes[11], cache_bytes[10], cache_bytes[9], cache_bytes[8]}), 
-        .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2])
+        .out(disp_bytes32), 
+        .in0(32'd0),
+        .in1({cache_bytes[5], cache_bytes[4], cache_bytes[3], cache_bytes[2]}), 
+        .in2({cache_bytes[6], cache_bytes[5], cache_bytes[4], cache_bytes[3]}), 
+        .in3({cache_bytes[7], cache_bytes[6], cache_bytes[5], cache_bytes[4]}), 
+        .in4({cache_bytes[8], cache_bytes[7], cache_bytes[6], cache_bytes[5]}), 
+        .in5({cache_bytes[9], cache_bytes[8], cache_bytes[7], cache_bytes[6]}), 
+        .in6({cache_bytes[10], cache_bytes[9], cache_bytes[8], cache_bytes[7]}), 
+        .in7({cache_bytes[11], cache_bytes[10], cache_bytes[9], cache_bytes[8]}), 
+        .s0(total_offset[0]), .s1(total_offset[1]), .s2(total_offset[2])
     );
 
     //Is done within layer 2: 6.2 + 1.40 = 7.60ns delay done
@@ -81,5 +81,5 @@ module logic_disp_bytes(
     );
 
     // Is done within layer 2: 0.3ns through select signal (ready at 4.55ns + 0.3ns = 4.85ns)
-    mux4_32 disp_byte_mux(.Y(disp_bytes), .IN0(32'd0), .IN1(disp_bytes8), .IN2(disp_bytes32), .IN3(32'd0), .S0(disp_size[0]), .S1(disp_size[1]));
+    mux4_32 disp_byte_mux(.out(disp_bytes), .in0(32'd0), .in1(disp_bytes8), .in2(disp_bytes32), .in3(32'd0), .s0(disp_size[0]), .s1(disp_size[1]));
 endmodule
