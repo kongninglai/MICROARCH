@@ -23,7 +23,7 @@ generate
   end
 endgenerate
 
-mux16 mux16_0[15:0] (
+mux16_16b mux16_0 (
   .in0 (in),
   .in1 (lshf_out[1]),
   .in2 (lshf_out[2]),

@@ -1,11 +1,6 @@
-/home/projects/courses/spring_22/ee382n19_16785/lib/time -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
--v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
--v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
-~/MICROARCH/project/hdl/local-lib/gates/xor3LL.v
-~/MICROARCH/project/hdl/local-lib/adders/gen_prop.v
-~/MICROARCH/project/hdl/local-lib/adders/gen_prop_2.v
-~/MICROARCH/project/hdl/local-lib/adders/FA_32b.v
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib5
 ~/MICROARCH/project/hdl/local-lib/comparators/big_eq.v
 ~/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_32b.v
 ~/MICROARCH/project/hvl/local-lib/comparators/cmp_gen_32b_tb/cmp_gen_32b_behav.v

@@ -1,0 +1,5 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+~/MICROARCH/project/hdl/local-lib/encoders/encoder4_2.v
+~/MICROARCH/project/hvl/local-lib/encoders/encoder4_2_tb/encoder4_2_behav.v
+~/MICROARCH/project/hvl/local-lib/encoders/encoder4_2_tb/encoder4_2_tb.v

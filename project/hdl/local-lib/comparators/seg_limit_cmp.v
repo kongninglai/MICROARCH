@@ -1,7 +1,3 @@
-/*
-Delay: 
-*/
-
 module seg_limit_cmp (
   input		[31:0]	in,
   input   [19:0]  seg_limit,

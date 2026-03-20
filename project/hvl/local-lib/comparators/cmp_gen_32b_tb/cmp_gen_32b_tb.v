@@ -36,12 +36,17 @@ initial begin
   in0 = 32'hFFFFFFFE; in1 = 32'hFFFFFFFF; #40; check(out, out_exp);
   in0 = 32'hFFFFFFFF; in1 = 32'hFFFFFFFF; #40; check(out, out_exp);
   in0 = 0; in1 = 32'hFFFFFFFF; #40; check(out, out_exp);
+  in0 = 32'hFFFFFFFF; in1 = 32'hFFFFFFFF; #40; check(out, out_exp);
   in0 = 0; in1 = 1;
-  repeat (1 << 8) begin
+  repeat (1 << 12) begin
     #40;
     check(out, out_exp);
     in0  = $random;
-    in1  = $random;
+    if ($random % 10 == 0) begin
+      in1  = in0;
+    end else begin
+      in1  = $random;
+    end
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);

@@ -1,8 +1,3 @@
-/*
-32-bit wide 8-to-1 Multiplexer
-Constructed from 4 parallel 8-bit slices.
-Delay: 0.8ns 
-*/
 module mux8_32(
     output [31:0] out,
     input [31:0] in0,

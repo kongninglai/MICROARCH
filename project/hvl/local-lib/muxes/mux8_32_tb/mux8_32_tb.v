@@ -16,7 +16,7 @@ mux8_32  DUT(
   .in0(in0), .in1(in1), .in2(in2), .in3(in3), .in4(in4), .in5(in5), .in6(in6), .in7(in7), .s0(s0), .s1(s1), .s2(s2), .out(out)
 );
 
-mux8_32_behav  REF(
+mux8_32_behav  DUT_BH(
   .in0(in0), .in1(in1), .in2(in2), .in3(in3), .in4(in4), .in5(in5), .in6(in6), .in7(in7), .s0(s0), .s1(s1), .s2(s2), .out(out_bh)
 );
 
@@ -36,18 +36,18 @@ task apply;
         in5 = test_in5;
         in6 = test_in6;
         in7 = test_in7;
-        s2 = test_s2;
         s0 = test_s0;
         s1 = test_s1;
+        s2 = test_s2;
     end
 endtask
 
 task check;
-  input [31:0] Y, Y_bh;
-  if (Y !== Y_bh) begin
+  input [31:0] out, out_exp;
+  if (out !== out_exp) begin
     FAILURES = FAILURES + 1;
-    $display("FAILURE AT TIME %t. Y_bh = %h, Y = %h\n", 
-              $time, Y_bh, Y);
+    $display("FAILURE AT TIME %t. out_exp = %h, out = %h\n", 
+              $time, out_exp, out);
   end else begin
     SUCCESSES = SUCCESSES + 1;
   end
@@ -56,7 +56,7 @@ endtask
 initial begin
   // All possible tests with truth table
   repeat (1 << 8) begin
-    apply({$random,$random}, {$random,$random}, {$random,$random}, {$random,$random}, {$random,$random}, {$random,$random}, {$random,$random}, {$random,$random}, $random, $random, $random);
+    apply($random, $random, $random, $random, $random, $random, $random, $random, $random, $random, $random);
     #1.5; 
     check(out, out_bh);
   end
