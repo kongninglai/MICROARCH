@@ -39,6 +39,7 @@ module store_queue #(
 
   output                                      empty,
   output                                      full,
+  output  [COUNT_WIDTH-1:0]                   entry_count,
   output  [RANK_BIT_WIDTH-1:0]                STOREQ_DATA,
   output  [RANK_BURST_SIZE*BYTES_PER_BUS-1:0] STOREQ_DATA_WR_MASK,
   output  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  STOREQ_PHYS_ADDR
@@ -97,7 +98,7 @@ reg_n #(
 
 /*** ENTRY COUNT LOGIC ***/
 
-wire    [COUNT_WIDTH-1:0]       entry_count, entry_count_plus_1, entry_count_plus_2, entry_count_minus_1, entry_count_next;
+wire    [COUNT_WIDTH-1:0]       entry_count_plus_1, entry_count_plus_2, entry_count_minus_1, entry_count_next;
 
 big_increment #(
   .WIDTH(COUNT_WIDTH)

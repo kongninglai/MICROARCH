@@ -48,6 +48,7 @@ store_queue #(
   .data_in1(data_in1),
   .empty(empty),
   .full(full),
+  .entry_count(),
   .STOREQ_DATA(STOREQ_DATA),
   .STOREQ_DATA_WR_MASK(STOREQ_DATA_WR_MASK),
   .STOREQ_PHYS_ADDR(STOREQ_PHYS_ADDR)
@@ -98,7 +99,6 @@ endtask
 
 integer i, j;
 integer rd_ctr = 0;
-integer times_to_read;
 
 task read_entry;
 begin
@@ -108,7 +108,7 @@ begin
   end
   #(CYCLE_TIME / 2.0);
   if (rd == 1) begin    
-    check_data({{rd_ctr, rd_ctr, rd_ctr, rd_ctr}, rd_ctr[10:0], rd_ctr[16:0]});
+    check_data({{rd_ctr, rd_ctr, rd_ctr, rd_ctr}, rd_ctr[10:0], rd_ctr[15:0]});
     rd_ctr = rd_ctr + 1;
   end
   rd = 0;
@@ -124,12 +124,12 @@ initial begin
     #(CYCLE_TIME / 2.0);
     if (~full) begin
       if (($random & 32'h7FFFFFFF) % 2 == 0) begin /* One write */
-        write_entry({{i, i, i, i}, i[10:0], i[16:0]}, 
-                    {{j, j, j, j}, j[10:0], j[16:0]},
+        write_entry({{i, i, i, i}, i[10:0], i[15:0]}, 
+                    {{j, j, j, j}, j[10:0], j[15:0]},
                     2'b01);
       end else begin /* Two writes */
-        write_entry({{i, i, i, i}, i[10:0], i[16:0]}, 
-                    {{j, j, j, j}, j[10:0], j[16:0]},
+        write_entry({{i, i, i, i}, i[10:0], i[15:0]}, 
+                    {{j, j, j, j}, j[10:0], j[15:0]},
                     2'b11);
         i = i + 1;
       end

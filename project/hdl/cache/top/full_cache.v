@@ -43,6 +43,7 @@ module full_cache #(
 
   /*** BETWEEN STORE QUEUE & CACHE, for WRITES ***/
   input                                                   STOREQ_STORING,
+  input                                                   STOREQ_LAST_ENTRY,
   input     [RANK_BIT_WIDTH-1:0]                          STOREQ_DATA,
   input     [RANK_BURST_SIZE*BYTES_PER_BUS-1:0]           STOREQ_DATA_WR_MASK,
   input     [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]            STOREQ_PHYS_ADDR,
@@ -69,7 +70,9 @@ module full_cache #(
   input                                                   WB_VALID_IO_STORE_INST,
 
   output    [RANK_BIT_WIDTH-1:0]                          DCACHE_HIT_DATA,
+  output                                                  DCACHE_HIT,
   output                                                  DCACHE_STALL,
+  output                                                  WBE_BUSY,
 
   /*** DMA INTERRUPT ***/
   output                                                  DMA_INT,
@@ -111,7 +114,6 @@ wire     [INDEX_WIDTH+WAY_WIDTH-1:0]                   DCC_VALID_WR_EN;
 wire                                                   DCC_FSM_VALID_WR_EN_GLOBAL;
 
 /*** BETWEEN WRITEBACK ENGINE & CACHE ***/
-wire                                                   WBE_BUSY;
 
 wire                                                   DCACHE_NEED_WR_BUS;
 wire     [RANK_BIT_WIDTH-1:0]                          DCACHE_WBE_DATA;
@@ -145,8 +147,6 @@ wire    [NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0]  final_dcache_wr_en_bar_one
 
 wire    STOREQ_STORE_COND, STOREQ_STORE_COND_buf1024;
 
-wire    DCACHE_HIT;
-
 wire    STOREQ_STORING_buf16;
 
 bufferH16$    bufferH16$_STOREQ_STORING_buf16(STOREQ_STORING_buf16, STOREQ_STORING);
@@ -178,12 +178,13 @@ mux2$   mux2$_final_dcache_wr_en_bar_one_hot[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_
 /* You can also just gate DCACHE_HIT with whether or not SET[2:0] changed from last cycle using a reg_n and a 3-bit comparator...
    can force STOREQ writes to take 2 cycles if really necessary */
 
-wire    clk_bar_buf4096, clk_buf4096;
+wire    clk_bar, clk_bar_buf4096, clk_buf4096;
 
 bufferHInv4096$   bufferHInv4096$_clk_bar_buf4096(clk_bar_buf4096, clk);
 
 bufferHInv4096$   bufferHInv4096$_clk_buf4096(clk_buf4096, clk_bar_buf4096);
 
+inv1$   inv1$_clk_bar(clk_bar, clk);
 
 or3$    or3$_final_dcache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](final_dcache_wr_en_bar_one_hot_gated, final_dcache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}}, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk_buf4096}});
 
@@ -193,7 +194,7 @@ reg_n #(
   .WIDTH(RANK_BIT_WIDTH),
   .USE_EN_BAR(0)
 ) reg_n_STOREQ_DATA_REG (
-  .clk(clk_bar_buf4096), .rst(rst),
+  .clk(clk_bar), .rst(rst),
   .en({RANK_BIT_WIDTH{1'b1}}), .d(STOREQ_DATA),
   .q(STOREQ_DATA_REG)
 );
@@ -494,7 +495,10 @@ and2$   and2$_THIRD_STALL_REASON(THIRD_STALL_REASON, DOUBLE_WBE_NOT_BUSY, DCACHE
 or3$    or3$_THREE_STALL_REASONS(THREE_STALL_REASONS, DCC_FSM_FILL_BUSY, WBE_BUSY, THIRD_STALL_REASON);
 
 /* Importantly, stream buffer hits DO NOT MEAN a STOREQ hit!!! */
-and2$   and2$_STOREQ_MISS(STOREQ_MISS, STOREQ_STORING_buf16, DCACHE_MISS);
+wire    STOREQ_LAST_ENTRY_BAR, STOREQ_STALL_CONDITION;
+inv1$   inv1$_STOREQ_LAST_ENTRY_BAR(STOREQ_LAST_ENTRY_BAR, STOREQ_LAST_ENTRY);
+or2$    or2$_STOREQ_STALL_CONDITION(STOREQ_STALL_CONDITION, DCACHE_MISS, STOREQ_LAST_ENTRY_BAR);
+and2$   and2$_STOREQ_MISS(STOREQ_MISS, STOREQ_STORING_buf16, STOREQ_STALL_CONDITION);
 
 and3$   and3$_MEM_NO_IO_MISS(MEM_NO_IO_MISS, MEM_VALID_LOAD_INST_buf16, DCACHE_GENERAL_MISS, D_RD_TLB_CACHE_ENABLE_OUT);
 
