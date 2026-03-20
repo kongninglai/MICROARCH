@@ -22,7 +22,9 @@
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shifters
 
 // Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/muxes/mux16_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_32.v
+~/MICROARCH/project/hvl/local-lib/muxes/mux16_32_tb/mux16_32_behav.v
 
 // Testbench for Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/local-lib/muxes/mux16_32_tb/mux16_32_tb.v
+~/MICROARCH/project/hvl/local-lib/muxes/mux16_32_tb/mux16_32_tb.v
+

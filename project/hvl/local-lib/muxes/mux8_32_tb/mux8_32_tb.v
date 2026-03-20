@@ -1,69 +1,71 @@
-`timescale 1ns / 1ps
+module  mux8_32_tb;
 
-module tb_mux8_32();
+initial begin
+  $vcdplusfile("mux8_32_tb.dump.vpd");
+  $vcdpluson(0, mux8_32_tb); 
+end
 
-    // 1. Signals
-    reg [31:0] in [0:7];
-    reg [2:0]  sel;
-    wire [31:0] out;
 
-    // 2. Instantiate UUT
-    mux8_32 uut (
-        .Y(out),
-        .IN0(in[0]), .IN1(in[1]), .IN2(in[2]), .IN3(in[3]),
-        .IN4(in[4]), .IN5(in[5]), .IN6(in[6]), .IN7(in[7]),
-        .S0(sel[0]), .S1(sel[1]), .S2(sel[2])
-    );  
+reg [31:0] in0, in1, in2, in3, in4, in5, in6, in7;
+reg s0, s1, s2;
+wire [31:0] out;
 
-    //Error checking
-    integer FAILURES  = 0;
-    integer SUCCESSES = 0;
+wire [31:0] out_bh;
 
-    // 3. Test Logic
-    integer i;
-    initial begin
-        $display("---------------------------------------------------------");
-        $display("STARTING 32-BIT MUX8 TEST");
-        $display("---------------------------------------------------------");
+mux8_32  DUT(
+  .in0(in0), .in1(in1), .in2(in2), .in3(in3), .in4(in4), .in5(in5), .in6(in6), .in7(in7), .s0(s0), .s1(s1), .s2(s2), .out(out)
+);
 
-        // Initialize inputs with unique "Signature" patterns
-        in[0] = 32'hAAAA_AAAA;
-        in[1] = 32'hBBBB_BBBB;
-        in[2] = 32'hCCCC_CCCC;
-        in[3] = 32'hDDDD_DDDD;
-        in[4] = 32'hEEEE_EEEE;
-        in[5] = 32'hFFFF_FFFF;
-        in[6] = 32'h1234_5678;
-        in[7] = 32'h8765_4321;
+mux8_32_behav  REF(
+  .in0(in0), .in1(in1), .in2(in2), .in3(in3), .in4(in4), .in5(in5), .in6(in6), .in7(in7), .s0(s0), .s1(s1), .s2(s2), .out(out_bh)
+);
 
-        // Loop through all 8 select combinations
-        for (i = 0; i < 8; i = i + 1) begin
-            sel = i[2:0];
-            #1; // Wait for mux delay (0.8ns)
 
-            if (out === in[i]) begin
-                $display("[PASS] Sel: %0d | Out: %h", i, out);
-                SUCCESSES = SUCCESSES + 1;
-            end else begin
-                $display("[FAIL] Sel: %0d | Got: %h | Exp: %h", i, out, in[i]);
-                FAILURES = FAILURES + 1;
-            end
-        end
+integer FAILURES  = 0;
+integer SUCCESSES = 0;
 
-        // 4. Test "X" and "Z" Propagation (Optional but good for EE 382N)
-        $display("Testing X propagation...");
-        in[4] = 32'hXXXX_XXXX;
-        sel = 3'd4;
-        #1;
-        if (out === 32'hXXXX_XXXX)
-            $display("[PASS] X correctly propagated from IN4");
-
-        $display("---------------------------------------------------------");
-        $display("TEST COMPLETE");
-        $display("---------------------------------------------------------");
-        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
-        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
-        $finish;
+task apply;
+    input [31:0] test_in0, test_in1, test_in2, test_in3, test_in4, test_in5, test_in6, test_in7;
+    input test_s0, test_s1, test_s2;
+    begin 
+        in0 = test_in0;
+        in1 = test_in1;
+        in2 = test_in2;
+        in3 = test_in3;
+        in4 = test_in4;
+        in5 = test_in5;
+        in6 = test_in6;
+        in7 = test_in7;
+        s2 = test_s2;
+        s0 = test_s0;
+        s1 = test_s1;
     end
+endtask
+
+task check;
+  input [31:0] Y, Y_bh;
+  if (Y !== Y_bh) begin
+    FAILURES = FAILURES + 1;
+    $display("FAILURE AT TIME %t. Y_bh = %h, Y = %h\n", 
+              $time, Y_bh, Y);
+  end else begin
+    SUCCESSES = SUCCESSES + 1;
+  end
+endtask
+
+initial begin
+  // All possible tests with truth table
+  repeat (1 << 8) begin
+    apply({$random,$random}, {$random,$random}, {$random,$random}, {$random,$random}, {$random,$random}, {$random,$random}, {$random,$random}, {$random,$random}, $random, $random, $random);
+    #1.5; 
+    check(out, out_bh);
+  end
+
+  $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+  $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+
+  $finish;
+
+end
 
 endmodule

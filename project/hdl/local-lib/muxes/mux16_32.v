@@ -34,10 +34,10 @@ module mux16_32 (
 
     //Stage 2: 0.3ns through select 
     mux2_32 final (
-        .Y(Y), 
-        .IN0(lower_half_out), 
-        .IN1(upper_half_out), 
-        .S0(S3)
+        .out(Y), 
+        .in0(lower_half_out), 
+        .in1(upper_half_out), 
+        .s0(S3)
     );
 
 endmodule
