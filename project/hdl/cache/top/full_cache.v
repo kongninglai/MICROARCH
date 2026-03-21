@@ -302,7 +302,7 @@ bufferH16$    bufferH16$_FINAL_DCACHE_RD_DATA_MUX_SEL_buf16[WAY_WIDTH-1:0](FINAL
 
 genvar j;
 generate
-  for (j = 0; j < 8; j = j + 1) begin : DCACHE_MUX16_16b_GEN
+  for (j = 0; j < 8; j = j + 1) begin : DCACHE_MUX4_16b_GEN
     mux4_16$ mux4_16_DCACHE_RD_DATA (
       .IN0 (DCACHE_RD_DATA_ALL_WAYS[(0*RANK_BIT_WIDTH+j*16) +: 16]),
       .IN1 (DCACHE_RD_DATA_ALL_WAYS[(1*RANK_BIT_WIDTH+j*16) +: 16]),
@@ -662,7 +662,7 @@ tag_hit_logic tag_hit_logic_ICACHE_TAG_HIT (
 mux2$   mux2$_ICACHE_TAG_HIT_FINAL[NUM_WAYS-1:0](ICACHE_TAG_HIT_FINAL, ICACHE_TAG_HIT, {NUM_WAYS{1'b0}}, ICC_FSM_VALID_WR_EN_GLOBAL_buf16);
 
 generate
-  for (j = 0; j < 8; j = j + 1) begin : MUX16_16b_GEN
+  for (j = 0; j < 8; j = j + 1) begin : ICACHE_MUX4_16b_GEN
     mux4_16$ mux4_16_ICACHE_RD_DATA (
       .IN0 (ICACHE_RD_DATA_ALL_WAYS[(0*RANK_BIT_WIDTH+j*16) +: 16]),
       .IN1 (ICACHE_RD_DATA_ALL_WAYS[(1*RANK_BIT_WIDTH+j*16) +: 16]),

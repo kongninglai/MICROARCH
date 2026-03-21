@@ -36,6 +36,8 @@ io_addr_logic_block_tb         FAILURES=0      SUCCESSES=512
 kb_tb                          FAILURES=0      SUCCESSES=28    
 lru_store_per_set_tb           FAILURES=0      SUCCESSES=8416  
 lru_store_tb                   FAILURES=0      SUCCESSES=1280  
+lshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096  
+lshf_bytes_var_256b_tb         FAILURES=0      SUCCESSES=4096  
 lshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
 lshf_chunks_var_128b_tb        FAILURES=0      SUCCESSES=4096  
 lshf_chunks_var_16b_tb         FAILURES=0      SUCCESSES=4096  
@@ -76,6 +78,8 @@ regunit_tb                     FAILURES=0      SUCCESSES=0
 rr_to_ag_tb                    FAILURES=0      SUCCESSES=0     
 rshfa_const_tb                 FAILURES=0      SUCCESSES=1024  
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
+rshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096  
+rshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
 seg_limit_cmp_tb               FAILURES=0      SUCCESSES=65543 
 se_tb                          FAILURES=0      SUCCESSES=258   
 stage_ag_tb                    FAILURES=0      SUCCESSES=0     
