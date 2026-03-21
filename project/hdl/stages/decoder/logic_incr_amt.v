@@ -12,7 +12,7 @@ module logic_incr_amt(
     input wire [2:0] disp_size_inbytes, //Ready at 5.05ns
     input wire [2:0] prefix_amount, //Ready at 3.38ns
     input wire sib_present, //Ready at 4.55ns
-    output wire [4:0] incr_amt
+    output wire [3:0] incr_amt
 );
 
     wire [4:0] csa_sum, csa_carry;

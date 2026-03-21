@@ -81,6 +81,7 @@ module logic_seg_ov(
     or3$ or_all(is_seg_ov, or_nand_0_1_w, or_nand_2_3_w, or_nand_4_5_w);
 
     //Stage 6 - 0.76ns
+    wire [2:0] segment_override_reg_id_w;
     pencoder8_3v$ seg_reg_id_encoder(
         .enbar(1'b0),               // Always enable  encoder
         .X({
@@ -92,8 +93,11 @@ module logic_seg_ov(
             is_cs,                  // CS = index 1 -> output 001
             is_es                   // ES = index 0 -> output 000
         }),
-        .Y(segment_override_reg_id),     //out[2:0]
+        .Y(segment_override_reg_id_w),     //out[2:0]
         .valid()                    //TODO         
     );
 
+    wire [7:0] segment_override_reg_id_w_temp;
+    mux2_8$ mux_default (.Y(segment_override_reg_id_w_temp), .IN0({5'd0, 3'd3}), .IN1({5'd0, segment_override_reg_id_w}), .S0(is_seg_ov));
+    assign segment_override_reg_id = segment_override_reg_id_w_temp[2:0];
 endmodule

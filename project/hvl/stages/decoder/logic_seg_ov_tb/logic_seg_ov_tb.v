@@ -2,7 +2,6 @@
 
 module tb_logic_seg_ov();
 
-    // 1. Signals to connect to the Design Under Test (DUT)
     reg is_es0, is_es1, is_es2, is_es3;
     reg is_cs0, is_cs1, is_cs2, is_cs3;
     reg is_ss0, is_ss1, is_ss2, is_ss3;
@@ -14,11 +13,9 @@ module tb_logic_seg_ov();
     wire is_seg_ov;
     wire [2:0] seg_id;
 
-    //Error Checking
     integer FAILURES = 0;
     integer SUCCESSES = 0;
 
-    // 2. Instantiate the DUT
     logic_seg_ov dut (
         .is_es0(is_es0), .is_es1(is_es1), .is_es2(is_es2), .is_es3(is_es3),
         .is_cs0(is_cs0), .is_cs1(is_cs1), .is_cs2(is_cs2), .is_cs3(is_cs3),
@@ -32,26 +29,23 @@ module tb_logic_seg_ov();
         .segment_override_reg_id(seg_id)
     );
 
-    // 3. Task for checking results to keep the code clean
-    // Replace 'string' with a large enough reg array (e.g., 32 characters/256 bits)
+    // Modified check_results to ALWAYS check the ID
     task check_results(input expected_ov, input [2:0] expected_id, input [255:0] test_name);
         begin
             #5; 
-            if (is_seg_ov !== expected_ov || (expected_ov && seg_id !== expected_id)) begin
-                // Using %s will still work for the reg array
+            if (is_seg_ov !== expected_ov || seg_id !== expected_id) begin
                 $display("FAIL: %s | Expected OV: %b ID: %d | Got OV: %b ID: %d", 
                         test_name, expected_ov, expected_id, is_seg_ov, seg_id);
                 FAILURES = FAILURES + 1;
             end else begin
-                $display("PASS: %s", test_name);
+                $display("PASS: %s (OV: %b, ID: %d)", test_name, is_seg_ov, seg_id);
                 SUCCESSES = SUCCESSES + 1;
             end
         end
     endtask
 
-    // 4. Stimulus Logic
     initial begin
-        // Initialize all inputs to 0
+        // Reset all inputs
         {is_es0, is_es1, is_es2, is_es3} = 4'b0;
         {is_cs0, is_cs1, is_cs2, is_cs3} = 4'b0;
         {is_ss0, is_ss1, is_ss2, is_ss3} = 4'b0;
@@ -62,32 +56,36 @@ module tb_logic_seg_ov();
 
         $display("Starting Segment Override Tests...");
 
-        // TEST 1: No prefixes active
-        check_results(1'b0, 3'd0, "No Prefix Test");
+        // TEST 1: No prefixes active (Verifies the MUX selects DS=3)
+        check_results(1'b0, 3'd3, "Default DS Test (No Prefix)");
 
-        // TEST 2: ES prefix in slot 0
+        // TEST 2: ES prefix in slot 0 (Valid bit high, MUX selects ES=0)
         is_es0 = 1; 
-        check_results(1'b1, 3'd0, "ES in Slot 0");
+        check_results(1'b1, 3'd0, "ES Override");
 
-        // TEST 3: CS prefix in slot 2 (requires prefix0 and prefix1 to be active)
-        is_es0 = 0; // Reset
+        // TEST 3: CS prefix in slot 2 
+        is_es0 = 0; 
         is_any_p0 = 1; is_any_p1 = 1; is_cs2 = 1;
-        check_results(1'b1, 3'd1, "CS in Slot 2");
+        check_results(1'b1, 3'd1, "CS Override");
 
-        // TEST 4: Priority Test (GS in slot 0, ES in slot 1)
-        // Since GS has higher index (5) than ES (0), GS should win in the encoder.
+        // TEST 4: Priority Test (GS wins over ES)
         is_gs0 = 1; is_any_p0 = 1; is_es1 = 1;
         check_results(1'b1, 3'd5, "Priority Test (GS wins)");
 
         // TEST 5: Verify segment override bit triggers for FS
         is_gs0 = 0; is_any_p0 = 0; is_es1 = 0; is_cs2 = 0; is_any_p1 = 0;
         is_fs3 = 1; is_any_p0 = 1; is_any_p1 = 1; is_any_p2 = 1;
-        check_results(1'b1, 3'd4, "FS in Slot 3");
+        check_results(1'b1, 3'd4, "FS Override");
 
+        // TEST 6: Transition back to default (Clear all inputs)
+        {is_fs3, is_any_p0, is_any_p1, is_any_p2} = 4'b0;
+        check_results(1'b0, 3'd3, "Return to Default DS");
+
+        $display("----------------------------------------");
         $display("Tests Completed.");
-
-        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
-        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+        $display("SUCCESSES: %d", SUCCESSES);
+        $display("FAILURES:  %d", FAILURES);
+        $display("----------------------------------------");
         $finish;
     end
 

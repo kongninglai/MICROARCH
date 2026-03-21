@@ -222,6 +222,50 @@ module tb_stage_decode();
         tail_ptr = 4'd15;
         check_result("Valid Inst Restored    ", 1'b1, 32'h0000_1016, 1'b1);
 
+        // --------------------------------------------------------
+        // TEST 11: CS Segment Override + REP Prefix + ADD EAX, EBX
+        // Instruction: 2E F3 01 C3
+        // This is the case that failed in the de_to_rr pipeline test.
+        // Expected: 
+        //   - prefix_rep = 1, prefix_seg_ov_id = 1 (CS)
+        //   - opcode = 01, modrm = C3
+        //   - instr_length = 4
+        //   - PC advances to 1011 + 4 = 1015
+        // --------------------------------------------------------
+        $display("=======================================");
+        $display(" TEST 11: CS + REP + ADD (2E F3 01 C3) ");
+        $display("=======================================");
+        
+        cache_line = 128'd0;
+        load_cache_byte(0, 8'h2E); // CS Override
+        load_cache_byte(1, 8'hF3); // REP
+        load_cache_byte(2, 8'h01); // Opcode (ADD)
+        load_cache_byte(3, 8'hC3); // ModRM (EAX, EBX)
+        
+        o_eip = 32'h0000_1011; 
+        tail_ptr = 4'd10; // Plenty of bytes
+        
+        // This helper checks ld_eip and valid, but let's also manually check the decoder outputs
+        check_result("Prefix Chain Test     ", 1'b1, 32'h0000_1015, 1'b1);
+        
+        #1; // Wait for combinational settle
+        if (opcode !== 8'h01 || modrm !== 8'hC3 || prefix_rep !== 1'b1 || prefix_seg_ov_id !== 3'b001) begin
+            $display("  ❌ FAIL: Decoder Logic Incorrect");
+            $display("     Got Op: %h | Mod: %h | Rep: %b | SegID: %b", opcode, modrm, prefix_rep, prefix_seg_ov_id);
+            FAILURES = FAILURES + 1;
+        end else begin
+            $display("  ✅ PASS: Decoder correctly parsed prefix chain");
+            SUCCESSES = SUCCESSES + 1;
+        end
+
+        // --------------------------------------------------------
+        // TEST 12: Stall during Prefix Chain
+        // Verifies that if stall_rr is high, we don't drop the prefixes.
+        // --------------------------------------------------------
+        stall_rr = 1;
+        check_result("Stall during Prefix   ", 1'b0, 32'h0000_1011, 1'b1);
+        stall_rr = 0;
+
         $display("=======================================");
         $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
         $display("SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
