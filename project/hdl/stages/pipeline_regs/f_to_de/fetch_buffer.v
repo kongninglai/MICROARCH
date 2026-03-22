@@ -4,14 +4,17 @@ module fetch_buffer(
     input wire from_de_instr_len,
     input wire from_de_valid,
     input wire from_wb_flush,
+    input wire from_ex_flush,
     input wire from_de_stall,
     input wire [127:0] from_f_cache_line,
-    output wire [4:0] tail_ptr
+    output wire [4:0] tail_ptr,
+    output [127:0] outbytes,
+    output ready
 );  
 
     //Tail Pointer Logic
     wire from_de_cache_line_load_signal;
-    logic_tail_ptr(
+    logic_tail_ptr LOGIC_TAIL_PTR(
         .clk(clk),
         .rst_bar(rst_bar),
         .incr_amt(from_de_instr_len),
@@ -43,6 +46,7 @@ module fetch_buffer(
 
     //Shift Buffer
     wire shift_signal;
+    or4$ or_shift_signal(shift_signal, from_de_valid, from_de_stall, from_wb_flush, from_ex_flush); //shift when there is a valid instruction or when there is a stall (to prevent overwriting the buffer with the same cache line)
     shift_reg(.clk(clk), .rst_n(rst_bar), .shift(shift_signal), .instr_len(from_de_instr_len), .inbytes(from_f_cache_line), 
                 .wr_en(wr_en), .outbytes(to_de_cache_line), .ready(ready));
     ); 

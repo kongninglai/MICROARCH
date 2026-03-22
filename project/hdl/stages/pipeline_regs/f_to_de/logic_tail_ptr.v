@@ -6,6 +6,7 @@ module logic_tail_ptr(
     input wire flush,
     input wire stall,
     input wire fb_req_cl, //fetch buffer request cache line signal (if there is space in the fetch buffer)
+    input wire [4:0] we_cl_byte_cnt,
     output wire [4:0] tail_ptr
 );
 
@@ -47,15 +48,17 @@ module logic_tail_ptr(
         .s(tail_ptr_decr_w), .cout()
     );
 
-    //Increment decremented tail pointer
-    wire tail_ptr_out_decr_inv;
-    inv1$ inv_tail_ptr_out_decr(tail_ptr_out_decr_inv, tail_ptr_decr_w[4]);
-    assign tail_ptr_cl_incr_w = {3'd0, tail_ptr_out_decr_inv, tail_ptr_decr_w[3:0]};
+    //Increment decremented tail pointer    
+    PA_8b INCR_DECR_TAIL_PTR(
+        .in0({tail_ptr_decr_w}), .in1({4'd0, we_cl_byte_cnt}),
+	    .s(tail_ptr_cl_incr_w)
+    );
 
     //Increment regular tail pointer 
-    wire tail_ptr_out_inv;
-    inv1$ inv_tail_ptr_out(tail_ptr_out_inv, tail_ptr_out[4]);
-    assign tail_ptr_cl_incr_only_w = {3'd0, tail_ptr_out_inv, tail_ptr_out[3:0]};
+    PA_8b INCR_TAIL_PTR_ONLY(
+        .in0({3'd0, tail_ptr_out}), .in1({3'd0, we_cl_byte_cnt}),
+	    .s(tail_ptr_cl_incr_only_w)
+    );
 
 
 endmodule

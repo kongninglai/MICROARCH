@@ -10,6 +10,7 @@ module logic_tail_ptr_tb;
     reg flush;
     reg stall;
     reg fb_req_cl;
+    reg [3:0] we_cl_byte_cnt; // <-- NEW: Added the byte count input
 
     // Output from Design
     wire [4:0] tail_ptr;
@@ -17,7 +18,7 @@ module logic_tail_ptr_tb;
     // Internal Tracking
     integer errors = 0;
     reg [4:0] expected_ptr;
-    reg [255:0] test_name; // String for reporting
+    reg [255:0] test_name; 
     integer FAILURES = 0;
     integer SUCCESSES = 0;
 
@@ -30,27 +31,30 @@ module logic_tail_ptr_tb;
         .flush(flush),
         .stall(stall),
         .fb_req_cl(fb_req_cl),
+        .we_cl_byte_cnt(we_cl_byte_cnt), // <-- NEW: Wired the byte count
         .tail_ptr(tail_ptr)
     );
 
-    // Clock Generation (10ns period)
+    // Clock Generation
     always #5 clk = ~clk;
 
     // Reporting Task
     task verify;
         input [4:0] target;
         begin
-            // Wait exactly 2 falling edges (allows 1 full setup/hold cycle safely)
             @(negedge clk); 
-            
             if (tail_ptr === target) begin
-                // Note the %0s to prevent 256-bit empty space padding
                 $display("[PASS] %0s | Expected: %d, Got: %d", test_name, target, tail_ptr);
                 SUCCESSES = SUCCESSES + 1;
             end else begin
-                // Added %b for target and tail_ptr to easily spot 'x' or 'z' undefined states
-                $display("[FAIL] %0s | Expected: %d (%b), Got: %d (%b) | Status: Stall=%b Req=%b Flush=%b Amt=%d", 
-                          test_name, target, target, tail_ptr, tail_ptr, stall, fb_req_cl, flush, incr_amt);
+                // NEW: Added the WE Byte Count to the failure printout
+                $display("[FAIL] %0s | Expected: %d (%b), Got: %d (%b) | Stall=%b Req=%b Flush=%b Decr=%d Incr=%d", 
+                          test_name, target, target, tail_ptr, tail_ptr, stall, fb_req_cl, flush, incr_amt, we_cl_byte_cnt);
+                
+                $display("tail_ptr_cl_incr_only_w %d (%b), tail_ptr_out %d (%b),  tail_ptr_cl_incr_w %d (%b), tail_ptr_decr_w %d (%b)", 
+                          dut.tail_ptr_cl_incr_only_w, dut.tail_ptr_cl_incr_only_w, dut.tail_ptr_out, dut.tail_ptr_out, 
+                          dut.tail_ptr_cl_incr_w, dut.tail_ptr_cl_incr_w, dut.tail_ptr_decr_w, dut.tail_ptr_decr_w);
+                
                 errors = errors + 1;
                 FAILURES = FAILURES + 1;
             end
@@ -60,7 +64,7 @@ module logic_tail_ptr_tb;
     initial begin
         // --- Initialization ---
         clk = 0; rst_bar = 0; flush = 0; stall = 0; fb_req_cl = 0; 
-        incr_amt = 0; de_valid = 0; expected_ptr = 0;
+        incr_amt = 0; de_valid = 0; expected_ptr = 0; we_cl_byte_cnt = 0;
 
         $display("\n--- INITIALIZING TAIL POINTER TESTBENCH ---");
         #15 rst_bar = 1; // Release reset
@@ -69,42 +73,72 @@ module logic_tail_ptr_tb;
         test_name = "Initial Reset Check";
         verify(5'd0);
 
-        // TEST 2
-        test_name = "Fill Only (Empty -> 16)";
-        stall = 1; fb_req_cl = 1; de_valid = 0;
-        expected_ptr = 16;
+        // TEST 2: Fill Only (Variable amount)
+        test_name = "Fill Only (Empty -> Add 15)";
+        stall = 1; fb_req_cl = 1; de_valid = 0; we_cl_byte_cnt = 15;
+        expected_ptr = 15;
         verify(expected_ptr);
 
-        // TEST 3
-        test_name = "Decode + Fill (16 - 3 + 16 = 29)";
-        stall = 0; fb_req_cl = 1; de_valid = 1; incr_amt = 3;
-        expected_ptr = 29;
+        // TEST 3: Decode + Fill (Variable amount)
+        test_name = "Decode + Fill (15 - 3 + 11 = 23)";
+        stall = 0; fb_req_cl = 1; de_valid = 1; 
+        incr_amt = 3;       // Consume 3 bytes
+        we_cl_byte_cnt = 11; // Write 11 bytes (e.g. branch offset was 5)
+        expected_ptr = 23;
         verify(expected_ptr);
 
-        // TEST 4
-        test_name = "Normal Decrement (29 - 5 = 24)";
-        stall = 0; fb_req_cl = 0; de_valid = 1; incr_amt = 5;
-        expected_ptr = 24;
+        // TEST 4: Normal Decrement
+        test_name = "Normal Decrement (23 - 5 = 18)";
+        stall = 0; fb_req_cl = 0; de_valid = 1; 
+        incr_amt = 5; 
+        we_cl_byte_cnt = 0; // No fetch this cycle
+        expected_ptr = 18;
         verify(expected_ptr);
 
-        // TEST 5
-        test_name = "Stall/Hold Value (Stay at 24)";
-        stall = 1; fb_req_cl = 0; de_valid = 0;
-        expected_ptr = 24;
+        // TEST 5: Stall (Hold Value)
+        test_name = "Stall/Hold Value (Stay at 18)";
+        stall = 1; fb_req_cl = 0; de_valid = 0; 
+        incr_amt = 5;       // Simulator might have data here, but stall should ignore it
+        expected_ptr = 18;
         verify(expected_ptr);
 
-        // TEST 6
-        test_name = "Stall + Fill (24 + 16 = 8 due to 5-bit wrap)";
-        stall = 1; fb_req_cl = 1; de_valid = 0;
-        expected_ptr = 8; 
+        // TEST 6: Stall + Fill 
+        test_name = "Stall + Fill (18 + 10 = 28)";
+        stall = 1; fb_req_cl = 1; de_valid = 0; 
+        we_cl_byte_cnt = 10;
+        expected_ptr = 28; 
         verify(expected_ptr);
 
-        // TEST 7
+        // TEST 7: Flush Priority
         test_name = "Flush Priority Check (Return to 0)";
         flush = 1;
         expected_ptr = 0;
         verify(expected_ptr);
-        flush = 0; // Release flush just in case more tests are added
+        flush = 0;
+
+        // TEST 8: Fill Only (Variable amount)
+        test_name = "Fill Only (Empty -> Add 10)";
+        stall = 1; fb_req_cl = 1; de_valid = 0; we_cl_byte_cnt = 10;
+        expected_ptr = 10;
+        verify(expected_ptr);
+
+        // TEST 9: Fill Only (Variable amount)
+        test_name = "Fill Only (Empty -> Add 15)";
+        stall = 1; fb_req_cl = 1; de_valid = 0; we_cl_byte_cnt = 15;
+        expected_ptr = 25;
+        verify(expected_ptr);
+
+        // TEST 8: Cross Cache Line Boundary (Wrap Around)
+        // Scenario: Pointer is at 28. Consume 6 bytes, write 14 new bytes.
+        // Math: 28 - 6 + 14 = 36. In 5-bit binary, 36 is 00100 (which is 4).
+        test_name = "Cross Boundary Wrap (25 - 1 + 14 = 38 ->00110)";
+        stall = 0; 
+        fb_req_cl = 1; 
+        de_valid = 1; 
+        incr_amt = 1; 
+        we_cl_byte_cnt = 14;
+        expected_ptr = 6; 
+        verify(expected_ptr);
 
         // --- FINAL REPORTING ---
         $display("\n=======================================");
