@@ -95,6 +95,7 @@ tlb_tb                         FAILURES=0      SUCCESSES=65538
 tlb_wrapper_tb                 FAILURES=0      SUCCESSES=65794 
 ucode_rom_tb                   FAILURES=0      SUCCESSES=0     
 valid_or_dirty_store_tb        FAILURES=0      SUCCESSES=1056  
+wb_full_cache_tb               FAILURES=0      SUCCESSES=1538  
 we_logic_block_tb              FAILURES=0      SUCCESSES=132   
 xor3LL_tb                      FAILURES=0      SUCCESSES=8     
 xor4LL_tb                      FAILURES=0      SUCCESSES=16    

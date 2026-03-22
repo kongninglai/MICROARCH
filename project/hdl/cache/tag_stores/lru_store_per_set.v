@@ -258,11 +258,23 @@ or4$ or_4_3(or_4_3_out,and_35_0_out,and_37_0_out,and_40_0_out,and_43_0_out);
 or2$ or_4_4(or_4_4_out,and_45_0_out,and_50_0_out);
 
 /* State Flip Flops */
-dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);
-dff$ dff_1(clk, D1, Q1_prebuf, Q1_bar_prebuf, rst, 1'b1);
-dff$ dff_2(clk, D2, Q2_prebuf, Q2_bar_prebuf, rst, 1'b1);
-dff$ dff_3(clk, D3, Q3_prebuf, Q3_bar_prebuf, rst, 1'b1);
-dff$ dff_4(clk, D4, Q4_prebuf, Q4_bar_prebuf, rst, 1'b1);
+wire  D0_gated_rst,
+      D1_gated_rst,
+      D2_gated_rst,
+      D3_gated_rst,
+      D4_gated_rst;
+
+and2$   and2$_D0_gated_rst(D0_gated_rst, D0, rst);
+and2$   and2$_D1_gated_rst(D1_gated_rst, D1, rst);
+and2$   and2$_D2_gated_rst(D2_gated_rst, D2, rst);
+and2$   and2$_D3_gated_rst(D3_gated_rst, D3, rst);
+and2$   and2$_D4_gated_rst(D4_gated_rst, D4, rst);
+
+dff$ dff_0(clk, D0_gated_rst, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);
+dff$ dff_1(clk, D1_gated_rst, Q1_prebuf, Q1_bar_prebuf, rst, 1'b1);
+dff$ dff_2(clk, D2_gated_rst, Q2_prebuf, Q2_bar_prebuf, rst, 1'b1);
+dff$ dff_3(clk, D3_gated_rst, Q3_prebuf, Q3_bar_prebuf, rst, 1'b1);
+dff$ dff_4(clk, D4_gated_rst, Q4_prebuf, Q4_bar_prebuf, rst, 1'b1);
 
 /* INVERT STATE BITS */
 

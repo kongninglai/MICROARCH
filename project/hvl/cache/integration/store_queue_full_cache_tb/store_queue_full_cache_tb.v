@@ -24,7 +24,9 @@ localparam PFN_BIT_WIDTH        = MEM_ADDR_WIDTH - PAGE_BIT_WIDTH;
 localparam STOREQ_MASK_WIDTH    = RANK_BURST_SIZE * BYTES_PER_BUS;
 localparam ENTRY_BIT_WIDTH      = CHIPS_PER_RANK + (MEM_ADDR_WIDTH - RANK_BURST_SIZE) + RANK_BIT_WIDTH;
 localparam MULTI_WRITE_AMT      = 2;
-localparam CYCLE_TIME           = 9.8;
+localparam CYCLE_TIME_X10       = 98;
+localparam TRUE_LRU             = 1;
+localparam CYCLE_TIME           = CYCLE_TIME_X10 / 10.0;
 
 reg clk;
 reg rst_n;
@@ -49,7 +51,7 @@ integer FAILURES  = 0;
 integer SUCCESSES = 0;
 
 store_queue_full_cache #(
-  .MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)
+  .MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY), .CYCLE_TIME_X10(CYCLE_TIME_X10), .TRUE_LRU(TRUE_LRU)
 ) DUT (
   .rst_n(rst_n),
   .clk(clk),
