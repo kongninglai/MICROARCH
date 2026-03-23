@@ -514,6 +514,37 @@ initial begin
 
   #(50 * CYCLE_TIME);
 
+  if (from_wb_flush !== 1'b0) begin
+    FAILURES = FAILURES + 1;
+    $display("FAILURE AT TIME %t: FLUSH exp=%h got=%h", $time, 1'b0, from_wb_flush);
+  end else begin
+    SUCCESSES = SUCCESSES + 1;
+  end
+
+  to_wb_exception = 2'd1;
+
+  #(CYCLE_TIME);
+
+  if (from_wb_flush !== 1'b1) begin
+    FAILURES = FAILURES + 1;
+    $display("FAILURE AT TIME %t: FLUSH exp=%h got=%h", $time, 1'b1, from_wb_flush);
+  end else begin
+    SUCCESSES = SUCCESSES + 1;
+  end
+
+  to_wb_valid = 1'b0;
+
+  #(CYCLE_TIME);
+
+  if (from_wb_flush !== 1'b0) begin
+    FAILURES = FAILURES + 1;
+    $display("FAILURE AT TIME %t: FLUSH exp=%h got=%h", $time, 1'b0, from_wb_flush);
+  end else begin
+    SUCCESSES = SUCCESSES + 1;
+  end
+
+  #(CYCLE_TIME);
+
   $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
 
