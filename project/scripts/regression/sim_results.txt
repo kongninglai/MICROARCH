@@ -85,6 +85,7 @@ seg_limit_cmp_tb               FAILURES=0      SUCCESSES=65543
 se_tb                          FAILURES=0      SUCCESSES=258   
 stage_ag_tb                    FAILURES=0      SUCCESSES=0     
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
+stage_wb_tb                    FAILURES=0      SUCCESSES=1641  
 sticky_bit_fsm_tb              FAILURES=0      SUCCESSES=4112  
 store_queue_entry_tb           FAILURES=0      SUCCESSES=4112  
 store_queue_full_cache_tb      FAILURES=0      SUCCESSES=3072  
