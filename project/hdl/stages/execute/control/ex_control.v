@@ -16,7 +16,7 @@ module ex_control(
 ); 
     wire [31:0] unmasked_eip, eip_mask;
     mux8_32 mux_eip(unmasked_eip, r_m, imm, rel_eip, load_result[31:0], {load_result[63:48], load_result[15:0]}, , , , sig_eip_mux[0], sig_eip_mux[1], sig_eip_mux[2]);
-    mux2_32 mux_eip_mask(eip_mask, {32{1'b1}}, {16{1'b0}, 16{1'b1}}, sig_op_ovr);
+    mux2_32 mux_eip_mask(eip_mask, 32'hffff_ffff, 32'h0000_ffff, sig_op_ovr);
     and2$ and2_new_eip[31:0](new_eip, unmasked_eip, eip_mask);
 
     wire ne, nbe, jne, jnbe, uncond_jmp, jmp;
@@ -28,7 +28,7 @@ module ex_control(
     nor2$ nor_uncond(uncond_jmp, sig_con_jump[0], sig_con_jump[1]);
 
     // ldEIP_out = ldEIP & (uncond_jmp | jne | jnbe) & mispredict
-    wire accurate_predict, mispredict;
+    wire accurate_predict;
     big_eq #(.WIDTH(32)) eq_pred_eip(.eq(accurate_predict), .in0(pred_eip), .in1(new_eip));
     inv1$ inv_mispredict(mispredict, accurate_predict);
     or3$ or_jmp(branch_taken, uncond_jmp, jne, jnbe);

@@ -27,5 +27,5 @@ module ex_palu(
         .dest_out(pavg_out)
     );
 
-    mux4_64 mux4_palu_out(dest_out, pack_out, pavg_out, 32'bx, padd_out, mmx_op[0], mmx_op[1]);
+    mux4_64 mux4_palu_out(dest_out, pack_out, pavg_out, 64'bx, padd_out, mmx_op[0], mmx_op[1]);
 endmodule
