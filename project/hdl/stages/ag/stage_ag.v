@@ -1,58 +1,58 @@
 module stage_ag(
-    input [61:0]    from_rr_control_sigs,
-    input [2:0]     from_rr_dstidA,
-    input [2:0]     from_rr_dstidB,
-    input [31:0]    from_rr_srcregA,
-    input [31:0]    from_rr_srcregB,
-    input [31:0]    from_rr_srcregC,
-    input [15:0]    from_rr_srcSREG,
-    input [63:0]    from_rr_MMA,
-    input [63:0]    from_rr_MMB,
-    input [31:0]    from_rr_imm,
-    input [15:0]    from_rr_sreg1,
-    input [31:0]    from_rr_slim1,
-    input [31:0]    from_rr_base1,
-    input [31:0]    from_rr_index1,
-    input [31:0]    from_rr_disp,
-    input [1:0]     from_rr_scale_mux,
-    input [15:0]    from_rr_sreg2,
-    input [31:0]    from_rr_slim2,
-    input [31:0]    from_rr_base2,
-    input [3:0]     from_rr_intex_vec,
-    input [15:0]    from_rr_cs,
-    input [31:0]    from_rr_oeip,
-    input [31:0]    from_rr_ieip,
-    input           from_rr_valid,
+    input [64:0]    to_ag_control_sigs,
+    input [2:0]     to_ag_dstidA,
+    input [2:0]     to_ag_dstidB,
+    input [31:0]    to_ag_srcregA,
+    input [31:0]    to_ag_srcregB,
+    input [31:0]    to_ag_srcregC,
+    input [15:0]    to_ag_srcSREG,
+    input [63:0]    to_ag_MMA,
+    input [63:0]    to_ag_MMB,
+    input [31:0]    to_ag_imm,
+    input [15:0]    to_ag_sreg1,
+    input [31:0]    to_ag_slim1,
+    input [31:0]    to_ag_base1,
+    input [31:0]    to_ag_index1,
+    input [31:0]    to_ag_disp,
+    input [1:0]     to_ag_scale_mux,
+    input [15:0]    to_ag_sreg2,
+    input [31:0]    to_ag_slim2,
+    input [31:0]    to_ag_base2,
+    input [3:0]     to_ag_intex_vec,
+    input [15:0]    to_ag_cs,
+    input [31:0]    to_ag_oeip,
+    input [31:0]    to_ag_ieip,
+    input           to_ag_valid,
 
-    output [53:0]    to_mem_control_sigs,
-    output [2:0]     to_mem_dstidA,
-    output [2:0]     to_mem_dstidB,
-    output [31:0]    to_mem_srcregA,
-    output [31:0]    to_mem_srcregB,
-    output [31:0]    to_mem_srcregC,
-    output [15:0]    to_mem_srcSREG,
-    output [63:0]    to_mem_MMA,
-    output [63:0]    to_mem_MMB,
+    output [56:0]    from_ag_control_sigs,
+    output [2:0]     from_ag_dstidA,
+    output [2:0]     from_ag_dstidB,
+    output [31:0]    from_ag_srcregA,
+    output [31:0]    from_ag_srcregB,
+    output [31:0]    from_ag_srcregC,
+    output [15:0]    from_ag_srcSREG,
+    output [63:0]    from_ag_MMA,
+    output [63:0]    from_ag_MMB,
 
-    output [15:0]    to_mem_target_cs,
-    output [31:0]    to_mem_ld_addr,
-    output [31:0]    to_mem_ld_offset,
-    output [31:0]    to_mem_ld_slim,
-    output [31:0]    to_mem_st_addr,
-    output [31:0]    to_mem_st_offset,
-    output [31:0]    to_mem_st_slim,
-    output [31:0]    to_mem_inc_esp,
-    output [31:0]    to_mem_dec_esp,
-    output [31:0]    to_mem_imm,
-    output [31:0]    to_mem_rel_eip,
+    output [15:0]    from_ag_target_cs,
+    output [31:0]    from_ag_ld_addr,
+    output [31:0]    from_ag_ld_offset,
+    output [31:0]    from_ag_ld_slim,
+    output [31:0]    from_ag_st_addr,
+    output [31:0]    from_ag_st_offset,
+    output [31:0]    from_ag_st_slim,
+    output [31:0]    from_ag_inc_esp,
+    output [31:0]    from_ag_dec_esp,
+    output [31:0]    from_ag_imm,
+    output [31:0]    from_ag_rel_eip,
 
-    output [15:0]    to_mem_cs,
-    output [31:0]    to_mem_oeip,
-    output [31:0]    to_mem_ieip,
-    output           to_mem_valid
+    output [15:0]    from_ag_cs,
+    output [31:0]    from_ag_oeip,
+    output [31:0]    from_ag_ieip,
+    output           from_ag_valid
 );
 
-    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm;
+    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size;
     wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds, imm_mux, addr_mux;
     wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
     wire [3:0] gp_dsta_mux, store_data_mux;
@@ -61,32 +61,32 @@ module stage_ag(
 
     assign {load_addr_mux, store_addr_mux} = addr_mux;
 
-    assign to_mem_control_sigs = {
+    assign from_ag_control_sigs = {
         ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-        gp_dsta_mux, store_data_mux
+        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size
     };
     
-    assign to_mem_dstidA = from_rr_dstidA;
-    assign to_mem_dstidB = from_rr_dstidB;
-    assign to_mem_srcregA = from_rr_srcregA;
-    assign to_mem_srcregB = from_rr_srcregB;
-    assign to_mem_srcregC = from_rr_srcregC;
-    assign to_mem_srcSREG = from_rr_srcSREG;
-    assign to_mem_MMA = from_rr_MMA;
-    assign to_mem_MMB = from_rr_MMB;
-    assign to_mem_target_cs = from_rr_disp[15:0];
-    assign to_mem_intex_vec = from_rr_intex_vec;
-    assign to_mem_cs = from_rr_cs;
-    assign to_mem_oeip = from_rr_oeip;
-    assign to_mem_ieip = from_rr_ieip;
-    assign to_mem_valid = from_rr_valid;
+    assign from_ag_dstidA = to_ag_dstidA;
+    assign from_ag_dstidB = to_ag_dstidB;
+    assign from_ag_srcregA = to_ag_srcregA;
+    assign from_ag_srcregB = to_ag_srcregB;
+    assign from_ag_srcregC = to_ag_srcregC;
+    assign from_ag_srcSREG = to_ag_srcSREG;
+    assign from_ag_MMA = to_ag_MMA;
+    assign from_ag_MMB = to_ag_MMB;
+    assign from_ag_target_cs = to_ag_disp[15:0];
+    assign from_ag_intex_vec = to_ag_intex_vec;
+    assign from_ag_cs = to_ag_cs;
+    assign from_ag_oeip = to_ag_oeip;
+    assign from_ag_ieip = to_ag_ieip;
+    assign from_ag_valid = to_ag_valid;
 
 
     // TODO: Add control signals into the ag_sig module
     ag_sig dut_sig (
-        .ucode_sig(from_rr_control_sigs),
+        .ucode_sig(to_ag_control_sigs),
         .ldAB(ldAB), .dstA_size(dstA_size), .dstB_size(dstB_size), .ldREGS(ldREGS),
         .ldEFLAGS(ldEFLAGS), .ldEIP(ldEIP), .ldCS(ldCS),
         .alu_srcb_mux(alu_srcb_mux), .shf_srcb_mux(shf_srcb_mux), .eflags_mux(eflags_mux),
@@ -95,49 +95,50 @@ module stage_ag(
         .cmpxchg(cmpxchg), .cmovc(cmovc),
         .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
         .store_data_mux(store_data_mux), .rw(rw),
-        .ds(ds), .mem_ds(mem_ds), .imm_mux(imm_mux), .addr_mux(addr_mux), .stack_push(stack_push), .intex(intex), .ret_with_imm(ret_with_imm)
+        .ds(ds), .mem_ds(mem_ds), .imm_mux(imm_mux), .addr_mux(addr_mux), .stack_push(stack_push), .intex(intex), .ret_with_imm(ret_with_imm),
+        .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size)
     );
 
 
     // ========= REL EIP LOGIC ===========
     wire [31:0] imm_se8, imm_se16, imm_ze16, imm_final;
-    se #(.INP_WIDTH(8), .OUT_WIDTH(32)) se_imm8(.in(from_rr_imm[7:0]), .out(imm_se8));
-    se #(.INP_WIDTH(16), .OUT_WIDTH(32)) se_imm16(.in(from_rr_imm[15:0]), .out(imm_se16));
-    ze #(.INP_WIDTH(16), .OUT_WIDTH(32)) ze_imm16(.in(from_rr_imm[15:0]), .out(imm_ze16));
+    se #(.INP_WIDTH(8), .OUT_WIDTH(32)) se_imm8(.in(to_ag_imm[7:0]), .out(imm_se8));
+    se #(.INP_WIDTH(16), .OUT_WIDTH(32)) se_imm16(.in(to_ag_imm[15:0]), .out(imm_se16));
+    ze #(.INP_WIDTH(16), .OUT_WIDTH(32)) ze_imm16(.in(to_ag_imm[15:0]), .out(imm_ze16));
 
-    mux4_32 mux_imm(imm_final, imm_se8, imm_se16, imm_ze16, from_rr_imm, imm_mux[0], imm_mux[1]);
-    PA_32b PA_rel_eip(.s(to_mem_rel_eip), .in0(from_rr_ieip), .in1(imm_final));
+    mux4_32 mux_imm(imm_final, imm_se8, imm_se16, imm_ze16, to_ag_imm, imm_mux[0], imm_mux[1]);
+    PA_32b PA_rel_eip(.s(from_ag_rel_eip), .in0(to_ag_ieip), .in1(imm_final));
     
-    assign to_mem_imm = imm_final;
+    assign from_ag_imm = imm_final;
 
     // ========= MEM ADDR LOGIC ===========
     wire [31:0] addr1, offset1, addr2, offset2, inc_esp, dec_esp;
     address_adder address_adder_inst (
-        .scale_mux1(from_rr_scale_mux), .sreg1(from_rr_sreg1), .index1(from_rr_index1), .base1(from_rr_base1), .disp1(from_rr_disp),
-        .stack_push(stack_push), .ret_with_imm(ret_with_imm), .imm(imm_final), .sreg2(from_rr_sreg2), .base2(from_rr_base2),
+        .scale_mux1(to_ag_scale_mux), .sreg1(to_ag_sreg1), .index1(to_ag_index1), .base1(to_ag_base1), .disp1(to_ag_disp),
+        .stack_push(stack_push), .ret_with_imm(ret_with_imm), .imm(imm_final), .sreg2(to_ag_sreg2), .base2(to_ag_base2),
         .size_mux(ds),
         .addr1(addr1), .offset1(offset1),
         .addr2(addr2), .offset2(offset2), .inc_esp(inc_esp), .dec_esp(dec_esp)
     );
 
-    assign to_mem_inc_esp = inc_esp;
-    assign to_mem_dec_esp = dec_esp;
+    assign from_ag_inc_esp = inc_esp;
+    assign from_ag_dec_esp = dec_esp;
 
     wire [31:0] ze32_intex_vec, shifted_intex_vec, addr_intex_idtr;
-    ze #(.INP_WIDTH(4), .OUT_WIDTH(32)) ze_intex_vec(.in(from_rr_intex_vec), .out(ze32_intex_vec));
+    ze #(.INP_WIDTH(4), .OUT_WIDTH(32)) ze_intex_vec(.in(to_ag_intex_vec), .out(ze32_intex_vec));
 
     lshf_const #(.WIDTH(32), .SHF_AMT(3)) lshf3_intex_vec(.in(ze32_intex_vec), .out(shifted_intex_vec));
     PA_32b PA_intex_idtr(.s(addr_intex_idtr), .in0(32'h02000000), .in1(shifted_intex_vec));
 
     wire [31:0] ld_addr1_or_2;
     mux2_32 mux_ld_addr(ld_addr1_or_2, addr1, addr2, load_addr_mux);
-    mux2_32 mux_ld_addr_with_intex(to_mem_ld_addr, ld_addr1_or_2, addr_intex_idtr, intex);
-    mux2_32 mux_ld_offset(to_mem_ld_offset, offset1, offset2, load_addr_mux);
-    mux2_32 mux_ld_slim(to_mem_ld_slim, from_rr_slim1, from_rr_slim2, load_addr_mux);
+    mux2_32 mux_ld_addr_with_intex(from_ag_ld_addr, ld_addr1_or_2, addr_intex_idtr, intex);
+    mux2_32 mux_ld_offset(from_ag_ld_offset, offset1, offset2, load_addr_mux);
+    mux2_32 mux_ld_slim(from_ag_ld_slim, to_ag_slim1, to_ag_slim2, load_addr_mux);
 
-    mux2_32 mux_st_addr(to_mem_st_addr, addr1, addr2, store_addr_mux);
-    mux2_32 mux_st_offset(to_mem_st_offset, offset1, offset2, store_addr_mux);
-    mux2_32 mux_st_slim(to_mem_st_slim, from_rr_slim1, from_rr_slim2, store_addr_mux);
+    mux2_32 mux_st_addr(from_ag_st_addr, addr1, addr2, store_addr_mux);
+    mux2_32 mux_st_offset(from_ag_st_offset, offset1, offset2, store_addr_mux);
+    mux2_32 mux_st_slim(from_ag_st_slim, to_ag_slim1, to_ag_slim2, store_addr_mux);
     
     
 endmodule

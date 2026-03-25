@@ -29,10 +29,11 @@ module rr_sig(
     output [1:0] ds,
     output [1:0] mem_ds,
     output [1:0] imm_mux,
-    output [1:0] addr_mux
+    output [1:0] addr_mux,
+    output rm
 ); 
-    wire [26:0] dummy;
+    wire [25:0] dummy;
     assign {ldAB, dstidA_mux, dstidB_mux, srcregA_mux, srcregB_mux, gprd0_mux, gprd2_mux, srcsreg_mux, segrd0_mux, segrd1_mux,
             ldREGS, needREGS, ldEFLAGS, alu_srcb_mux, shf_srcb_mux, ldEIP, ldCS, eflags_mux, eip_mux,
-            cs_mux, gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, store_data_mux, rw, ds, mem_ds, imm_mux, addr_mux, dummy} = ucode_sig;
+            cs_mux, gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, store_data_mux, rw, ds, mem_ds, imm_mux, addr_mux, rm, dummy} = ucode_sig;
 endmodule

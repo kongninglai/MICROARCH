@@ -1,16 +1,16 @@
 module reg_rr_to_ag(CLK, Din, Q, QBAR, CLR, PRE,en);
     input  CLK;
     input  CLR;
-    input [650:0] Din;
+    input [653:0] Din;
     input  PRE;
     input  en;
-    output [650:0] Q;
-    output [650:0] QBAR;
+    output [653:0] Q;
+    output [653:0] QBAR;
 
     wire [671:0] din_padded, q_padded, qbar_padded;
-    assign din_padded = {21'b0, Din};
-    assign Q = q_padded[650:0];
-    assign QBAR = qbar_padded[650:0];
+    assign din_padded = {18'b0, Din};
+    assign Q = q_padded[653:0];
+    assign QBAR = qbar_padded[653:0];
     
     genvar i;
     generate

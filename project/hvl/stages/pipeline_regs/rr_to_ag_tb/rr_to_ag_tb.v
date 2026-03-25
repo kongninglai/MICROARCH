@@ -11,19 +11,18 @@ module rr_to_ag_tb;
     reg clk;
     reg rst_n;
 
-    reg [4:0] from_de_prefix;
-    reg from_de_ext_opcode;
-    reg [7:0] from_de_opcode;
-    reg [7:0] from_de_modrm;
-    reg [7:0] from_de_sib;
-    reg [31:0] from_de_disp;
-    reg [1:0] from_de_dispsize;
-    reg [47:0] from_de_imm;
-    reg [1:0] from_de_imm_size;
-    reg [1:0] from_de_addr_mode;
-    reg [31:0] from_de_oeip;
-    reg [31:0] from_de_ieip;
-    reg from_de_valid;
+    reg [5:0] to_rr_prefix;
+    reg [7:0] to_rr_opcode;
+    reg [7:0] to_rr_modrm;
+    reg [7:0] to_rr_sib;
+    reg [31:0] to_rr_disp;
+    reg [1:0] to_rr_dispsize;
+    reg [47:0] to_rr_imm;
+    reg [2:0] to_rr_imm_size;
+    reg [1:0] to_rr_addr_mode;
+    reg [31:0] to_rr_oeip;
+    reg [31:0] to_rr_ieip;
+    reg to_rr_valid;
     wire [7:0] to_regunit_opcode;
     wire [5:0] to_regunit_modrm;
     wire [5:0] to_regunit_sib;
@@ -51,30 +50,30 @@ module rr_to_ag_tb;
     wire [15:0] from_regunit_CS;
     wire [63:0] from_regunit_MMA;
     wire [63:0] from_regunit_MMB;
-    wire [61:0] to_ag_control_sigs;
-    wire [2:0] to_ag_dstidA;
-    wire [2:0] to_ag_dstidB;
-    wire [31:0] to_ag_srcregA;
-    wire [31:0] to_ag_srcregB;
-    wire [31:0] to_ag_srcregC;
-    wire [15:0] to_ag_srcSREG;
-    wire [63:0] to_ag_MMA;
-    wire [63:0] to_ag_MMB;
-    wire [31:0] to_ag_imm;
-    wire [15:0] to_ag_sreg1;
-    wire [31:0] to_ag_slim1;
-    wire [31:0] to_ag_base1;
-    wire [31:0] to_ag_index1;
-    wire [31:0] to_ag_disp;
-    wire [1:0]  to_ag_scale_mux;
-    wire [15:0] to_ag_sreg2;
-    wire [31:0] to_ag_slim2;
-    wire [31:0] to_ag_base2;
-    wire [3:0] to_ag_intex_vec;
-    wire [15:0] to_ag_cs;
-    wire [31:0] to_ag_oeip;
-    wire [31:0] to_ag_ieip;
-    wire to_ag_valid;
+    wire [64:0] from_rr_control_sigs;
+    wire [2:0] from_rr_dstidA;
+    wire [2:0] from_rr_dstidB;
+    wire [31:0] from_rr_srcregA;
+    wire [31:0] from_rr_srcregB;
+    wire [31:0] from_rr_srcregC;
+    wire [15:0] from_rr_srcSREG;
+    wire [63:0] from_rr_MMA;
+    wire [63:0] from_rr_MMB;
+    wire [31:0] from_rr_imm;
+    wire [15:0] from_rr_sreg1;
+    wire [31:0] from_rr_slim1;
+    wire [31:0] from_rr_base1;
+    wire [31:0] from_rr_index1;
+    wire [31:0] from_rr_disp;
+    wire [1:0]  from_rr_scale_mux;
+    wire [15:0] from_rr_sreg2;
+    wire [31:0] from_rr_slim2;
+    wire [31:0] from_rr_base2;
+    wire [3:0] from_rr_intex_vec;
+    wire [15:0] from_rr_cs;
+    wire [31:0] from_rr_oeip;
+    wire [31:0] from_rr_ieip;
+    wire from_rr_valid;
 
     wire [10:0] to_dep_needREGS;
 
@@ -108,45 +107,44 @@ module rr_to_ag_tb;
     wire [2:0] to_dep_MMA_idx;
     wire [2:0] to_dep_MMB_idx;
 
-    wire [61:0] from_rr_control_sigs;
-    wire [2:0] from_rr_dstidA;
-    wire [2:0] from_rr_dstidB;
-    wire [31:0] from_rr_srcregA;
-    wire [31:0] from_rr_srcregB;
-    wire [31:0] from_rr_srcregC;
-    wire [15:0] from_rr_srcSREG;
-    wire [63:0] from_rr_MMA;
-    wire [63:0] from_rr_MMB;
-    wire [31:0] from_rr_imm;
-    wire [15:0] from_rr_sreg1;
-    wire [31:0] from_rr_slim1;
-    wire [31:0] from_rr_base1;
-    wire [31:0] from_rr_index1;
-    wire [31:0] from_rr_disp;
-    wire [1:0] from_rr_scale_mux;
-    wire [15:0] from_rr_sreg2;
-    wire [31:0] from_rr_slim2;
-    wire [31:0] from_rr_base2;
-    wire [3:0] from_rr_intex_vec;
-    wire [15:0] from_rr_cs;
-    wire [31:0] from_rr_oeip;
-    wire [31:0] from_rr_ieip;
-    wire from_rr_valid;
+    wire [64:0]     to_ag_control_sigs;
+    wire [2:0]      to_ag_dstidA;
+    wire [2:0]      to_ag_dstidB;
+    wire [31:0]     to_ag_srcregA;
+    wire [31:0]     to_ag_srcregB;
+    wire [31:0]     to_ag_srcregC;
+    wire [15:0]     to_ag_srcSREG;
+    wire [63:0]     to_ag_MMA;
+    wire [63:0]     to_ag_MMB;
+    wire [31:0]     to_ag_imm;
+    wire [15:0]     to_ag_sreg1;
+    wire [31:0]     to_ag_slim1;
+    wire [31:0]     to_ag_base1;
+    wire [31:0]     to_ag_index1;
+    wire [31:0]     to_ag_disp;
+    wire [1:0]      to_ag_scale_mux;
+    wire [15:0]     to_ag_sreg2;
+    wire [31:0]     to_ag_slim2;
+    wire [31:0]     to_ag_base2;
+    wire [3:0]      to_ag_intex_vec;
+    wire [15:0]     to_ag_cs;
+    wire [31:0]     to_ag_oeip;
+    wire [31:0]     to_ag_ieip;
+    wire            to_ag_valid;
 
     stage_rr dut_rr (
-        .from_de_prefix(from_de_prefix),
-        .from_de_ext_opcode(from_de_ext_opcode),
-        .from_de_opcode(from_de_opcode),
-        .from_de_modrm(from_de_modrm),
-        .from_de_sib(from_de_sib),
-        .from_de_disp(from_de_disp),
-        .from_de_dispsize(from_de_dispsize),
-        .from_de_imm(from_de_imm),
-        .from_de_imm_size(from_de_imm_size),
-        .from_de_addr_mode(from_de_addr_mode),
-        .from_de_oeip(from_de_oeip),
-        .from_de_ieip(from_de_ieip),
-        .from_de_valid(from_de_valid),
+        .to_rr_prefix(to_rr_prefix),
+        .to_rr_opcode(to_rr_opcode),
+        .to_rr_modrm(to_rr_modrm),
+        .to_rr_sib(to_rr_sib),
+        .to_rr_disp(to_rr_disp),
+        .to_rr_dispsize(to_rr_dispsize),
+        .to_rr_imm(to_rr_imm),
+        .to_rr_imm_size(to_rr_imm_size),
+        .to_rr_addr_mode(to_rr_addr_mode),
+        .to_rr_oeip(to_rr_oeip),
+        .to_rr_ieip(to_rr_ieip),
+        .to_rr_valid(to_rr_valid),
         .to_regunit_opcode(to_regunit_opcode),
         .to_regunit_modrm(to_regunit_modrm),
         .to_regunit_sib(to_regunit_sib),
@@ -174,30 +172,30 @@ module rr_to_ag_tb;
         .from_regunit_CS(from_regunit_CS),
         .from_regunit_MMA(from_regunit_MMA),
         .from_regunit_MMB(from_regunit_MMB),
-        .to_ag_control_sigs(from_rr_control_sigs),
-        .to_ag_dstidA(from_rr_dstidA),
-        .to_ag_dstidB(from_rr_dstidB),
-        .to_ag_srcregA(from_rr_srcregA),
-        .to_ag_srcregB(from_rr_srcregB),
-        .to_ag_srcregC(from_rr_srcregC),
-        .to_ag_srcSREG(from_rr_srcSREG),
-        .to_ag_MMA(from_rr_MMA),
-        .to_ag_MMB(from_rr_MMB),
-        .to_ag_imm(from_rr_imm),
-        .to_ag_sreg1(from_rr_sreg1),
-        .to_ag_slim1(from_rr_slim1),
-        .to_ag_base1(from_rr_base1),
-        .to_ag_index1(from_rr_index1),
-        .to_ag_disp(from_rr_disp),
-        .to_ag_scale_mux(from_rr_scale_mux),
-        .to_ag_sreg2(from_rr_sreg2),
-        .to_ag_slim2(from_rr_slim2),
-        .to_ag_base2(from_rr_base2),
-        .to_ag_intex_vec(from_rr_intex_vec),
-        .to_ag_cs(from_rr_cs),
-        .to_ag_oeip(from_rr_oeip),
-        .to_ag_ieip(from_rr_ieip),
-        .to_ag_valid(from_rr_valid),
+        .from_rr_control_sigs(from_rr_control_sigs),
+        .from_rr_dstidA(from_rr_dstidA),
+        .from_rr_dstidB(from_rr_dstidB),
+        .from_rr_srcregA(from_rr_srcregA),
+        .from_rr_srcregB(from_rr_srcregB),
+        .from_rr_srcregC(from_rr_srcregC),
+        .from_rr_srcSREG(from_rr_srcSREG),
+        .from_rr_MMA(from_rr_MMA),
+        .from_rr_MMB(from_rr_MMB),
+        .from_rr_imm(from_rr_imm),
+        .from_rr_sreg1(from_rr_sreg1),
+        .from_rr_slim1(from_rr_slim1),
+        .from_rr_base1(from_rr_base1),
+        .from_rr_index1(from_rr_index1),
+        .from_rr_disp(from_rr_disp),
+        .from_rr_scale_mux(from_rr_scale_mux),
+        .from_rr_sreg2(from_rr_sreg2),
+        .from_rr_slim2(from_rr_slim2),
+        .from_rr_base2(from_rr_base2),
+        .from_rr_intex_vec(from_rr_intex_vec),
+        .from_rr_cs(from_rr_cs),
+        .from_rr_oeip(from_rr_oeip),
+        .from_rr_ieip(from_rr_ieip),
+        .from_rr_valid(from_rr_valid),
         .to_dep_needREGS(to_dep_needREGS)
     );
 
@@ -345,6 +343,7 @@ module rr_to_ag_tb;
     wire stack_push;
     wire intex;
     wire ret_with_imm;
+    wire rm, op_ovr, palu_size;
 
     ag_sig dut_sig (
         .ucode_sig(from_rr_control_sigs),
@@ -379,25 +378,27 @@ module rr_to_ag_tb;
         .addr_mux(addr_mux),
         .stack_push(stack_push),
         .intex(intex),
-        .ret_with_imm(ret_with_imm)
+        .ret_with_imm(ret_with_imm),
+        .rm(rm),
+        .op_ovr(op_ovr),
+        .palu_size(palu_size)
     );
 
     always #3 clk = ~clk;
 
     task clear_inputs;
     begin
-            from_de_prefix = 5'd0;
-            from_de_ext_opcode = 1'b0;
-            from_de_opcode = 8'd0;
-            from_de_modrm = 8'd0;
-            from_de_sib = 8'd0;
-            from_de_disp = 32'd0;
-            from_de_imm = 48'd0;
-            from_de_imm_size = 2'd0;
-            from_de_addr_mode = 2'd0;
-            from_de_oeip = 32'd0;
-            from_de_ieip = 32'd0;
-            from_de_valid = 1'b0;
+            to_rr_prefix = 5'd0;
+            to_rr_opcode = 8'd0;
+            to_rr_modrm = 8'd0;
+            to_rr_sib = 8'd0;
+            to_rr_disp = 32'd0;
+            to_rr_imm = 48'd0;
+            to_rr_imm_size = 2'd0;
+            to_rr_addr_mode = 2'd0;
+            to_rr_oeip = 32'd0;
+            to_rr_ieip = 32'd0;
+            to_rr_valid = 1'b0;
 
             from_wb_gpwr0_idx   = 'b0;
             from_wb_gpwr0_data  = 'b0;
@@ -456,8 +457,7 @@ module rr_to_ag_tb;
     endtask
 
     task apply_de_inputs;
-        input [4:0] prefix;
-        input ext_opcode;
+        input [5:0] prefix;
         input [7:0] opcode;
         input [7:0] modrm;
         input [7:0] sib;
@@ -470,23 +470,22 @@ module rr_to_ag_tb;
         input [31:0] ieip;
         input valid;
     begin 
-        from_de_prefix      = prefix;          
-        from_de_ext_opcode  = ext_opcode;   
-        from_de_opcode      = opcode;    
-        from_de_modrm       = modrm;     
-        from_de_sib         = sib;       
-        from_de_disp        = disp;      
-        from_de_dispsize    = dispsize;  
-        from_de_imm         = imm;       
-        from_de_imm_size    = imm_size;  
-        from_de_addr_mode   = addr_mode; 
-        from_de_oeip        = oeip;      
-        from_de_ieip        = ieip;      
-        from_de_valid       = valid;     
+        to_rr_prefix      = prefix;           
+        to_rr_opcode      = opcode;    
+        to_rr_modrm       = modrm;     
+        to_rr_sib         = sib;       
+        to_rr_disp        = disp;      
+        to_rr_dispsize    = dispsize;  
+        to_rr_imm         = imm;       
+        to_rr_imm_size    = imm_size;  
+        to_rr_addr_mode   = addr_mode; 
+        to_rr_oeip        = oeip;      
+        to_rr_ieip        = ieip;      
+        to_rr_valid       = valid;     
     end
     endtask
 
-    task print_to_ag_sigs;
+    task print_from_rr_sigs;
     begin 
         $display("----------------------------------------------------------------");
         $display("ldAB=%02b, dstA_size=%02b, dstB_size=%02b", ldAB, dstA_size, dstB_size);
@@ -499,6 +498,7 @@ module rr_to_ag_tb;
         $display("store_data_mux=%04b", store_data_mux);
         $display("rw=%02b, ds=%02b", rw, ds);
         $display("mem_ds=%02b, imm_mux=%02b, addr_mux=%02b, stack_push=%0b, intex=%0b, ret_with_imm=%0b", mem_ds, imm_mux, addr_mux, stack_push, intex, ret_with_imm);
+        $display("rm=%0b, op_ovr=%0b, palu_size=%0b", rm, op_ovr, palu_size);
         $display("----------------------------------------------------------------");
     end
     endtask
@@ -508,8 +508,8 @@ module rr_to_ag_tb;
         $display("************************************************");
         $display("****************FROM RR*************************");
         $display("************************************************");
-        $display("control signals=%b", to_ag_control_sigs);
-        print_to_ag_sigs();
+        $display("control signals=%b", from_rr_control_sigs);
+        print_from_rr_sigs();
         $display("(%0d)dstidA=%0d, (%0d)dstidB=%0d", ldAB[1], from_rr_dstidA, ldAB[0], from_rr_dstidB);
         $display("(%0d)srcregA=[%0d]%08h, (%0d)srcregB=[%0d]%08h, (%0d)srcregC=[%0d]%08h", to_dep_needREGS[10], to_dep_srcregA_idx, from_rr_srcregA, to_dep_needREGS[9], to_dep_srcregB_idx, from_rr_srcregB, to_dep_needREGS[8], to_dep_srcregC_idx, from_rr_srcregC);
         $display("(%0d)srcSREG=[%0d]%04h, (%0d)MMA=[%0d]%016h, (%0d)MMB=[%0d]%016h", to_dep_needREGS[4], to_dep_srcSREG_idx, from_rr_srcSREG, to_dep_needREGS[1], to_dep_MMA_idx, from_rr_MMA, to_dep_needREGS[0], to_dep_MMB_idx, from_rr_MMB);
@@ -600,11 +600,11 @@ module rr_to_ag_tb;
         $display("TEST CASE1: ADD EAX, ECX");
         $display("======================================");
         // 01 C8
-        // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
+        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         @(posedge clk);
-        apply_de_inputs(5'b00011, 1'b0, 8'h01, 8'hc8, 8'bx, 32'bx, 2'b00,
-                        48'bx, 2'bx, 2'b01, 32'h0, 32'h2, 1'b1);
+        apply_de_inputs(6'b000110, 8'h01, 8'hc8, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 1'b1);
         #4
         print_from_rr_outputs();
         print_to_ag_outputs();
@@ -614,11 +614,11 @@ module rr_to_ag_tb;
         $display("TEST CASE2: ADD [EBX], CH");
         $display("======================================");
         // 00 2b=00000000 00101011
-        // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
+        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         @(posedge clk);
-        apply_de_inputs(5'b00011, 1'b0, 8'h00, 8'h2b, 8'bx, 32'bx, 2'b00,
-                        48'bx, 2'b00, 2'b01, 32'h0, 32'h2, 1'b1);
+        apply_de_inputs(6'b000110, 8'h00, 8'h2b, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 1'b1);
         #4
         print_from_rr_outputs();
         print_to_ag_outputs();
@@ -628,11 +628,11 @@ module rr_to_ag_tb;
         $display("TEST CASE3: OR [EBX+ECX*2+0x12345678], CH");
         $display("======================================");
         // 08 ac 4b 78 56 34 12
-        // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
+        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         @(posedge clk);
-        apply_de_inputs(5'b00011, 1'b0, 8'h08, 8'hac, 8'h4b, 32'h1234_5678, 2'b10,
-                        48'bx, 2'b00, 2'b11, 32'h0, 32'h2, 1'b1);
+        apply_de_inputs(6'b000110, 8'h08, 8'hac, 8'h4b, 32'h1234_5678, 2'b10,
+                        48'bx, 3'b000, 2'b11, 32'h0, 32'h2, 1'b1);
         #4
         print_from_rr_outputs();
         print_to_ag_outputs();
@@ -642,11 +642,11 @@ module rr_to_ag_tb;
         $display("TEST CASE4: PUSH CS"); // here we test if cs can be put to the srcreg correctly (because it's not in the regfile)
         $display("======================================");
         // 0e
-        // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
         @(posedge clk);
-        apply_de_inputs(5'b00011, 1'b0, 8'h0e, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 2'bx, 2'b00, 32'h0, 32'h2, 1'b1);
+        apply_de_inputs(6'b000110, 8'h0e, 8'bx, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b00, 32'h0, 32'h2, 1'b1);
         #4
         print_from_rr_outputs();
         print_to_ag_outputs();
@@ -656,25 +656,25 @@ module rr_to_ag_tb;
         $display("TEST CASE5: POP DS"); // here we test ld sreg & ld esp
         $display("======================================");
         // 1f
-        // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
+        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         @(posedge clk);
-        apply_de_inputs(5'b00011, 1'b0, 8'h1f, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 2'bx, 2'b00, 32'h0, 32'h2, 1'b1);
+        apply_de_inputs(6'b000110, 8'h1f, 8'bx, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b00, 32'h0, 32'h2, 1'b1);
         #4
         print_from_rr_outputs();
         print_to_ag_outputs();
         $display("\n");
 
         $display("======================================");
-        $display("TEST CASE6: PUSH WORD [ECX+EDX*8+0x12345678]"); // here we test ld sreg & ld esp
+        $display("TEST CASE6: PUSH WORD [ECX+EDX*4+0x12345678]"); // here we test ld sreg & ld esp & operand size override
         $display("======================================");
-        // 66 ff b4 d1 78 56 34 12
-        // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
+        // 66 ff b4 91 78 56 34 12
+        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         @(posedge clk);
-        apply_de_inputs(5'b01011, 1'b0, 8'hff, 8'hb4, 8'hd1, 32'h12345678, 2'b10,
-                        48'bx, 2'b00, 2'b11, 32'h0, 32'h8, 1'b1);
+        apply_de_inputs(6'b010110, 8'hff, 8'hb4, 8'h91, 32'h12345678, 2'b10,
+                        48'bx, 3'b000, 2'b11, 32'h0, 32'h8, 1'b1);
         #4
         print_from_rr_outputs();
         print_to_ag_outputs();
@@ -684,11 +684,11 @@ module rr_to_ag_tb;
         $display("TEST CASE7: CMPXCHG [ESP+8*EDX+0x12345678], ESI"); // here we test reading all four registers and esp as base
         $display("======================================");
         // 0f b1 b4 d4 78 56 34 12
-        // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
+        // prefix(5), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         @(posedge clk);
-        apply_de_inputs(5'b00011, 1'b1, 8'hb1, 8'hb4, 8'hd4, 32'h12345678, 2'b10,
-                        48'bx, 2'b00, 2'b11, 32'h0, 32'h8, 1'b1);
+        apply_de_inputs(6'b000111, 8'hb1, 8'hb4, 8'hd4, 32'h12345678, 2'b10,
+                        48'bx, 3'b000, 2'b11, 32'h0, 32'h8, 1'b1);
         #4
         print_from_rr_outputs();
         print_to_ag_outputs();
@@ -698,11 +698,11 @@ module rr_to_ag_tb;
         $display("TEST CASE8: SAR BL, CL"); // here we test reading BL and CL
         $display("======================================");
         // d2 fb
-        // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
+        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         @(posedge clk);
-        apply_de_inputs(5'b00011, 1'b0, 8'hd2, 8'hfb, 8'bx, 32'bx, 2'b00,
-                        48'bx, 2'bx, 2'b00, 32'h0, 32'h2, 1'b1);
+        apply_de_inputs(6'b000110, 8'hd2, 8'hfb, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b00, 32'h0, 32'h2, 1'b1);
         #4
         print_from_rr_outputs();
         print_to_ag_outputs();
@@ -712,11 +712,11 @@ module rr_to_ag_tb;
         $display("TEST CASE9: XCHG EAX, ESP"); // here we test writing to both general purpose registers
         $display("======================================");
         // d94
-        // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
+        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         @(posedge clk);
-        apply_de_inputs(5'b00011, 1'b0, 8'h94, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 2'bx, 2'b00, 32'h0, 32'h2, 1'b1);
+        apply_de_inputs(6'b000110, 8'h94, 8'bx, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b00, 32'h0, 32'h2, 1'b1);
         #4
         print_from_rr_outputs();
         print_to_ag_outputs();
@@ -726,11 +726,11 @@ module rr_to_ag_tb;
         $display("TEST CASE10: MOVQ ES:[ECX], MM7"); // here we test segment override and mmx reading
         $display("======================================");
         // 26 0f 7f 39
-        // prefix(5), ext_opcode, opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(2), addr_mode(2), oeip(32), ieip(32), valid
+        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         @(posedge clk);
-        apply_de_inputs(5'b00000, 1'b1, 8'h7f, 8'h39, 8'bx, 32'bx, 2'b00,
-                        48'bx, 2'bx, 2'b01, 32'h0, 32'h4, 1'b1);
+        apply_de_inputs(6'b000001, 8'h7f, 8'h39, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b01, 32'h0, 32'h4, 1'b1);
         #4
         print_from_rr_outputs();
         print_to_ag_outputs();

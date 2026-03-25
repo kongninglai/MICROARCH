@@ -1,16 +1,16 @@
 module reg_ag_to_mem(CLK, Din, Q, QBAR, CLR, PRE,en);
     input  CLK;
     input  CLR;
-    input [716:0] Din;
+    input [719:0] Din;
     input  PRE;
     input  en;
-    output [716:0] Q;
-    output [716:0] QBAR;
+    output [719:0] Q;
+    output [719:0] QBAR;
 
     wire [735:0] din_padded, q_padded, qbar_padded;
-    assign din_padded = {19'b0, Din};
-    assign Q = q_padded[716:0];
-    assign QBAR = qbar_padded[716:0];
+    assign din_padded = {16'b0, Din};
+    assign Q = q_padded[719:0];
+    assign QBAR = qbar_padded[719:0];
     
     genvar i;
     generate
