@@ -20,7 +20,7 @@ module tb_exhaustive_decoder();
     wire [7:0] sib;
     wire [1:0] disp_size_mux;
     wire [31:0] disp;
-    wire [1:0] imm_size;
+    wire [2:0] imm_size; // FIXED: Updated from [1:0] to [2:0] to match module
     wire [47:0] imm;
     wire [1:0] addressing_mode;
     wire [3:0] instr_length;
@@ -94,7 +94,7 @@ module tb_exhaustive_decoder();
                     cache_line[(i*8) +: 8] = b[i];
                 end
 
-                #15; // Wait 5ns for the combinational decoder logic to settle
+                #15; // Wait 15ns for the combinational decoder logic to settle
                 test_count = test_count + 1;
 
                 // Self-Checking Assertions

@@ -12,7 +12,7 @@ module tb_stage_decode();
     reg [31:0] eip_target_ex;
     reg mispredict_src_ex;
     reg v_excptn_src_wb;
-    reg v_ld_cs_src_ex;
+    reg v_ld_cs_src_ex; // Kept in TB to prevent breaking older test stimulus
     reg stall_ex, stall_rr, stall_mem, stall_wb;
     
     reg clk;
@@ -43,14 +43,15 @@ module tb_stage_decode();
     integer SUCCESSES = 0;
 
     // --------------------------------------------------------
-    // 3. Instantiate UUT (Updated port mapping for flush_ex)
+    // 3. Instantiate UUT (Updated port mapping)
     // --------------------------------------------------------
     stage_decode uut (
         .cache_line(cache_line), .o_eip(o_eip), .tail_ptr(tail_ptr), .cs_limit_reg(cs_limit_reg),
         .eip_target_ex(eip_target_ex), 
-        .flush_ex(mispredict_src_ex),       // FIXED: Mapped mispredict stimulus to new flush_ex port
-        .v_excptn_src_wb(v_excptn_src_wb), .v_ld_cs_src_ex(v_ld_cs_src_ex),
-        .stall_ex(stall_ex), .stall_rr(stall_rr), .stall_mem(stall_mem), .stall_wb(stall_wb),
+        .flush_ex(mispredict_src_ex),       // FIXED: Mapped mispredict stimulus to flush_ex port
+        .v_excptn_src_wb(v_excptn_src_wb), 
+        // REMOVED: .v_ld_cs_src_ex(v_ld_cs_src_ex)
+        .stall_rr(stall_rr), // Removed extra stalls here to match module
         .clk(clk), .rst_bar(rst_bar), .br_t_nt_ex_d(br_t_nt_ex_d), 
         .br_valid_ex_d(br_valid_ex_d), .pht_idx_ex_d(pht_idx_ex_d),
         .exptn_prot(exptn_prot), .i_eip(i_eip), .pr_de_rr_valid(pr_de_rr_valid),
@@ -246,7 +247,7 @@ module tb_stage_decode();
         tail_ptr = 4'd10; // Plenty of bytes
         
         // This helper checks ld_eip and valid, but let's also manually check the decoder outputs
-        check_result("Prefix Chain Test     ", 1'b1, 32'h0000_1015, 1'b1);
+        check_result("Prefix Chain Test      ", 1'b1, 32'h0000_1015, 1'b1);
         
         #1; // Wait for combinational settle
         if (opcode !== 8'h01 || modrm !== 8'hC3 || prefix_rep !== 1'b1 || prefix_seg_ov_id !== 3'b001) begin
@@ -263,7 +264,7 @@ module tb_stage_decode();
         // Verifies that if stall_rr is high, we don't drop the prefixes.
         // --------------------------------------------------------
         stall_rr = 1;
-        check_result("Stall during Prefix   ", 1'b0, 32'h0000_1011, 1'b1);
+        check_result("Stall during Prefix    ", 1'b0, 32'h0000_1011, 1'b1);
         stall_rr = 0;
 
         $display("=======================================");

@@ -8,15 +8,15 @@ module tb_choose_eip();
     reg ld_pr_rr;
     reg instr_valid;
     reg mispredict_src_ex;
-    reg v_ld_cs_src_ex;
+    reg v_ld_cs_src_ex; // Kept so test cases remain untouched, though no longer routed
     reg cur_instr_prediction;
     reg [31:0] bp_eip_target;
     reg [31:0] ex_eip_target;
     reg [1:0] branch_type;
-    reg hit; // NEW: BTB Hit (Resolvable in Decode)
+    reg hit; // BTB Hit
 
     // 2. Outputs
-    wire [31:0] i_eip;
+    wire [31:0] i_eip; // Note: This is now an output from the module
     wire ld_eip;
     wire [31:0] eip_true;
 
@@ -28,12 +28,11 @@ module tb_choose_eip();
     choose_eip uut (
         .instr_length(instr_length),
         .o_eip(o_eip),
-        .i_eip(i_eip),
+        .i_eip(i_eip),                 // Now hooked up to the module's internal adder output
         .ld_pr_rr(ld_pr_rr),
         .instr_valid(instr_valid),
         .cur_instr_prediction(cur_instr_prediction),
-        .ld_cs_ex(v_ld_cs_src_ex),       // Mapped from TB variable
-        .flush_ex(mispredict_src_ex),    // Mapped from TB variable
+        .flush_ex(mispredict_src_ex),  // Mapped from TB variable
         .bp_eip_target(bp_eip_target),
         .ex_eip_target(ex_eip_target),
         .branch_type(branch_type),

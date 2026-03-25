@@ -50,7 +50,7 @@ module logic_tail_ptr(
 
     //Increment decremented tail pointer    
     PA_8b INCR_DECR_TAIL_PTR(
-        .in0({tail_ptr_decr_w}), .in1({4'd0, we_cl_byte_cnt}),
+        .in0(tail_ptr_decr_w), .in1({3'd0, we_cl_byte_cnt}),
 	    .s(tail_ptr_cl_incr_w)
     );
 

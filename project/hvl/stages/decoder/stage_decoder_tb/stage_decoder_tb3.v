@@ -49,15 +49,15 @@ module tb_exhaustive_decoder();
     // --------------------------------------------------------
     // 4. File I/O and Test Tracking Variables
     // --------------------------------------------------------
-    integer file, r, i;
+    integer file, r;
     
-    // The 8 Expected Outputs from the Python File
-    reg [3:0] exp_len;
-    reg exp_opsize, exp_rep, exp_ext, exp_modrm_v;
-    reg [7:0] exp_opcode, exp_modrm, exp_sib;
+    // FIXED: Upgraded to 32-bit integers to prevent %x memory overflow corruption
+    integer exp_len;
+    integer exp_opsize, exp_rep, exp_ext, exp_modrm_v;
+    integer exp_opcode, exp_modrm, exp_sib;
     
-    // Array to hold the 16 bytes read from file
-    reg [7:0] b [0:15]; 
+    // FIXED: Flattened the array so older Verilog compilers don't crash on fscanf
+    integer b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15; 
 
     integer test_count = 0;
     integer FAILURES = 0;
@@ -87,39 +87,39 @@ module tb_exhaustive_decoder();
             // Read 24 hex values per line (8 expected vals + 16 cache line bytes)
             r = $fscanf(file, "%x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x\n",
                         exp_len, exp_opsize, exp_rep, exp_ext, exp_opcode, exp_modrm_v, exp_modrm, exp_sib,
-                        b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7],
-                        b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]);
+                        b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15);
 
-            // Only process if we successfully read a full line (avoids blank line errors at EOF)
-            if (r > 0) begin
-                // Pack the array of bytes into the 128-bit cache_line vector.
-                for (i = 0; i < 16; i = i + 1) begin
-                    cache_line[(i*8) +: 8] = b[i];
-                end
+            // FIXED: Only process if we read exactly 24 items (Prevents blank EOF line crashes)
+            if (r == 24) begin
+                
+                // Pack the explicit bytes into the 128-bit cache_line vector.
+                // Truncating the integers to [7:0] ensures clean assignment.
+                cache_line = {b15[7:0], b14[7:0], b13[7:0], b12[7:0], b11[7:0], b10[7:0], b9[7:0], b8[7:0],
+                              b7[7:0], b6[7:0], b5[7:0], b4[7:0], b3[7:0], b2[7:0], b1[7:0], b0[7:0]};
 
                 #15; // Wait 15ns for the combinational decoder logic to fully settle
                 
                 test_count = test_count + 1;
 
-                // Self-Checking Assertions
-                if (instr_length !== exp_len || 
-                    opcode !== exp_opcode || 
-                    modrm_v !== exp_modrm_v || 
-                    (exp_modrm_v && modrm !== exp_modrm) || 
-                    prefix_op_size !== exp_opsize || 
-                    prefix_rep !== exp_rep ||
-                    prefix_ext !== exp_ext) begin
+                // Self-Checking Assertions (Using bit-slicing to safely extract the 1-bit/8-bit values from the integers)
+                if (instr_length !== exp_len[3:0] || 
+                    opcode !== exp_opcode[7:0] || 
+                    modrm_v !== exp_modrm_v[0] || 
+                    (exp_modrm_v[0] && modrm !== exp_modrm[7:0]) || 
+                    prefix_op_size !== exp_opsize[0] || 
+                    prefix_rep !== exp_rep[0] ||
+                    prefix_ext !== exp_ext[0]) begin
                     
                     $display("❌ FAIL [Test %0d]", test_count);
                     $display("   EXPECTED: Len=%0d OpSize=%b Rep=%b Ext=%b Op=%h ModV=%b ModRM=%h", 
-                             exp_len, exp_opsize, exp_rep, exp_ext, exp_opcode, exp_modrm_v, exp_modrm);
+                             exp_len[3:0], exp_opsize[0], exp_rep[0], exp_ext[0], exp_opcode[7:0], exp_modrm_v[0], exp_modrm[7:0]);
                     $display("   ACTUAL  : Len=%0d OpSize=%b Rep=%b Ext=%b Op=%h ModV=%b ModRM=%h", 
                              instr_length, prefix_op_size, prefix_rep, prefix_ext, opcode, modrm_v, modrm);
                     $display("   DEBUG   : disp_size_mux=%b, imm_size=%b, sib=%h", disp_size_mux, imm_size, sib);
                     FAILURES = FAILURES + 1;
                 end
                 else begin
-                    // Optional: Comment this out if 500+ lines of "PASS" clutters your console too much
+                    // Optional: Comment this out if thousands of lines of "PASS" clutters your console
                     $display("✅ PASS [Test %0d]", test_count);
                     SUCCESSES = SUCCESSES + 1;
                 end
@@ -137,7 +137,7 @@ module tb_exhaustive_decoder();
             $display("  ❌ FAILED %0d TESTS.", FAILURES);
         end
         $display("========================================");
-        $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
         $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end

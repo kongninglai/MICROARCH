@@ -10,7 +10,7 @@ module logic_tail_ptr_tb;
     reg flush;
     reg stall;
     reg fb_req_cl;
-    reg [3:0] we_cl_byte_cnt; // <-- NEW: Added the byte count input
+    reg [4:0] we_cl_byte_cnt;
 
     // Output from Design
     wire [4:0] tail_ptr;
@@ -74,39 +74,39 @@ module logic_tail_ptr_tb;
         verify(5'd0);
 
         // TEST 2: Fill Only (Variable amount)
-        test_name = "Fill Only (Empty -> Add 15)";
-        stall = 1; fb_req_cl = 1; de_valid = 0; we_cl_byte_cnt = 15;
-        expected_ptr = 15;
+        test_name = "Fill Only (Empty -> Add 16)";
+        stall = 1; fb_req_cl = 1; de_valid = 0; we_cl_byte_cnt = 16;
+        expected_ptr = 16;
         verify(expected_ptr);
 
         // TEST 3: Decode + Fill (Variable amount)
-        test_name = "Decode + Fill (15 - 3 + 11 = 23)";
+        test_name = "Decode + Fill (16 - 3 + 11 = 24)";
         stall = 0; fb_req_cl = 1; de_valid = 1; 
         incr_amt = 3;       // Consume 3 bytes
         we_cl_byte_cnt = 11; // Write 11 bytes (e.g. branch offset was 5)
-        expected_ptr = 23;
+        expected_ptr = 24;
         verify(expected_ptr);
 
         // TEST 4: Normal Decrement
-        test_name = "Normal Decrement (23 - 5 = 18)";
+        test_name = "Normal Decrement (24 - 5 = 19)";
         stall = 0; fb_req_cl = 0; de_valid = 1; 
         incr_amt = 5; 
         we_cl_byte_cnt = 0; // No fetch this cycle
-        expected_ptr = 18;
+        expected_ptr = 19;
         verify(expected_ptr);
 
         // TEST 5: Stall (Hold Value)
-        test_name = "Stall/Hold Value (Stay at 18)";
+        test_name = "Stall/Hold Value (Stay at 19)";
         stall = 1; fb_req_cl = 0; de_valid = 0; 
         incr_amt = 5;       // Simulator might have data here, but stall should ignore it
-        expected_ptr = 18;
+        expected_ptr = 19;
         verify(expected_ptr);
 
         // TEST 6: Stall + Fill 
-        test_name = "Stall + Fill (18 + 10 = 28)";
+        test_name = "Stall + Fill (19 + 10 = 29)";
         stall = 1; fb_req_cl = 1; de_valid = 0; 
         we_cl_byte_cnt = 10;
-        expected_ptr = 28; 
+        expected_ptr = 29; 
         verify(expected_ptr);
 
         // TEST 7: Flush Priority

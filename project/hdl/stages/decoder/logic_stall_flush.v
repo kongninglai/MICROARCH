@@ -26,7 +26,6 @@ module logic_stall_flush(
 
         //Other Inputs
         input wire flush_ex, //comes from execute stage
-        input wire ld_cs_ex, //comes from execute stage
         input wire stall_rr, //comes from register read stage
 
         output wire ld_pr_rr, //to load register read pipeline registers signal
@@ -55,8 +54,7 @@ module logic_stall_flush(
     assign ld_pr_rr_bar = stall_rr; //stall if register read stage is stalled (we don't want to load new instruction into register read stage if it's stalled)
     inv1$ INV_LD_PR_RR(ld_pr_rr, ld_pr_rr_bar);
     
-    or2$ OR_FLUSHES(any_flush_condition, flush_ex, ld_cs_ex);
-    inv1$ INV_FLUSH(no_flush, any_flush_condition);
+    inv1$ INV_FLUSH(no_flush, flush_ex);
 
     and2$ AND_VALID(instr_valid,  no_flush, instr_valid_w);
 endmodule

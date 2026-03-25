@@ -8,4 +8,5 @@
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
 ~/MICROARCH/project/hdl/local-lib/regs/reg_n.v
 ~/MICROARCH/project/hdl/local-lib/shift_reg/shift_reg.v
+~/MICROARCH/project/hvl/local-lib/shift_reg/shift_reg_tb/shift_reg_behav.v
 ~/MICROARCH/project/hvl/local-lib/shift_reg/shift_reg_tb/shift_reg_tb.v

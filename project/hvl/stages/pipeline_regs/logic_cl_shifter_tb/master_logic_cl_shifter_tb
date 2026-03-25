@@ -1,0 +1,29 @@
+// Class Libraries
+/home/projects/courses/spring_22/ee382n19_16785/lib/time -v 
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib1 -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib2 -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib3 -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib4 -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib5 -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib6
+
+// Search Extensions
++libext+.v
+
+// Automatic Directory Search 
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/adders
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/bus
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/comparators
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/extenders
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/gates
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/memory
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/muxes
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/regs
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shifters
+
+// Test Logic 
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
+
+// Testbench for Test Logic 
+/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/pipeline_regs/logic_cl_shifter_tb/logic_cl_shifter_tb.v

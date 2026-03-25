@@ -10,7 +10,7 @@ module tb_logic_instr_valid();
     
     reg mispredict_src_ex;
     reg v_excptn_src_wb;
-    reg v_ld_cs_src_ex;
+    reg v_ld_cs_src_ex; // Kept so test cases remain untouched
     
     reg stall_ex, stall_rr, stall_mem, stall_wb;
 
@@ -19,7 +19,7 @@ module tb_logic_instr_valid();
     wire instr_valid;
     wire exptn_prot;
 
-    // --- NEW: Signal Mapping Logic ---
+    // --- Signal Mapping Logic ---
     // Combine the granular testbench signals into the consolidated signals expected by the new module.
     wire combined_stall = stall_ex | stall_rr | stall_mem | stall_wb;
     wire combined_flush = mispredict_src_ex | v_excptn_src_wb;
@@ -31,7 +31,6 @@ module tb_logic_instr_valid();
         .tail_ptr(tail_ptr),
         .incr_amt(incr_amt),
         .flush_ex(combined_flush),    // Maps mispredicts/exceptions to flush_ex
-        .ld_cs_ex(v_ld_cs_src_ex),    // Maps directly
         .stall_rr(combined_stall),    // Maps any pipeline stall to stall_rr
         .ld_pr_rr(ld_pr_rr),
         .instr_valid(instr_valid),
@@ -42,7 +41,7 @@ module tb_logic_instr_valid();
     integer FAILURES  = 0;
     integer SUCCESSES = 0;
 
-    // 5. Reusable Checking Task (Unchanged)
+    // 5. Reusable Checking Task
     task check_result;
         input exp_ld_pr_rr;
         input exp_valid;
@@ -77,7 +76,7 @@ module tb_logic_instr_valid();
         end
     endtask
 
-    // 6. Test Cases (Unchanged)
+    // 6. Test Cases (Untouched)
     initial begin
         $display("=======================================================================================================");
         $display("                         INSTRUCTION VALIDITY & EXCEPTION LOGIC TEST SUITE                             ");
