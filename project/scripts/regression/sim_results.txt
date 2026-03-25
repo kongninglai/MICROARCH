@@ -83,7 +83,7 @@ rshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096
 rshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
 se_tb                          FAILURES=0      SUCCESSES=258   
 stage_ag_tb                    FAILURES=0      SUCCESSES=0     
-stage_mem_tb                   FAILURES=0      SUCCESSES=2031  
+stage_mem_tb                   FAILURES=0      SUCCESSES=4062  
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
 stage_wb_tb                    FAILURES=0      SUCCESSES=1644  
 sticky_bit_fsm_tb              FAILURES=0      SUCCESSES=4112  

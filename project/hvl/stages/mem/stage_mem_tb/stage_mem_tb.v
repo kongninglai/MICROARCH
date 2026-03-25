@@ -47,6 +47,7 @@ reg  [31:0]                             to_mem_st_addr;
 reg  [19:0]                             to_mem_ld_slim;
 reg  [31:0]                             to_mem_ld_offset;
 reg  [31:0]                             to_mem_st_offset;
+reg  [19:0]                             to_mem_st_slim;
 
 reg  [1:0]                              to_mem_exception;
 reg                                     to_mem_valid;
@@ -141,7 +142,7 @@ stage_mem DUT (
   .to_mem_ld_slim(to_mem_ld_slim),
   .to_mem_st_addr(to_mem_st_addr),
   .to_mem_st_offset(to_mem_st_offset),
-  .to_mem_st_slim(20'd0),
+  .to_mem_st_slim(to_mem_st_slim),
   .to_mem_inc_esp(32'd0),
   .to_mem_dec_esp(32'd0),
   .to_mem_imm(32'd0),
@@ -325,6 +326,99 @@ begin
 end
 endtask
 
+task check_store_sigs;
+  reg store_crosses_lines;
+  reg [31:0] starting_mask, exp_mask;
+
+  reg from_mem_store_is_io_line_0_exp;
+  reg [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] from_mem_store_addr_line_0_exp;
+  reg [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] from_mem_store_addr_line_1_exp;
+  reg [CHIPS_PER_RANK-1:0] from_mem_store_mask_line_0_exp;
+  reg [CHIPS_PER_RANK-1:0] from_mem_store_mask_line_1_exp;
+  reg from_mem_store_queue_alloc_line_0_exp;
+  reg from_mem_store_queue_alloc_line_1_exp;
+  reg [TWO_LINES_SHF_AMT_BIT_WIDTH-1:0] from_mem_store_data_shf_amt_exp;
+
+  reg fail;
+
+begin
+  fail = 0;
+
+  store_crosses_lines = to_mem_st_addr[4] !== to_mem_st_offset[4];
+
+  case (DUT.mem_ds)
+    2'b00: starting_mask = 32'd1;
+    2'b01: starting_mask = 32'd3;
+    2'b10: starting_mask = 32'd15;
+    2'b11: starting_mask = 32'd255;
+  endcase
+
+  exp_mask = ~(starting_mask << to_mem_st_addr[3:0]);
+
+  from_mem_store_is_io_line_0_exp = 1'b0;
+  from_mem_store_addr_line_0_exp = {3'b010, to_mem_st_addr[11:4]};
+  from_mem_store_addr_line_1_exp = {3'b010, to_mem_st_addr[11:4]} + 1;
+  from_mem_store_mask_line_0_exp = exp_mask[15:0];
+  from_mem_store_mask_line_1_exp = exp_mask[31:16];
+  from_mem_store_queue_alloc_line_0_exp = 1'b1;
+  from_mem_store_queue_alloc_line_1_exp = store_crosses_lines;
+  from_mem_store_data_shf_amt_exp = to_mem_st_addr[3:0];
+
+  if (from_mem_store_is_io_line_0 !== from_mem_store_is_io_line_0_exp) begin
+    FAILURES = FAILURES + 1;
+    fail = 1;
+    $display("FAIL: from_mem_store_is_io_line_0 exp=%b got=%b", from_mem_store_is_io_line_0_exp, from_mem_store_is_io_line_0);
+  end
+
+  if (from_mem_store_addr_line_0 !== from_mem_store_addr_line_0_exp) begin
+    FAILURES = FAILURES + 1;
+    fail = 1;
+    $display("FAIL: from_mem_store_addr_line_0 exp=%h got=%h", from_mem_store_addr_line_0_exp, from_mem_store_addr_line_0);
+  end
+
+  if (from_mem_store_addr_line_1 !== from_mem_store_addr_line_1_exp) begin
+    FAILURES = FAILURES + 1;
+    fail = 1;
+    $display("FAIL: from_mem_store_addr_line_1 exp=%h got=%h", from_mem_store_addr_line_1_exp, from_mem_store_addr_line_1);
+  end
+
+  if (from_mem_store_mask_line_0 !== from_mem_store_mask_line_0_exp) begin
+    FAILURES = FAILURES + 1;
+    fail = 1;
+    $display("FAIL: from_mem_store_mask_line_0 exp=%h got=%h", from_mem_store_mask_line_0_exp, from_mem_store_mask_line_0);
+  end
+
+  if (from_mem_store_mask_line_1 !== from_mem_store_mask_line_1_exp) begin
+    FAILURES = FAILURES + 1;
+    fail = 1;
+    $display("FAIL: from_mem_store_mask_line_1 exp=%h got=%h", from_mem_store_mask_line_1_exp, from_mem_store_mask_line_1);
+  end
+
+  if (from_mem_store_queue_alloc_line_0 !== from_mem_store_queue_alloc_line_0_exp) begin
+    FAILURES = FAILURES + 1;
+    fail = 1;
+    $display("FAIL: from_mem_store_queue_alloc_line_0 exp=%b got=%b", from_mem_store_queue_alloc_line_0_exp, from_mem_store_queue_alloc_line_0);
+  end
+
+  if (from_mem_store_queue_alloc_line_1 !== from_mem_store_queue_alloc_line_1_exp) begin
+    FAILURES = FAILURES + 1;
+    fail = 1;
+    $display("FAIL: from_mem_store_queue_alloc_line_1 exp=%b got=%b", from_mem_store_queue_alloc_line_1_exp, from_mem_store_queue_alloc_line_1);
+  end
+
+  if (from_mem_store_data_shf_amt !== from_mem_store_data_shf_amt_exp) begin
+    FAILURES = FAILURES + 1;
+    fail = 1;
+    $display("FAIL: from_mem_store_data_shf_amt exp=%h got=%h", from_mem_store_data_shf_amt_exp, from_mem_store_data_shf_amt);
+  end
+
+  if (fail == 0) begin
+    SUCCESSES = SUCCESSES + 1;
+  end
+
+end
+endtask
+
 task check_exception;
   input [1:0] exp_exception;
 begin
@@ -340,6 +434,7 @@ endtask
 integer i;
 
 wire [31:0] to_mem_ld_addr_plus_one_line = to_mem_ld_addr + 32'd16;
+wire [31:0] to_mem_st_addr_plus_one_line = to_mem_st_addr + 32'd16;
 
 initial begin
   rst_n = 0;
@@ -384,6 +479,72 @@ initial begin
   WB_VALID_IO_STORE_INST  = 1'b0;
 
   #(20*CYCLE_TIME);
+
+  /*** TEST ONE-CACHE-LINE ACCESSES WITH SHIFTING ***/
+
+  to_mem_st_slim = 20'h003FF;
+  to_mem_st_addr = 32'h02000000;
+  to_mem_st_offset = to_mem_st_addr;
+  to_mem_valid = 1'b1;
+  to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 8'd0};
+  #(CYCLE_TIME);
+  while (from_mem_stall === 1'b1) begin
+    #(CYCLE_TIME);
+  end
+  check_store_sigs();
+  
+  while (to_mem_st_offset[19:0] < to_mem_st_slim) begin
+    to_mem_st_addr = to_mem_st_addr + 1;
+    to_mem_st_offset = to_mem_st_addr;
+    #(CYCLE_TIME);
+    while (from_mem_stall === 1'b1) begin
+      #(CYCLE_TIME);
+    end
+    check_store_sigs();
+  end
+
+  /*** Segment limit violation check ***/
+  to_mem_st_addr = to_mem_st_addr + 1;
+  to_mem_st_offset = to_mem_st_addr;
+  #(CYCLE_TIME);
+  while (from_mem_stall === 1'b1) begin
+    #(CYCLE_TIME);
+  end
+  check_exception(2'b10);
+
+  /*** TEST TWO-CACHE-LINE ACCESSES WITH SHIFTING ***/
+  to_mem_st_slim = 20'h003FF;
+  to_mem_st_addr = 32'h0200000C;
+  to_mem_st_offset = to_mem_st_addr + 7;
+  to_mem_valid = 1'b1;
+  to_mem_control_sigs = {23'd0, 2'b01, 2'b11, 2'b00, 2'b11, 15'd0, 8'd0};
+  #(CYCLE_TIME);
+  while (from_mem_stall === 1'b1) begin
+    #(CYCLE_TIME);
+  end
+  check_store_sigs();
+
+  while (to_mem_st_offset[19:0] < to_mem_st_slim) begin
+    to_mem_st_addr = to_mem_st_addr + 1;
+    to_mem_st_offset = to_mem_st_addr + 7;
+    #(CYCLE_TIME);
+    while (from_mem_stall === 1'b1) begin
+      #(CYCLE_TIME);
+    end
+    check_store_sigs();
+  end
+  
+  /*** Segment limit violation check ***/
+  to_mem_st_addr = to_mem_st_addr + 1;
+  to_mem_st_offset = to_mem_st_addr + 7;
+  #(CYCLE_TIME);
+  while (from_mem_stall === 1'b1) begin
+    #(CYCLE_TIME);
+  end
+  check_exception(2'b10);
+
+  to_mem_valid = 1'b0;
+  #(CYCLE_TIME);
 
   /*** TEST ONE-CACHE-LINE ACCESSES WITH SHIFTING ***/
 

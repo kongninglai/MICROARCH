@@ -348,13 +348,32 @@ cmp_gen_20b cmp_gen_20b_st_slim_violation (
 	.lt(), .gt(st_slim_violation), .eq()
 );
 
+/* Other case: Cross Segment Boundary if addr[19] = 1 and offset[19] = 0 */
+
+wire  ld_seg_boundary_violation, st_seg_boundary_violation;
+
+wire  to_mem_ld_addr_bit_19_BAR;
+inv1$   inv1$_to_mem_ld_addr_bit_19_BAR(to_mem_ld_addr_bit_19_BAR, to_mem_ld_addr[19]);
+nor2$   nor2$_ld_seg_boundary_violation(ld_seg_boundary_violation, to_mem_ld_addr_bit_19_BAR, to_mem_ld_offset[19]);
+
+wire  to_mem_st_addr_bit_19_BAR;
+inv1$   inv1$_to_mem_st_addr_bit_19_BAR(to_mem_st_addr_bit_19_BAR, to_mem_st_addr[19]);
+nor2$   nor2$_st_seg_boundary_violation(st_seg_boundary_violation, to_mem_st_addr_bit_19_BAR, to_mem_st_offset[19]);
+
+/* Combine limit violations */
+
+wire  ld_gen_limit_violation, st_gen_limit_violation;
+
+or2$  or2$_ld_gen_limit_violation(ld_gen_limit_violation, ld_slim_violation, ld_seg_boundary_violation);
+or2$  or2$_st_gen_limit_violation(st_gen_limit_violation, st_slim_violation, st_seg_boundary_violation);
+
 wire  [1:0]   ld_slim_exception_mask, st_slim_exception_mask, combined_slim_exception_mask;
 
 assign ld_slim_exception_mask[0] = 1'b0;
 assign st_slim_exception_mask[0] = 1'b0;
 
-and3$   and3$_ld_slim_exception_mask(ld_slim_exception_mask[1], ld_slim_violation, rw[1], to_mem_valid);
-and3$   and3$_st_slim_exception_mask(st_slim_exception_mask[1], st_slim_violation, rw[0], to_mem_valid);
+and3$   and3$_ld_slim_exception_mask(ld_slim_exception_mask[1], ld_gen_limit_violation, rw[1], to_mem_valid);
+and3$   and3$_st_slim_exception_mask(st_slim_exception_mask[1], st_gen_limit_violation, rw[0], to_mem_valid);
 
 or2$    or2$_combined_slim_exception_mask[1:0](combined_slim_exception_mask, ld_slim_exception_mask, st_slim_exception_mask);
 
