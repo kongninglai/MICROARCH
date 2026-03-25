@@ -124,9 +124,11 @@ rshfa_const_tb                 FAILURES=0      SUCCESSES=1024
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
 rshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096  
 rshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
+seg_limit_cmp_tb               FAILURES=0      SUCCESSES=65543 
 se_tb                          FAILURES=0      SUCCESSES=258   
 shift_reg_tb                   FAILURES=0      SUCCESSES=0     
 stage_ag_tb                    FAILURES=0      SUCCESSES=0     
+stage_decoder_tb               FAILURES=0      SUCCESSES=13    
 stage_mem_tb                   FAILURES=0      SUCCESSES=4062  
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
 stage_wb_tb                    FAILURES=0      SUCCESSES=1644  
