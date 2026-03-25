@@ -391,7 +391,7 @@ initial begin
   to_mem_ld_addr = 32'h02000000;
   to_mem_ld_offset = to_mem_ld_addr;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b10, 2'b01, 2'b00, 2'b01, 15'd0, 8'd0};
+  to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 8'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
