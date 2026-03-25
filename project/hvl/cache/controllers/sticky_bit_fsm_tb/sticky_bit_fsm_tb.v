@@ -10,7 +10,7 @@ reg clk, rst;
 
 wire STICKY, STICKY_EXP;
 
-wire Q0_DUMMY = in_long[0]; // unused but keeps style consistent
+wire Q0_DUMMY = in_long[0];
 wire IO_READ_AND_NOT_FLUSH = in_long[1];
 wire FLUSH_OR_NOT_FILL_BUSY_OR_NOT_IO_READ = in_long[2];
 wire FILL_BUSY = in_long[3];
@@ -47,10 +47,11 @@ task check;
   end
 endtask
 
+localparam CYCLE_TIME = 9.8;
 
 initial begin
   clk = 0;
-  forever #5 clk = ~clk;
+  forever #(CYCLE_TIME / 2.0) clk = ~clk;
 end
 
 
@@ -58,19 +59,19 @@ initial begin
   rst = 0;
   in_long = 0;
 
-  #12;
+  #(1.5 * CYCLE_TIME);
   rst = 1;
 
   repeat (1 << 4) begin
-    #10;
+    #(CYCLE_TIME);
     check(STICKY, STICKY_EXP);
-    in_long = in_long + 1;
+    in_long <= in_long + 1;
   end
 
   repeat (1 << 12) begin
-    #10;
+    #(CYCLE_TIME);
     check(STICKY, STICKY_EXP);
-    in_long = $random;
+    in_long <= $random;
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
