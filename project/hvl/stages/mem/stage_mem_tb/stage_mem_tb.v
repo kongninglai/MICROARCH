@@ -35,7 +35,7 @@ localparam TWO_LINES_SHF_AMT_BIT_WIDTH = $clog2((2*RANK_BIT_WIDTH)/8);
 
 localparam MEM_CONTROL_SIGS_BIT_WIDTH = 54;
 
-localparam CYCLE_TIME_X10 = 100;
+localparam CYCLE_TIME_X10 = 98;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 
 /*********************************************
@@ -109,7 +109,7 @@ wire [BUS_BIT_WIDTH-1:0] DATA_BUS;
 wire [CHIPS_PER_RANK-1:0] WR_mask;
 
 wire from_mem_valid_store_inst;
-wire [53:0] from_mem_control_sigs;
+wire [52:0] from_mem_control_sigs;
 wire [2:0] from_mem_dstidA;
 wire [2:0] from_mem_dstidB;
 wire [31:0] from_mem_srcregA;

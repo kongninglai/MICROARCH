@@ -130,7 +130,7 @@ module stage_mem #(
   output                                      from_mem_valid_store_inst,
 
   /*** Outputs to pipeline registers ***/
-  output  [MEM_CONTROL_SIGS_BIT_WIDTH-1:0]    from_mem_control_sigs,
+  output  [MEM_CONTROL_SIGS_BIT_WIDTH-1-1:0]  from_mem_control_sigs,
   output  [GPR_ID_BIT_WIDTH-1:0]              from_mem_dstidA,
   output  [GPR_ID_BIT_WIDTH-1:0]              from_mem_dstidB,
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_srcregA,
