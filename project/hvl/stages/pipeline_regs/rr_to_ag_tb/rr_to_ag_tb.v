@@ -22,7 +22,12 @@ module rr_to_ag_tb;
     reg [1:0] to_rr_addr_mode;
     reg [31:0] to_rr_oeip;
     reg [31:0] to_rr_ieip;
+    reg [31:0] to_rr_pred_eip;
+    reg [1:0] to_rr_exception;
     reg to_rr_valid;
+
+    reg from_ag_stall;
+
     wire [7:0] to_regunit_opcode;
     wire [5:0] to_regunit_modrm;
     wire [5:0] to_regunit_sib;
@@ -73,10 +78,15 @@ module rr_to_ag_tb;
     wire [15:0] from_rr_cs;
     wire [31:0] from_rr_oeip;
     wire [31:0] from_rr_ieip;
+    wire [31:0] from_rr_pred_eip;
+    wire [1:0] from_rr_exception;
     wire from_rr_valid;
+
+    wire from_rr_stall;
 
     wire [10:0] to_dep_needREGS;
 
+    wire [19:0] from_regunit_cs_limit;
 
     reg [2:0] from_wb_gpwr0_idx;
     reg [31:0] from_wb_gpwr0_data;
@@ -130,6 +140,8 @@ module rr_to_ag_tb;
     wire [15:0]     to_ag_cs;
     wire [31:0]     to_ag_oeip;
     wire [31:0]     to_ag_ieip;
+    wire [31:0]     to_ag_pred_eip;
+    wire [1:0]      to_ag_exception;
     wire            to_ag_valid;
 
     stage_rr dut_rr (
@@ -144,7 +156,10 @@ module rr_to_ag_tb;
         .to_rr_addr_mode(to_rr_addr_mode),
         .to_rr_oeip(to_rr_oeip),
         .to_rr_ieip(to_rr_ieip),
+        .to_rr_pred_eip(to_rr_pred_eip),
+        .to_rr_exception(to_rr_exception),
         .to_rr_valid(to_rr_valid),
+        .from_ag_stall(from_ag_stall),
         .to_regunit_opcode(to_regunit_opcode),
         .to_regunit_modrm(to_regunit_modrm),
         .to_regunit_sib(to_regunit_sib),
@@ -195,7 +210,10 @@ module rr_to_ag_tb;
         .from_rr_cs(from_rr_cs),
         .from_rr_oeip(from_rr_oeip),
         .from_rr_ieip(from_rr_ieip),
+        .from_rr_pred_eip(from_rr_pred_eip),
+        .from_rr_exception(from_rr_exception),
         .from_rr_valid(from_rr_valid),
+        .from_rr_stall(from_rr_stall),
         .to_dep_needREGS(to_dep_needREGS)
     );
 
@@ -226,6 +244,8 @@ module rr_to_ag_tb;
         .from_rr_cs(from_rr_cs),
         .from_rr_oeip(from_rr_oeip),
         .from_rr_ieip(from_rr_ieip),
+        .from_rr_pred_eip(from_rr_pred_eip),
+        .from_rr_exception(from_rr_exception),
         .from_rr_valid(from_rr_valid),
         .to_ag_control_sigs(to_ag_control_sigs),
         .to_ag_dstidA(to_ag_dstidA),
@@ -250,6 +270,8 @@ module rr_to_ag_tb;
         .to_ag_cs(to_ag_cs),
         .to_ag_oeip(to_ag_oeip),
         .to_ag_ieip(to_ag_ieip),
+        .to_ag_pred_eip(to_ag_pred_eip),
+        .to_ag_exception(to_ag_exception),
         .to_ag_valid(to_ag_valid)
     );
     regunit dut_regunit (
@@ -286,6 +308,7 @@ module rr_to_ag_tb;
         .to_rr_SLIM1(from_regunit_SLIM1),
         .to_rr_SLIM2(from_regunit_SLIM2),
         .CS(from_regunit_CS),
+        .CS_LIMIT(from_regunit_cs_limit),
         .to_dep_srcSREG_idx(to_dep_srcSREG_idx),
         .to_dep_SREG1_idx(to_dep_SREG1_idx),
         .to_dep_SREG2_idx(to_dep_SREG2_idx),
@@ -398,7 +421,11 @@ module rr_to_ag_tb;
             to_rr_addr_mode = 2'd0;
             to_rr_oeip = 32'd0;
             to_rr_ieip = 32'd0;
+            to_rr_pred_eip = 32'd0;
+            to_rr_exception = 32'd0;
             to_rr_valid = 1'b0;
+
+            from_ag_stall = 1'b0;
 
             from_wb_gpwr0_idx   = 'b0;
             from_wb_gpwr0_data  = 'b0;
@@ -518,8 +545,8 @@ module rr_to_ag_tb;
         $display("(%0d)base1=[%0d]%08h, (%0d)index1=[%0d]%08h, scale_mux=%02b, disp=%08h", to_dep_needREGS[7], to_dep_basereg1_idx, from_rr_base1, to_dep_needREGS[5], to_dep_indexreg1_idx, from_rr_index1, from_rr_scale_mux, from_rr_disp);
         $display("(%0d)sreg2=[%0d]%04h, slim2=%04h", to_dep_needREGS[2], to_dep_SREG2_idx, from_rr_sreg2, from_rr_slim2);
         $display("(%0d)base2=[%0d]%08h", to_dep_needREGS[6], to_dep_basereg2_idx, from_rr_base2);
-        $display("intex_vec=%04b", from_rr_intex_vec);
-        $display("oeip=%08h, ieip=%08h, cs=%04h", from_rr_oeip, from_rr_ieip, from_rr_cs);
+        $display("intex_vec=%04b, exception=%02b", from_rr_intex_vec, from_rr_exception);
+        $display("oeip=%08h, ieip=%08h, pred_eip=%08h, cs=%04h", from_rr_oeip, from_rr_ieip, from_rr_pred_eip, from_rr_cs);
         $display("valid=%0b", from_rr_valid);
         $display("\n");
     end
@@ -538,8 +565,8 @@ module rr_to_ag_tb;
         $display("base1=%08h, index1=%08h, scale_mux=%02b, disp=%08h", to_ag_base1, to_ag_index1, to_ag_scale_mux, to_ag_disp);
         $display("sreg2=%04h, slim2=%04h", to_ag_sreg2, to_ag_slim2);
         $display("base2=%08h", to_ag_base2);
-        $display("intex_vec=%04b", to_ag_intex_vec);
-        $display("oeip=%08h, ieip=%08h, cs=%04h", to_ag_oeip, to_ag_ieip, to_ag_cs);
+        $display("intex_vec=%04b, exception=%02b", to_ag_intex_vec, to_ag_exception);
+        $display("oeip=%08h, ieip=%08h, pred_eip=%08h, cs=%04h", to_ag_oeip, to_ag_ieip, to_ag_pred_eip, to_ag_cs);
         $display("valid=%0b", to_ag_valid);
     end
     endtask

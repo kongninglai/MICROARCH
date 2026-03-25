@@ -40,6 +40,7 @@ module regunit_tb;
     wire [19:0] to_rr_SLIM1;
     wire [19:0] to_rr_SLIM2;
     wire [15:0] CS;
+    wire [19:0] CS_LIMIT;
     wire [2:0] to_dep_srcSREG_idx;
     wire [2:0] to_dep_SREG1_idx;
     wire [2:0] to_dep_SREG2_idx;
@@ -98,6 +99,7 @@ module regunit_tb;
         .to_rr_SLIM1(to_rr_SLIM1),
         .to_rr_SLIM2(to_rr_SLIM2),
         .CS(CS),
+        .CS_LIMIT(CS_LIMIT),
         .to_dep_srcSREG_idx(to_dep_srcSREG_idx),
         .to_dep_SREG1_idx(to_dep_SREG1_idx),
         .to_dep_SREG2_idx(to_dep_SREG2_idx),

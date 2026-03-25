@@ -1,22 +1,23 @@
-module reg_ag_to_mem(CLK, Din, Q, QBAR, CLR, PRE,en);
+module reg_ag_to_mem #(
+    parameter REG_SIZE=754
+)(CLK, Din, Q, QBAR, CLR, PRE,en);
     input  CLK;
     input  CLR;
-    input [719:0] Din;
+    input [REG_SIZE-1:0] Din;
     input  PRE;
     input  en;
-    output [719:0] Q;
-    output [719:0] QBAR;
+    output [REG_SIZE-1:0] Q;
+    output [REG_SIZE-1:0] QBAR;
 
-    wire [735:0] din_padded, q_padded, qbar_padded;
-    assign din_padded = {16'b0, Din};
-    assign Q = q_padded[719:0];
-    assign QBAR = qbar_padded[719:0];
+    wire [767:0] din_padded, q_padded, qbar_padded;
+    assign din_padded = {14'b0, Din};
+    assign Q = q_padded[REG_SIZE-1:0];
+    assign QBAR = qbar_padded[REG_SIZE-1:0];
     
     genvar i;
     generate
-        for (i = 0; i < 11; i=i+1) begin 
+        for (i = 0; i < 12; i=i+1) begin 
             reg64e$ reg64_inst(CLK, din_padded[i*64+63:i*64], q_padded[i*64+63:i*64], qbar_padded[i*64+63:i*64], CLR, PRE,en);
         end
     endgenerate 
-    reg32e$ reg32_inst(CLK, din_padded[735:704], q_padded[735:704], qbar_padded[735:704], CLR, PRE,en);
 endmodule

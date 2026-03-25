@@ -36,7 +36,7 @@ module regunit(
     output [19:0] to_rr_SLIM1,
     output [19:0] to_rr_SLIM2,
     output [15:0] CS,
-
+    output [19:0] CS_LIMIT,
     output [2:0] to_dep_srcSREG_idx,
     output [2:0] to_dep_SREG1_idx,
     output [2:0] to_dep_SREG2_idx,
@@ -185,6 +185,7 @@ module regunit(
         .segrd0_limit(segrd0_limit),
         .segrd1_limit(segrd1_limit),
         .cs(CS),
+        .cs_limit(CS_LIMIT),
         .segwr_idx(from_wb_segwr_idx),
         .segwr_data(from_wb_segwr_data),
         .segwr_en(from_wb_segwr_en),

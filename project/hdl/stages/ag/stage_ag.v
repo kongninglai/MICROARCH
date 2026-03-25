@@ -22,7 +22,15 @@ module stage_ag(
     input [15:0]    to_ag_cs,
     input [31:0]    to_ag_oeip,
     input [31:0]    to_ag_ieip,
+    input [31:0]    to_ag_pred_eip,
+    input [1:0]     to_ag_exception,
     input           to_ag_valid,
+
+    input from_mem_stall,
+    input from_mem_valid_store_inst,
+    input from_ex_valid_store_inst,
+    input from_wb_stall_if_mem_en,
+    input from_wb_valid_store_inst,
 
     output [56:0]    from_ag_control_sigs,
     output [2:0]     from_ag_dstidA,
@@ -49,7 +57,11 @@ module stage_ag(
     output [15:0]    from_ag_cs,
     output [31:0]    from_ag_oeip,
     output [31:0]    from_ag_ieip,
-    output           from_ag_valid
+    output [31:0]    from_ag_pred_eip,
+    output [1:0]     from_ag_exception,
+    output           from_ag_valid,
+
+    output           from_ag_stall
 );
 
     wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size;
@@ -81,9 +93,11 @@ module stage_ag(
     assign from_ag_cs = to_ag_cs;
     assign from_ag_oeip = to_ag_oeip;
     assign from_ag_ieip = to_ag_ieip;
+    assign from_ag_pred_eip = to_ag_pred_eip;
+    assign from_ag_exception = to_ag_exception;
     assign from_ag_valid = to_ag_valid;
 
-
+    big_or #(.WIDTH(5)) or_from_ag_stall(from_ag_stall, {from_mem_stall, from_mem_valid_store_inst, from_ex_valid_store_inst, from_wb_stall_if_mem_en, from_wb_valid_store_inst});
     // TODO: Add control signals into the ag_sig module
     ag_sig dut_sig (
         .ucode_sig(to_ag_control_sigs),

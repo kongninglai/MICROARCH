@@ -9,7 +9,7 @@ module regfile_seg (
     output [19:0] segrd0_limit,
     output [19:0] segrd1_limit,
     output [15:0] cs,
-
+    output [19:0] cs_limit,
     input [2:0] segwr_idx,
     input [15:0] segwr_data,
     input segwr_en,
@@ -38,6 +38,7 @@ module regfile_seg (
     
     assign segrd0_limit = slim0_32[19:0];
     assign segrd1_limit = slim1_32[19:0];
+    assign cs_limit = 20'h04fff;
     
     reg16e reg16e_cs(clk, cs_wr_data, cs_q, cs_qb, rst_n, 1'b1, cs_wr_en);
 

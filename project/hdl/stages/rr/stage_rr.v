@@ -10,7 +10,11 @@ module stage_rr(
     input [1:0] to_rr_addr_mode,
     input [31:0] to_rr_oeip,
     input [31:0] to_rr_ieip,
+    input [31:0] to_rr_pred_eip,
+    input [1:0]  to_rr_exception,
     input to_rr_valid,
+
+    input from_ag_stall,
 
     output [7:0]  to_regunit_opcode,
     output [5:0]  to_regunit_modrm,
@@ -69,7 +73,11 @@ module stage_rr(
     output [15:0] from_rr_cs,
     output [31:0] from_rr_oeip,
     output [31:0] from_rr_ieip,
-    output from_rr_valid
+    output [31:0] from_rr_pred_eip,
+    output [1:0] from_rr_exception,
+    output from_rr_valid,
+
+    output from_rr_stall
 ); 
     wire [95:0] ucode_sig;
     ucode_controller uctlr (.ucode_sig(ucode_sig), 
@@ -246,7 +254,12 @@ module stage_rr(
     assign from_rr_ieip=to_rr_ieip;
     assign from_rr_cs = from_regunit_CS;
     assign from_rr_valid=to_rr_valid; // TODO: bubble unit
-    
+    assign from_rr_pred_eip = to_rr_pred_eip;
+    assign from_rr_exception = to_rr_exception;
+
+    /* TODO: ADD STALL LOGIC */
+    assign from_rr_stall = from_ag_stall;
+
     assign to_dep_needREGS = {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]};
     
 endmodule
