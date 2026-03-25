@@ -229,9 +229,11 @@ and2$   and2$_LINE_1_LOAD_DONE_AND_MEM_STALL_BAR( LINE_1_LOAD_DONE_AND_MEM_STALL
                                                   from_mem_stall_bar);
 
 wire  FLUSH_OR_LINE_1_LOAD_DONE_AND_MEM_STALL_BAR;
-or2$    or2$_FLUSH_OR_LINE_1_LOAD_DONE_AND_MEM_STALL_BAR( FLUSH_OR_LINE_1_LOAD_DONE_AND_MEM_STALL_BAR,
+or4$    or4$_FLUSH_OR_LINE_1_LOAD_DONE_AND_MEM_STALL_BAR( FLUSH_OR_LINE_1_LOAD_DONE_AND_MEM_STALL_BAR,
                                                           FLUSH,
-                                                          LINE_1_LOAD_DONE_AND_MEM_STALL_BAR);
+                                                          LINE_1_LOAD_DONE_AND_MEM_STALL_BAR,
+                                                          from_mem_exception[0],
+                                                          from_mem_exception[1]);
 
 sticky_bit_load_fsm sticky_bit_load_fsm_DOING_LINE_1_LOAD (
   .rst(rst_n), 

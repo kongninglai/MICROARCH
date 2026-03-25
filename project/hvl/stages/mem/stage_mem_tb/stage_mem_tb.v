@@ -38,6 +38,22 @@ localparam MEM_CONTROL_SIGS_BIT_WIDTH = 54;
 localparam CYCLE_TIME_X10 = 100;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 
+/*********************************************
+    IMPORTANT: SET MAPPED_VPN AND MAPPED PFN 
+    TO THE PAGE YOU WANT TO TEST. RIGHT NOW,
+    THEY'RE SET TO THE TLB ON DR. PATT'S
+    WEBSITE. IF YOU CHANGE THE TLB, THIS TEST
+    WILL FAIL AND YOU NEED TO CHANGE THE MAPPING
+*********************************************/
+
+reg [2:0] MAPPED_PFN;
+reg [19:0] MAPPED_VPN;
+
+initial begin
+  MAPPED_PFN = 3'b010;
+  MAPPED_VPN = 20'h02000;
+end
+
 reg clk;
 reg rst_n;
 
@@ -356,8 +372,8 @@ begin
   exp_mask = ~(starting_mask << to_mem_st_addr[3:0]);
 
   from_mem_store_is_io_line_0_exp = 1'b0;
-  from_mem_store_addr_line_0_exp = {3'b010, to_mem_st_addr[11:4]};
-  from_mem_store_addr_line_1_exp = {3'b010, to_mem_st_addr[11:4]} + 1;
+  from_mem_store_addr_line_0_exp = {MAPPED_PFN, to_mem_st_addr[11:4]};
+  from_mem_store_addr_line_1_exp = {MAPPED_PFN, to_mem_st_addr[11:4]} + 1;
   from_mem_store_mask_line_0_exp = exp_mask[15:0];
   from_mem_store_mask_line_1_exp = exp_mask[31:16];
   from_mem_store_queue_alloc_line_0_exp = 1'b1;
@@ -442,9 +458,9 @@ initial begin
   to_mem_exception = 0;
   from_ex_flush = 0;
   from_wb_flush = 0;
-  to_mem_ld_addr = 32'h02000000;
+  to_mem_ld_addr = {MAPPED_VPN,12'h000};
   to_mem_ld_offset = 0;
-  to_mem_st_addr = 32'h02000000;
+  to_mem_st_addr = {MAPPED_VPN,12'h000};
   to_mem_st_offset = 0;
   to_mem_control_sigs = {23'd0, 2'b00, 2'b00, 2'b00, 2'b00, 15'd0, 8'd0};
   // to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 8'd0};
@@ -466,7 +482,7 @@ initial begin
   for (i = 0; i < 600; i = i + 1) begin
     // if (i[10:8] !== KB_PFN && 
     //     i[10:8] !== DMA_PFN) begin
-    if (i[10:8] === 3'b010) begin
+    if (i[10:8] === MAPPED_PFN) begin
       WB_PR_ST_ADDR_L0 = i[10:0];
       WB_SHF_ST_DATA_L0 = {4{i << 4}};
       #(CYCLE_TIME);
@@ -483,7 +499,7 @@ initial begin
   /*** TEST ONE-CACHE-LINE ACCESSES WITH SHIFTING ***/
 
   to_mem_st_slim = 20'h003FF;
-  to_mem_st_addr = 32'h02000000;
+  to_mem_st_addr = {MAPPED_VPN,12'h000};
   to_mem_st_offset = to_mem_st_addr;
   to_mem_valid = 1'b1;
   to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 8'd0};
@@ -514,7 +530,7 @@ initial begin
 
   /*** TEST TWO-CACHE-LINE ACCESSES WITH SHIFTING ***/
   to_mem_st_slim = 20'h003FF;
-  to_mem_st_addr = 32'h0200000C;
+  to_mem_st_addr = {MAPPED_VPN,12'h00C};
   to_mem_st_offset = to_mem_st_addr + 7;
   to_mem_valid = 1'b1;
   to_mem_control_sigs = {23'd0, 2'b01, 2'b11, 2'b00, 2'b11, 15'd0, 8'd0};
@@ -549,7 +565,7 @@ initial begin
   /*** TEST ONE-CACHE-LINE ACCESSES WITH SHIFTING ***/
 
   to_mem_ld_slim = 20'h003FF;
-  to_mem_ld_addr = 32'h02000000;
+  to_mem_ld_addr = {MAPPED_VPN,12'h000};
   to_mem_ld_offset = to_mem_ld_addr;
   to_mem_valid = 1'b1;
   to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 8'd0};
@@ -582,7 +598,7 @@ initial begin
 
   /*** TEST TWO-CACHE-LINE ACCESSES WITH SHIFTING ***/
   to_mem_ld_slim = 20'h003FF;
-  to_mem_ld_addr = 32'h0200000C;
+  to_mem_ld_addr = {MAPPED_VPN,12'h00C};
   to_mem_ld_offset = to_mem_ld_addr + 7;
   to_mem_valid = 1'b1;
   to_mem_control_sigs = {23'd0, 2'b10, 2'b11, 2'b00, 2'b11, 15'd0, 8'd0};
@@ -615,6 +631,21 @@ initial begin
 
   to_mem_valid = 1'b0;
   #(50 * CYCLE_TIME);
+
+  // /*** TEST TWO-CACHE-LINE ACCESSES WITH PAGE CROSSING, Change LINE 4 to Re-map 0a001 instead of 0b000: 000010100000000000011001101 ***/
+  // to_mem_ld_slim = 20'hFFFFF;
+  // to_mem_ld_addr = 32'h0A000FFC;
+  // to_mem_ld_offset = to_mem_ld_addr + 7;
+  // to_mem_valid = 1'b1;
+  // to_mem_control_sigs = {23'd0, 2'b10, 2'b11, 2'b00, 2'b11, 15'd0, 8'd0};
+  // #(CYCLE_TIME);
+  // while (from_mem_stall === 1'b1) begin
+  //   #(CYCLE_TIME);
+  // end
+  // double_long_cache_line_exp = {{192{1'b0}}, 32'h00004000, 32'h00005FF0};
+  // check_load_result(1);
+  // to_mem_valid = 1'b0;
+  // #(50 * CYCLE_TIME);
 
   $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
