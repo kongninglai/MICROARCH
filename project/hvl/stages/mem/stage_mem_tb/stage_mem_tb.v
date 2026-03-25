@@ -632,6 +632,72 @@ initial begin
   to_mem_valid = 1'b0;
   #(50 * CYCLE_TIME);
 
+  /*** TEST I/O ACCESSES WITH SHIFTING (INSPECTION) ***/
+  repeat (2) begin
+    to_mem_st_slim = 20'h003FF;
+    to_mem_st_addr = {20'h08000,12'h000};
+    to_mem_st_offset = to_mem_st_addr;
+    to_mem_valid = 1'b1;
+    to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 8'd0};
+    #(CYCLE_TIME);
+    while (from_mem_stall === 1'b1) begin
+      #(CYCLE_TIME);
+    end
+    // long_cache_line_exp = {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+    // check_load_result(0);
+    to_mem_valid = 1'b0;
+    #(20 * CYCLE_TIME);
+  end
+
+  repeat (2) begin
+    to_mem_st_slim = 20'h003FF;
+    to_mem_st_addr = {20'h06000,12'h010};
+    to_mem_st_offset = to_mem_st_addr;
+    to_mem_valid = 1'b1;
+    to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 8'd0};
+    #(CYCLE_TIME);
+    while (from_mem_stall === 1'b1) begin
+      #(CYCLE_TIME);
+    end
+    // long_cache_line_exp = {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+    // check_load_result(0);
+    to_mem_valid = 1'b0;
+    #(20 * CYCLE_TIME);
+  end
+
+  /*** TEST I/O ACCESSES WITH SHIFTING ***/
+  repeat (2) begin
+    to_mem_ld_slim = 20'h003FF;
+    to_mem_ld_addr = {20'h08000,12'h000};
+    to_mem_ld_offset = to_mem_ld_addr;
+    to_mem_valid = 1'b1;
+    to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 8'd0};
+    #(CYCLE_TIME);
+    while (from_mem_stall === 1'b1) begin
+      #(CYCLE_TIME);
+    end
+    // long_cache_line_exp = {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+    // check_load_result(0);
+    to_mem_valid = 1'b0;
+    #(20 * CYCLE_TIME);
+  end
+
+  repeat (2) begin
+    to_mem_ld_slim = 20'h003FF;
+    to_mem_ld_addr = {20'h06000,12'h010};
+    to_mem_ld_offset = to_mem_ld_addr;
+    to_mem_valid = 1'b1;
+    to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 8'd0};
+    #(CYCLE_TIME);
+    while (from_mem_stall === 1'b1) begin
+      #(CYCLE_TIME);
+    end
+    // long_cache_line_exp = {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+    // check_load_result(0);
+    to_mem_valid = 1'b0;
+    #(20 * CYCLE_TIME);
+  end
+
   // /*** TEST TWO-CACHE-LINE ACCESSES WITH PAGE CROSSING, Change LINE 4 to Re-map 0a001 instead of 0b000: 000010100000000000011001101 ***/
   // to_mem_ld_slim = 20'hFFFFF;
   // to_mem_ld_addr = 32'h0A000FFC;
