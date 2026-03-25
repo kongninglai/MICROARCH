@@ -22,11 +22,11 @@ XXXXXXXX  // Address 20: Opcodes D3, D2, D1, D0
 XXXXXXXX  // Address 21: Opcodes D7, D6, D5, D4
 XXXXXXXX  // Address 22: Opcodes DB, DA, D9, D8
 XXXXXXXX  // Address 23: Opcodes DF, DE, DD, DC
-02XXXX02  // Address 24: Opcodes E3, E2, E1, E0
+84XXXX84  // Address 24: Opcodes E3, E2, E1, E0
 XXXXXXXX  // Address 25: Opcodes E7, E6, E5, E4
 XXXXXXXX  // Address 26: Opcodes EB, EA, E9, E8
 XXXXXXXX  // Address 27: Opcodes EF, EE, ED, EC
 XXXXXXXX  // Address 28: Opcodes F3, F2, F1, F0
 XXXXXXXX  // Address 29: Opcodes F7, F6, F5, F4
 XXXXXXXX  // Address 30: Opcodes FB, FA, F9, F8
-XX0202XX  // Address 31: Opcodes FF, FE, FD, FC
+XX8484XX  // Address 31: Opcodes FF, FE, FD, FC

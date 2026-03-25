@@ -86,6 +86,11 @@ module tb_logic_seg_ov();
         $display("SUCCESSES: %d", SUCCESSES);
         $display("FAILURES:  %d", FAILURES);
         $display("----------------------------------------");
+
+        $display("=======================================");
+        $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
+
         $finish;
     end
 

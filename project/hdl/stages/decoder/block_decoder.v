@@ -148,11 +148,18 @@ module block_decoder(
     assign imm_size = imm_size_true;
     assign imm = imm_bytes;
 
+    wire [2:0] disp_plus_sib, disp_plus_sib_final;
+    logic_sib_disp(
+        .modrm_byte(modrm),
+        .disp_plus_sib(disp_plus_sib)
+    );  
+
+    mux2$   mux2$_disp_plus_sib_final[2:0](disp_plus_sib_final, 3'b000, disp_plus_sib, is_modrm_true);
+
     logic_incr_amt EIP_INCR_AMT(
         .rom_sum(sum_modrm_imm_true), //Ready at 4.2ns
-        .disp_size_inbytes(disp_size_inbytes), //Ready at 5.05ns
+        .disp_plus_sib(disp_plus_sib_final), //Ready at 5.05ns
         .prefix_amount(prefix_num), //Ready at 3.38ns
-        .sib_present(is_sib_true), //Ready at 4.55ns
         .incr_amt(instr_length)
     );
     

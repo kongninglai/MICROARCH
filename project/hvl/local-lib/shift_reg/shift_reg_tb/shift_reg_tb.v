@@ -16,6 +16,9 @@ wire ready_dut, ready_ref;
 
 integer num_tests, num_failures;
 
+integer FAILURES = 0;
+integer SUCCESSES = 0;
+
 initial begin
     clk = 0;
     forever #5 clk = ~clk;
@@ -127,7 +130,7 @@ initial begin
     // T1: Write 16 bytes from position 0
     @(posedge clk);
     wr_en = 31'h0000_ffff;
-    inbytes = 248'hxxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_0011_2233_4455_6677_8899_aabb_ccdd_eeff;
+    inbytes = 248'hxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_0011_2233_4455_6677_8899_aabb_ccdd_eeff;
     @(posedge clk);
     #1;
     verify("T1_write16");
@@ -212,6 +215,9 @@ initial begin
     else
         $display("FAILED: %0d / %0d tests", num_failures, num_tests);
     $display("========================================\n");
+
+    $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+    $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
     $finish;
 end

@@ -25,4 +25,4 @@
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/decoder
 
 // Testbench for Test Logic 
-/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/decoder/predictor_tb/predictor_tb.v
+/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/block_decoder_more_tb.v
