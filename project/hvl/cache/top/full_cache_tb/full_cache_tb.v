@@ -49,6 +49,7 @@ wire [MEM_ADDR_WIDTH-1:0]      ADDR_BUS;
 wire [CHIPS_PER_RANK-1:0]      WR_mask;
 
 reg                            STOREQ_STORING;
+reg                            STOREQ_LAST_ENTRY;
 reg  [RANK_BIT_WIDTH-1:0]      STOREQ_DATA;
 reg  [STOREQ_MASK_WIDTH-1:0]   STOREQ_DATA_WR_MASK;
 reg  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] STOREQ_PHYS_ADDR;
@@ -73,7 +74,9 @@ reg  [RANK_BIT_WIDTH-1:0]      WB_SHF_ST_DATA_L0;
 reg                            WB_VALID_IO_STORE_INST;
 
 wire [RANK_BIT_WIDTH-1:0]      DCACHE_HIT_DATA;
+wire                           DCACHE_HIT;
 wire                           DCACHE_STALL;
+wire                           WBE_BUSY;
 
 wire                           DMA_INT;
 
@@ -486,6 +489,7 @@ full_cache #(
   .WR_mask(WR_mask),
 
   .STOREQ_STORING(STOREQ_STORING),
+  .STOREQ_LAST_ENTRY(STOREQ_LAST_ENTRY),
   .STOREQ_DATA(STOREQ_DATA),
   .STOREQ_DATA_WR_MASK(STOREQ_DATA_WR_MASK),
   .STOREQ_PHYS_ADDR(STOREQ_PHYS_ADDR),
@@ -509,7 +513,9 @@ full_cache #(
   .WB_VALID_IO_STORE_INST(WB_VALID_IO_STORE_INST),
 
   .DCACHE_HIT_DATA(DCACHE_HIT_DATA),
+  .DCACHE_HIT(DCACHE_HIT),
   .DCACHE_STALL(DCACHE_STALL),
+  .WBE_BUSY(WBE_BUSY),
 
   .DMA_INT(DMA_INT),
 
@@ -583,6 +589,7 @@ initial begin
   KB_PFN = 3'd1;
   DMA_PFN = 3'd3;
 
+  STOREQ_LAST_ENTRY = 1;
   STOREQ_STORING = 0;
   STOREQ_DATA = 0;
   STOREQ_DATA_WR_MASK = 0;

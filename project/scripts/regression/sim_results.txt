@@ -35,6 +35,7 @@ FA_16b_tb                      FAILURES=0      SUCCESSES=4096
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_4b_tb                       FAILURES=0      SUCCESSES=512   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
+full_cache_init_tb             FAILURES=0      SUCCESSES=0     
 full_cache_tb                  FAILURES=0      SUCCESSES=6155  
 full_cc_off_core_tb            FAILURES=0      SUCCESSES=32063 
 gen_prop_2_tb                  FAILURES=0      SUCCESSES=16    
@@ -66,6 +67,8 @@ logic_true_modrm_tb            FAILURES=0      SUCCESSES=5
 logic_true_prefix_tb           FAILURES=0      SUCCESSES=15    
 lru_store_per_set_tb           FAILURES=0      SUCCESSES=8416  
 lru_store_tb                   FAILURES=0      SUCCESSES=1280  
+lshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096  
+lshf_bytes_var_256b_tb         FAILURES=0      SUCCESSES=4096  
 lshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
 lshf_chunks_var_128b_tb        FAILURES=0      SUCCESSES=4096  
 lshf_chunks_var_16b_tb         FAILURES=0      SUCCESSES=4096  
@@ -77,6 +80,7 @@ lshf_var_32b_tb                FAILURES=0      SUCCESSES=4096
 main_memory_tb                 FAILURES=0      SUCCESSES=32768 
 mcu_ctrl_tb                    FAILURES=0      SUCCESSES=0     
 mcu_tb                         FAILURES=0      SUCCESSES=16376 
+mem_to_ex_tb                   FAILURES=0      SUCCESSES=4096  
 mux16_16b_tb                   FAILURES=0      SUCCESSES=524288
 mux16_16_tb                    FAILURES=0      SUCCESSES=16    
 mux16_32_tb                    FAILURES=0      SUCCESSES=256   
@@ -118,13 +122,19 @@ rom_modrm_imm_tb               FAILURES=0      SUCCESSES=1024
 rr_to_ag_tb                    FAILURES=0      SUCCESSES=0     
 rshfa_const_tb                 FAILURES=0      SUCCESSES=1024  
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
-seg_limit_cmp_tb               FAILURES=0      SUCCESSES=65543 
+rshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096  
+rshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
 se_tb                          FAILURES=0      SUCCESSES=258   
 shift_reg_tb                   FAILURES=0      SUCCESSES=0     
 stage_ag_tb                    FAILURES=0      SUCCESSES=0     
-stage_decoder_tb               FAILURES=0      SUCCESSES=13    
+stage_mem_tb                   FAILURES=0      SUCCESSES=4062  
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
+stage_wb_tb                    FAILURES=0      SUCCESSES=1644  
 sticky_bit_fsm_tb              FAILURES=0      SUCCESSES=4112  
+sticky_bit_load_fsm_tb         FAILURES=0      SUCCESSES=8     
+store_queue_entry_tb           FAILURES=0      SUCCESSES=4112  
+store_queue_full_cache_tb      FAILURES=0      SUCCESSES=3072  
+store_queue_tb                 FAILURES=0      SUCCESSES=2049  
 stream_buffer_tb               FAILURES=0      SUCCESSES=4130  
 tag_hit_logic_tb               FAILURES=0      SUCCESSES=5200  
 tag_store_tb                   FAILURES=0      SUCCESSES=160   
@@ -132,6 +142,7 @@ tlb_tb                         FAILURES=0      SUCCESSES=65538
 tlb_wrapper_tb                 FAILURES=0      SUCCESSES=65794 
 ucode_rom_tb                   FAILURES=0      SUCCESSES=0     
 valid_or_dirty_store_tb        FAILURES=0      SUCCESSES=1056  
+wb_full_cache_tb               FAILURES=0      SUCCESSES=1538  
 we_logic_block_tb              FAILURES=0      SUCCESSES=132   
 xor3LL_tb                      FAILURES=0      SUCCESSES=8     
 xor4LL_tb                      FAILURES=0      SUCCESSES=16    
