@@ -1,0 +1,8 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+~/MICROARCH/project/hdl/local-lib/regs/reg_n.v
+~/MICROARCH/project/hdl/cache/data_stores/store_queue_entry.v
+~/MICROARCH/project/hvl/cache/data_stores/store_queue_entry_tb/store_queue_entry_behav.v
+~/MICROARCH/project/hvl/cache/data_stores/store_queue_entry_tb/store_queue_entry_tb.v

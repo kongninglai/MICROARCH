@@ -7,7 +7,7 @@ ROOT="$HOME/MICROARCH/project/hvl/"
 RESULTS="$HOME/MICROARCH/project/scripts/regression/sim_results.txt"
 TMP_RESULTS="$(mktemp -d)"
 
-MAX_JOBS=67
+MAX_JOBS=100
 
 : > "$RESULTS"
 ./clean_sim.sh
@@ -70,7 +70,7 @@ while read -r leaf_dir; do
   run_one_sim "$leaf_dir" &
   pids+=($!)
 done < <(
-  find "$ROOT" -type d -links 2
+  find "$ROOT" -type d -links 2 -not -empty
 )
 
 for pid in "${pids[@]}"; do
