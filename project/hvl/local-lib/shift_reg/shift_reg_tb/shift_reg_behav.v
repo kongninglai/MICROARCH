@@ -24,16 +24,17 @@ module shift_reg_behav(
         end else begin
             for (i = 0; i < 31; i = i + 1) begin
                 if (shift) begin
-                    // Priority 1: Shift logic
-                    if (instr_len <= (30 - i)) begin
-                        // If the byte we are shifting FROM is being overwritten by cache
+                    if (i + instr_len < 31) begin
+                        // Shift in data (either from existing buffer or new inbytes)
                         if (wr_en[i + instr_len])
                             buffer[i] <= inbytes[(i + instr_len)*8 +: 8];
                         else
                             buffer[i] <= buffer[i + instr_len];
+                    end else begin
+                        // NEW: Explicitly zero-fill bytes that are "shifted in" from the left
+                        buffer[i] <= 8'h0;
                     end
                 end else if (wr_en[i]) begin
-                    // Priority 2: Standard Write logic
                     buffer[i] <= inbytes[i*8 +: 8];
                 end
             end

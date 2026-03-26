@@ -33,6 +33,7 @@ module logic_stall_flush(
         output wire exptn_prot
 );
 
+    /*TODO: change this to 32 bt comparison and then compare full eip to cs 32 bit value*/
     seg_limit_cmp EXCPTN_PROT( //Exception if EIP > CS Limit
         .in(i_eip),
         .seg_limit(cs_limit),

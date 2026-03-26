@@ -41,8 +41,17 @@ module logic_tail_ptr(
     );
     assign tail_ptr = tail_ptr_out;
 
+    //Gated instr Length
+    wire [3:0] gated_instr_len;
+    genvar k;
+    generate
+        for (k = 0; k < 4; k = k + 1) begin : GEN_INSTR_GATE
+            and2$ gate_len(gated_instr_len[k], incr_amt[k], de_valid);
+        end
+    endgenerate
+
     wire [3:0] tail_ptr_incr_amt_bar;
-    inv1$ inv_tail_ptr_incr_amt[3:0](tail_ptr_incr_amt_bar, incr_amt);
+    inv1$ inv_tail_ptr_incr_amt[3:0](tail_ptr_incr_amt_bar, gated_instr_len);
     FA_8b subtractor(
         .in0({3'd0, tail_ptr_out}), .in1({4'b1111,tail_ptr_incr_amt_bar}), .cin(1'd1),
         .s(tail_ptr_decr_w), .cout()

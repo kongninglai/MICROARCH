@@ -32,21 +32,21 @@ module shift_reg(
     generate 
         for (i = 0; i < 31; i=i+1) begin
             localparam [4:0] i0 = i;
-            localparam [4:0] i1   = (i0 + 4'd1) & 5'h1F;
-            localparam [4:0] i2   = (i0 + 4'd2) & 5'h1F;
-            localparam [4:0] i3   = (i0 + 4'd3) & 5'h1F;
-            localparam [4:0] i4  =  (i0 + 4'd4) & 5'h1F;
-            localparam [4:0] i5   = (i0 + 4'd5) & 5'h1F;
-            localparam [4:0] i6   = (i0 + 4'd6) & 5'h1F;
-            localparam [4:0] i7   = (i0 + 4'd7) & 5'h1F;
-            localparam [4:0] i8   = (i0 + 4'd8) & 5'h1F;
-            localparam [4:0] i9   = (i0 + 4'd9) & 5'h1F;
-            localparam [4:0] i10  = (i0 + 4'd10) & 5'h1F;
-            localparam [4:0] i11  = (i0 + 4'd11) & 5'h1F;
-            localparam [4:0] i12  = (i0 + 4'd12) & 5'h1F;
-            localparam [4:0] i13  = (i0 + 4'd13) & 5'h1F;
-            localparam [4:0] i14  = (i0 + 4'd14) & 5'h1F;
-            localparam [4:0] i15  = (i0 + 4'd15) & 5'h1F; 
+            localparam [4:0] i1   = (i0 + 4'd1);
+            localparam [4:0] i2   = (i0 + 4'd2);
+            localparam [4:0] i3   = (i0 + 4'd3);
+            localparam [4:0] i4  =  (i0 + 4'd4);
+            localparam [4:0] i5   = (i0 + 4'd5);
+            localparam [4:0] i6   = (i0 + 4'd6);
+            localparam [4:0] i7   = (i0 + 4'd7);
+            localparam [4:0] i8   = (i0 + 4'd8);
+            localparam [4:0] i9   = (i0 + 4'd9);
+            localparam [4:0] i10  = (i0 + 4'd10);
+            localparam [4:0] i11  = (i0 + 4'd11);
+            localparam [4:0] i12  = (i0 + 4'd12);
+            localparam [4:0] i13  = (i0 + 4'd13);
+            localparam [4:0] i14  = (i0 + 4'd14);
+            localparam [4:0] i15  = (i0 + 4'd15); 
             localparam [4:0] i_31 = 5'd30 - i0;
             wire [3:0] update_idx;
             wire le, shift_en, not_shift, not_shift_and_wr;
@@ -63,7 +63,10 @@ module shift_reg(
             and2$ and_shift_en(shift_en, le, shift);
             inv1$ inv_shift(not_shift, shift);
             and2$ and_not_shift_and_wr(not_shift_and_wr, not_shift, wr_en[i]);
-            or2$ or_en(en[i], shift_en, not_shift_and_wr);
+
+            wire rst;
+            inv1$ inv_debug_en(rst, rst_n);
+            or3$ or_en(en[i], shift_en, not_shift_and_wr, rst);
             reg_n #(
                 .WIDTH(8),
                 .USE_EN_BAR(0)
