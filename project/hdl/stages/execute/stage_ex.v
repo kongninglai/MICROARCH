@@ -1,7 +1,7 @@
 module stage_ex(
     input clk,
     input rst_n,
-    input [51:0]    to_ex_control_sigs,
+    input [54:0]    to_ex_control_sigs,
     input [2:0]     to_ex_dstidA, 
     input [2:0]     to_ex_dstidB,
     input [31:0]    to_ex_srcregA,
@@ -94,11 +94,7 @@ module stage_ex(
 
     wire sig_shf_op, sig_cmps, sig_ldEFLAGS, sig_ldEIP, sig_ldCS, sig_alu_srcb_mux, sig_cmpxchg, sig_cmovc, sig_seg_dst_mux;
     
-    /****** TODO: sig_rm, sig_op_ovr, sig_palu_size *********/
     wire sig_rm, sig_op_ovr, sig_palu_size;
-    assign sig_rm = 1'b0;
-    assign sig_op_ovr = 1'b0;
-    assign sig_palu_size = 1'b0;
 
     wire [2:0] sig_ldREGS, sig_eflags_mux, sig_eip_mux, sig_alu_op, sig_gp_dstb_mux;
    
@@ -110,7 +106,7 @@ module stage_ex(
         .eflags_mux(sig_eflags_mux),.eip_mux(sig_eip_mux),.cs_mux(sig_cs_mux),.mmx_op(sig_mmx_op),.alu_op(sig_alu_op),.shf_op(sig_shf_op),
         .cmps(sig_cmps),.con_jmp(sig_con_jmp),.cmpxchg(sig_cmpxchg),.cmovc(sig_cmovc),
         .gp_dsta_mux(sig_gp_dsta_mux),.gp_dstb_mux(sig_gp_dstb_mux),.seg_dst_mux(sig_seg_dst_mux),.mm_dst_mux(sig_mm_dst_mux),
-        .store_data_mux(sig_store_data_mux),.rw(sig_rw), .ds(sig_ds)
+        .store_data_mux(sig_store_data_mux),.rw(sig_rw), .ds(sig_ds), .rm(sig_rm), .op_ovr(sig_op_ovr), .palu_size(sig_palu_size)
     );
 
     /*** EFLAGS ***/
@@ -125,7 +121,7 @@ module stage_ex(
 
     wire valid_ld_eflags;
     and2$ and_valid_ld_eflags(valid_ld_eflags, sig_ldEFLAGS, from_ex_valid);
-    ex_eflags dut (
+    ex_eflags eflags_inst (
         .clk(clk),
         .rst_n(rst_n),
         .alu_eflags(alu_eflags),
@@ -139,7 +135,7 @@ module stage_ex(
         .aaa_eflags_mask(aaa_eflags_mask),
         .cmp_eflags_mask(cmp_eflags_mask),
         .sig_eflags_mux(sig_eflags_mux),
-        .ldEFLAGS(sig_ldEFLAGS),
+        .ldEFLAGS(valid_ld_eflags),
         .eflags(eflags_out)
     );
     /*** Function Units ***/
@@ -164,7 +160,7 @@ module stage_ex(
     // SHF
     wire [7:0] shf_amt;
     wire [31:0] shf_out;
-    mux4_8$ mux4_shf_amt(shf_amt, 8'h1, to_ex_imm[7:0], to_ex_srcregC[7:0], 8'bx, sig_shf_srcb_mux[0], sig_shf_srcb_mux[1]);
+    mux4_8$ mux4_shf_amt(shf_amt, 8'h1, to_ex_srcregC[7:0], to_ex_imm[7:0], 8'bx, sig_shf_srcb_mux[0], sig_shf_srcb_mux[1]);
     ex_shf shf (
         .shf_op(sig_shf_op),
         .ds(sig_ds),
@@ -245,8 +241,8 @@ module stage_ex(
     mux2_64 mux2_MMB_rm(MMB_rm, to_ex_MMB, to_ex_load_result, sig_rm);
     wire [63:0] palu_out;
     ex_palu palu(
-        .dest_in(MMB_rm),
-        .src_in(to_ex_MMA),
+        .dest_in(to_ex_MMA),
+        .src_in(MMB_rm),
         .palu_size(sig_palu_size),
         .mmx_op(sig_mmx_op),
         .dest_out(palu_out)
@@ -335,7 +331,7 @@ module stage_ex(
 
     wire ldA_cmpxchg, ldA_cond, cmpxchg_ZF_inv, ldB_cond;
     mux2$ mux2_ldA_cmpxchg(ldA_cmpxchg, sig_ldAB[1], cmp_eflags[6], sig_cmpxchg);
-    mux2$ mux2_ldA_cond(ldA_cmpxchg, ldA_cmpxchg, eflags_cf, sig_cmovc);
+    mux2$ mux2_ldA_cond(ldA_cond, ldA_cmpxchg, eflags_cf, sig_cmovc);
 
     inv1$ inv1_cmpxchg_ZF(cmpxchg_ZF_inv, cmp_eflags[6]);
     mux2$ mux2_ldB_cond(ldB_cond, sig_ldAB[0], cmpxchg_ZF_inv, sig_cmpxchg);

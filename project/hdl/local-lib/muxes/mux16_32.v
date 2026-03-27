@@ -21,7 +21,7 @@ mux4_16$   mux4$_30(mux4_30_out, in12[15:0], in13[15:0], in14[15:0], in15[15:0],
 
 mux4_16$   mux4$_out0(out[15:0], mux4_00_out, mux4_10_out, mux4_20_out, mux4_30_out, buffered_s2, buffered_s3);
 
-mux4_16$   mux4$_01(mux4_01_out, in0[31:16], in1[31:16], in2[31:16], in3[15:0], buffered_s0, buffered_s1);
+mux4_16$   mux4$_01(mux4_01_out, in0[31:16], in1[31:16], in2[31:16], in3[31:16], buffered_s0, buffered_s1);
 mux4_16$   mux4$_11(mux4_11_out, in4[31:16], in5[31:16], in6[31:16], in7[31:16], buffered_s0, buffered_s1);
 mux4_16$   mux4$_21(mux4_21_out, in8[31:16], in9[31:16], in10[31:16], in11[31:16], buffered_s0, buffered_s1);
 mux4_16$   mux4$_31(mux4_31_out, in12[31:16], in13[31:16], in14[31:16], in15[31:16], buffered_s0, buffered_s1);

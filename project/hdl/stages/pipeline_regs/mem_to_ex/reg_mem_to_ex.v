@@ -1,17 +1,19 @@
-module reg_mem_to_ex(CLK, Din, Q, QBAR, CLR, PRE, en);
+module reg_mem_to_ex#(
+    parameter REG_SIZE=686
+)(CLK, Din, Q, QBAR, CLR, PRE, en);
     input  CLK;
     input  CLR;
-    input [683:0] Din;
+    input [REG_SIZE-1:0] Din;
     input  PRE;
     input  en;
-    output [683:0] Q;
-    output [683:0] QBAR;
+    output [REG_SIZE-1:0] Q;
+    output [REG_SIZE-1:0] QBAR;
 
     wire [703:0] din_padded, q_padded, qbar_padded;
 
-    assign din_padded = {20'b0, Din};
-    assign Q = q_padded[683:0];
-    assign QBAR = qbar_padded[683:0];
+    assign din_padded = {18'b0, Din};
+    assign Q = q_padded[REG_SIZE-1:0];
+    assign QBAR = qbar_padded[REG_SIZE-1:0];
     
     genvar i;
     generate

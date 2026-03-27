@@ -179,7 +179,7 @@ module stage_rr(
     assign padd_size = to_rr_opcode[1];
     assign pavg_size = to_rr_opcode[0];
     mux4$ mux4_palu_size(palu_size, pack_size, 1'bx, pavg_size, padd_size, mmx_op[0], mmx_op[1]);
-    assign shf_op = to_rr_modrm[5];
+    assign shf_op = to_rr_modrm[4];
     assign cmps = 1'b0; // TODO: FIX CMPS
 
     mux2$ mux2_aluop[2:0](alu_op, to_rr_opcode[5:3], to_rr_modrm[5:3], to_rr_opcode[7]);
