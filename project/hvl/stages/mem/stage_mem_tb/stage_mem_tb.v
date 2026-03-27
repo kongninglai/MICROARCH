@@ -239,7 +239,11 @@ stage_mem DUT (
   .from_mem_valid(from_mem_valid)
 );
 
-full_cache full_cache_inst (
+full_cache #(
+  .MEM_BYTE_CAPACITY (MEM_BYTE_CAPACITY),
+  .CYCLE_TIME_X10    (CYCLE_TIME_X10),
+  .TRUE_LRU          (1)
+) full_cache_inst (
   .rst(rst_n),
   .clk(clk),
 

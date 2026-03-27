@@ -1,4 +1,7 @@
 module stage_fetch #(
+  parameter MEM_BYTE_CAPACITY=32768,
+  parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
+
   parameter BUS_BIT_WIDTH=32,
   parameter RANK_BIT_WIDTH=128,
   parameter RANK_BURST_SIZE=RANK_BIT_WIDTH/BUS_BIT_WIDTH,
@@ -10,8 +13,7 @@ module stage_fetch #(
   parameter VPN_BIT_WIDTH=VA_BIT_WIDTH-PAGE_BIT_WIDTH,
   parameter PFN_BIT_WIDTH=MEM_ADDR_WIDTH-PAGE_BIT_WIDTH,
 
-  parameter SEGR_DATA_BIT_WIDTH=16,
-
+  parameter SEGR_DATA_BIT_WIDTH=16
 ) (
   input                                       clk,
   input                                       rst_n,
@@ -43,6 +45,8 @@ wire    LOAD_ENABLE_FETCH_POINTER, LOAD_ENABLE_FETCH_POINTER_buf64;
 
 bufferH64$    bufferH64$_LOAD_ENABLE_FETCH_POINTER_buf64(LOAD_ENABLE_FETCH_POINTER_buf64, LOAD_ENABLE_FETCH_POINTER);
 
+or3$          or3$_LOAD_ENABLE_FETCH_POINTER(LOAD_ENABLE_FETCH_POINTER, from_fetch_buffer_write_enable, from_ex_flush, from_de_taken_predicted_branch);
+
 big_increment #(
   .WIDTH(VA_BIT_WIDTH-RANK_BURST_SIZE)
 ) big_increment_INC_FETCH_POINTER (
@@ -54,7 +58,7 @@ reg_n #(
   .WIDTH(VA_BIT_WIDTH-RANK_BURST_SIZE),
   .USE_EN_BAR(0)
 ) reg_n_FETCH_POINTER (
-  .clk(clk), .rst(rst),
+  .clk(clk), .rst(rst_n),
   .en({(VA_BIT_WIDTH-RANK_BURST_SIZE){LOAD_ENABLE_FETCH_POINTER_buf64}}), 
   .d(NEXT_FETCH_POINTER),
   .q(FETCH_POINTER)

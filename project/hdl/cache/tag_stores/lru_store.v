@@ -6,7 +6,7 @@ module lru_store #(
   parameter TAG_WIDTH=8,
   parameter RANK_BURST_SIZE=4,
   parameter MEM_ADDR_WIDTH=15,
-  parameter TRUE_LRU=0
+  parameter TRUE_LRU=1
 ) (
   input                                             rst,
                                                     clk,
