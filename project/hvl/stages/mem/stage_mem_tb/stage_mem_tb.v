@@ -101,6 +101,8 @@ wire                                    D_WR1_TLB_WRITE_DISABLE_OUT;
 wire                                    D_WR1_TLB_CACHE_ENABLE_OUT;
 wire                                    D_WR1_TLB_PAGE_FAULT_OUT;
 
+wire [MEM_ADDR_WIDTH-1:0]               MEM_LD_PHYS_ADDR = {D_RD_TLB_PFN_OUT, MEM_PAGE_OFFSET};
+
 wire [PFN_BIT_WIDTH-1:0] KB_PFN;
 wire [PFN_BIT_WIDTH-1:0] DMA_PFN;
 
@@ -573,7 +575,7 @@ initial begin
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
   end
-  long_cache_line_exp = {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+  long_cache_line_exp = {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
   check_load_result(0);
   
   while (to_mem_ld_offset[19:0] < to_mem_ld_slim) begin
@@ -583,7 +585,7 @@ initial begin
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
     end
-    long_cache_line_exp = {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+    long_cache_line_exp = {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
     check_load_result(0);
   end
 
@@ -606,7 +608,7 @@ initial begin
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
   end
-  double_long_cache_line_exp = {{{4{20'h00002, to_mem_ld_addr_plus_one_line[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}}, {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}} >> (8 * to_mem_ld_addr[3:0]);
+  double_long_cache_line_exp = {{{4{{17'd0, MAPPED_PFN}, to_mem_ld_addr_plus_one_line[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}}, {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}} >> (8 * to_mem_ld_addr[3:0]);
   check_load_result(1);
 
   while (to_mem_ld_offset[19:0] < to_mem_ld_slim) begin
@@ -616,7 +618,7 @@ initial begin
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
     end
-    double_long_cache_line_exp = {{{4{20'h00002, to_mem_ld_addr_plus_one_line[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}}, {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}} >> (8 * to_mem_ld_addr[3:0]);
+    double_long_cache_line_exp = {{{4{{17'd0, MAPPED_PFN}, to_mem_ld_addr_plus_one_line[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}}, {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}} >> (8 * to_mem_ld_addr[3:0]);
     check_load_result(1);
   end
   
@@ -632,6 +634,36 @@ initial begin
   to_mem_valid = 1'b0;
   #(50 * CYCLE_TIME);
 
+  /*** RANDOM TESTS (INSPECTION) ***/
+  to_mem_ld_slim = 20'h003FF;
+  to_mem_ld_addr = {MAPPED_VPN,12'h000};
+  to_mem_ld_offset = to_mem_ld_addr + 3;
+  to_mem_valid = 1'b1;
+  to_mem_control_sigs = {23'd0, 2'b10, 2'b10, 2'b00, 2'b10, 15'd0, 8'd0};
+  #(CYCLE_TIME);
+  while (from_mem_stall === 1'b1) begin
+    #(CYCLE_TIME);
+  end
+
+  repeat (1 << 10) begin
+    i = $random;
+    to_mem_ld_addr = {MAPPED_VPN,i[PAGE_BIT_WIDTH-1:0]};
+    to_mem_ld_offset = to_mem_ld_addr + 3;
+    #(CYCLE_TIME);
+    while (from_mem_stall === 1'b1) begin
+      #(CYCLE_TIME);
+    end
+    long_cache_line_exp = {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+    double_long_cache_line_exp = {{{4{{17'd0, MAPPED_PFN}, to_mem_ld_addr_plus_one_line[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}}, {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}} >> (8 * to_mem_ld_addr[3:0]);
+    if (to_mem_ld_offset[19:0] < to_mem_ld_slim && to_mem_ld_addr[3:0] > 4'hC)
+      check_load_result(1);
+    else if (to_mem_ld_offset[19:0] < to_mem_ld_slim && to_mem_ld_addr[3:0] <= 4'hC)
+      check_load_result(0);
+  end
+
+  to_mem_valid = 1'b0;
+  #(50 * CYCLE_TIME);
+
   /*** TEST I/O ACCESSES WITH SHIFTING (INSPECTION) ***/
   repeat (2) begin
     to_mem_st_slim = 20'h003FF;
@@ -643,7 +675,7 @@ initial begin
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
     end
-    // long_cache_line_exp = {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+    // long_cache_line_exp = {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
     // check_load_result(0);
     to_mem_valid = 1'b0;
     #(20 * CYCLE_TIME);
@@ -659,7 +691,7 @@ initial begin
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
     end
-    // long_cache_line_exp = {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+    // long_cache_line_exp = {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
     // check_load_result(0);
     to_mem_valid = 1'b0;
     #(20 * CYCLE_TIME);
@@ -676,7 +708,7 @@ initial begin
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
     end
-    // long_cache_line_exp = {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+    // long_cache_line_exp = {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
     // check_load_result(0);
     to_mem_valid = 1'b0;
     #(20 * CYCLE_TIME);
@@ -692,7 +724,7 @@ initial begin
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
     end
-    // long_cache_line_exp = {4{20'h00002, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
+    // long_cache_line_exp = {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
     // check_load_result(0);
     to_mem_valid = 1'b0;
     #(20 * CYCLE_TIME);
