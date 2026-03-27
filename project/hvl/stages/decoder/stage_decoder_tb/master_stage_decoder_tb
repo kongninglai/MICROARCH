@@ -24,7 +24,7 @@
 // Test Logic 
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder
 
-// Testbench for Test Logic 
+// Testbench for Test Logic (2 and 3 are both block decoder tbs)
 /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/stage_decoder_tb/stage_decoder_tb.v
 // /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/stage_decoder_tb/stage_decoder_tb2.v
 // /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/stage_decoder_tb/stage_decoder_tb3.v

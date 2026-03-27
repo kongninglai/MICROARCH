@@ -1,6 +1,5 @@
 module stage_decode(
     input wire [127:0] cache_line,
-    input wire [31:0] o_eip, 
     input wire [3:0] tail_ptr,
     input wire [19:0] cs_limit_reg,
     input wire [31:0] eip_target_ex, //comes from execute stage
@@ -19,8 +18,8 @@ module stage_decode(
     output wire pr_de_rr_valid, //to rr stage pipeline regs are valid
 
     //to fetch output
-    output wire ld_eip, //to fetch stage to load new eip
-    output wire [31:0] eip_true, //to fetch stage new eip
+    output wire ld_eip, //to fetch stage to load new feip
+    output wire [31:0] eip_true, //to fetch stage new feip
 
     //decoder output
     output wire prefix_rep,
@@ -88,10 +87,13 @@ module stage_decode(
 
     wire hit;
     wire [31:0] bp_eip_target;
+    wire [31:0] o_eip;
     choose_eip EIP_LOGIC(
+        .clk(clk),
+        .rst_bar(rst_bar),
+
         //eip incr logic
         .instr_length(instr_length),
-        .o_eip(o_eip),
         .i_eip(i_eip),
 
         .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal
@@ -106,6 +108,8 @@ module stage_decode(
         .ld_eip(ld_eip),
         .eip_true(eip_true)
     );
+
+
 
     wire cur_instr_prediction;
     bp BP(

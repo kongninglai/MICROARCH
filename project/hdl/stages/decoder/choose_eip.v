@@ -3,9 +3,11 @@ Branch Type: 00 (not a branch), 01 (unconditional near), 10 (conditional near), 
 */
 
 module choose_eip(
+    input wire clk,
+    input wire rst_bar, 
+
     //eip incr logic
     input wire [3:0] instr_length,
-    input wire [31:0] o_eip,
     output wire [31:0] i_eip,
 
     input wire ld_pr_rr, //to load register read pipeline registers signal
@@ -21,9 +23,9 @@ module choose_eip(
     output wire ld_eip,
     output wire [31:0] eip_true
 
-
 );  
 
+    wire [31:0] o_eip;
     eip_incr EIP_INCR_LOGIC(
         .incr_amt(instr_length),
         .eip(o_eip),
@@ -45,22 +47,25 @@ module choose_eip(
     //Generating Signals for Mux Select
     wire [1:0] eip_sel; 
     wire stall, is_branch, cond_take, uncond_take, take_branch, branch_type_0_bar;
-    inv1$ INV_STALL(stall, ld_pr_rr); //stall if we're not loading new instruction into register read stage (same signal used for stalling in logic_stall_flush)
     inv1$ INV_lower(branch_type_0_bar, branch_type[0]); //if branch type is not 00, then it's a branch
     and4$ AND_COND_PRED(cond_take, cur_instr_prediction, hit, branch_type[1], branch_type_0_bar); //if branch can be resolved AND predictor says taken AND unconditional
     and2$ AND_UNCOND_PRED(uncond_take, branch_type[0], hit); //if unconditional branch AND resolvable
     or2$ OR_TAKE_BRANCH(take_branch, uncond_take, cond_take); //if unconditional branch OR (resolvable conditional branch AND predictor says taken)
-    comb_choose_eip EIP_SELECT_GN(.P2(flush_ex), .P1(stall), .P0(take_branch), .OUT1(eip_sel[1]), .OUT0(eip_sel[0]));
     
     mux4_32 MUX_CHOOSE_EIP(
         .in0(i_eip), 
         .in1(bp_eip_target), 
-        .in2(o_eip), 
+        .in2(ex_eip_target), 
         .in3(ex_eip_target), 
-        .s0(eip_sel[0]), //Select incremented EIP if we're loading RR pipeline registers
-        .s1(eip_sel[1]), //Currently unused, can be used to select other EIP sources in the future
+        .s0(take_branch), //Select incremented EIP if we're loading RR pipeline registers
+        .s1(flush_ex), //Currently unused, can be used to select other EIP sources in the future
         .out(eip_true) //Output EIP to be used in the rest of the decode logic
     );
 
+    reg_n #(.WIDTH(32)) EIP_REG(
+        .clk(clk), .rst(rst_bar),
+        .en({32{ld_eip}}), .d(eip_true),
+        .q(o_eip)
+    );
 
 endmodule
