@@ -103,7 +103,7 @@ module fetch_buffer(
     );
 
     //Shift Logic for Cache Line (before entering shift buffer)
-    wire [127:0] cl_aligned;
+    wire [247:0] cl_aligned;
     logic_cl_shifter LOGIC_CL_SHIFTER(
         .incr_amt(gated_instr_len),
         .eip_redirection(flush),
@@ -119,20 +119,22 @@ module fetch_buffer(
     and2$ and_shft_reg_en(shift_reg_en, shift_signal, shft_reg_we);
     wire shft_reg_clr_bar, ready_fb;
     and2$ and_shft_reg_clr_bar(shft_reg_clr_bar, rst_bar, flush_bar); 
-    shift_reg FETCH_BUFFER(.clk(clk), .rst_n(shft_reg_clr_bar), .shift(shift_reg_en), .instr_len(gated_instr_len), .inbytes({120'b0, cl_aligned}),
-        .wr_en(wr_en), .outbytes(to_de_outbytes), .ready(ready_fb)
+    shift_reg FETCH_BUFFER(
+        .clk(clk), .rst_n(shft_reg_clr_bar), 
+        .shift(shift_reg_en), .instr_len(gated_instr_len), 
+        .inbytes(cl_aligned), .wr_en(wr_en), 
+        .outbytes(to_de_outbytes[127:0]), .ready(ready_fb)
     ); 
 
     //Page Fault Shifter
-    wire [15:0] pf_expn_bytes_in;
-    assign pf_expn_bytes_in = {16{from_f_cl_pf}};
     wire [247:0] pf_expn_bits_in;
     wire [127:0] pf_expn_bits_out;
     
     genvar i;
     generate //convert pf_expn_bytes_in to bits
-        for (i = 0; i < 16; i=i+1) begin 
-            assign pf_expn_bits_in[i*8] = pf_expn_bytes_in[i];
+        for (i = 0; i < 31; i=i+1) begin : PF_BYTE_GEN
+            assign pf_expn_bits_in[i*8] = from_f_cl_pf;
+            assign pf_expn_bits_in[(i*8)+7 : (i*8)+1] = 7'bx;        
         end
     endgenerate
 
@@ -143,7 +145,7 @@ module fetch_buffer(
 
     genvar j;
     generate //convert pf_expn_bits_out to bytes
-        for (j = 0; j < 16; j=j+1) begin 
+        for (j = 0; j < 16; j=j+1) begin : PF_OUT_GEN
             assign to_de_pf_expn_bytes_out[j] = pf_expn_bits_out[j*8];
         end
     endgenerate

@@ -8,15 +8,15 @@ module tb_logic_cl_shifter();
     reg [127:0] cl;
     reg [4:0] tail_ptr;
 
-    // 2. Outputs
-    wire [127:0] cl_aligned;
+    // 2. Outputs (FIXED: Upgraded to 248 bits)
+    wire [247:0] cl_aligned;
     wire [4:0] wr_cl_byte_cnt;
 
     // 3. Internal Tracking
     integer FAILURES = 0;
     integer SUCCESSES = 0;
 
-    // 4. Instantiate UUT
+    // 4. Instantiate UUT (FIXED: cl_aligned is now connected to the 248-bit wire)
     logic_cl_shifter uut (
         .incr_amt(incr_amt),
         .eip_redirection(eip_redirection),
@@ -26,19 +26,32 @@ module tb_logic_cl_shifter();
         .wr_cl_byte_cnt(wr_cl_byte_cnt)
     );
 
-    // 5. Verification Task
+    // 5. Verification Task (FIXED: Dynamically calculates the 248-bit expected value)
     task check_result;
         input [8*35:1] test_name;
         input [4:0] exp_byte_cnt;
-        input [127:0] exp_cl_aligned;
+        input [127:0] exp_cl_aligned_128; // Receives your hardcoded 128-bit values
+        
+        reg [247:0] expected_full_248;    // Internal 248-bit tracker
         begin
             #10; // Wait for shifters to settle
+            
+            // --- AUTOMATIC 248-BIT EXPECTED VALUE CALCULATION ---
+            if (eip_redirection) begin
+                // During a flush, tail_ptr goes to 0, so the upper 15 bytes are guaranteed to be 0
+                expected_full_248 = {120'b0, exp_cl_aligned_128};
+            end else begin
+                // During a normal load, we take the original 16-byte cache line 
+                // and perfectly shift it into the 31-byte space
+                expected_full_248 = {120'b0, cl} << (tail_ptr * 8); 
+            end
             
             $display("-------------------------------------------------------");
             $display("TEST: %0s", test_name);
             $display("  Offset (incr_amt): %0d | Redirection: %b | Tail Ptr: %0d", incr_amt, eip_redirection, tail_ptr);
             
-            if (wr_cl_byte_cnt === exp_byte_cnt && cl_aligned === exp_cl_aligned) begin
+            // Now we check against the full 248-bit wire!
+            if (wr_cl_byte_cnt === exp_byte_cnt && cl_aligned === expected_full_248) begin
                 $display("  ✅ PASS | Byte Cnt: %0d", wr_cl_byte_cnt);
                 SUCCESSES = SUCCESSES + 1;
             end else begin
@@ -46,16 +59,17 @@ module tb_logic_cl_shifter();
                 if (wr_cl_byte_cnt !== exp_byte_cnt) begin
                     $display("     BYTE CNT MISMATCH -> Exp: %0d | Got: %0d", exp_byte_cnt, wr_cl_byte_cnt);
                 end
-                if (cl_aligned !== exp_cl_aligned) begin
-                    $display("     DATA MISMATCH     -> Exp: %h", exp_cl_aligned);
-                    $display("                          Got: %h", cl_aligned);
+                if (cl_aligned !== expected_full_248) begin
+                    $display("     DATA MISMATCH (Showing full 248-bit / 31-byte bus)");
+                    $display("       Exp: %h", expected_full_248);
+                    $display("       Got: %h", cl_aligned);
                 end
                 FAILURES = FAILURES + 1;
             end
         end
     endtask
 
-    // 6. Stimulus
+    // 6. Stimulus (100% UNCHANGED!)
     initial begin
         $dumpfile("logic_cl_shifter_tb.vpd");
         $dumpvars(0, tb_logic_cl_shifter);

@@ -15,7 +15,7 @@ module shifter_tb;
     wire ready_dut, ready_ref;
 
     // --- Shadow Tracking Variables ---
-    integer num_tests, num_failures;
+    integer num_tests, FAILURES, SUCCESSES;
     reg [30:0] valid_occupancy; // TB's internal record of which bytes are valid
     reg [127:0] dynamic_mask;   // Calculated mask for the 128-bit outbytes
 
@@ -68,13 +68,14 @@ module shifter_tb;
 
         // Check if the "Valid" window matches
         if ((outbytes_dut & dynamic_mask) !== (outbytes_ref & dynamic_mask)) begin
-            num_failures = num_failures + 1;
+            FAILURES = FAILURES + 1;
             $display("[%t] ❌ FAIL: %0s", $time, test_name);
             $display("    Mask: %h", dynamic_mask);
             $display("    DUT (Masked): %h", outbytes_dut & dynamic_mask);
             $display("    REF (Masked): %h", outbytes_ref & dynamic_mask);
         end else begin
             $display("[%t] ✅ PASS: %0s", $time, test_name);
+            SUCCESSES = SUCCESSES + 1;
         end
     end
     endtask
@@ -141,8 +142,8 @@ module shifter_tb;
 
     initial begin
         num_tests = 0;
-        num_failures = 0;
-
+        FAILURES = 0;
+        SUCCESSES = 0;
         apply_reset();
 
         // T1: Write 16 bytes. Shadow: Occupancy becomes hFFFF
@@ -168,11 +169,14 @@ module shifter_tb;
         end
 
         $display("\n========================================");
-        if (num_failures == 0)
+        if (FAILURES == 0)
             $display("  ✅ ALL %0d TESTS PASSED (Dynamic Masking Active)", num_tests);
         else
-            $display("  ❌ FAILED: %0d / %0d tests", num_failures, num_tests);
+            $display("  ❌ FAILED: %0d / %0d tests", FAILURES, num_tests);
         $display("========================================\n");
+        
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 

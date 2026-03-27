@@ -16,7 +16,8 @@ module fetch_buffer_simple_tb;
     wire ready;
 
     integer total_tests = 0;
-    integer total_fails = 0;
+    integer FAILURES = 0;
+    integer SUCCESSES = 0;
 
     // DUT Instantiation
     fetch_buffer uut (
@@ -63,16 +64,17 @@ module fetch_buffer_simple_tb;
             
             if (tail_ptr !== exp_tp) begin
                 $display("[%t] ❌ FAIL: %0s | TP Mismatch! Exp: %0d, Got: %0d", $time, test_name, exp_tp, tail_ptr);
-                total_fails = total_fails + 1;
+                FAILURES = FAILURES + 1;
             end 
             else if (outbytes[63:0] !== exp_data[63:0]) begin
                 $display("[%t] ❌ FAIL: %0s | Data Mismatch!", $time, test_name);
                 $display("      Exp: %h", exp_data[63:0]);
                 $display("      Got: %h", outbytes[63:0]);
-                total_fails = total_fails + 1;
+                FAILURES = FAILURES + 1;
             end
             else begin
                 $display("[%t] ✅ PASS: %0s", $time, test_name);
+                SUCCESSES = SUCCESSES + 1;
             end
         end
     endtask
@@ -130,9 +132,12 @@ module fetch_buffer_simple_tb;
         flush_wb = 0;
 
         $display("\n========================================");
-        if (total_fails == 0) $display("  ✅ SUCCESS: All Tests Passed");
-        else $display("  ❌ FAILURE: %0d tests failed", total_fails);
+        if (FAILURES == 0) $display("  ✅ SUCCESS: All Tests Passed");
+        else $display("  ❌ FAILURE: %0d tests failed", FAILURES);
         $display("========================================\n");
+        
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 

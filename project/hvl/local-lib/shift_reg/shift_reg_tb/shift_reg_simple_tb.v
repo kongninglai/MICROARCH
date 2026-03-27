@@ -14,7 +14,8 @@ module shifter_simple_tb;
 
     // Test tracking
     integer total_tests = 0;
-    integer total_fails = 0;
+    integer FAILURES = 0;
+    integer SUCCESSES = 0;
 
     // DUT Instantiation
     shift_reg dut(
@@ -33,7 +34,6 @@ module shifter_simple_tb;
         begin
             $display("[%t] %0s | TP_Out: %h | Reset: %b | En[1]: %b", 
                      $time, label, outbytes[31:0], rst_n, dut.en[1]);
-            $display("          CL: %h", dut.cache_line);
         end
     endtask
 
@@ -45,8 +45,9 @@ module shifter_simple_tb;
             if (outbytes !== expected) begin
                 $display("  ❌ FAIL! Exp: %h", expected);
                 $display("          Got: %h", outbytes);
-                total_fails = total_fails + 1;
+                FAILURES = FAILURES + 1;
             end else begin
+                SUCCESSES = SUCCESSES + 1;
                 $display("  ✅ PASS");
             end
         end
@@ -90,10 +91,8 @@ module shifter_simple_tb;
         print_state("After Mid-Test Reset");
         check(128'h0);
 
-        $display("\n==============================");
-        $display(" TOTAL TESTS: %0d", total_tests);
-        $display(" TOTAL FAILS: %0d", total_fails);
-        $display("==============================\n");
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 
