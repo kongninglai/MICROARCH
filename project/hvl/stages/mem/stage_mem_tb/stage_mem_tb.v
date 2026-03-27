@@ -60,10 +60,10 @@ reg rst_n;
 reg  [MEM_CONTROL_SIGS_BIT_WIDTH-1:0]   to_mem_control_sigs;
 reg  [31:0]                             to_mem_ld_addr;
 reg  [31:0]                             to_mem_st_addr;
-reg  [19:0]                             to_mem_ld_slim;
+reg  [31:0]                             to_mem_ld_slim;
 reg  [31:0]                             to_mem_ld_offset;
 reg  [31:0]                             to_mem_st_offset;
-reg  [19:0]                             to_mem_st_slim;
+reg  [31:0]                             to_mem_st_slim;
 
 reg  [1:0]                              to_mem_exception;
 reg                                     to_mem_valid;
@@ -135,6 +135,7 @@ wire [TWO_LINES_SHF_AMT_BIT_WIDTH-1:0] from_mem_store_data_shf_amt;
 wire EX_FLUSH;
 wire WB_FLUSH;
 
+reg [31:0] from_rr_code_segment_limit;
 reg from_ex_flush;
 reg from_wb_flush;
 
@@ -167,7 +168,7 @@ stage_mem DUT (
   .to_mem_rel_eip(32'd0),
   .to_mem_cs(16'd0),
   .to_mem_oeip(32'd0),
-  .to_mem_ieip(32'd0),
+  .to_mem_ieip(32'd1), /* Make sure we don't underflow and cause an EIP limit violation */
   .to_mem_pred_eip(32'd0),
 
   .to_mem_exception(to_mem_exception),
@@ -176,6 +177,7 @@ stage_mem DUT (
   .DCACHE_STALL(DCACHE_STALL),
   .DCACHE_HIT_DATA(DCACHE_HIT_DATA),
 
+  .from_rr_code_segment_limit(from_rr_code_segment_limit),
   .from_wb_flush(from_wb_flush),
   .from_ex_flush(from_ex_flush),
 
@@ -456,6 +458,7 @@ wire [31:0] to_mem_st_addr_plus_one_line = to_mem_st_addr + 32'd16;
 
 initial begin
   rst_n = 0;
+  from_rr_code_segment_limit = 32'h00004FFF;
   to_mem_valid = 0;
   to_mem_exception = 0;
   from_ex_flush = 0;
@@ -500,7 +503,7 @@ initial begin
 
   /*** TEST ONE-CACHE-LINE ACCESSES WITH SHIFTING ***/
 
-  to_mem_st_slim = 20'h003FF;
+  to_mem_st_slim = {MAPPED_VPN, 12'h3FF};
   to_mem_st_addr = {MAPPED_VPN,12'h000};
   to_mem_st_offset = to_mem_st_addr;
   to_mem_valid = 1'b1;
@@ -511,7 +514,7 @@ initial begin
   end
   check_store_sigs();
   
-  while (to_mem_st_offset[19:0] < to_mem_st_slim) begin
+  while (to_mem_st_offset < to_mem_st_slim) begin
     to_mem_st_addr = to_mem_st_addr + 1;
     to_mem_st_offset = to_mem_st_addr;
     #(CYCLE_TIME);
@@ -531,7 +534,7 @@ initial begin
   check_exception(2'b10);
 
   /*** TEST TWO-CACHE-LINE ACCESSES WITH SHIFTING ***/
-  to_mem_st_slim = 20'h003FF;
+  to_mem_st_slim = {MAPPED_VPN, 12'h3FF};
   to_mem_st_addr = {MAPPED_VPN,12'h00C};
   to_mem_st_offset = to_mem_st_addr + 7;
   to_mem_valid = 1'b1;
@@ -542,7 +545,7 @@ initial begin
   end
   check_store_sigs();
 
-  while (to_mem_st_offset[19:0] < to_mem_st_slim) begin
+  while (to_mem_st_offset < to_mem_st_slim) begin
     to_mem_st_addr = to_mem_st_addr + 1;
     to_mem_st_offset = to_mem_st_addr + 7;
     #(CYCLE_TIME);
@@ -566,7 +569,7 @@ initial begin
 
   /*** TEST ONE-CACHE-LINE ACCESSES WITH SHIFTING ***/
 
-  to_mem_ld_slim = 20'h003FF;
+  to_mem_ld_slim = {MAPPED_VPN, 12'h3FF};
   to_mem_ld_addr = {MAPPED_VPN,12'h000};
   to_mem_ld_offset = to_mem_ld_addr;
   to_mem_valid = 1'b1;
@@ -578,7 +581,7 @@ initial begin
   long_cache_line_exp = {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
   check_load_result(0);
   
-  while (to_mem_ld_offset[19:0] < to_mem_ld_slim) begin
+  while (to_mem_ld_offset < to_mem_ld_slim) begin
     to_mem_ld_addr = to_mem_ld_addr + 1;
     to_mem_ld_offset = to_mem_ld_addr;
     #(CYCLE_TIME);
@@ -599,7 +602,7 @@ initial begin
   check_exception(2'b10);
 
   /*** TEST TWO-CACHE-LINE ACCESSES WITH SHIFTING ***/
-  to_mem_ld_slim = 20'h003FF;
+  to_mem_st_slim = {MAPPED_VPN, 12'h3FF};
   to_mem_ld_addr = {MAPPED_VPN,12'h00C};
   to_mem_ld_offset = to_mem_ld_addr + 7;
   to_mem_valid = 1'b1;
@@ -611,7 +614,7 @@ initial begin
   double_long_cache_line_exp = {{{4{{17'd0, MAPPED_PFN}, to_mem_ld_addr_plus_one_line[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}}, {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}} >> (8 * to_mem_ld_addr[3:0]);
   check_load_result(1);
 
-  while (to_mem_ld_offset[19:0] < to_mem_ld_slim) begin
+  while (to_mem_ld_offset < to_mem_ld_slim) begin
     to_mem_ld_addr = to_mem_ld_addr + 1;
     to_mem_ld_offset = to_mem_ld_addr + 7;
     #(CYCLE_TIME);
@@ -635,7 +638,7 @@ initial begin
   #(50 * CYCLE_TIME);
 
   /*** RANDOM TESTS (INSPECTION) ***/
-  to_mem_ld_slim = 20'h003FF;
+  to_mem_st_slim = {MAPPED_VPN, 12'h3FF};
   to_mem_ld_addr = {MAPPED_VPN,12'h000};
   to_mem_ld_offset = to_mem_ld_addr + 3;
   to_mem_valid = 1'b1;
@@ -655,9 +658,9 @@ initial begin
     end
     long_cache_line_exp = {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}} >> (8 * to_mem_ld_addr[3:0]);
     double_long_cache_line_exp = {{{4{{17'd0, MAPPED_PFN}, to_mem_ld_addr_plus_one_line[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}}, {4{{17'd0, MAPPED_PFN}, to_mem_ld_addr[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}}} >> (8 * to_mem_ld_addr[3:0]);
-    if (to_mem_ld_offset[19:0] < to_mem_ld_slim && to_mem_ld_addr[3:0] > 4'hC)
+    if (to_mem_ld_offset < to_mem_ld_slim && to_mem_ld_addr[3:0] > 4'hC)
       check_load_result(1);
-    else if (to_mem_ld_offset[19:0] < to_mem_ld_slim && to_mem_ld_addr[3:0] <= 4'hC)
+    else if (to_mem_ld_offset < to_mem_ld_slim && to_mem_ld_addr[3:0] <= 4'hC)
       check_load_result(0);
   end
 
@@ -666,7 +669,7 @@ initial begin
 
   /*** TEST I/O ACCESSES WITH SHIFTING (INSPECTION) ***/
   repeat (2) begin
-    to_mem_st_slim = 20'h003FF;
+    to_mem_st_slim = {20'h08000, 12'h3FF};
     to_mem_st_addr = {20'h08000,12'h000};
     to_mem_st_offset = to_mem_st_addr;
     to_mem_valid = 1'b1;
@@ -682,7 +685,7 @@ initial begin
   end
 
   repeat (2) begin
-    to_mem_st_slim = 20'h003FF;
+    to_mem_st_slim = {20'h06000, 12'h3FF};
     to_mem_st_addr = {20'h06000,12'h010};
     to_mem_st_offset = to_mem_st_addr;
     to_mem_valid = 1'b1;
@@ -699,7 +702,7 @@ initial begin
 
   /*** TEST I/O ACCESSES WITH SHIFTING ***/
   repeat (2) begin
-    to_mem_ld_slim = 20'h003FF;
+    to_mem_st_slim = {20'h08000, 12'h3FF};
     to_mem_ld_addr = {20'h08000,12'h000};
     to_mem_ld_offset = to_mem_ld_addr;
     to_mem_valid = 1'b1;
@@ -715,7 +718,7 @@ initial begin
   end
 
   repeat (2) begin
-    to_mem_ld_slim = 20'h003FF;
+    to_mem_st_slim = {20'h06000, 12'h3FF};
     to_mem_ld_addr = {20'h06000,12'h010};
     to_mem_ld_offset = to_mem_ld_addr;
     to_mem_valid = 1'b1;

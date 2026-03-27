@@ -63,7 +63,7 @@
 ~/MICROARCH/project/hdl/stages/mem/sticky_bit_load_fsm.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_var_32b.v
 ~/MICROARCH/project/hdl/cache/tlb/tlb_wrapper.v
-~/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_20b.v
+~/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_32b.v
 ~/MICROARCH/project/hdl/local-lib/adders/PA_4b.v
 ~/MICROARCH/project/hdl/stages/mem/stage_mem.v
 ~/MICROARCH/project/hvl/stages/mem/stage_mem_tb/stage_mem_tb.v

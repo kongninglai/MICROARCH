@@ -51,8 +51,7 @@ module stage_mem #(
   parameter GENERAL_DATA_BIT_WIDTH=32,
   parameter SEGR_DATA_BIT_WIDTH=16,
   parameter MMXR_DATA_BIT_WIDTH=64,
-  parameter MAX_SEGMENT_SIZE_BYTES=1048576,
-  parameter SLIM_BIT_WIDTH=$clog2(MAX_SEGMENT_SIZE_BYTES),
+  parameter SLIM_BIT_WIDTH=32,
 
   parameter MEM_CONTROL_SIGS_BIT_WIDTH=54
 
@@ -95,6 +94,7 @@ module stage_mem #(
   input   [RANK_BIT_WIDTH-1:0]                DCACHE_HIT_DATA,
 
   /*** Inputs from other stages ***/
+  input   [SLIM_BIT_WIDTH-1:0]                from_rr_code_segment_limit,
   input                                       from_wb_flush,
   input                                       from_ex_flush,
 
@@ -338,21 +338,35 @@ assign  LOAD_EXCEPTION_MASK = {1'b0, LOAD_EXCEPTION};
 
 /* LIMIT CHECKING */
 
-wire  ld_slim_violation, st_slim_violation;
+wire  ld_slim_violation, st_slim_violation, eip_slim_violation;
 
-cmp_gen_20b cmp_gen_20b_ld_slim_violation (
+cmp_gen_32b cmp_gen_32b_ld_slim_violation (
   .in0(to_mem_ld_offset[SLIM_BIT_WIDTH-1:0]), .in1(to_mem_ld_slim),
 	.lt(), .gt(ld_slim_violation), .eq()
 );
 
-cmp_gen_20b cmp_gen_20b_st_slim_violation (
+cmp_gen_32b cmp_gen_32b_st_slim_violation (
   .in0(to_mem_st_offset[SLIM_BIT_WIDTH-1:0]), .in1(to_mem_st_slim),
 	.lt(), .gt(st_slim_violation), .eq()
 );
 
+wire  [VA_BIT_WIDTH-1:0]  maximum_eip_accessed;
+
+big_decrement #(
+  .WIDTH(VA_BIT_WIDTH)
+) big_decrement_maximum_eip_accessed (
+  .a(to_mem_ieip),
+  .s(maximum_eip_accessed)
+);
+
+cmp_gen_32b cmp_gen_32b_eip_slim_violation (
+  .in0(maximum_eip_accessed), .in1(from_rr_code_segment_limit),
+	.lt(), .gt(eip_slim_violation), .eq()
+);
+
 /* Other case: Cross Segment Boundary if addr[19] = 1 and offset[19] = 0 */
 
-wire  ld_seg_boundary_violation, st_seg_boundary_violation;
+wire  ld_seg_boundary_violation, st_seg_boundary_violation, eip_seg_boundary_violation;
 
 wire  to_mem_ld_addr_bit_19_BAR;
 inv1$   inv1$_to_mem_ld_addr_bit_19_BAR(to_mem_ld_addr_bit_19_BAR, to_mem_ld_addr[19]);
@@ -362,22 +376,29 @@ wire  to_mem_st_addr_bit_19_BAR;
 inv1$   inv1$_to_mem_st_addr_bit_19_BAR(to_mem_st_addr_bit_19_BAR, to_mem_st_addr[19]);
 nor2$   nor2$_st_seg_boundary_violation(st_seg_boundary_violation, to_mem_st_addr_bit_19_BAR, to_mem_st_offset[19]);
 
+wire  maximum_eip_accessed_bit_19_BAR;
+inv1$   inv1$_maximum_eip_accessed_bit_19_BAR(maximum_eip_accessed_bit_19_BAR, maximum_eip_accessed[19]);
+nor2$   nor2$_eip_seg_boundary_violation(eip_seg_boundary_violation, maximum_eip_accessed_bit_19_BAR, to_mem_oeip[19]);
+
 /* Combine limit violations */
 
-wire  ld_gen_limit_violation, st_gen_limit_violation;
+wire  ld_gen_limit_violation, st_gen_limit_violation, eip_gen_limit_violation;
 
 or2$  or2$_ld_gen_limit_violation(ld_gen_limit_violation, ld_slim_violation, ld_seg_boundary_violation);
 or2$  or2$_st_gen_limit_violation(st_gen_limit_violation, st_slim_violation, st_seg_boundary_violation);
+or2$  or2$_eip_gen_limit_violation(eip_gen_limit_violation, eip_slim_violation, eip_seg_boundary_violation);
 
-wire  [1:0]   ld_slim_exception_mask, st_slim_exception_mask, combined_slim_exception_mask;
+wire  [1:0]   ld_slim_exception_mask, st_slim_exception_mask, eip_slim_exception_mask, combined_slim_exception_mask;
 
 assign ld_slim_exception_mask[0] = 1'b0;
 assign st_slim_exception_mask[0] = 1'b0;
+assign eip_slim_exception_mask[0] = 1'b0;
 
 and3$   and3$_ld_slim_exception_mask(ld_slim_exception_mask[1], ld_gen_limit_violation, rw[1], to_mem_valid);
 and3$   and3$_st_slim_exception_mask(st_slim_exception_mask[1], st_gen_limit_violation, rw[0], to_mem_valid);
+and2$   and2$_eip_slim_exception_mask(eip_slim_exception_mask[1], eip_gen_limit_violation, to_mem_valid);
 
-or2$    or2$_combined_slim_exception_mask[1:0](combined_slim_exception_mask, ld_slim_exception_mask, st_slim_exception_mask);
+or3$    or3$_combined_slim_exception_mask[1:0](combined_slim_exception_mask, ld_slim_exception_mask, st_slim_exception_mask, eip_slim_exception_mask);
 
 or4$    or4$_from_mem_exception[1:0](from_mem_exception, LOAD_EXCEPTION_MASK, STORE_EXCEPTION_MASK, combined_slim_exception_mask, to_mem_exception);
 
