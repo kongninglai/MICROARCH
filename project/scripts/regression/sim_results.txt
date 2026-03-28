@@ -35,6 +35,7 @@ FA_16b_tb                      FAILURES=0      SUCCESSES=4096
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_4b_tb                       FAILURES=0      SUCCESSES=512   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
+fetch_buffer_tb                FAILURES=0      SUCCESSES=0     
 full_cache_init_tb             FAILURES=0      SUCCESSES=0     
 full_cache_tb                  FAILURES=0      SUCCESSES=6155  
 full_cc_off_core_tb            FAILURES=0      SUCCESSES=32063 
@@ -87,6 +88,7 @@ mux16_32_tb                    FAILURES=0      SUCCESSES=256
 mux16_48_tb                    FAILURES=0      SUCCESSES=16    
 mux16_tb                       FAILURES=0      SUCCESSES=1048576
 mux2_128_tb                    FAILURES=0      SUCCESSES=256   
+mux2_256_tb                    FAILURES=0      SUCCESSES=256   
 mux2_32_tb                     FAILURES=0      SUCCESSES=256   
 mux2_64_tb                     FAILURES=0      SUCCESSES=256   
 mux32_16b_tb                   FAILURES=0      SUCCESSES=1048576
@@ -125,8 +127,9 @@ rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024
 rshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096  
 rshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
 se_tb                          FAILURES=0      SUCCESSES=258   
-shift_reg_tb                   FAILURES=0      SUCCESSES=0     
+shift_reg_tb                   FAILURES=0      SUCCESSES=140   
 stage_ag_tb                    FAILURES=0      SUCCESSES=0     
+stage_decoder_tb               FAILURES=0      SUCCESSES=13    
 stage_fetch_tb                 FAILURES=0      SUCCESSES=586   
 stage_mem_tb                   FAILURES=0      SUCCESSES=4326  
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     

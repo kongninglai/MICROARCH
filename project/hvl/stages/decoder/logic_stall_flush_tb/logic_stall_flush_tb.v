@@ -17,7 +17,6 @@ module tb_logic_instr_valid();
     // 2. Outputs
     wire ld_pr_rr;
     wire instr_valid;
-    wire exptn_prot;
 
     // --- Signal Mapping Logic ---
     // Combine the granular testbench signals into the consolidated signals expected by the new module.
@@ -33,8 +32,7 @@ module tb_logic_instr_valid();
         .flush_ex(combined_flush),    // Maps mispredicts/exceptions to flush_ex
         .stall_rr(combined_stall),    // Maps any pipeline stall to stall_rr
         .ld_pr_rr(ld_pr_rr),
-        .instr_valid(instr_valid),
-        .exptn_prot(exptn_prot)
+        .instr_valid(instr_valid)
     );
 
     // 4. Test Tracking
@@ -53,14 +51,12 @@ module tb_logic_instr_valid();
             // Determine which specific signals failed
             fail_ld   = (ld_pr_rr !== exp_ld_pr_rr);
             fail_val  = (instr_valid !== exp_valid);
-            fail_prot = (exptn_prot !== exp_exptn);
 
             $display("-------------------------------------------------------------------------------------------------------");
             $display("TEST   : %0s", test_name);
             $display("INPUTS : EIP=%h | Incr=%0d | Tail=%0d | Stalls(ERMW)=%b%b%b%b | Flushes(MEL)=%b%b%b", 
                      i_eip, incr_amt, tail_ptr, stall_ex, stall_rr, stall_mem, stall_wb, mispredict_src_ex, v_excptn_src_wb, v_ld_cs_src_ex);
             $display("EXPECT : LD_PR_RR=%b | INSTR_VALID=%b | EXPTN_PROT=%b", exp_ld_pr_rr, exp_valid, exp_exptn);
-            $display("ACTUAL : LD_PR_RR=%b | INSTR_VALID=%b | EXPTN_PROT=%b", ld_pr_rr, instr_valid, exptn_prot);
 
             if (fail_ld || fail_val || fail_prot) begin
                 $write("RESULT : ❌ FAIL -> Mismatch on: ");

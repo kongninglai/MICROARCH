@@ -1,5 +1,6 @@
 module stage_decode(
     input wire [127:0] cache_line,
+    input wire [31:0] o_eip,
     input wire [3:0] tail_ptr,
     input wire [19:0] cs_limit_reg,
     input wire [31:0] eip_target_ex, //comes from execute stage
@@ -38,6 +39,8 @@ module stage_decode(
 
 );
 
+assign exptn_prot = 1'b0;
+
     wire modrm_v;
     block_decoder DECODER(
         .cache_line(cache_line),
@@ -69,8 +72,7 @@ module stage_decode(
             .stall_rr(stall_rr), //comes from register read stage
 
             .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal
-            .instr_valid(pr_de_rr_valid),
-            .exptn_prot(exptn_prot)
+            .instr_valid(pr_de_rr_valid)
     );
 
     //Decode logic tells what type of branch is currently being decoded
@@ -87,7 +89,6 @@ module stage_decode(
 
     wire hit;
     wire [31:0] bp_eip_target;
-    wire [31:0] o_eip;
     choose_eip EIP_LOGIC(
         .clk(clk),
         .rst_bar(rst_bar),

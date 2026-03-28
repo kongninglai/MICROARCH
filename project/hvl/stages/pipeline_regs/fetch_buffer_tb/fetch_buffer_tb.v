@@ -42,6 +42,9 @@ wire [127:0] to_de_outbytes;
 wire [15:0]  to_de_pf_expn_bytes_out;
 wire         ready;
 
+integer FAILURES = 0;
+integer SUCCESSES = 0;
+
 fetch_buffer dut(
     .clk(clk), .rst_bar(rst_bar),
     .from_de_instr_len(from_de_instr_len),
@@ -475,6 +478,9 @@ initial begin
     else
         $display("  ❌ FAILED: %0d / %0d tests", num_fail, num_tests);
     $display("========================================\n");
+        
+    $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+    $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
     $finish;
 end

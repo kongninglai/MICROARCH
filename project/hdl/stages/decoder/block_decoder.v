@@ -149,7 +149,7 @@ module block_decoder(
     assign imm = imm_bytes;
 
     wire [2:0] disp_plus_sib, disp_plus_sib_final;
-    logic_sib_disp(
+    logic_sib_disp  logic_sib_disp_inst (
         .modrm_byte(modrm),
         .disp_plus_sib(disp_plus_sib)
     );  
