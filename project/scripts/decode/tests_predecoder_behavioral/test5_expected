@@ -1,0 +1,165 @@
+0:  04 12                   add    al,0x12
+2:  66 05 34 12             add    ax,0x1234
+6:  05 78 56 34 12          add    eax,0x12345678
+
+b:  80 00 12                add    BYTE PTR [eax],0x12
+e:  66 81 00 34 12          add    WORD PTR [eax],0x1234
+13: 81 00 78 56 34 12       add    DWORD PTR [eax],0x12345678
+19: 66 83 00 12             add    WORD PTR [eax],0x12
+1d: 83 00 12                add    DWORD PTR [eax],0x12
+
+20: 00 00                   add    BYTE PTR [eax],al
+22: 66 01 00                add    WORD PTR [eax],ax
+25: 01 00                   add    DWORD PTR [eax],eax
+27: 02 00                   add    al,BYTE PTR [eax]
+29: 66 03 00                add    ax,WORD PTR [eax]
+2c: 03 00                   add    eax,DWORD PTR [eax]
+
+2e: 24 12                   and    al,0x12
+30: 66 25 34 12             and    ax,0x1234
+34: 25 78 56 34 12          and    eax,0x12345678
+
+39: 80 20 ff                and    BYTE PTR [eax],0xff
+3c: 66 81 20 34 12          and    WORD PTR [eax],0x1234
+41: 81 20 78 56 34 12       and    DWORD PTR [eax],0x12345678
+47: 66 83 20 81             and    WORD PTR [eax],0xff81
+4b: 83 20 00                and    DWORD PTR [eax],0x0
+
+4e: 20 00                   and    BYTE PTR [eax],al
+50: 66 21 00                and    WORD PTR [eax],ax
+53: 21 00                   and    DWORD PTR [eax],eax
+55: 22 00                   and    al,BYTE PTR [eax]
+57: 66 23 00                and    ax,WORD PTR [eax]
+5a: 23 00                   and    eax,DWORD PTR [eax]
+
+5c: 66 0f bc c3             bsf    ax,bx
+60: 0f bc c3                bsf    eax,ebx
+63: 0f bc 00                bsf    eax,DWORD PTR [eax]
+
+66: e8 fc ff ff ff          call   67 <_main+0x67>
+6b: e8 fc ff ff ff          call   6c <_main+0x6c>
+70: 66 ff d3                call   bx
+73: ff d3                   call   ebx
+75: ff 15 06 ff 00 00       call   DWORD PTR ds:0xff06 WRONG
+
+7b: fc                      cld
+7c: 66 0f 42 c3             cmovb  ax,bx
+80: 0f 42 c3                cmovb  eax,ebx
+83: 0f b0 cb                cmpxchg bl,cl
+86: 66 0f b1 cb             cmpxchg bx,cx
+8a: 0f b1 cb                cmpxchg ebx,ecx
+8d: 27                      daa
+8e: f4                      hlt
+8f: cf                      iret
+
+90: 0f 87 fc ff ff ff       ja     92 <_main+0x92> WRONG
+96: 0f 85 fc ff ff ff       jne    98 <_main+0x98> WRONG
+9c: 0f 87 fc ff ff ff       ja     9e <_main+0x9e>
+a2: 0f 85 fc ff ff ff       jne    a4 <_main+0xa4>
+
+a8: 88 18                   mov    BYTE PTR [eax],bl
+aa: 66 89 18                mov    WORD PTR [eax],bx
+ad: 89 18                   mov    DWORD PTR [eax],ebx
+af: 8a 18                   mov    bl,BYTE PTR [eax]
+b1: 66 8b 18                mov    bx,WORD PTR [eax]
+b4: 8b 18                   mov    ebx,DWORD PTR [eax]
+b6: 8c 18                   mov    WORD PTR [eax],ds
+b8: 8e 18                   mov    ds,WORD PTR [eax]
+ba: b0 82                   mov    al,0x82
+bc: 66 b8 34 82             mov    ax,0x8234
+c0: b8 78 56 34 82          mov    eax,0x82345678
+c5: c6 00 12                mov    BYTE PTR [eax],0x12
+c8: 66 c7 00 34 12          mov    WORD PTR [eax],0x1234
+cd: c7 00 78 56 34 12       mov    DWORD PTR [eax],0x12345678
+
+d3: 0f 6f c1                movq   mm0,mm1
+d6: 0f 7f 00                movq   QWORD PTR [eax],mm0
+
+d9: a4                      movs   BYTE PTR es:[edi],BYTE PTR ds:[esi]
+da: 66 a5                   movs   WORD PTR es:[edi],WORD PTR ds:[esi]
+dc: a5                      movs   DWORD PTR es:[edi],DWORD PTR ds:[esi]
+
+dd: f6 d3                   not    bl
+df: 66 f7 d3                not    bx
+e2: f7 d3                   not    ebx
+
+e4: 0c 12                   or     al,0x12
+e6: 66 0d 34 12             or     ax,0x1234
+ea: 0d 78 56 34 12          or     eax,0x12345678
+ef: 80 08 12                or     BYTE PTR [eax],0x12
+f2: 66 81 08 34 12          or     WORD PTR [eax],0x1234
+f7: 81 08 78 56 34 12       or     DWORD PTR [eax],0x12345678
+fd: 66 83 08 12             or     WORD PTR [eax],0x12
+101:    83 08 12                or     DWORD PTR [eax],0x12
+104:    08 18                   or     BYTE PTR [eax],bl
+106:    66 09 18                or     WORD PTR [eax],bx
+109:    09 18                   or     DWORD PTR [eax],ebx
+10b:    0a 00                   or     al,BYTE PTR [eax]
+10d:    66 0b 00                or     ax,WORD PTR [eax]
+110:    0b 00                   or     eax,DWORD PTR [eax]
+
+112:    0f fd c1                paddw  mm0,mm1
+115:    0f fe c1                paddd  mm0,mm1
+118:    0f 63 c1                packsswb mm0,mm1
+11b:    0f 6b c1                packssdw mm0,mm1
+11e:    0f 68 c1                punpckhbw mm0,mm1
+121:    0f 69 c1                punpckhwd mm0,mm1
+
+124:    66 8f 00                pop    WORD PTR [eax]
+127:    8f 00                   pop    DWORD PTR [eax]
+129:    66 58                   pop    ax
+12b:    58                      pop    eax
+12c:    1f                      pop    ds
+12d:    07                      pop    es
+12e:    17                      pop    ss
+12f:    0f a1                   pop    fs
+131:    0f a9                   pop    gs
+133:    66 ff 30                push   WORD PTR [eax]
+136:    ff 30                   push   DWORD PTR [eax]
+
+138:    66 50                   push   ax
+13a:    50                      push   eax
+13b:    6a 12                   push   0x12
+13d:    68 34 12 00 00          push   0x1234
+142:    68 78 56 34 12          push   0x12345678
+147:    0e                      push   cs
+148:    16                      push   ss
+149:    1e                      push   ds
+14a:    06                      push   es
+14b:    0f a0                   push   fs
+14d:    0f a8                   push   gs
+14f:    f3 a4                   rep movs BYTE PTR es:[edi],BYTE PTR ds:[esi]
+151:    66 f3 a5                rep movs WORD PTR es:[edi],WORD PTR ds:[esi]
+154:    f3 a5                   rep movs DWORD PTR es:[edi],DWORD PTR ds:[esi]
+
+156:    c3                      ret
+157:    cb                      retf
+158:    c2 12 00                ret    0x12
+15b:    ca 0c 00                retf   0xc
+
+15e:    d0 e3                   shl    bl,1
+160:    d2 e3                   shl    bl,cl
+162:    c0 e3 03                shl    bl,0x3
+165:    66 d1 e3                shl    bx,1
+168:    66 d3 e3                shl    bx,cl
+16b:    66 c1 e3 03             shl    bx,0x3
+16f:    d1 e3                   shl    ebx,1
+171:    d3 e3                   shl    ebx,cl
+173:    c1 e3 03                shl    ebx,0x3
+
+176:    d0 fb                   sar    bl,1
+178:    d2 fb                   sar    bl,cl
+17a:    c0 fb 03                sar    bl,0x3
+17d:    66 d1 fb                sar    bx,1
+180:    66 d3 fb                sar    bx,cl
+183:    66 c1 fb 03             sar    bx,0x3
+187:    d1 fb                   sar    ebx,1
+189:    d3 fb                   sar    ebx,cl
+18b:    c1 fb 03                sar    ebx,0x3
+
+18e:    fd                      std
+18f:    66 93                   xchg   bx,ax
+191:    93                      xchg   ebx,eax
+192:    86 cb                   xchg   bl,cl
+194:    66 87 cb                xchg   bx,cx
+197:    87 cb                   xchg   ebx,ecx

@@ -77,7 +77,7 @@ while read -r leaf_dir; do
   run_one_sim "$leaf_dir" &
   pids+=($!)
 done < <(
-  find "$ROOT" -type d -links 2
+  find "$ROOT" -type d -links 2 -not -empty
 )
 
 for pid in "${pids[@]}"; do

@@ -1,0 +1,9 @@
+.i 2		
+.o 2	
+.ilb INP1 INP0
+.ob OUT1 OUT0
+
+00 
+01
+10
+11

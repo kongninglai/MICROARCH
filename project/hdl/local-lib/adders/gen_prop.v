@@ -1,3 +1,6 @@
+/*
+Delay: 0.35ns
+*/
 module gen_prop(gen, prop, in0, in1);
 	
 	input		in0, in1;

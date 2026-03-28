@@ -9,7 +9,11 @@ ROW_COUNT  = 1 << ROW_BITS
 RANK_COUNT = 1 << RANK_BITS
 CHIP_COUNT = 1 << CHIP_BITS
 
+<<<<<<< HEAD
 OUT_DIR = "/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/mem_init_sample" 
+=======
+OUT_DIR = "/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/mem_init" 
+>>>>>>> origin/predecoder
 
 mem = {}
 for r in range(RANK_COUNT):
