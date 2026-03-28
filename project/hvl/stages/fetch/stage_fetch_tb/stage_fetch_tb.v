@@ -148,7 +148,8 @@ module tb_stage_fetch();
         check_fetch("Execute Flush Target    ", 32'h1000_BEE0);
 
         $display("=======================================");
-        $display("FAILURES = %d, SUCCESSES = %d", FAILURES, SUCCESSES);
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 

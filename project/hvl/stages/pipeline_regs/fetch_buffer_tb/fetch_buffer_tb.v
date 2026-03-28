@@ -197,7 +197,7 @@ endgenerate
 // Test Infrastructure
 // ═══════════════════════════════════════════════════════════════
 
-integer num_tests, num_fail;
+integer num_tests, FAILURES, SUCCESSES;
 integer fail_flag;
 
 task apply_reset;
@@ -240,9 +240,12 @@ begin
                  tag, to_de_pf_expn_bytes_out, ref_pf_out, $time);
     end
     if(fail_flag == 1) begin
-        num_fail = num_fail + 1;
+        FAILURES = FAILURES + 1;
         fail_flag = 0;
     end 
+    else begin
+        SUCCESSES = SUCCESSES + 1;
+    end
 end
 endtask
 
@@ -300,7 +303,8 @@ reg [127:0] cl_a, cl_b;
 
 initial begin
     num_tests = 0;
-    num_fail  = 0;
+    FAILURES = 0;
+    SUCCESSES = 0;
 
     // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 1: Reset ===");
@@ -470,11 +474,10 @@ initial begin
 
     // ══════════════════════════════════════════════════════════
     $display("\n========================================");
-    if (num_fail == 0)
-        $display("  ✅ ALL %0d TESTS PASSED", num_tests);
-    else
-        $display("  ❌ FAILED: %0d / %0d tests", num_fail, num_tests);
+    
     $display("========================================\n");
+    $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+    $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
 
     $finish;
 end
