@@ -87,6 +87,14 @@ mux4_16$   mux4_16$_NEXT_FETCH_POINTER_BOT (
 );
 
 assign F_PAGE_OFFSET  = {FETCH_POINTER, {RANK_BURST_SIZE{1'b0}}};
-assign ITLB_VPN       = FETCH_POINTER[VA_BIT_WIDTH-1:PAGE_BIT_WIDTH];
+
+wire    [VA_BIT_WIDTH-1:0] FULL_INST_VA;
+
+PA_32b PA_32b_FULL_INST_VA (
+  .in0({from_rr_code_segment, {SEGR_DATA_BIT_WIDTH{1'b0}}}), .in1({FETCH_POINTER, {RANK_BURST_SIZE{1'b0}}}),
+	.s(FULL_INST_VA)
+);
+
+assign ITLB_VPN       = FULL_INST_VA[VA_BIT_WIDTH-1:PAGE_BIT_WIDTH];
 
 endmodule

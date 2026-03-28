@@ -168,6 +168,26 @@ integer SUCCESSES = 0;
 
 assign from_fetch_buffer_write_enable = ICACHE_VALID;
 
+reg [VA_BIT_WIDTH-1:0]  EXPECTED_INST_ADDR;
+
+always @(posedge clk) begin
+  if (from_ex_flush === 1'b1) begin
+    EXPECTED_INST_ADDR <= ({from_rr_code_segment, 16'd0} + from_ex_eip_target_out) & 32'hFFFFFFF0;
+  end else if (from_de_taken_predicted_branch === 1'b1) begin
+    EXPECTED_INST_ADDR <= ({from_rr_code_segment, 16'd0} + from_de_bp_target_out) & 32'hFFFFFFF0;
+  end else if (ICACHE_VALID === 1'b1) begin
+    EXPECTED_INST_ADDR <= EXPECTED_INST_ADDR + 16;
+  end
+
+  if ({ITLB_VPN, F_PAGE_OFFSET} !== EXPECTED_INST_ADDR) begin
+    FAILURES = FAILURES + 1;
+    $display("FAILURE AT TIME %t: EXPECTED_INST_ADDR exp=%h got=%h", $time, EXPECTED_INST_ADDR, {ITLB_VPN, F_PAGE_OFFSET});
+  end else begin
+    SUCCESSES = SUCCESSES + 1;
+    // $display("SUCCESS AT TIME %t: EXPECTED_INST_ADDR exp=%h got=%h", $time, EXPECTED_INST_ADDR, {ITLB_VPN, F_PAGE_OFFSET});
+  end
+end
+
 initial begin
   rst_n = 0;
   from_de_bp_target_out = 32'h00000015;
@@ -176,6 +196,7 @@ initial begin
   from_ex_eip_target_out = 32'h00000005;
   from_ex_flush = 0;
   from_wb_flush = 0;
+  EXPECTED_INST_ADDR = ({from_rr_code_segment, 16'd0} + 0);
 
   #(1.5 * CYCLE_TIME);
   rst_n = 1;
@@ -183,14 +204,14 @@ initial begin
   #(CYCLE_TIME);
 
   #(101*CYCLE_TIME);
-  from_de_taken_predicted_branch = 1;
+  from_de_taken_predicted_branch <= 1;
   #(CYCLE_TIME);
-  from_de_taken_predicted_branch = 0;
+  from_de_taken_predicted_branch <= 0;
   #(40*CYCLE_TIME);
 
-  from_ex_flush = 1;
+  from_ex_flush <= 1;
   #(CYCLE_TIME);
-  from_ex_flush = 0;
+  from_ex_flush <= 0;
   #(40*CYCLE_TIME);
   
   

@@ -54,5 +54,6 @@
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_64b.v
 ~/MICROARCH/project/hdl/cache/top/full_cache.v
 ~/MICROARCH/project/hdl/cache/tlb/tlb_wrapper.v
+~/MICROARCH/project/hdl/local-lib/adders/PA_32b.v
 ~/MICROARCH/project/hdl/stages/fetch/stage_fetch.v
 ~/MICROARCH/project/hvl/stages/fetch/stage_fetch_tb/stage_fetch_tb.v
