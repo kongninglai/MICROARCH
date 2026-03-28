@@ -15,16 +15,6 @@ module fetch_pointer(
     output wire [31:0] ic_addr
 );
 
-    //CS REG Logic
-    wire [31:0] cs_reg_out32;
-    reg_n #(.WIDTH(32), .USE_EN_BAR(1'b0), .RESET_TO_ONES(1'b0)) CS_REG (
-        .clk(clk),
-        .rst(rst_bar),
-        .en({{16{from_ex_ld_cs}}, 16'd0}),
-        .d({from_ex_cs_reg, 16'd0}),
-        .q(cs_reg_out32)
-    );
-
     //FEIP Logic
     wire [31:0] feip_reg_out32, ld_feip_val, i_eip;
 
@@ -55,7 +45,7 @@ module fetch_pointer(
     );
 
     PA_32b CS_FEIP_ADDER(
-        .in0(cs_reg_out32), .in1(feip_reg_out32),
+        .in0({from_ex_cs_reg, {16'h0000}}), .in1(feip_reg_out32),
 	    .s(ic_addr)
     );
 

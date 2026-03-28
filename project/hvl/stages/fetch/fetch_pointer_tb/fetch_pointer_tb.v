@@ -10,7 +10,6 @@ module tb_fetch_pointer();
     reg [15:0] from_ex_cs_reg;
     reg from_de_take_branch;
     reg from_ex_flush;
-    reg from_wb_flush;
     reg from_f_cl_ld;
     reg [31:0] bp_eip_target;
     reg [31:0] ex_eip_target;
@@ -26,8 +25,8 @@ module tb_fetch_pointer();
         .clk(clk), .rst_bar(rst_bar),
         .shft_reg_we(shft_reg_we),
         .from_ex_ld_cs(from_ex_ld_cs), .from_ex_cs_reg(from_ex_cs_reg),
-        .from_de_take_branch(from_de_take_branch), .from_ex_flush(from_ex_flush),
-        .from_wb_flush(from_wb_flush), .from_f_cl_ld(from_f_cl_ld),
+        .from_de_take_branch(from_de_take_branch), .from_ex_flush(from_ex_flush), 
+        .from_f_cl_ld(from_f_cl_ld),
         .bp_eip_target(bp_eip_target), .ex_eip_target(ex_eip_target),
         .ic_addr(ic_addr)
     );
@@ -51,7 +50,8 @@ module tb_fetch_pointer();
             end else begin
                 $display("  ❌ FAIL | %0s", test_name);
                 $display("     EXPECTED: %h | ACTUAL: %h", expected_ic_addr, ic_addr);
-                $display("      [DEBUG] CS_Base: %h | FEIP_Aligned: %h", uut.cs_reg_out32, uut.feip_reg_out32);
+                // UPDATED DEBUG PRINT: Reconstructed CS Base since the internal reg is gone
+                $display("      [DEBUG] CS_Base: %h | FEIP_Aligned: %h", {uut.from_ex_cs_reg, 16'h0000}, uut.feip_reg_out32);
                 $display("      [DEBUG] eip_true (MUX out): %h | ld_feip: %b", uut.eip_true, uut.ld_feip);
                 FAILURES = FAILURES + 1;
             end
@@ -66,7 +66,7 @@ module tb_fetch_pointer();
         // --- Init State ---
         shft_reg_we = 0; from_ex_ld_cs = 0;
         from_ex_cs_reg = 16'h0000; from_de_take_branch = 0;
-        from_ex_flush = 0; from_wb_flush = 0; from_f_cl_ld = 0;
+        from_ex_flush = 0; from_f_cl_ld = 0;
         bp_eip_target = 32'h0; ex_eip_target = 32'h0;
 
         // Reset
@@ -81,8 +81,8 @@ module tb_fetch_pointer();
 
         // TEST 1: Load CS Register (Segment Base)
         from_ex_ld_cs = 1;
-        from_ex_cs_reg = 16'h1000; // CS: 1000 -> Base: 1000_0000 (per your .d logic)
-        @(posedge clk); #1; // Latch CS
+        from_ex_cs_reg = 16'h1000; // CS: 1000 -> Base: 1000_0000 (combinatorial now)
+        @(posedge clk); #1; 
         from_ex_ld_cs = 0;
         // Expected ic_addr: CS_Base(1000_0000) + FEIP(0) = 1000_0000
         check_addr("Load CS Segment Base  ", 32'h1000_0000);
