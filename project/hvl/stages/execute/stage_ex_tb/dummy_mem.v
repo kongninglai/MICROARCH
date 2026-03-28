@@ -151,7 +151,7 @@ module dummy_mem(
     assign  from_mem_dec_esp = to_mem_dec_esp;
     assign  from_mem_imm = to_mem_imm;
     assign  from_mem_store_is_io_line_0 = 1'b0;
-    assign  from_mem_store_addr_line_0 = 11'b0;
+    assign  from_mem_store_addr_line_0 = to_mem_st_addr[10:0];
     assign  from_mem_store_mask_line_0 = 16'b0;
     assign  from_mem_store_queue_alloc_line_0 = 1'b0;
     assign  from_mem_store_addr_line_1 = 11'b0;

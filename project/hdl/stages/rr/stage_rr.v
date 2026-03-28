@@ -20,7 +20,8 @@ module stage_rr(
     output [5:0]  to_regunit_modrm,
     output [5:0]  to_regunit_sib,
     output        to_regunit_has_sib,
-    output [2:0]  to_regunit_sig_gprd0_mux,
+    output [1:0]  to_regunit_sig_gprd0_mux,
+    output        to_regunit_sig_gprd1_mux,
     output [1:0]  to_regunit_sig_gprd2_mux,
     output        to_regunit_sig_srcregA_mux,
     output        to_regunit_sig_srcregB_mux,
@@ -87,15 +88,15 @@ module stage_rr(
                             .has_modrm(to_rr_addr_mode[0])
                            );
 
-    wire [1:0] ldAB, dstidB_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds, mem_ds, imm_mux, addr_mux;
-    wire [2:0] dstidA_mux, gprd0_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
-    wire srcregA_mux, srcregB_mux, ldEFLAGS, alu_srcb_mux, ldEIP, ldCS, seg_dst_mux, srcsreg_mux, segrd0_mux, segrd1_mux, rm;
+    wire [1:0] ldAB, dstidB_mux, gprd0_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds, mem_ds, imm_mux, addr_mux;
+    wire [2:0] dstidA_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
+    wire gprd1_mux, srcregA_mux, srcregB_mux, ldEFLAGS, alu_srcb_mux, ldEIP, ldCS, seg_dst_mux, srcsreg_mux, segrd0_mux, segrd1_mux, rm;
     wire [10:0] needREGS;
     wire [3:0] gp_dsta_mux, store_data_mux;
 
     rr_sig rr_sig_dut(
     .ucode_sig(ucode_sig), .ldAB(ldAB), .dstidA_mux(dstidA_mux), .dstidB_mux(dstidB_mux),
-    .srcregA_mux(srcregA_mux), .srcregB_mux(srcregB_mux), .gprd0_mux(gprd0_mux), .gprd2_mux(gprd2_mux), .srcsreg_mux(srcsreg_mux), .segrd0_mux(segrd0_mux), .segrd1_mux(segrd1_mux),
+    .srcregA_mux(srcregA_mux), .srcregB_mux(srcregB_mux), .gprd0_mux(gprd0_mux), .gprd1_mux(gprd1_mux), .gprd2_mux(gprd2_mux), .srcsreg_mux(srcsreg_mux), .segrd0_mux(segrd0_mux), .segrd1_mux(segrd1_mux),
     .ldREGS(ldREGS), .needREGS(needREGS), .ldEFLAGS(ldEFLAGS),
     .alu_srcb_mux(alu_srcb_mux), .shf_srcb_mux(shf_srcb_mux),
     .ldEIP(ldEIP), .ldCS(ldCS), .eflags_mux(eflags_mux), .eip_mux(eip_mux), .cs_mux(cs_mux),
@@ -103,13 +104,19 @@ module stage_rr(
     .store_data_mux(store_data_mux), .rw(rw), .ds(ds), .mem_ds(mem_ds), .imm_mux(imm_mux), .addr_mux(addr_mux), .rm(rm)
     );
     
-    wire [1:0] ds_with_override, mem_ds_with_override;
+    wire [1:0] ds_with_override, mem_ds_override_16;
     wire ds1_inv, ds_is_32, set_ds_16;
     inv1$ inv_ds1(ds1_inv, ds[1]);
     nor2$ nor2_ds32(ds_is_32, ds1_inv, ds[0]);
     and2$ and_ds16(set_ds_16, ds_is_32, to_rr_prefix[4]);
     mux2$ mux_ds_override[1:0](ds_with_override, ds, 2'b01, set_ds_16);
-    mux2$ mux_mem_ds_override[1:0](mem_ds_with_override, mem_ds, 2'b01, set_ds_16);
+    mux2$ mux_mem_ds_override16[1:0](mem_ds_override_16, mem_ds, 2'b01, set_ds_16);
+
+    wire mem_ds_is_64, set_mem_ds_32;
+    wire [1:0] mem_ds_with_override;
+    and2$ and_mem_ds_64(mem_ds_is_64, mem_ds[1], mem_ds[0]);
+    and2$ and_ds32(set_mem_ds_32, mem_ds_is_64, to_rr_prefix[4]);
+    mux2$ mux_mem_ds_override[1:0](mem_ds_with_override, mem_ds_override_16, 2'b10, set_mem_ds_32);
 
     wire intex, stack_push;
 
@@ -126,6 +133,7 @@ module stage_rr(
     assign to_regunit_sib = to_rr_sib[5:0];
     assign to_regunit_has_sib = to_rr_addr_mode[1];
     assign to_regunit_sig_gprd0_mux = gprd0_mux;
+    assign to_regunit_sig_gprd1_mux = gprd1_mux;
     assign to_regunit_sig_gprd2_mux = gprd2_mux;
     assign to_regunit_sig_srcregA_mux = srcregA_mux;
     assign to_regunit_sig_srcregB_mux = srcregB_mux;
@@ -140,34 +148,34 @@ module stage_rr(
     wire shf_op, cmps, cmpxchg, cmovc, palu_size;
     
     // dstA_size = 32 if dstidA_mux=101/110(ESI/ECX) else ds
-    // dstB_size = ds if dstidB_mux=01(regr) else 32
+    // dstB_size = ds if dstidB_mux=01/10(regr/EAX) else 32
     wire dstidA_xor_10, dstidA_size_32, dstidB_0_inv, dstidB_size_ds;
     xor2$ xor_dstidA10(dstidA_xor_10, dstidA_mux[1], dstidA_mux[0]);
     and2$ and_dstidA_size_32(dstidA_size_32, dstidA_xor_10, dstidA_mux[2]);
     mux2$ mux2_dstA_size[1:0](dstA_size, ds_with_override, 2'b10, dstidA_size_32);
 
-    inv1$ inv_dstidB0(dstidB_0_inv, dstidB_mux[0]);
-    nor2$ nor_dstidB_size_ds(dstidB_size_ds, dstidB_mux[1], dstidB_0_inv);
+    xor2$ xor_dstidB_size_ds(dstidB_size_ds, dstidB_mux[1], dstidB_mux[0]);
     mux2$ mux2_dstB_size[1:0](dstB_size, 2'b10, ds_with_override, dstidB_size_ds);
 
 
     wire [3:0] ff_store_data_mux, from_rr_store_data_mux;
     wire [1:0] ff_from_rr_rw, from_rr_rw;
     wire ff_from_rr_ldEIP, from_rr_ldEIP;
-
+    wire ff_ldB, ff_from_rr_ldB;
     wire opcode_ff;
     big_and #(.WIDTH(8)) and_opcode_ff(opcode_ff, to_rr_opcode);
     mux4$ mux4_store_data_mux[3:0](ff_store_data_mux, 4'bx, 4'b0001, 4'bx, 4'b1010, to_rr_modrm[4], to_rr_modrm[5]);
     mux4$ mux4_rw[1:0](ff_from_rr_rw, 2'bx, 2'b11, 2'b10, 2'b11, to_rr_modrm[4], to_rr_modrm[5]);
+    mux4$ mux4_ff_ldB(ff_ldB, 1'bx, 1'b1, 1'b0, 1'b1, to_rr_modrm[4], to_rr_modrm[5]);
     mux4$ mux4_ldEIP(ff_from_rr_ldEIP, 1'bx, 1'b1, 1'b1, 1'b0, to_rr_modrm[4], to_rr_modrm[5]);
 
     mux2$ mux2_store_data_mux[3:0](from_rr_store_data_mux, store_data_mux, ff_store_data_mux, opcode_ff);
     mux2$ mux2_rw[1:0](from_rr_rw, rw, ff_from_rr_rw, opcode_ff);
     mux2$ mux2_ldEIP(from_rr_ldEIP, ldEIP, ff_from_rr_ldEIP, opcode_ff);
-
+    mux2$ mux2_ldB(ff_from_rr_ldB, ldAB[0], ff_ldB, opcode_ff);
     wire ret_with_imm;
     big_eq #(.WIDTH(7)) eq_ret_with_imm(.eq(ret_with_imm), .in0({to_rr_opcode[7:4], to_rr_opcode[2:0]}), .in1(7'h62));
-    assign from_rr_control_sigs={ldAB, dstA_size, dstB_size, ldREGS, ldEFLAGS,
+    assign from_rr_control_sigs={{ldAB[1], ff_from_rr_ldB}, dstA_size, dstB_size, ldREGS, ldEFLAGS,
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
                      mmx_op, alu_op, shf_op, cmps, con_jmp, cmpxchg, cmovc,
                      gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, from_rr_store_data_mux, from_rr_rw, ds_with_override, 
@@ -238,8 +246,12 @@ module stage_rr(
     mux3_32 mux3_disp(.out(disp_normal), .in0(32'b0), .in1(disp8_se), .in2(to_rr_disp), .s0(to_rr_dispsize[0]), .s1(to_rr_dispsize[1]));
     mux2_32 mux2_disp_ptr(.out(disp_ptr), .in0({16'b0, to_rr_imm[47:32]}), .in1({16'b0, to_rr_imm[31:16]}), .s0(to_rr_prefix[4])) ;
 
-    wire disp_is_ptr;
-    and2$ and_immsize48(disp_is_ptr, to_rr_imm_size[2], to_rr_imm_size[1]);
+    wire disp_is_ptr; // opcode=9A/EA
+    wire opcode_9a, opcode_ea;
+    big_eq #(.WIDTH(8)) eq_9a(.eq(opcode_9a), .in0(to_rr_opcode), .in1(8'h9A));
+    big_eq #(.WIDTH(8)) eq_ea(.eq(opcode_ea), .in0(to_rr_opcode), .in1(8'hEA));
+    or2$ or_is_ptr(disp_is_ptr, opcode_9a, opcode_ea);
+    // and2$ and_immsize48(disp_is_ptr, to_rr_imm_size[2], to_rr_imm_size[1]);
     mux2_32 mux2_disp_value(.out(from_rr_disp), .in0(disp_normal), .in1(disp_ptr), .s0(disp_is_ptr));
 
     mux2$ mux2_scale[1:0](from_rr_scale_mux, 2'b00, to_rr_sib[7:6], to_rr_addr_mode[1]);

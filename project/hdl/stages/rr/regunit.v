@@ -6,7 +6,8 @@ module regunit(
     input [5:0]  from_rr_modrm,
     input [5:0]  from_rr_sib,
     input        from_rr_has_sib,
-    input [2:0]  from_rr_sig_gprd0_mux,
+    input [1:0]  from_rr_sig_gprd0_mux,
+    input        from_rr_sig_gprd1_mux,
     input [1:0]  from_rr_sig_gprd2_mux,
     input        from_rr_sig_srcregA_mux,
     input        from_rr_sig_srcregB_mux,
@@ -71,14 +72,14 @@ module regunit(
     wire [1:0] gprd0_ds, gprd1_ds, gprd2_ds, gprd3_ds;
     wire [2:0] gp_base;
     mux2$ mux2_base[2:0](gp_base, from_rr_modrm[2:0], from_rr_sib[2:0], from_rr_has_sib);
-    // gprd0_idx: 0(EAX/000), 1(ECX/001), 2(EDI/111), 3(ESP/100), 4(opr[2:0]) 
-    // gprd1_idx: reg(modrm[5:3])
+    // gprd0_idx: 0(EAX/000), 1(ECX/001), 2(EDI/111), 3(ESP/100)
+    // gprd1_idx: 0(reg(modrm[5:3])), 1(opr[2:0])
     // gprd2_idx: 0(mod=modrm[2:0]), 1(ESI/110), 2(base)
     // gprd3_idx: index(sib[5:3])
-    mux8 mux8_gprd0_idx[2:0](gprd0_idx, 3'b000, 3'b001, 3'b111, 3'b100, from_rr_opcode[2:0], , , , from_rr_sig_gprd0_mux[0], from_rr_sig_gprd0_mux[1], from_rr_sig_gprd0_mux[2]);
-    mux8 mux8_gprd0_ds[1:0](gprd0_ds, from_rr_sig_ds, 2'b10, 2'b10, 2'b10, from_rr_sig_ds, , , , from_rr_sig_gprd0_mux[0], from_rr_sig_gprd0_mux[1], from_rr_sig_gprd0_mux[2]);
+    mux4$ mux4_gprd0_idx[2:0](gprd0_idx, 3'b000, 3'b001, 3'b111, 3'b100, from_rr_sig_gprd0_mux[0], from_rr_sig_gprd0_mux[1]);
+    mux4$ mux4_gprd0_ds[1:0](gprd0_ds, from_rr_sig_ds, 2'b10, 2'b10, 2'b10, from_rr_sig_gprd0_mux[0], from_rr_sig_gprd0_mux[1]);
     
-    assign gprd1_idx = from_rr_modrm[5:3];
+    mux2$  mux2_gprd1_idx[2:0](gprd1_idx, from_rr_modrm[5:3], from_rr_opcode[2:0], from_rr_sig_gprd1_mux);
     assign gprd1_ds = from_rr_sig_ds;
     
     mux4$ mux4_gprd2_idx[2:0](gprd2_idx, from_rr_modrm[2:0], 3'b110, gp_base, 3'b000, from_rr_sig_gprd2_mux[0], from_rr_sig_gprd2_mux[1]);
@@ -157,7 +158,7 @@ module regunit(
 
     wire gprd0_mux_1_inv, gprd0_is_edi;
     inv1$ inv_gprd0_mux1(gprd0_mux_1_inv, from_rr_sig_gprd0_mux[1]);
-    nor3$ nor_gprd0_is_edi(gprd0_is_edi, from_rr_sig_gprd0_mux[2], gprd0_mux_1_inv, from_rr_sig_gprd0_mux[0]);
+    nor2$ nor_gprd0_is_edi(gprd0_is_edi, gprd0_mux_1_inv, from_rr_sig_gprd0_mux[0]);
 
     wire [2:0] es_ss_idx;
     mux2$ mux2_es_ss[2:0](es_ss_idx, 3'b010, 3'b000, gprd0_is_edi);

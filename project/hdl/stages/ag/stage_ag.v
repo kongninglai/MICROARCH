@@ -130,7 +130,7 @@ module stage_ag(
     address_adder address_adder_inst (
         .scale_mux1(to_ag_scale_mux), .sreg1(to_ag_sreg1), .index1(to_ag_index1), .base1(to_ag_base1), .disp1(to_ag_disp),
         .stack_push(stack_push), .ret_with_imm(ret_with_imm), .imm(imm_final), .sreg2(to_ag_sreg2), .base2(to_ag_base2),
-        .size_mux(ds),
+        .size_mux(mem_ds),
         .addr1(addr1), .offset1(offset1),
         .addr2(addr2), .offset2(offset2), .inc_esp(inc_esp), .dec_esp(dec_esp)
     );

@@ -33,7 +33,8 @@ module stage_rr_tb;
     wire [5:0] to_regunit_modrm;
     wire [5:0] to_regunit_sib;
     wire to_regunit_has_sib;
-    wire [2:0] to_regunit_sig_gprd0_mux;
+    wire [1:0] to_regunit_sig_gprd0_mux;
+    wire to_regunit_sig_gprd1_mux;
     wire [1:0] to_regunit_sig_gprd2_mux;
     wire to_regunit_sig_srcregA_mux;
     wire to_regunit_sig_srcregB_mux;
@@ -139,6 +140,7 @@ module stage_rr_tb;
         .to_regunit_sib(to_regunit_sib),
         .to_regunit_has_sib(to_regunit_has_sib),
         .to_regunit_sig_gprd0_mux(to_regunit_sig_gprd0_mux),
+        .to_regunit_sig_gprd1_mux(to_regunit_sig_gprd1_mux),
         .to_regunit_sig_gprd2_mux(to_regunit_sig_gprd2_mux),
         .to_regunit_sig_srcregA_mux(to_regunit_sig_srcregA_mux),
         .to_regunit_sig_srcregB_mux(to_regunit_sig_srcregB_mux),
@@ -199,6 +201,7 @@ module stage_rr_tb;
         .from_rr_sib(to_regunit_sib),
         .from_rr_has_sib(to_regunit_has_sib),
         .from_rr_sig_gprd0_mux(to_regunit_sig_gprd0_mux),
+        .from_rr_sig_gprd1_mux(to_regunit_sig_gprd1_mux),
         .from_rr_sig_gprd2_mux(to_regunit_sig_gprd2_mux),
         .from_rr_sig_srcregA_mux(to_regunit_sig_srcregA_mux),
         .from_rr_sig_srcregB_mux(to_regunit_sig_srcregB_mux),
@@ -604,7 +607,7 @@ module stage_rr_tb;
         @(posedge clk);
         apply_de_inputs(6'b000111, 8'hb1, 8'hb4, 8'hd4, 32'h12345678, 2'b10,
                         48'bx, 3'b000, 2'b11, 32'h0, 32'h8, 1'b1);
-        #4
+        #5
         print_from_rr_outputs();
         $display("\n");
 
@@ -643,7 +646,7 @@ module stage_rr_tb;
         @(posedge clk);
         apply_de_inputs(6'b000001, 8'h7f, 8'h39, 8'bx, 32'bx, 2'b00,
                         48'bx, 3'b000, 2'b01, 32'h0, 32'h4, 1'b1);
-        #4
+        #5
         print_from_rr_outputs();
         $display("\n");
 

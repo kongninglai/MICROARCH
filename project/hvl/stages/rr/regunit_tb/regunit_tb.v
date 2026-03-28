@@ -13,7 +13,8 @@ module regunit_tb;
     reg [5:0] from_rr_modrm;
     reg [5:0] from_rr_sib;
     reg from_rr_has_sib;
-    reg [2:0] from_rr_sig_gprd0_mux;
+    reg [1:0] from_rr_sig_gprd0_mux;
+    reg from_rr_sig_gprd1_mux;
     reg [1:0] from_rr_sig_gprd2_mux;
     reg from_rr_sig_srcregA_mux;
     reg from_rr_sig_srcregB_mux;
@@ -73,6 +74,7 @@ module regunit_tb;
         .from_rr_sib(from_rr_sib),
         .from_rr_has_sib(from_rr_has_sib),
         .from_rr_sig_gprd0_mux(from_rr_sig_gprd0_mux),
+        .from_rr_sig_gprd1_mux(from_rr_sig_gprd1_mux),
         .from_rr_sig_gprd2_mux(from_rr_sig_gprd2_mux),
         .from_rr_sig_srcregA_mux(from_rr_sig_srcregA_mux),
         .from_rr_sig_srcregB_mux(from_rr_sig_srcregB_mux),
@@ -133,7 +135,8 @@ module regunit_tb;
             from_rr_modrm = 6'd0;
             from_rr_sib = 6'd0;
             from_rr_has_sib = 1'b0;
-            from_rr_sig_gprd0_mux = 3'd0;
+            from_rr_sig_gprd0_mux = 2'd0;
+            from_rr_sig_gprd1_mux = 1'd0;
             from_rr_sig_gprd2_mux = 2'd0;
             from_rr_sig_srcregA_mux = 1'b0;
             from_rr_sig_srcregB_mux = 1'b0;
@@ -166,7 +169,8 @@ module regunit_tb;
         input [5:0] modrm;
         input [5:0] sib;
         input has_sib;
-        input [2:0] sig_gprd0_mux;
+        input [1:0] sig_gprd0_mux;
+        input sig_gprd1_mux;
         input [1:0] sig_gprd2_mux;
         input sig_srcregA_mux;
         input sig_srcregB_mux;
@@ -179,6 +183,7 @@ module regunit_tb;
         from_rr_sib = sib;
         from_rr_has_sib = has_sib;
         from_rr_sig_gprd0_mux = sig_gprd0_mux;
+        from_rr_sig_gprd1_mux = sig_gprd1_mux;
         from_rr_sig_gprd2_mux = sig_gprd2_mux;
         from_rr_sig_srcregA_mux = sig_srcregA_mux;
         from_rr_sig_srcregB_mux = sig_srcregB_mux;
@@ -292,7 +297,7 @@ module regunit_tb;
         $display("TEST CASE1: ADD EAX, ECX");
         $display("======================================");
         // 01 C8=00000001 11001000
-        apply_rr_inputs(8'h01, 6'b001000, 6'b0, 1'b0, 3'bx, 2'b00, 1'b1, 1'b1, 2'b10, 1'bx, 3'b0);
+        apply_rr_inputs(8'h01, 6'b001000, 6'b0, 1'b0, 2'bx, 1'b0, 2'b00, 1'b1, 1'b1, 2'b10, 1'bx, 3'b0);
         #8
         print_all_outputs();
 
@@ -300,7 +305,7 @@ module regunit_tb;
         $display("TEST CASE2: ADD [EBX], CH");
         $display("======================================");
         // 00 2b=00000000 00101011
-        apply_rr_inputs(8'h00, 6'b101011, 6'b0, 1'b0, 3'bx, 2'b10, 1'bx, 1'b1, 2'b00, 1'b1, 3'b011);
+        apply_rr_inputs(8'h00, 6'b101011, 6'b0, 1'b0, 2'bx, 1'b0, 2'b10, 1'b1, 1'b1, 2'b00, 1'b1, 3'b011);
         #8
         print_all_outputs();
 

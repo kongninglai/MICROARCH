@@ -32,7 +32,8 @@ module rr_to_ag_tb;
     wire [5:0] to_regunit_modrm;
     wire [5:0] to_regunit_sib;
     wire to_regunit_has_sib;
-    wire [2:0] to_regunit_sig_gprd0_mux;
+    wire [1:0] to_regunit_sig_gprd0_mux;
+    wire to_regunit_sig_gprd1_mux;
     wire [1:0] to_regunit_sig_gprd2_mux;
     wire to_regunit_sig_srcregA_mux;
     wire to_regunit_sig_srcregB_mux;
@@ -165,6 +166,7 @@ module rr_to_ag_tb;
         .to_regunit_sib(to_regunit_sib),
         .to_regunit_has_sib(to_regunit_has_sib),
         .to_regunit_sig_gprd0_mux(to_regunit_sig_gprd0_mux),
+        .to_regunit_sig_gprd1_mux(to_regunit_sig_gprd1_mux),
         .to_regunit_sig_gprd2_mux(to_regunit_sig_gprd2_mux),
         .to_regunit_sig_srcregA_mux(to_regunit_sig_srcregA_mux),
         .to_regunit_sig_srcregB_mux(to_regunit_sig_srcregB_mux),
@@ -282,6 +284,7 @@ module rr_to_ag_tb;
         .from_rr_sib(to_regunit_sib),
         .from_rr_has_sib(to_regunit_has_sib),
         .from_rr_sig_gprd0_mux(to_regunit_sig_gprd0_mux),
+        .from_rr_sig_gprd1_mux(to_regunit_sig_gprd1_mux),
         .from_rr_sig_gprd2_mux(to_regunit_sig_gprd2_mux),
         .from_rr_sig_srcregA_mux(to_regunit_sig_srcregA_mux),
         .from_rr_sig_srcregB_mux(to_regunit_sig_srcregB_mux),

@@ -75,6 +75,8 @@ module stage_ex(
     output              from_ex_valid,
     output [1:0]        from_ex_exception
 ); 
+    wire valid_instruction;
+
     /*** PASS THROUGH SIGNALS ***/
     assign from_ex_dstidA = to_ex_dstidA;
     assign from_ex_dstidB = to_ex_dstidB;
@@ -88,7 +90,7 @@ module stage_ex(
     assign from_ex_store_data_shf_amt = to_ex_store_data_shf_amt;
     assign from_ex_oeip = to_ex_oeip;
     assign from_ex_cs = to_ex_cs;
-
+    assign from_ex_valid = to_ex_valid;
     /*** Control Signals ***/
     wire [1:0] sig_ldAB, sig_dstA_size, sig_dstB_size, sig_shf_srcb_mux, sig_cs_mux, sig_mmx_op, sig_con_jmp, sig_mm_dst_mux, sig_rw, sig_ds;
 
@@ -120,7 +122,7 @@ module stage_ex(
     assign eflags_df = eflags_out[10];
 
     wire valid_ld_eflags;
-    and2$ and_valid_ld_eflags(valid_ld_eflags, sig_ldEFLAGS, from_ex_valid);
+    and2$ and_valid_ld_eflags(valid_ld_eflags, sig_ldEFLAGS, valid_instruction);
     ex_eflags eflags_inst (
         .clk(clk),
         .rst_n(rst_n),
@@ -254,14 +256,16 @@ module stage_ex(
                                 to_ex_srcregB, {16'b0, to_ex_srcSREG}, to_ex_imm, to_ex_load_result[31:0], inc_ecx_out, 32'bx, 32'bx, 32'bx, 
                                 sig_gp_dsta_mux[0], sig_gp_dsta_mux[1], sig_gp_dsta_mux[2], sig_gp_dsta_mux[3]);
     
-    mux8_32 mux8_gp_wr_data2(from_ex_gp_wr_data_2, inc2_out, to_ex_inc_esp, to_ex_dec_esp, regA_rm, to_ex_srcregC, 32'bx, 32'bx, 32'bx, 
+    mux8_32 mux8_gp_wr_data2(from_ex_gp_wr_data_2, inc2_out, to_ex_inc_esp, to_ex_dec_esp, regA_rm, to_ex_srcregB, 32'bx, 32'bx, 32'bx, 
                                 sig_gp_dstb_mux[0], sig_gp_dstb_mux[1], sig_gp_dstb_mux[2]);
     
     mux2_16$ mux2_seg_wr_data(from_ex_seg_wr_data, regA_rm[15:0], to_ex_load_result[15:0], sig_seg_dst_mux);
 
     mux4_64 mux4_mmx_wr_data(from_ex_mmx_wr_data, palu_out, to_ex_MMB, MMB_rm, 64'bx, sig_mm_dst_mux[0], sig_mm_dst_mux[1]);
 
-    mux16_64 mux16_store_data(from_ex_store_data, {16'b0, to_ex_cs, to_ex_ieip},
+    wire [63:0] call_far_store_data;
+    mux2_64 mux2_call_far_store_data(call_far_store_data, {16'b0, to_ex_cs, to_ex_ieip}, {32'b0, to_ex_cs, to_ex_ieip[15:0]}, sig_op_ovr);
+    mux16_64 mux16_store_data(from_ex_store_data, call_far_store_data,
                                                   {32'b0, to_ex_ieip},
                                                   {32'b0, alu_out},
                                                   {32'b0, shf_out},
@@ -299,29 +303,32 @@ module stage_ex(
     wire is_taken_branch;
     and2$ and2_is_taken_branch(is_taken_branch, branch_taken, sig_ldEIP);
     
-    mux4_16$ mux4_cs(from_ex_cs_target, to_ex_target_cs, to_ex_load_result[47:32], to_ex_load_result[31:16], 16'bx, sig_cs_mux[0], sig_cs_mux[1]);
+    wire [15:0] ret_cs;
+    mux2_16$ mux2_ret_cs(ret_cs, to_ex_load_result[47:32], to_ex_load_result[31:16], sig_op_ovr);
+    mux4_16$ mux4_cs(from_ex_cs_target, to_ex_target_cs, ret_cs, to_ex_load_result[31:16], 16'bx, sig_cs_mux[0], sig_cs_mux[1]);
     
     wire branch_gp_exception, gp_exception;
     seg_limit_cmp cs_limit_cmp(.in(target_eip), .seg_limit(to_ex_cs_limit), .exception(gp_exception));
     and2$ and_valid_gp_ex(branch_gp_exception, gp_exception, is_taken_branch);
 
     // TODO: How to filter out the exceptions/uncod ? do we need that? hurt performance, but rare
-    // from_ex_valid = ~to_ex_exception[0] & ~to_ex_exception[1] & ~jmp_gp_exception & to_ex_valid
+    // valid_instruction = ~to_ex_exception[0] & ~to_ex_exception[1] & ~jmp_gp_exception & to_ex_valid
     wire no_exception;
     nor3$ nor3_no_exception(no_exception, to_ex_exception[0], to_ex_exception[1], branch_gp_exception);
-    and2$ and_from_ex_valid(from_ex_valid, to_ex_valid, no_exception);
+    and2$ and_valid_instruction(valid_instruction, to_ex_valid, no_exception);
 
-    or2$ or_from_ex_exception[1:0](from_ex_exception, to_ex_exception, {1'b0, branch_gp_exception});
+    or2$ or_from_ex_exception(from_ex_exception[0], to_ex_exception[0], branch_gp_exception);
+    assign from_ex_exception[1] = to_ex_exception[1];
 
     wire valid_ld_CS, valid_ld_EIP;
-    and2$ and2_valid_ldCS(valid_ld_CS, from_ex_valid, sig_ldCS);
-    and3$ and3_valid_ldEIP(valid_ld_EIP, from_ex_valid, is_taken_branch, mispredict);
+    and2$ and2_valid_ldCS(valid_ld_CS, valid_instruction, sig_ldCS);
+    and3$ and3_valid_ldEIP(valid_ld_EIP, valid_instruction, is_taken_branch, mispredict);
     or2$ or_flush(from_ex_flush, valid_ld_CS, valid_ld_EIP);
     assign from_ex_ld_cs = valid_ld_CS;
     
     assign from_ex_br_t_nt = branch_taken;
-    and2$ and_br_valid(from_ex_br_valid, sig_ldEIP, from_ex_valid);
-
+    // and2$ and_br_valid(from_ex_br_valid, sig_ldEIP, from_ex_valid);
+    assign from_ex_br_valid = sig_ldEIP;
     assign from_ex_eip_target = target_eip;
 
     // ldAB for cmov/cmpxchg
