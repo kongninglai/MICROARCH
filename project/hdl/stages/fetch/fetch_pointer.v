@@ -45,7 +45,7 @@ module fetch_pointer(
     );
 
     PA_32b CS_FEIP_ADDER(
-        .in0({from_ex_cs_reg, {16'h0000}}), .in1(feip_reg_out32),
+        .in0({from_ex_cs_reg, 16'h0000}), .in1(feip_reg_out32),
 	    .s(ic_addr)
     );
 

@@ -8,14 +8,19 @@ module tb_stage_fetch();
     reg from_de_take_branch;
     reg from_ex_flush;
     reg from_ex_ld_cs;
-    reg [31:0] from_ex_cs_reg; // Matches your top-level port width
+    reg [15:0] from_ex_cs_reg; // FIXED: Matched width to 16 bits
     reg from_f_cl_ld;
     reg [31:0] from_ex_eip_target;
     reg [31:0] from_de_eip_target;
     
     // Cache Inputs
     reg ICACHE_VALID;
-    reg [127:0] ICACHE_HIT_DATA;
+    
+    // --- INOUT PORT FIX ---
+    // You must use a 'wire' for the inout connection, driven by a 'reg'
+    reg [127:0] ICACHE_HIT_DATA_reg;
+    wire [127:0] ICACHE_HIT_DATA;
+    assign ICACHE_HIT_DATA = ICACHE_HIT_DATA_reg;
 
     // 2. Outputs
     wire [31:0] ic_addr;
@@ -41,7 +46,7 @@ module tb_stage_fetch();
         .from_ex_eip_target(from_ex_eip_target),
         .from_de_eip_target(from_de_eip_target),
         .ICACHE_VALID(ICACHE_VALID),
-        .ICACHE_HIT_DATA(ICACHE_HIT_DATA),
+        .ICACHE_HIT_DATA(ICACHE_HIT_DATA), // Now correctly connected to a wire
         // Ignored inout ports
         .ITLB_PFN_OUT(dummy_pfn),
         .ITLB_PAGE_FAULT_OUT(dummy_fault),
@@ -82,9 +87,11 @@ module tb_stage_fetch();
 
         // --- Initialize ---
         from_de_take_branch = 0; from_ex_flush = 0; from_ex_ld_cs = 0;
-        from_ex_cs_reg = 32'h0; from_f_cl_ld = 0;
+        from_ex_cs_reg = 16'h0; from_f_cl_ld = 0;
         from_ex_eip_target = 32'h0; from_de_eip_target = 32'h0;
-        ICACHE_VALID = 0; ICACHE_HIT_DATA = 128'h0;
+        
+        ICACHE_VALID = 0; 
+        ICACHE_HIT_DATA_reg = 128'h0; // Update the backing register
 
         // Reset Sequence
         rst_bar = 0;
@@ -100,7 +107,7 @@ module tb_stage_fetch();
         // TEST 1: Load Segment Base
         // --------------------------------------------------------
         from_ex_ld_cs = 1;
-        from_ex_cs_reg = 32'h0000_1000; // Will be shifted to top 16 bits in fetch_pointer
+        from_ex_cs_reg = 16'h1000; 
         @(posedge clk); #1; 
         from_ex_ld_cs = 0;
         check_fetch("Load CS Segment Base  ", 32'h1000_0000);

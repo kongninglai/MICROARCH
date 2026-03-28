@@ -5,7 +5,7 @@ module stage_fetch(
     input wire from_de_take_branch,
     input wire from_ex_flush,
     input wire from_ex_ld_cs,
-    input wire [31:0] from_ex_cs_reg,
+    input wire [15:0] from_ex_cs_reg,
     input wire from_f_cl_ld,
 
     input wire [31:0] from_ex_eip_target,
@@ -13,7 +13,7 @@ module stage_fetch(
 
     //cache inputs/outputs
     input wire ICACHE_VALID,
-    input wire [127:0] ICACHE_HIT_DATA,
+    inout wire [127:0] ICACHE_HIT_DATA,
     inout wire [2:0] ITLB_PFN_OUT,
     inout wire ITLB_PAGE_FAULT_OUT,
     inout wire [11:0] F_PAGE_OFFSET,
@@ -41,5 +41,7 @@ fetch_pointer FETCH_POINTER(
 
     .ic_addr(ic_addr)
 );
+
+    assign F_PAGE_OFFSET = 12'd0;
 
 endmodule
