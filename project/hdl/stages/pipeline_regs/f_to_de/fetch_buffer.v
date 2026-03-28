@@ -26,9 +26,11 @@ module fetch_buffer(
     bufferH1024$ bufferH1024$_from_de_valid_and_load_rr_buf1024(from_de_valid_and_load_rr_buf1024,
                                                                 from_de_valid_and_load_rr);
 
-    //Correct Instruction Length...probably not needed but ok (VR)
+    //Correct Instruction Length
+    wire from_f_cl_pf_bar;
+    inv1$   inv1$_from_f_cl_pf_bar(from_f_cl_pf_bar, from_f_cl_pf);
     wire [3:0] gated_instr_len;
-    and2$ gate_len[3:0](gated_instr_len, from_de_instr_len, from_de_valid_and_load_rr_buf1024);
+    and3$ gate_len[3:0](gated_instr_len, from_de_instr_len, from_de_valid_and_load_rr_buf1024, from_f_cl_pf_bar);
 
     //Tail Pointer Logic
     wire from_de_eip_redirection_valid;
@@ -43,7 +45,7 @@ module fetch_buffer(
     wire [31:0] wr_en_w;
     assign wr_en_ungated = wr_en_w[30:0];
 
-    wire global_wr_en, global_wr_en_buf64, ready;
+    wire global_wr_en_buf64, ready;
     and2$   and2$_global_wr_en(global_wr_en, from_f_icache_valid, ready);
     bufferH64$    bufferH64$_global_wr_en_buf64(global_wr_en_buf64, global_wr_en);
 
@@ -101,7 +103,7 @@ module fetch_buffer(
     shift_reg_tiny PAGE_FAULT_BYTES(
         .clk(clk), .rst_n(rst_bar), 
         .shift(from_de_valid_and_load_rr_buf1024), .flush(),
-        .instr_len(), 
+        .instr_len(gated_instr_len), 
         .inbytes({31{from_f_cl_pf_buf1024}}), .global_wr_en(),
         .wr_cl_byte_cnt(), .wr_en(wr_en),
         .outbytes(pfn_outbits), .tail_ptr(),

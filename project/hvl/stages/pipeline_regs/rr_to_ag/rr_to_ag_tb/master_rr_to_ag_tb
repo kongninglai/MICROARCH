@@ -31,5 +31,5 @@
 ~/MICROARCH/project/hdl/stages/pipeline_regs/rr_to_ag/reg_rr_to_ag.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/rr_to_ag/rr_to_ag.v
 ~/MICROARCH/project/hdl/stages/rr/stage_rr.v
-~/MICROARCH/project/hvl/stages/pipeline_regs/rr_to_ag_tb/rr_to_ag_tb.v
+~/MICROARCH/project/hvl/stages/pipeline_regs/rr_to_ag/rr_to_ag_tb/rr_to_ag_tb.v
 

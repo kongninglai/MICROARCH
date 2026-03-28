@@ -41,4 +41,4 @@
 ~/MICROARCH/project/hdl/stages/ag/stage_ag.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/ag_to_mem/reg_ag_to_mem.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/ag_to_mem/ag_to_mem.v
-~/MICROARCH/project/hvl/stages/pipeline_regs/ag_to_mem_tb/ag_to_mem_tb.v
+~/MICROARCH/project/hvl/stages/pipeline_regs/ag_to_mem/ag_to_mem_tb/ag_to_mem_tb.v

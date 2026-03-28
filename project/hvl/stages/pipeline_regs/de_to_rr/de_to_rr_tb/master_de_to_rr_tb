@@ -23,7 +23,7 @@
 
 // Test Logic 
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/decoder
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr
 
 // Testbench for Test Logic 
-/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/logic_tail_ptr_tb/logic_tail_ptr_tb.v
+/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/de_to_rr/de_to_rr_tb/de_to_rr_tb.v

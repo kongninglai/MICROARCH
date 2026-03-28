@@ -220,6 +220,44 @@ initial begin
   from_de_valid_and_load_rr <= 1;
   #(CYCLE_TIME); from_de_eip_redirection<= 0; from_de_valid_and_load_rr <= 0; #(CYCLE_TIME); check({128{1'bX}}, 5'h0, 1'bX);
 
+  /* Skip 1 byte, initial load of 16 - 1 = 15 bytes (0xF) */
+  #(20 * CYCLE_TIME);
+  from_de_eip_lower_bits <= 4'd1;
+  from_f_icache_valid <= 1;
+  #(CYCLE_TIME);
+  from_de_eip_lower_bits <= 0;
+  from_f_icache_valid <= 0;
+  #(CYCLE_TIME); check({8'hXX, from_f_cache_line_prev[127:8]}, 5'hF, 1'b0);
+  #(20 * CYCLE_TIME);
+
+  /* Consume 15 bytes (tail_ptr = 0) */
+  #(20 * CYCLE_TIME);
+  from_de_instr_len <= 4'd15;
+  from_de_valid_and_load_rr <= 1;
+  #(CYCLE_TIME);
+  from_de_instr_len <= 4'd0;
+  from_de_valid_and_load_rr <= 0;
+  #(CYCLE_TIME); check({128{1'bX}}, 5'h0, 1'bX);
+
+  /* Skip 15 bytes, initial load of 16 - 15 = 1 byte (0x1) */
+  #(20 * CYCLE_TIME);
+  from_de_eip_lower_bits <= 4'd15;
+  from_f_icache_valid <= 1;
+  #(CYCLE_TIME);
+  from_de_eip_lower_bits <= 0;
+  from_f_icache_valid <= 0;
+  #(CYCLE_TIME); check({120'hXXXXXXXXXXXXXX, from_f_cache_line_prev[127:120]}, 5'h1, 1'b0);
+  #(20 * CYCLE_TIME);
+
+  /* Consume 1 byte (tail_ptr = 0) */
+  #(20 * CYCLE_TIME);
+  from_de_instr_len <= 4'd1;
+  from_de_valid_and_load_rr <= 1;
+  #(CYCLE_TIME);
+  from_de_instr_len <= 4'd0;
+  from_de_valid_and_load_rr <= 0;
+  #(CYCLE_TIME); check({128{1'bX}}, 5'h0, 1'bX);
+
   
         
   #(20 * CYCLE_TIME);

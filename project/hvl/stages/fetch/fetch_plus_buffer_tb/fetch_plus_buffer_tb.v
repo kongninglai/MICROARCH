@@ -174,9 +174,15 @@ wire [127:0] to_de_outbytes;
 reg [31:0] eip;
 
 always @(posedge clk) begin
-  if (rst_n === 1'b1 && from_de_valid_and_load_rr === 1'b1)
+  if (rst_n === 1'b1 && from_ex_flush === 1'b1) begin
+    eip <= from_ex_eip_target_out;
+    // $display("JUMP at %t", $time);
+  end else if (rst_n === 1'b1 && from_de_valid_and_load_rr === 1'b1) begin
     eip <= eip + from_de_instr_len;
+  end
 end
+
+wire to_de_pf_expn;
 
 fetch_buffer fetch_buffer_inst (
   .clk(clk),
@@ -185,13 +191,13 @@ fetch_buffer fetch_buffer_inst (
   .from_de_eip_lower_bits(eip[3:0]),
   .from_f_icache_valid(ICACHE_VALID),
   .from_de_valid_and_load_rr(from_de_valid_and_load_rr),
-  .from_wb_flush(1'b0),
-  .from_ex_flush(1'b0),
-  .from_f_cl_pf(1'b0),
+  .from_wb_flush(from_wb_flush),
+  .from_ex_flush(from_ex_flush),
+  .from_f_cl_pf(ITLB_PAGE_FAULT_OUT),
   .from_f_cache_line(ICACHE_HIT_DATA),
   .from_de_eip_redirection(1'b0),
   .to_de_outbytes(to_de_outbytes),
-  .to_de_pf_expn(),
+  .to_de_pf_expn(to_de_pf_expn),
   .tail_ptr(tail_ptr),
   .global_wr_en(from_fetch_buffer_write_enable)
 );
@@ -238,7 +244,29 @@ always @(posedge clk) begin
     // $display("SUCCESS AT TIME %t: EXPECTED_INST_ADDR exp=%h got=%h", $time, EXPECTED_INST_ADDR, {ITLB_VPN, F_PAGE_OFFSET});
   end
 
-  if (to_de_outbytes[7:0] === 8'hF4 && tail_ptr >= 5'd1) begin // test
+  // if (to_de_outbytes[7:0] === 8'hF4 && tail_ptr >= 5'd1) begin
+  if (tail_ptr === 5'h16) begin /* Page fault test */
+    @(posedge clk)
+    from_ex_flush <= 1;
+    from_rr_code_segment <= 16'h0202;
+    #(CYCLE_TIME);
+    from_ex_flush <= 0;
+    #(10 * CYCLE_TIME);
+    from_ex_flush <= 1;
+    from_ex_eip_target_out <= 32'd0;
+    #(CYCLE_TIME);
+    from_rr_code_segment <= 16'h0000;
+    from_ex_flush <= 0;
+    #(50 * CYCLE_TIME);
+
+  
+    if (eip !== 32'h00000035) begin
+      FAILURES = FAILURES + 1;
+      $display("FAILURE AT TIME %t: EIP exp=%h got=%h", $time, 32'h00000035, eip);
+    end else begin
+      SUCCESSES = SUCCESSES + 1;
+    end
+
     $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
     $display("SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
     $finish;
@@ -261,13 +289,6 @@ initial begin
   #(CYCLE_TIME);
 
   #(300*CYCLE_TIME);
-
-  if (eip !== 32'h00000035) begin
-    FAILURES = FAILURES + 1;
-    $display("FAILURE AT TIME %t: EIP exp=%h got=%h", $time, 32'h00000035, eip);
-  end else begin
-    SUCCESSES = SUCCESSES + 1;
-  end
   
 
   $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);

@@ -54,42 +54,45 @@
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_64b.v
 ~/MICROARCH/project/hdl/cache/top/full_cache.v
 ~/MICROARCH/project/hdl/cache/tlb/tlb_wrapper.v
+~/MICROARCH/project/hdl/local-lib/adders/prefix_modrm_sib_adder.v
+~/MICROARCH/project/hdl/local-lib/adders/p_m_s_d_adder.v
+~/MICROARCH/project/hdl/local-lib/adders/PA_4b.v
 ~/MICROARCH/project/hdl/local-lib/adders/PA_32b.v
+~/MICROARCH/project/hdl/local-lib/shifters/rshf_chunks.v
+~/MICROARCH/project/hdl/local-lib/shifters/rshf_bytes_var_128b.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux32_16b.v
+~/MICROARCH/project/hdl/local-lib/shifters/lshf_bytes_var_256b.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_64.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_128.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_256.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux4_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux4_48.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_8.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_8b.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_16.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_48.v
+~/MICROARCH/project/hdl/local-lib/shift_reg/shift_reg.v
+~/MICROARCH/project/hdl/local-lib/shift_reg/shift_reg_tiny.v
 ~/MICROARCH/project/hdl/stages/fetch/stage_fetch.v
+~/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/logic_cl_shifter.v
+~/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/fetch_buffer.v
+~/MICROARCH/project/hdl/stages/decoder/logic_disp_size.v
+~/MICROARCH/project/hdl/stages/decoder/logic_modrm_imm.v
+~/MICROARCH/project/hdl/stages/decoder/logic_is_sib.v
+~/MICROARCH/project/hdl/stages/decoder/logic_seg_ov.v
+~/MICROARCH/project/hdl/stages/decoder/logic_is_prefix.v
+~/MICROARCH/project/hdl/stages/decoder/logic_prefix_combadder.v
+~/MICROARCH/project/hdl/stages/decoder/logic_true_prefix.v
+~/MICROARCH/project/hdl/stages/decoder/logic_true_modrm.v
+~/MICROARCH/project/hdl/stages/decoder/logic_sib_byte.v
+~/MICROARCH/project/hdl/stages/decoder/logic_disp_bytes.v
+~/MICROARCH/project/hdl/stages/decoder/logic_imm.v
 
-// Search Extensions
-+libext+.v
-
-// Automatic Directory Search 
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/adders
-
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/comparators
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/extenders
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/gates
-
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/muxes
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/regs
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shifters
-
-// Test Logic 
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/decoder
-
-// Automatic Directory Search 
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/adders
-
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/comparators
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/extenders
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/gates
-
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/muxes
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/regs
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shifters
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shift_reg
-
-// Test Logic 
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/decoder
--y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
-
-
+~/MICROARCH/project/hdl/stages/decoder/logic_sib_disp.v
+~/MICROARCH/project/hdl/stages/decoder/logic_incr_amt.v
+~/MICROARCH/project/hdl/stages/decoder/block_decoder.v
 
 ~/MICROARCH/project/hvl/stages/fetch/fetch_plus_buffer_tb/fetch_plus_buffer_tb.v
