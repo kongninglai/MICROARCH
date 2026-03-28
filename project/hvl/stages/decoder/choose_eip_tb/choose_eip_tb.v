@@ -42,7 +42,8 @@ module tb_choose_eip();
         .branch_type(branch_type),
         .hit(hit), 
         .ld_eip(ld_eip),
-        .eip_true(eip_true)
+        .eip_true(eip_true),
+        .take_branch() // Ignored in this testbench
     );
 
     // --- CLOCK GENERATION ---

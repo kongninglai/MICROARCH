@@ -20,6 +20,7 @@ module stage_decode(
     //to fetch output
     output wire ld_eip, //to fetch stage to load new feip
     output wire [31:0] eip_true, //to fetch stage new feip
+    output wire to_f_take_branch,
 
     //decoder output
     output wire prefix_rep,
@@ -106,7 +107,8 @@ module stage_decode(
         .branch_type(branch_type),
         .hit(hit),
         .ld_eip(ld_eip),
-        .eip_true(eip_true)
+        .eip_true(eip_true),
+        .take_branch(to_f_take_branch)
     );
 
 

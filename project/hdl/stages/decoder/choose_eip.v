@@ -21,7 +21,8 @@ module choose_eip(
     input wire hit, //from btb to indicate if we have a bp target or not (currently hardcoded to 0)
 
     output wire ld_eip,
-    output wire [31:0] eip_true
+    output wire [31:0] eip_true,
+    output wire take_branch
 
 );  
 
@@ -46,7 +47,7 @@ module choose_eip(
 
     //Generating Signals for Mux Select
     wire [1:0] eip_sel; 
-    wire stall, is_branch, cond_take, uncond_take, take_branch, branch_type_0_bar;
+    wire stall, is_branch, cond_take, uncond_take, branch_type_0_bar;
     inv1$ INV_lower(branch_type_0_bar, branch_type[0]); //if branch type is not 00, then it's a branch
     and4$ AND_COND_PRED(cond_take, cur_instr_prediction, hit, branch_type[1], branch_type_0_bar); //if branch can be resolved AND predictor says taken AND unconditional
     and2$ AND_UNCOND_PRED(uncond_take, branch_type[0], hit); //if unconditional branch AND resolvable
