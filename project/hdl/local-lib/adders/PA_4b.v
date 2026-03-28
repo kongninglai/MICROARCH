@@ -2,8 +2,6 @@ module PA_4b (
   input		[3:0]	in0, in1,
 	output	[3:0]	s
 );
-
-/* ASSUMES THE LSBit of AT LEAST 1 INPUT IS A 1 */
 	
 	// Stage 0
 	

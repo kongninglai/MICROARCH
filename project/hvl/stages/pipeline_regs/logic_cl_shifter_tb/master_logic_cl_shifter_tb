@@ -26,4 +26,5 @@
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
 
 // Testbench for Test Logic 
+/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/logic_cl_shifter_tb/logic_cl_shifter_behav.v
 /home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/logic_cl_shifter_tb/logic_cl_shifter_tb.v

@@ -35,7 +35,7 @@ FA_16b_tb                      FAILURES=0      SUCCESSES=4096
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_4b_tb                       FAILURES=0      SUCCESSES=512   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
-fetch_buffer_tb                FAILURES=0      SUCCESSES=0     
+fetch_buffer_tb                FAILURES=0      SUCCESSES=17    
 full_cache_init_tb             FAILURES=0      SUCCESSES=0     
 full_cache_tb                  FAILURES=0      SUCCESSES=6155  
 full_cc_off_core_tb            FAILURES=0      SUCCESSES=32063 
@@ -52,7 +52,7 @@ io_addr_logic_block_tb         FAILURES=0      SUCCESSES=512
 kb_tb                          FAILURES=0      SUCCESSES=28    
 le_5b_tb                       FAILURES=0      SUCCESSES=256   
 logic_branch_tb                FAILURES=0      SUCCESSES=8     
-logic_cl_shifter_tb            FAILURES=0      SUCCESSES=4     
+logic_cl_shifter_tb            FAILURES=0      SUCCESSES=513   
 logic_disp_bytes_tb            FAILURES=0      SUCCESSES=5     
 logic_disp_size_tb             FAILURES=0      SUCCESSES=5     
 logic_imm_tb                   FAILURES=0      SUCCESSES=4     
@@ -86,6 +86,7 @@ mux16_16b_tb                   FAILURES=0      SUCCESSES=524288
 mux16_16_tb                    FAILURES=0      SUCCESSES=16    
 mux16_32_tb                    FAILURES=0      SUCCESSES=256   
 mux16_48_tb                    FAILURES=0      SUCCESSES=16    
+mux16_8b_tb                    FAILURES=0      SUCCESSES=524288
 mux16_tb                       FAILURES=0      SUCCESSES=1048576
 mux2_128_tb                    FAILURES=0      SUCCESSES=256   
 mux2_256_tb                    FAILURES=0      SUCCESSES=256   
@@ -127,7 +128,8 @@ rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024
 rshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096  
 rshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
 se_tb                          FAILURES=0      SUCCESSES=258   
-shift_reg_tb                   FAILURES=0      SUCCESSES=140   
+shift_reg_tb                   FAILURES=0      SUCCESSES=5456  
+shift_reg_tiny_tb              FAILURES=0      SUCCESSES=5388  
 stage_ag_tb                    FAILURES=0      SUCCESSES=0     
 stage_decoder_tb               FAILURES=0      SUCCESSES=13    
 stage_fetch_tb                 FAILURES=0      SUCCESSES=586   

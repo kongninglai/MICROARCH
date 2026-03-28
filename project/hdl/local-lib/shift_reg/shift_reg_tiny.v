@@ -1,14 +1,14 @@
-module shift_reg(
+module shift_reg_tiny(
     input             clk,
     input             rst_n,
     input             shift,
     input             flush,            /* NEW: VR */
     input   [3:0]     instr_len,        /* NEW: VR */
-    input   [247:0]   inbytes,
+    input   [30:0]    inbytes,
     input             global_wr_en,     /* NEW: VR */
     input   [4:0]     wr_cl_byte_cnt,   /* NEW: VR */
     input   [30:0]    wr_en,
-    output  [127:0]   outbytes,
+    output  [15:0]    outbytes,
     output  [4:0]     tail_ptr,
     output            ready
 ); 
@@ -123,24 +123,16 @@ module shift_reg(
       .q(tail_ptr)
     );
 
-    /* Handle re-arrangement of input cache line */
-    wire [7:0] inbytes_i[30:0];
-    wire [7:0] q[30:0];
+    wire [30:0] q;
 
-    wire [7:0] d[30:0];
+    wire [30:0] d;
     wire [30:0] en;
 
-    generate 
-        for (i = 0; i < 31; i=i+1) begin : in_bytes_gen
-            assign inbytes_i[i] = inbytes[i*8+7:i*8];
-        end
-    endgenerate
-
-    wire [7:0] updated_q[45:0];
+    wire [45:0] updated_q;
 
     generate
       for (i = 31; i <= 45; i = i + 1) begin : dummy_updated_q_gen
-        assign updated_q[i] = 8'd0;
+        assign updated_q[i] = 1'b0;
       end
     endgenerate
 
@@ -148,24 +140,24 @@ module shift_reg(
         for (i = 0; i < 31; i=i+1) begin : shift_input_mux_gen
             wire [3:0] update_idx;
             wire not_shift, not_shift_and_wr;
-            mux2_8$ mux2_8_update(updated_q[i], q[i], inbytes_i[i], wr_en[i]);
+            mux2$ mux2_update(updated_q[i], q[i], inbytes[i], wr_en[i]);
     
             mux2$ mux_update_idx[3:0](update_idx, 4'd0, instr_len, shift);
-            mux16_8b mux16_8b_shift(d[i], updated_q[i], updated_q[i+1], updated_q[i+2], updated_q[i+3], 
-                                        updated_q[i+4], updated_q[i+5], updated_q[i+6], updated_q[i+7], 
-                                        updated_q[i+8], updated_q[i+9], updated_q[i+10], updated_q[i+11], 
-                                        updated_q[i+12], updated_q[i+13], updated_q[i+14], updated_q[i+15], 
-                                        update_idx[0], update_idx[1], update_idx[2], update_idx[3]);
+            mux16 mux16_shift(d[i], updated_q[i], updated_q[i+1], updated_q[i+2], updated_q[i+3], 
+                                    updated_q[i+4], updated_q[i+5], updated_q[i+6], updated_q[i+7], 
+                                    updated_q[i+8], updated_q[i+9], updated_q[i+10], updated_q[i+11], 
+                                    updated_q[i+12], updated_q[i+13], updated_q[i+14], updated_q[i+15], 
+                                    update_idx[0], update_idx[1], update_idx[2], update_idx[3]);
             inv1$ inv_shift(not_shift, shift);
             and2$ and_not_shift_and_wr(not_shift_and_wr, not_shift, wr_en[i]);
 
             or2$ or_en(en[i], shift, not_shift_and_wr);
             reg_n #(
-                .WIDTH(8),
+                .WIDTH(1),
                 .USE_EN_BAR(0)
             ) reg_n_output_byte (
                 .clk(clk), .rst(rst_n),
-                .en({8{en[i]}}), .d(d[i]),
+                .en(en[i]), .d(d[i]),
                 .q(q[i])
             );
         end

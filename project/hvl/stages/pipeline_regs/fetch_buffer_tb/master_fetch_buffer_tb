@@ -27,5 +27,6 @@
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
 
 // Testbench for Test Logic 
-/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/fetch_buffer_tb/fetch_buffer_tb.v
+/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/fetch_buffer_tb/fetch_buffer_tail_tb.v
+// /home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/fetch_buffer_tb/fetch_buffer_tb.v
 // /home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/fetch_buffer_tb/fetch_buffer_simple_tb.v

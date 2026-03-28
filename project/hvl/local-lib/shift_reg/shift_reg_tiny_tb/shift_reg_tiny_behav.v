@@ -1,14 +1,14 @@
-module shift_reg_behav(
+module shift_reg_tiny_behav(
     input                 clk,
     input                 rst_n,
     input                 shift,
     input                 flush,            /* NEW: VR */
     input       [3:0]     instr_len,        /* NEW: VR */
-    input       [247:0]   inbytes,
+    input       [30:0]    inbytes,
     input                 global_wr_en,     /* NEW: VR */
     input       [4:0]     wr_cl_byte_cnt,   /* NEW: VR */
     input       [30:0]    wr_en,
-    output      [127:0]   outbytes,
+    output      [15:0]    outbytes,
     output  reg [4:0]     tail_ptr,
     output                ready
 ); 
@@ -40,7 +40,7 @@ module shift_reg_behav(
         end
     end
     
-    reg [7:0] buffer [30:0];
+    reg buffer [30:0];
     integer i;
 
     // Concatenate the first 16 bytes for output
@@ -52,22 +52,22 @@ module shift_reg_behav(
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            for (i = 0; i < 31; i = i + 1) buffer[i] <= 8'h0;
+            for (i = 0; i < 31; i = i + 1) buffer[i] <= 1'b0;
         end else begin
             for (i = 0; i < 31; i = i + 1) begin
                 if (shift) begin
                     if (i + instr_len < 31) begin
                         // Shift in data (either from existing buffer or new inbytes)
                         if (wr_en[i + instr_len])
-                            buffer[i] <= inbytes[(i + instr_len)*8 +: 8];
+                            buffer[i] <= inbytes[i + instr_len];
                         else
                             buffer[i] <= buffer[i + instr_len];
                     end else begin
                         // NEW: Explicitly zero-fill bytes that are "shifted in" from the left
-                        buffer[i] <= 8'h0;
+                        buffer[i] <= 1'b0;
                     end
                 end else if (wr_en[i]) begin
-                    buffer[i] <= inbytes[i*8 +: 8];
+                    buffer[i] <= inbytes[i];
                 end
             end
         end
