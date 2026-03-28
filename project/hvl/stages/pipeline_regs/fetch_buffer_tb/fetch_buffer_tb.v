@@ -33,7 +33,6 @@ reg         from_ex_flush;
 reg         from_de_stall;
 reg         from_f_cl_pf;
 reg  [127:0] from_f_cache_line;
-reg  [31:0] i_eip;
 reg         from_de_eip_redirection;
 reg         shft_reg_we;
 
@@ -52,7 +51,6 @@ fetch_buffer dut(
     .from_de_stall(from_de_stall),
     .from_f_cl_pf(from_f_cl_pf),
     .from_f_cache_line(from_f_cache_line),
-    .i_eip(i_eip),
     .from_de_eip_redirection(from_de_eip_redirection),
     .shft_reg_we(shft_reg_we),
     .tail_ptr(tail_ptr),
@@ -211,7 +209,6 @@ begin
     from_de_stall           = 1'b0;
     from_f_cl_pf            = 1'b0;
     from_f_cache_line       = 128'b0;
-    i_eip                   = 32'b0;
     from_de_eip_redirection = 1'b0;
     shft_reg_we             = 1'b1;
     repeat (3) @(posedge clk);

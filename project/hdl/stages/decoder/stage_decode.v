@@ -1,7 +1,6 @@
 module stage_decode(
     input wire [127:0] cache_line,
     input wire [3:0] tail_ptr,
-    input wire [19:0] cs_limit_reg,
     input wire [31:0] eip_target_ex, //comes from execute stage
     input wire flush_ex, //comes from execute stage
     input wire v_excptn_src_wb, //comes from writeback stage
@@ -13,7 +12,6 @@ module stage_decode(
     input wire br_valid_ex_d, //comes from execute stage (branch valid signal)
     input wire [3:0] pht_idx_ex_d, //comes from execute stage:
 
-    output wire exptn_prot,
     output wire [31:0] i_eip,
     output wire pr_de_rr_valid, //to rr stage pipeline regs are valid
 
@@ -63,15 +61,13 @@ module stage_decode(
     wire ld_pr_rr; //to load register read pipeline registers signal
     logic_stall_flush LOGIC_STALL_FLUSH(
             .i_eip(i_eip),
-            .cs_limit(cs_limit_reg),
             .tail_ptr(tail_ptr),
             .incr_amt(instr_length),
             .flush_ex(flush_ex), //comes from execute stage
             .stall_rr(stall_rr), //comes from register read stage
 
             .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal
-            .instr_valid(pr_de_rr_valid),
-            .exptn_prot(exptn_prot)
+            .instr_valid(pr_de_rr_valid)
     );
 
     //Decode logic tells what type of branch is currently being decoded

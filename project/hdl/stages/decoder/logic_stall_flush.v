@@ -18,7 +18,6 @@ module logic_stall_flush(
 
         //Protection Exception Logic
         input wire [31:0] i_eip,
-        input wire [19:0] cs_limit,
 
         //Instr Valid Logic
         input wire [3:0] tail_ptr,
@@ -29,16 +28,8 @@ module logic_stall_flush(
         input wire stall_rr, //comes from register read stage
 
         output wire ld_pr_rr, //to load register read pipeline registers signal
-        output wire instr_valid,
-        output wire exptn_prot
+        output wire instr_valid
 );
-
-    /*TODO: change this to 32 bt comparison and then compare full eip to cs 32 bit value*/
-    seg_limit_cmp EXCPTN_PROT( //Exception if EIP > CS Limit
-        .in(i_eip),
-        .seg_limit(cs_limit),
-        .exception(exptn_prot)
-    );	
 
     wire instr_invalid, instr_valid_w;
     cmp_gen_20b INSTR_VALID( //Instruction is crossing cache line boundary if incr_amt > tail_ptr

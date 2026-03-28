@@ -15,7 +15,6 @@ module fetch_buffer(
     input wire from_de_stall,
     input wire from_f_cl_pf, //the cache line loaded had a page fault
     input wire [127:0] from_f_cache_line,
-    input wire [31:0] i_eip,
     input wire from_de_eip_redirection, //br taken in decode
     input wire shft_reg_we,
     output wire [4:0] tail_ptr,

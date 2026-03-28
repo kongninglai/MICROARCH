@@ -26,7 +26,7 @@ module fetch_buffer_simple_tb;
         .from_f_icache_valid(f_icache_valid),
         .from_wb_flush(flush_wb), .from_ex_flush(flush_ex),
         .from_de_stall(stall), .from_f_cl_pf(cl_pf),
-        .from_f_cache_line(cache_line), .i_eip(32'h0),
+        .from_f_cache_line(cache_line), 
         .from_de_eip_redirection(redir), .shft_reg_we(shft_reg_we),
         .tail_ptr(tail_ptr), .to_de_outbytes(outbytes),
         .to_de_pf_expn_bytes_out(pf_out), .ready(ready)

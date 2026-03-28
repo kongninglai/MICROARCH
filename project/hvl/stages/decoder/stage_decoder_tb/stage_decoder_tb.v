@@ -7,7 +7,6 @@ module tb_stage_decode();
     // --------------------------------------------------------
     reg [127:0] cache_line;
     reg [3:0] tail_ptr;
-    reg [19:0] cs_limit_reg;
     reg [31:0] eip_target_ex;
     reg mispredict_src_ex;
     reg v_excptn_src_wb;
@@ -48,14 +47,14 @@ module tb_stage_decode();
     // 3. Instantiate UUT (o_eip removed)
     // --------------------------------------------------------
     stage_decode uut (
-        .cache_line(cache_line), .tail_ptr(tail_ptr), .cs_limit_reg(cs_limit_reg),
+        .cache_line(cache_line), .tail_ptr(tail_ptr), 
         .eip_target_ex(eip_target_ex), 
         .flush_ex(mispredict_src_ex),       
         .v_excptn_src_wb(v_excptn_src_wb), 
         .stall_rr(stall_rr), 
         .clk(clk), .rst_bar(rst_bar), .br_t_nt_ex_d(br_t_nt_ex_d), 
         .br_valid_ex_d(br_valid_ex_d), .pht_idx_ex_d(pht_idx_ex_d),
-        .exptn_prot(exptn_prot), .i_eip(i_eip), .pr_de_rr_valid(pr_de_rr_valid),
+        .i_eip(i_eip), .pr_de_rr_valid(pr_de_rr_valid),
         .ld_eip(ld_eip), .eip_true(eip_true), 
         .to_f_take_branch(), //unused
         .prefix_rep(prefix_rep), 
@@ -143,7 +142,6 @@ module tb_stage_decode();
         cache_line = 128'd0;
         o_eip = 32'h0000_0000;
         tail_ptr = 4'd0; 
-        cs_limit_reg = 20'hFFFFF;
         eip_target_ex = 32'h0000_0000;
         mispredict_src_ex = 0; v_excptn_src_wb = 0; v_ld_cs_src_ex = 0;
         stall_ex = 0; stall_rr = 0; stall_mem = 0; stall_wb = 0;
