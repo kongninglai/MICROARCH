@@ -28,19 +28,21 @@ integer FAILURES = 0;
 integer SUCCESSES = 0;
 
 fetch_buffer dut(
-    .clk(clk),
-    .rst_bar(rst_bar),
-    .from_de_instr_len(from_de_instr_len),
-    .from_de_eip_lower_bits(from_de_eip_lower_bits),
-    .from_f_icache_valid(from_f_icache_valid),
-    .from_de_valid_and_load_rr(from_de_valid_and_load_rr),
-    .from_wb_flush(from_wb_flush),
-    .from_ex_flush(from_ex_flush),
-    .from_f_cl_pf(from_f_cl_pf),
-    .from_f_cache_line(from_f_cache_line),
-    .from_de_eip_redirection(from_de_eip_redirection),
-    .to_de_outbytes(to_de_outbytes),
-    .to_de_pf_expn(to_de_pf_expn)
+  .clk(clk),
+  .rst_bar(rst_bar),
+  .from_de_instr_len(from_de_instr_len),
+  .from_de_eip_lower_bits(from_de_eip_lower_bits),
+  .from_f_icache_valid(from_f_icache_valid),
+  .from_de_valid_and_load_rr(from_de_valid_and_load_rr),
+  .from_wb_flush(from_wb_flush),
+  .from_ex_flush(from_ex_flush),
+  .from_f_cl_pf(from_f_cl_pf),
+  .from_f_cache_line(from_f_cache_line),
+  .from_de_eip_redirection(from_de_eip_redirection),
+  .to_de_outbytes(to_de_outbytes),
+  .to_de_pf_expn(to_de_pf_expn),
+  .tail_ptr(),
+  .global_wr_en()
 );
 
 integer i;

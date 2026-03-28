@@ -36,6 +36,7 @@ FA_32b_tb                      FAILURES=0      SUCCESSES=518
 FA_4b_tb                       FAILURES=0      SUCCESSES=512   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 fetch_buffer_tb                FAILURES=0      SUCCESSES=17    
+fetch_plus_buffer_tb           FAILURES=0      SUCCESSES=46    
 full_cache_init_tb             FAILURES=0      SUCCESSES=0     
 full_cache_tb                  FAILURES=0      SUCCESSES=6155  
 full_cc_off_core_tb            FAILURES=0      SUCCESSES=32063 

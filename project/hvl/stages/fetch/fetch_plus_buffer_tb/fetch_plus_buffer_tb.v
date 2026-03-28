@@ -1,9 +1,9 @@
-module stage_fetch_tb;
+module fetch_plus_buffer_tb;
 
 initial begin
-  $vcdplusfile("stage_fetch_tb.dump.vpd");
-  $vcdpluson(0, stage_fetch_tb);
-  $vcdpluson(0, stage_fetch_tb.DUT);
+  $vcdplusfile("fetch_plus_buffer_tb.dump.vpd");
+  $vcdpluson(0, fetch_plus_buffer_tb);
+  $vcdpluson(0, fetch_plus_buffer_tb.DUT);
 end
 
 localparam MEM_BYTE_CAPACITY    = 32768;
@@ -78,6 +78,7 @@ stage_fetch DUT (
 
   .F_PAGE_OFFSET(F_PAGE_OFFSET)
 );
+
 
 full_cache #(
   .MEM_BYTE_CAPACITY (MEM_BYTE_CAPACITY),
@@ -163,10 +164,58 @@ tlb_wrapper tlb_inst (
   .KB_PFN(KB_PFN)
 );
 
+wire [4:0] tail_ptr;
+wire [3:0] from_de_instr_len;
+
+assign from_de_valid_and_load_rr = (tail_ptr >= {1'b0, from_de_instr_len});
+
+wire [127:0] to_de_outbytes;
+
+reg [31:0] eip;
+
+always @(posedge clk) begin
+  if (rst_n === 1'b1 && from_de_valid_and_load_rr === 1'b1)
+    eip <= eip + from_de_instr_len;
+end
+
+fetch_buffer fetch_buffer_inst (
+  .clk(clk),
+  .rst_bar(rst_n),
+  .from_de_instr_len(from_de_instr_len),
+  .from_de_eip_lower_bits(eip[3:0]),
+  .from_f_icache_valid(ICACHE_VALID),
+  .from_de_valid_and_load_rr(from_de_valid_and_load_rr),
+  .from_wb_flush(1'b0),
+  .from_ex_flush(1'b0),
+  .from_f_cl_pf(1'b0),
+  .from_f_cache_line(ICACHE_HIT_DATA),
+  .from_de_eip_redirection(1'b0),
+  .to_de_outbytes(to_de_outbytes),
+  .to_de_pf_expn(),
+  .tail_ptr(tail_ptr),
+  .global_wr_en(from_fetch_buffer_write_enable)
+);
+
+block_decoder block_decoder_inst (
+  .cache_line(to_de_outbytes),
+  .prefix_rep(),
+  .prefix_op_size(),
+  .prefix_seg_ov_id(),
+  .prefix_ext(),
+  .opcode(),
+  .modrm_v(),
+  .modrm(),
+  .sib(),
+  .disp_size_mux(),
+  .disp(),
+  .imm_size(),
+  .imm(),
+  .addressing_mode(),
+  .instr_length(from_de_instr_len)
+);
+
 integer FAILURES = 0;
 integer SUCCESSES = 0;
-
-assign from_fetch_buffer_write_enable = ICACHE_VALID;
 
 reg [VA_BIT_WIDTH-1:0]  EXPECTED_INST_ADDR;
 
@@ -177,16 +226,22 @@ always @(posedge clk) begin
     EXPECTED_INST_ADDR <= ({from_rr_code_segment, 16'd0} + from_ex_eip_target_out) & 32'hFFFFFFF0;
   end else if (from_de_taken_predicted_branch === 1'b1) begin
     EXPECTED_INST_ADDR <= ({from_rr_code_segment, 16'd0} + from_de_bp_target_out) & 32'hFFFFFFF0;
-  end else if (ICACHE_VALID === 1'b1) begin
+  end else if (from_fetch_buffer_write_enable === 1'b1) begin
     EXPECTED_INST_ADDR <= EXPECTED_INST_ADDR + 16;
   end
 
-  if ({ITLB_VPN, F_PAGE_OFFSET} !== EXPECTED_INST_ADDR) begin
+  if ({ITLB_VPN, F_PAGE_OFFSET} !== EXPECTED_INST_ADDR && from_fetch_buffer_write_enable !== 1'bX) begin
     FAILURES = FAILURES + 1;
     $display("FAILURE AT TIME %t: EXPECTED_INST_ADDR exp=%h got=%h", $time, EXPECTED_INST_ADDR, {ITLB_VPN, F_PAGE_OFFSET});
   end else begin
     SUCCESSES = SUCCESSES + 1;
     // $display("SUCCESS AT TIME %t: EXPECTED_INST_ADDR exp=%h got=%h", $time, EXPECTED_INST_ADDR, {ITLB_VPN, F_PAGE_OFFSET});
+  end
+
+  if (to_de_outbytes[7:0] === 8'hF4 && tail_ptr >= 5'd1) begin // test
+    $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
+    $display("SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
+    $finish;
   end
 end
 
@@ -194,34 +249,25 @@ initial begin
   rst_n = 0;
   from_de_bp_target_out = 32'h00000015;
   from_de_taken_predicted_branch = 0;
-  from_rr_code_segment = 16'h0200;
+  from_rr_code_segment = 16'h0000;
   from_ex_eip_target_out = 32'h00000005;
   from_ex_flush = 0;
   from_wb_flush = 0;
+  eip = 0;
 
   #(1.5 * CYCLE_TIME);
   rst_n = 1;
 
   #(CYCLE_TIME);
 
-  #(101*CYCLE_TIME);
-  from_de_taken_predicted_branch <= 1;
-  #(CYCLE_TIME);
-  from_de_taken_predicted_branch <= 0;
-  #(40*CYCLE_TIME);
+  #(300*CYCLE_TIME);
 
-  from_ex_flush <= 1;
-  #(CYCLE_TIME);
-  from_ex_flush <= 0;
-  #(40*CYCLE_TIME);
-  
-  
-  from_de_taken_predicted_branch <= 1;
-  from_ex_flush <= 1;
-  #(CYCLE_TIME);
-  from_ex_flush <= 0;
-  from_de_taken_predicted_branch <= 0;
-  #(400*CYCLE_TIME);
+  if (eip !== 32'h00000035) begin
+    FAILURES = FAILURES + 1;
+    $display("FAILURE AT TIME %t: EIP exp=%h got=%h", $time, 32'h00000035, eip);
+  end else begin
+    SUCCESSES = SUCCESSES + 1;
+  end
   
 
   $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);

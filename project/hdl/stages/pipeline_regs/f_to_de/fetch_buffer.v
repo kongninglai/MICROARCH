@@ -17,9 +17,10 @@ module fetch_buffer(
     input wire [127:0] from_f_cache_line,
     input wire from_de_eip_redirection, //br taken in decode
     output [127:0] to_de_outbytes,
-    output wire to_de_pf_expn
+    output wire to_de_pf_expn,
+    output wire [4:0] tail_ptr,
+    output wire global_wr_en
 );  
-    wire [4:0] tail_ptr;
 
     wire from_de_valid_and_load_rr_buf1024;
     bufferH1024$ bufferH1024$_from_de_valid_and_load_rr_buf1024(from_de_valid_and_load_rr_buf1024,

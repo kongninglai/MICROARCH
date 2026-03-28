@@ -113,7 +113,6 @@ module logic_true_prefix(
         .OUT0(prefix_num[0])
     );
 
-    wire is_seg_ov;
     logic_seg_ov SEGMENT_OVERRIDE_REG_ID_LOGIC (
         .is_es0(is_es0), .is_es1(is_es1), .is_es2(is_es2), .is_es3(is_es3),
         .is_cs0(is_cs0), .is_cs1(is_cs1), .is_cs2(is_cs2), .is_cs3(is_cs3),
@@ -130,22 +129,22 @@ module logic_true_prefix(
     wire rep_nand0_w, rep_nand1_w, rep_nand2_w, rep_nand3_w; //0.45ns total in parallel with segment ov logic
     nand2$ rep_nand0(rep_nand0_w, is_rep0, is_rep0);
     nand2$ rep_nand1(rep_nand1_w, is_rep1, is_any0);
-    nand2$ rep_nand2(rep_nand2_w, is_rep2, is_any1);
-    nand2$ rep_nand3(rep_nand3_w, is_rep3, is_any2);
+    nand3$ rep_nand2(rep_nand2_w, is_rep2, is_any1, is_any0);
+    nand4$ rep_nand3(rep_nand3_w, is_rep3, is_any2, is_any1, is_any0);
     nand4$ rep_nand4(is_rep_true, rep_nand0_w, rep_nand1_w, rep_nand2_w, rep_nand3_w);
 
     wire opov_nand0_w, opov_nand1_w, opov_nand2_w, opov_nand3_w; //0.45ns total in parallel with segment ov logic
     nand2$ opov_nand0(opov_nand0_w, is_operand_size_override0, is_operand_size_override0);
     nand2$ opov_nand1(opov_nand1_w, is_operand_size_override1, is_any0);
-    nand2$ opov_nand2(opov_nand2_w, is_operand_size_override2, is_any1);
-    nand2$ opov_nand3(opov_nand3_w, is_operand_size_override3, is_any2);
+    nand3$ opov_nand2(opov_nand2_w, is_operand_size_override2, is_any1, is_any0);
+    nand4$ opov_nand3(opov_nand3_w, is_operand_size_override3, is_any2, is_any1, is_any0);
     nand4$ opov_nand4(is_operand_size_override_true, opov_nand0_w, opov_nand1_w, opov_nand2_w, opov_nand3_w);
 
     wire ext_nand0_w, ext_nand1_w, ext_nand2_w, ext_nand3_w; //0.45ns total in parallel with segment ov logic
     nand2$ ext_nand0(ext_nand0_w, is_ext_opcode0, is_ext_opcode0);
     nand2$ ext_nand1(ext_nand1_w, is_ext_opcode1, is_any0);
-    nand2$ ext_nand2(ext_nand2_w, is_ext_opcode2, is_any1);
-    nand2$ ext_nand3(ext_nand3_w, is_ext_opcode3, is_any2);
+    nand3$ ext_nand2(ext_nand2_w, is_ext_opcode2, is_any1, is_any0);
+    nand4$ ext_nand3(ext_nand3_w, is_ext_opcode3, is_any2, is_any1, is_any0);
     nand4$ ext_nand4(ext_op_true, ext_nand0_w, ext_nand1_w, ext_nand2_w, ext_nand3_w);
 
 

@@ -17,11 +17,11 @@ module logic_seg_ov(
     output wire [2:0] segment_override_reg_id
 );  
     //Stage 1 - 0.24ns
-    wire is_any_prefix0_buf, is_any_prefix1_buf, is_any_prefix2_buf, is_any_prefix3_buf;
-    buffer8$ any_prefix0_wire_buf(is_any_prefix0_buf, is_any_prefix0);
-    buffer8$ any_prefix1_wire_buf(is_any_prefix1_buf, is_any_prefix1);
-    buffer8$ any_prefix2_wire_buf(is_any_prefix2_buf, is_any_prefix2);
-    buffer8$ any_prefix3_wire_buf(is_any_prefix3_buf, is_any_prefix3);
+    wire is_any_prefix0_buf16, is_any_prefix1_buf16, is_any_prefix2_buf16, is_any_prefix3_buf16;
+    bufferH16$ any_prefix0_wire_buf16(is_any_prefix0_buf16, is_any_prefix0);
+    bufferH16$ any_prefix1_wire_buf16(is_any_prefix1_buf16, is_any_prefix1);
+    bufferH16$ any_prefix2_wire_buf16(is_any_prefix2_buf16, is_any_prefix2);
+    bufferH16$ any_prefix3_wire_buf16(is_any_prefix3_buf16, is_any_prefix3);
 
     //Stage 2 - 0.2ns
     wire grp0_0, grp0_1, grp0_2, grp0_3;
@@ -32,34 +32,34 @@ module logic_seg_ov(
     wire grp5_0, grp5_1, grp5_2, grp5_3;
 
     nand2$ es0_nand(grp0_0, is_es0, is_es0);
-    nand2$ p0_es1_nand(grp0_1, is_any_prefix0_buf, is_es1);
-    nand2$ p1_es2_nand(grp0_2, is_any_prefix1_buf, is_es2);
-    nand2$ p2_es3_nand(grp0_3, is_any_prefix2_buf, is_es3);
+    nand2$ p0_es1_nand(grp0_1, is_any_prefix0_buf16, is_es1);
+    nand2$ p1_es2_nand(grp0_2, is_any_prefix1_buf16, is_es2);
+    nand2$ p2_es3_nand(grp0_3, is_any_prefix2_buf16, is_es3);
 
     nand2$ cs0_nand(grp1_0, is_cs0, is_cs0);
-    nand2$ p0_cs1_nand(grp1_1, is_any_prefix0_buf, is_cs1);
-    nand2$ p1_cs2_nand(grp1_2, is_any_prefix1_buf, is_cs2);
-    nand2$ p2_cs3_nand(grp1_3, is_any_prefix2_buf, is_cs3);
+    nand2$ p0_cs1_nand(grp1_1, is_any_prefix0_buf16, is_cs1);
+    nand2$ p1_cs2_nand(grp1_2, is_any_prefix1_buf16, is_cs2);
+    nand2$ p2_cs3_nand(grp1_3, is_any_prefix2_buf16, is_cs3);
 
     nand2$ ss0_nand(grp2_0, is_ss0, is_ss0);
-    nand2$ p0_ss1_nand(grp2_1, is_any_prefix0_buf, is_ss1);
-    nand2$ p1_ss2_nand(grp2_2, is_any_prefix1_buf, is_ss2);
-    nand2$ p2_ss3_nand(grp2_3, is_any_prefix2_buf, is_ss3);
+    nand2$ p0_ss1_nand(grp2_1, is_any_prefix0_buf16, is_ss1);
+    nand2$ p1_ss2_nand(grp2_2, is_any_prefix1_buf16, is_ss2);
+    nand2$ p2_ss3_nand(grp2_3, is_any_prefix2_buf16, is_ss3);
 
     nand2$ ds0_nand(grp3_0, is_ds0, is_ds0);
-    nand2$ p0_ds1_nand(grp3_1, is_any_prefix0_buf, is_ds1);
-    nand2$ p1_ds2_nand(grp3_2, is_any_prefix1_buf, is_ds2);
-    nand2$ p2_ds3_nand(grp3_3, is_any_prefix2_buf, is_ds3);
+    nand2$ p0_ds1_nand(grp3_1, is_any_prefix0_buf16, is_ds1);
+    nand2$ p1_ds2_nand(grp3_2, is_any_prefix1_buf16, is_ds2);
+    nand2$ p2_ds3_nand(grp3_3, is_any_prefix2_buf16, is_ds3);
 
     nand2$ fs0_nand(grp4_0, is_fs0, is_fs0);
-    nand2$ p0_fs1_nand(grp4_1, is_any_prefix0_buf, is_fs1);
-    nand2$ p1_fs2_nand(grp4_2, is_any_prefix1_buf, is_fs2);
-    nand2$ p2_fs3_nand(grp4_3, is_any_prefix2_buf, is_fs3);
+    nand2$ p0_fs1_nand(grp4_1, is_any_prefix0_buf16, is_fs1);
+    nand2$ p1_fs2_nand(grp4_2, is_any_prefix1_buf16, is_fs2);
+    nand2$ p2_fs3_nand(grp4_3, is_any_prefix2_buf16, is_fs3);
 
     nand2$ gs0_nand(grp5_0, is_gs0, is_gs0);
-    nand2$ p0_gs1_nand(grp5_1, is_any_prefix0_buf, is_gs1);
-    nand2$ p1_gs2_nand(grp5_2, is_any_prefix1_buf, is_gs2);
-    nand2$ p2_gs3_nand(grp5_3, is_any_prefix2_buf, is_gs3);
+    nand2$ p0_gs1_nand(grp5_1, is_any_prefix0_buf16, is_gs1);
+    nand2$ p1_gs2_nand(grp5_2, is_any_prefix1_buf16, is_gs2);
+    nand2$ p2_gs3_nand(grp5_3, is_any_prefix2_buf16, is_gs3);
 
     //Stage 3 - 0.25ns
     wire is_es, is_cs, is_ss, is_ds, is_fs, is_gs;
