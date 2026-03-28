@@ -26,7 +26,7 @@ module fetch_buffer(
     bufferH1024$ bufferH1024$_from_de_valid_and_load_rr_buf1024(from_de_valid_and_load_rr_buf1024,
                                                                 from_de_valid_and_load_rr);
 
-    //Correct Instruction Length
+    //Correct Instruction Length...probably not needed but ok (VR)
     wire [3:0] gated_instr_len;
     and2$ gate_len[3:0](gated_instr_len, from_de_instr_len, from_de_valid_and_load_rr_buf1024);
 
@@ -43,7 +43,7 @@ module fetch_buffer(
     wire [31:0] wr_en_w;
     assign wr_en_ungated = wr_en_w[30:0];
 
-    wire global_wr_en, global_wr_en_buf64;
+    wire global_wr_en, global_wr_en_buf64, ready;
     and2$   and2$_global_wr_en(global_wr_en, from_f_icache_valid, ready);
     bufferH64$    bufferH64$_global_wr_en_buf64(global_wr_en_buf64, global_wr_en);
 
@@ -88,21 +88,9 @@ module fetch_buffer(
         .instr_len(gated_instr_len), 
         .inbytes(cl_aligned), .global_wr_en(global_wr_en_buf64),
         .wr_cl_byte_cnt(wr_cl_byte_cnt), .wr_en(wr_en),
-        .outbytes(to_de_outbytes[127:0]), .tail_ptr(tail_ptr),
+        .outbytes(to_de_outbytes), .tail_ptr(tail_ptr),
         .ready(ready)
-    ); 
-
-    //Page Fault Shifter
-    wire [247:0] pf_expn_bits_in;
-    wire [127:0] pf_expn_bits_out;
-    
-    genvar i;
-    generate //convert pf_expn_bytes_in to bits
-        for (i = 0; i < 31; i=i+1) begin : PF_BYTE_GEN
-            assign pf_expn_bits_in[i*8] = from_f_cl_pf;
-            assign pf_expn_bits_in[(i*8)+7 : (i*8)+1] = 7'bx;        
-        end
-    endgenerate
+    );
 
     wire from_f_cl_pf_buf1024;
     bufferH1024$    bufferH1024$(from_f_cl_pf_buf1024, from_f_cl_pf);
