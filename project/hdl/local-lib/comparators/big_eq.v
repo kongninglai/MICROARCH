@@ -20,7 +20,8 @@ generate
       and2$ and_0_0(eq,in[0],in[1]);
     end
     3: begin : width3_gen
-      and3$ and_0_0(eq,in[0],in[1],in[2]);
+      // Optimized for set comparison
+      nor3$ and_0_0(eq,in_inv[0],in_inv[1],in_inv[2]);
     end
     4: begin : width4_gen
       and4$ and_0_0(eq,in[0],in[1],in[2],in[3]);

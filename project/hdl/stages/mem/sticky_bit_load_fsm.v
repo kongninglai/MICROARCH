@@ -4,6 +4,9 @@ module sticky_bit_load_fsm (
   output DOING_LINE_1_LOAD
 );
 
+wire DOING_LINE_1_LOAD_prebuf;
+bufferH16$  bufferH16$_DOING_LINE_1_LOAD(DOING_LINE_1_LOAD, DOING_LINE_1_LOAD_prebuf);
+
 wire DOING_LINE_1_LOAD_NEXT;
 
 /* Inverters */
@@ -21,6 +24,6 @@ nand2$ nand_1_0_0(nand_1_0_0_out,DOING_LINE_1_LOAD_bar,LINE_0_LOAD_DONE_AND_NEED
 nand2$ nand_0_0_1(DOING_LINE_1_LOAD_NEXT,nand_0_0_0_out,nand_1_0_0_out);
 
 /* State Flip Flops */
-dff$ dff_0(clk, DOING_LINE_1_LOAD_NEXT, DOING_LINE_1_LOAD, DOING_LINE_1_LOAD_bar, rst, 1'b1);
+dff$ dff_0(clk, DOING_LINE_1_LOAD_NEXT, DOING_LINE_1_LOAD_prebuf, DOING_LINE_1_LOAD_bar, rst, 1'b1);
 
 endmodule

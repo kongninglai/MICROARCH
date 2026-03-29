@@ -18,6 +18,7 @@ cc_off_core_tb                 FAILURES=0      SUCCESSES=30720
 choose_eip_tb                  FAILURES=0      SUCCESSES=11    
 cmp_gen_20b_tb                 FAILURES=0      SUCCESSES=4103  
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=4103  
+cmp_gt_32b_tb                  FAILURES=0      SUCCESSES=4104  
 comb_choose_eip_tb             FAILURES=0      SUCCESSES=8     
 csa_bitslice_tb                FAILURES=0      SUCCESSES=8     
 csa_tb                         FAILURES=0      SUCCESSES=32768 
@@ -51,7 +52,6 @@ HA_8b_tb                       FAILURES=0      SUCCESSES=65536
 hash_tb                        FAILURES=0      SUCCESSES=6     
 io_addr_logic_block_tb         FAILURES=0      SUCCESSES=512   
 kb_tb                          FAILURES=0      SUCCESSES=28    
-le_5b_tb                       FAILURES=0      SUCCESSES=256   
 logic_branch_tb                FAILURES=0      SUCCESSES=8     
 logic_cl_shifter_tb            FAILURES=0      SUCCESSES=513   
 logic_disp_bytes_tb            FAILURES=0      SUCCESSES=5     

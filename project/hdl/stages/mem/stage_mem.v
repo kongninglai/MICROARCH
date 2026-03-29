@@ -164,6 +164,9 @@ module stage_mem #(
 
 );
 
+wire to_mem_valid_buf16;
+bufferH16$    bufferH16$_to_mem_valid_buf16(to_mem_valid_buf16, to_mem_valid);
+
 /*** CONTROL SIGNALS ***/
 
 wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux;
@@ -184,9 +187,12 @@ mem_sig mem_sig_inst (
   .ds(ds), .mem_ds(mem_ds)
 );
 
+wire [1:0] rw_buf16;
+bufferH16$    bufferH16$_rw_buf16[1:0](rw_buf16, rw);
+
 assign from_mem_control_sigs = {
     ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
-    ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux,
+    ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw_buf16, ds, shf_srcb_mux,
     ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
     gp_dsta_mux, store_data_mux
 };
@@ -196,9 +202,8 @@ assign from_mem_control_sigs = {
 /* LOADS */
 
 wire  LINE_0_LOAD_DONE, LINE_1_LOAD_DONE;
-wire  NEEDS_LINE_1_LOAD, NEEDS_LINE_1_LOAD_BAR, DOING_LINE_1_LOAD, DOING_LINE_1_LOAD_BAR;
+wire  NEEDS_LINE_1_LOAD, DOING_LINE_1_LOAD, DOING_LINE_1_LOAD_BAR;
 xor2$   xor2$_NEEDS_LINE_1_LOAD(NEEDS_LINE_1_LOAD, to_mem_ld_addr[RANK_BURST_SIZE], to_mem_ld_offset[RANK_BURST_SIZE]);
-xnor2$  xnor2$_NEEDS_LINE_1_LOAD_BAR(NEEDS_LINE_1_LOAD_BAR, to_mem_ld_addr[RANK_BURST_SIZE], to_mem_ld_offset[RANK_BURST_SIZE]);
 
 wire  FLUSH, FLUSH_BAR;
 or2$    or2$_FLUSH(FLUSH, from_ex_flush, from_wb_flush);
@@ -254,8 +259,8 @@ wire  STORE_LINE_0_EXCEPTION_COND, STORE_LINE_1_EXCEPTION_COND;
 or2$    or2$_STORE_LINE_0_EXCEPTION_COND(STORE_LINE_0_EXCEPTION_COND, D_WR0_TLB_PAGE_FAULT_OUT, D_WR0_TLB_WRITE_DISABLE_OUT);
 or2$    or2$_STORE_LINE_1_EXCEPTION_COND(STORE_LINE_1_EXCEPTION_COND, D_WR1_TLB_PAGE_FAULT_OUT, D_WR1_TLB_WRITE_DISABLE_OUT);
 
-and3$   and3$_STORE_LINE_0_EXCEPTION(STORE_LINE_0_EXCEPTION, rw[0], STORE_LINE_0_EXCEPTION_COND, to_mem_valid);
-and4$   and4$_STORE_LINE_1_EXCEPTION(STORE_LINE_1_EXCEPTION, rw[0], STORE_LINE_1_EXCEPTION_COND, NEEDS_LINE_1_STORE, to_mem_valid);
+and3$   and3$_STORE_LINE_0_EXCEPTION(STORE_LINE_0_EXCEPTION, rw_buf16[0], STORE_LINE_0_EXCEPTION_COND, to_mem_valid_buf16);
+and4$   and4$_STORE_LINE_1_EXCEPTION(STORE_LINE_1_EXCEPTION, rw_buf16[0], STORE_LINE_1_EXCEPTION_COND, NEEDS_LINE_1_STORE, to_mem_valid_buf16);
 
 or2$    or2$_STORE_EXCEPTION(STORE_EXCEPTION, STORE_LINE_0_EXCEPTION, STORE_LINE_1_EXCEPTION);
 nor2$   nor2$_STORE_EXCEPTION_BAR(STORE_EXCEPTION_BAR, STORE_LINE_0_EXCEPTION, STORE_LINE_1_EXCEPTION);
@@ -331,7 +336,7 @@ assign D_WR1_TLB_VPN = to_mem_st_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1
 
 wire  D_RD_TLB_PAGE_FAULT_OUT_BAR, LOAD_EXCEPTION;
 inv1$   inv1$_D_RD_TLB_PAGE_FAULT_OUT_BAR(D_RD_TLB_PAGE_FAULT_OUT_BAR, D_RD_TLB_PAGE_FAULT_OUT);
-and3$   and3$_LOAD_EXCEPTION(LOAD_EXCEPTION, D_RD_TLB_PAGE_FAULT_OUT, rw[1], to_mem_valid);
+and3$   and3$_LOAD_EXCEPTION(LOAD_EXCEPTION, D_RD_TLB_PAGE_FAULT_OUT, rw_buf16[1], to_mem_valid_buf16);
 
 wire  [1:0] LOAD_EXCEPTION_MASK;
 assign  LOAD_EXCEPTION_MASK = {1'b0, LOAD_EXCEPTION};
@@ -340,14 +345,14 @@ assign  LOAD_EXCEPTION_MASK = {1'b0, LOAD_EXCEPTION};
 
 wire  ld_slim_violation, st_slim_violation, eip_slim_violation;
 
-cmp_gen_32b cmp_gen_32b_ld_slim_violation (
+cmp_gt_32b cmp_gt_32b_ld_slim_violation (
   .in0(to_mem_ld_offset[SLIM_BIT_WIDTH-1:0]), .in1(to_mem_ld_slim),
-	.lt(), .gt(ld_slim_violation), .eq()
+	.gt(ld_slim_violation)
 );
 
-cmp_gen_32b cmp_gen_32b_st_slim_violation (
+cmp_gt_32b cmp_gt_32b_st_slim_violation (
   .in0(to_mem_st_offset[SLIM_BIT_WIDTH-1:0]), .in1(to_mem_st_slim),
-	.lt(), .gt(st_slim_violation), .eq()
+	.gt(st_slim_violation)
 );
 
 wire  [VA_BIT_WIDTH-1:0]  maximum_eip_accessed;
@@ -359,9 +364,9 @@ big_decrement #(
   .s(maximum_eip_accessed)
 );
 
-cmp_gen_32b cmp_gen_32b_eip_slim_violation (
+cmp_gt_32b cmp_gt_32b_eip_slim_violation (
   .in0(maximum_eip_accessed), .in1(from_rr_code_segment_limit),
-	.lt(), .gt(eip_slim_violation), .eq()
+	.gt(eip_slim_violation)
 );
 
 /* Other case: Cross Segment Boundary if addr[19] = 1 and offset[19] = 0 */
@@ -394,36 +399,37 @@ assign ld_slim_exception_mask[0] = 1'b0;
 assign st_slim_exception_mask[0] = 1'b0;
 assign eip_slim_exception_mask[0] = 1'b0;
 
-and3$   and3$_ld_slim_exception_mask(ld_slim_exception_mask[1], ld_gen_limit_violation, rw[1], to_mem_valid);
-and3$   and3$_st_slim_exception_mask(st_slim_exception_mask[1], st_gen_limit_violation, rw[0], to_mem_valid);
-and2$   and2$_eip_slim_exception_mask(eip_slim_exception_mask[1], eip_gen_limit_violation, to_mem_valid);
+and3$   and3$_ld_slim_exception_mask(ld_slim_exception_mask[1], ld_gen_limit_violation, rw_buf16[1], to_mem_valid_buf16);
+and3$   and3$_st_slim_exception_mask(st_slim_exception_mask[1], st_gen_limit_violation, rw_buf16[0], to_mem_valid_buf16);
+and2$   and2$_eip_slim_exception_mask(eip_slim_exception_mask[1], eip_gen_limit_violation, to_mem_valid_buf16);
 
 or3$    or3$_combined_slim_exception_mask[1:0](combined_slim_exception_mask, ld_slim_exception_mask, st_slim_exception_mask, eip_slim_exception_mask);
 
 or4$    or4$_from_mem_exception[1:0](from_mem_exception, LOAD_EXCEPTION_MASK, STORE_EXCEPTION_MASK, combined_slim_exception_mask, to_mem_exception);
 
-wire  no_mem_exception;
+wire  no_mem_exception, no_mem_exception_buf16;
 nor2$   nor2$_no_mem_exception(no_mem_exception, from_mem_exception[0], from_mem_exception[1]);
-and3$   and3$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw[1], no_mem_exception, to_mem_valid);
+bufferH16$    bufferH16$_no_mem_exception_buf16(no_mem_exception_buf16, no_mem_exception);
+and3$   and3$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], no_mem_exception_buf16, to_mem_valid_buf16);
 
 
 /*** STORE PIPELINE REGISTERS ***/
 
 wire  D_WR0_TLB_CACHE_ENABLE_OUT_BAR;
 inv1$   inv1$_D_WR0_TLB_CACHE_ENABLE_OUT_BAR(D_WR0_TLB_CACHE_ENABLE_OUT_BAR, D_WR0_TLB_CACHE_ENABLE_OUT);
-and4$   and4$_from_mem_store_is_io_line_0(from_mem_store_is_io_line_0, D_WR0_TLB_CACHE_ENABLE_OUT_BAR, to_mem_valid, no_mem_exception, rw[0]);
-and4$   and4$_from_mem_store_queue_alloc_line_0(from_mem_store_queue_alloc_line_0, D_WR0_TLB_CACHE_ENABLE_OUT, to_mem_valid, no_mem_exception, rw[0]);
+and4$   and4$_from_mem_store_is_io_line_0(from_mem_store_is_io_line_0, D_WR0_TLB_CACHE_ENABLE_OUT_BAR, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
+and4$   and4$_from_mem_store_queue_alloc_line_0(from_mem_store_queue_alloc_line_0, D_WR0_TLB_CACHE_ENABLE_OUT, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
 
 wire  from_mem_store_queue_alloc_line_1_int;
-and4$   and4$_from_mem_store_queue_alloc_line_1_int(from_mem_store_queue_alloc_line_1_int, D_WR1_TLB_CACHE_ENABLE_OUT, to_mem_valid, no_mem_exception, rw[0]);
+and4$   and4$_from_mem_store_queue_alloc_line_1_int(from_mem_store_queue_alloc_line_1_int, D_WR1_TLB_CACHE_ENABLE_OUT, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
 and2$   and2$_from_mem_store_queue_alloc_line_1(from_mem_store_queue_alloc_line_1, from_mem_store_queue_alloc_line_1_int, NEEDS_LINE_1_STORE);
 
-and3$   and3$_from_mem_valid_store_inst(from_mem_valid_store_inst, to_mem_valid, no_mem_exception, rw[0]);
+and3$   and3$_from_mem_valid_store_inst(from_mem_valid_store_inst, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
 
 assign from_mem_store_addr_line_0 = {D_WR0_TLB_PFN_OUT, to_mem_st_addr_aligned[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]};
 assign from_mem_store_addr_line_1 = {D_WR1_TLB_PFN_OUT, to_mem_st_addr_next_line_aligned[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]};
 
-wire    [MULTI_WRITE_AMT*CHIPS_PER_RANK-1:0]  shifted_combined_store_mask, final_combined_store_mask;
+wire    [MULTI_WRITE_AMT*CHIPS_PER_RANK-1:0]  concat_store_mask_buf64, shifted_combined_store_mask, final_combined_store_mask;
 wire    [STORE_DATA_BYTE_WIDTH-1:0]           starting_combined_store_mask;
 
 mux4_8$   mux4_8$_starting_combined_store_mask( starting_combined_store_mask,
@@ -434,8 +440,10 @@ mux4_8$   mux4_8$_starting_combined_store_mask( starting_combined_store_mask,
                                                 mem_ds[0],
                                                 mem_ds[1]);
 
+bufferH64$    bufferH64$_concat_store_mask_buf64[MULTI_WRITE_AMT*CHIPS_PER_RANK-1:0](concat_store_mask_buf64, {24'd0, starting_combined_store_mask});
+
 lshf_var_32b lshf_var_32b_shifted_combined_store_mask (
-  .in({24'd0, starting_combined_store_mask}),
+  .in(concat_store_mask_buf64),
   .shf_amt({1'b0, to_mem_st_addr[3:0]}),
   .out(shifted_combined_store_mask)
 );
@@ -451,15 +459,20 @@ assign from_mem_store_data_shf_amt = {1'b0, to_mem_st_addr[3:0]};
 
 /*** SHIFTING / SAVING LOAD DATA LOGIC ***/
 
-wire  [STORE_DATA_BIT_WIDTH-1:0]  SAVED_LINE_0_LOAD_DATA, LOAD_RESULT_REGULAR, LOAD_RESULT_CROSS;
+wire  [STORE_DATA_BIT_WIDTH-1:0]  SAVED_LINE_0_LOAD_DATA, SAVED_LINE_0_LOAD_DATA_buf16, LOAD_RESULT_REGULAR, LOAD_RESULT_CROSS;
 wire  [RANK_BIT_WIDTH-1:0]        FULL_LOAD_RESULT_REGULAR, FULL_LOAD_RESULT_CROSS;
 
 assign LOAD_RESULT_REGULAR = FULL_LOAD_RESULT_REGULAR[STORE_DATA_BIT_WIDTH-1:0];
 assign LOAD_RESULT_CROSS = FULL_LOAD_RESULT_CROSS[STORE_DATA_BIT_WIDTH-1:0];
 
+wire  [RANK_BIT_WIDTH-1:0] DCACHE_HIT_DATA_buf64;
+bufferH64$    bufferH64$_DCACHE_HIT_DATA_buf64[RANK_BIT_WIDTH-1:0](DCACHE_HIT_DATA_buf64, DCACHE_HIT_DATA);
+
+bufferH16$    bufferH16$_SAVED_LINE_0_LOAD_DATA_buf16[STORE_DATA_BIT_WIDTH-1:0](SAVED_LINE_0_LOAD_DATA_buf16, SAVED_LINE_0_LOAD_DATA);
+
 reg64e$ reg64e$_SAVED_LINE_0_LOAD_DATA(
   .CLK(clk), 
-  .Din(DCACHE_HIT_DATA[RANK_BIT_WIDTH-1:STORE_DATA_BIT_WIDTH]), 
+  .Din(DCACHE_HIT_DATA_buf64[RANK_BIT_WIDTH-1:STORE_DATA_BIT_WIDTH]), 
   .Q(SAVED_LINE_0_LOAD_DATA), 
   .QBAR(), 
   .CLR(rst_n), 
@@ -475,13 +488,13 @@ PA_4b PA_4b_to_mem_ld_addr_line_offset_adjusted (
 );
 
 rshf_bytes_var_128b rshf_bytes_var_128b_FULL_LOAD_RESULT_REGULAR (
-  .in(DCACHE_HIT_DATA),
+  .in(DCACHE_HIT_DATA_buf64),
   .shf_amt(to_mem_ld_addr[3:0]),
   .out(FULL_LOAD_RESULT_REGULAR)
 );
 
 rshf_bytes_var_128b rshf_bytes_var_128b_FULL_LOAD_RESULT_CROSS (
-  .in({DCACHE_HIT_DATA[STORE_DATA_BIT_WIDTH-1:0], SAVED_LINE_0_LOAD_DATA}),
+  .in({DCACHE_HIT_DATA_buf64[STORE_DATA_BIT_WIDTH-1:0], SAVED_LINE_0_LOAD_DATA_buf16}),
   .shf_amt(to_mem_ld_addr_line_offset_adjusted),
   .out(FULL_LOAD_RESULT_CROSS)
 );
@@ -500,7 +513,7 @@ endgenerate
 
 /*** VALID AND STALL ***/
 
-and2$   and2$_from_mem_valid(from_mem_valid, from_mem_stall_bar, to_mem_valid);
+and2$   and2$_from_mem_valid(from_mem_valid, from_mem_stall_bar, to_mem_valid_buf16);
 
 wire  STALL_REASON_0, STALL_REASON_1;
 

@@ -81,18 +81,18 @@ wire          FSM_LD_REGS, FSM_SHF_DATA_WR_MASK, FSM_TAG_WR_MASK_MUX,
               FSM_ADDR_BUS_ENBAR, 
               FSM_IN_010;
 
-wire  [1:0]   FSM_DATA_WR_MASK_MUX, FSM_DATA_BUS_SHF_MUX_buf256;
+wire  [1:0]   FSM_DATA_WR_MASK_MUX, FSM_DATA_BUS_SHF_MUX_buf16;
 
 /* COUNTER */
 
-wire  [2:0] counter, counter_buf256, inc_counter, next_counter;
+wire  [2:0] counter, counter_buf16, inc_counter, next_counter;
 
-bufferH256$   bufferH256$_counter_buf256[2:0](counter_buf256, counter);
+bufferH16$   bufferH16$_counter_buf16[2:0](counter_buf16, counter);
 
 big_increment #(
   .WIDTH(3)
 ) big_increment_inc_counter (
-  .a(counter_buf256),
+  .a(counter_buf16),
   .s(inc_counter)
 );
 
@@ -120,14 +120,14 @@ reg_n #(
 
 /* "State Done" Counter Comparators */
 
-big_eq  #(.WIDTH(3)) done_CACHE_FILL_DONE (.in0(counter_buf256), .in1(W_CT_CACHE_FILL_DONE     ), .eq(CACHE_FILL_DONE  ));
-big_eq  #(.WIDTH(3)) done_SB_FILL_DONE    (.in0(counter_buf256), .in1(W_CT_SB_FILL_DONE        ), .eq(SB_FILL_DONE     ));
+big_eq  #(.WIDTH(3)) done_CACHE_FILL_DONE (.in0(counter_buf16), .in1(W_CT_CACHE_FILL_DONE     ), .eq(CACHE_FILL_DONE  ));
+big_eq  #(.WIDTH(3)) done_SB_FILL_DONE    (.in0(counter_buf16), .in1(W_CT_SB_FILL_DONE        ), .eq(SB_FILL_DONE     ));
 
 /* Easy Counter-Related Wires */
 
 wire    [RANK_BURST_SIZE-1:0]               CC_STREAM_BUF_WR_MASK, CC_STREAM_BUF_WR_MASK_GATED;
 
-decoder2_4$   decoder2_4$_CC_STREAM_BUF_WR_MASK(.SEL(counter_buf256[1:0]),
+decoder2_4$   decoder2_4$_CC_STREAM_BUF_WR_MASK(.SEL(counter_buf16[1:0]),
                                                  .Y(CC_STREAM_BUF_WR_MASK), .YBAR());
 
 and2$         and2$_CC_STREAM_BUF_WR_MASK_GATED[RANK_BURST_SIZE-1:0](CC_STREAM_BUF_WR_MASK_GATED,
@@ -139,7 +139,7 @@ and2$         and2$_FSM_HIT_DATA_MUX(FSM_HIT_DATA_MUX, CACHE_MISS, CC_STREAM_BUF
 wire  FSM_HIT_DATA_MUX_buf16;
 bufferH16$    bufferH16$_FSM_HIT_DATA_MUX_buf16(FSM_HIT_DATA_MUX_buf16, FSM_HIT_DATA_MUX);
 
-assign  FSM_DATA_BUS_SHF_MUX_buf256 = counter_buf256[1:0];
+assign  FSM_DATA_BUS_SHF_MUX_buf16 = counter_buf16[1:0];
 
 assign  CC_FSM_VALID_WR_EN_GLOBAL = FSM_TAG_WR_MASK_MUX;
 
@@ -198,8 +198,8 @@ generate
                                           DATA_BUS_SHF_10[j*16 +: 16],
                                           DATA_BUS_SHF_11[j*16 +: 16],
 
-                                          FSM_DATA_BUS_SHF_MUX_buf256[0],
-                                          FSM_DATA_BUS_SHF_MUX_buf256[1]
+                                          FSM_DATA_BUS_SHF_MUX_buf16[0],
+                                          FSM_DATA_BUS_SHF_MUX_buf16[1]
                                         );
   end
 endgenerate
@@ -489,7 +489,7 @@ wire nand_9_0_0_out, nand_9_0_0_out_buf16;
 nand4$ nand_9_0_0(nand_9_0_0_out,Q2_bar,Q1,Q0,CACHE_FILL_DONE);
 bufferH16$ bufferH16$_nand_9_0_0_out_buf16(nand_9_0_0_out_buf16, nand_9_0_0_out);
 wire nand_10_0_0_out;
-inv1$ nand_10_0_0(nand_10_0_0_out, Q1_bar);
+assign nand_10_0_0_out = Q1;
 wire nand_11_0_0_out, nand_11_0_0_out_buf16;
 nand3$ nand_11_0_0(nand_11_0_0_out,Q2_bar,Q1,Q0_bar);
 bufferH16$ bufferH16$_nand_11_0_0_out_buf16(nand_11_0_0_out_buf16, nand_11_0_0_out);
@@ -523,8 +523,8 @@ nand4$ nand_11_0_1(FSM_ADDR_MUX,nand_11_1_1_out,nand_8_0_0_out_buf16,nand_9_0_0_
 and2$ nand_11_1_1(nand_11_1_1_out,nand_12_0_0_out_buf16,nand_13_0_0_out_buf16);
 nand2$ nand_12_0_1(FSM_GATE_RQ,nand_5_0_0_out,nand_6_0_0_out);
 wire nand_13_1_1_out;
-nand4$ nand_13_0_1(FSM_ADDR_BUS_ENBAR,nand_13_1_1_out,nand_7_0_0_out,nand_8_0_0_out_buf16,nand_9_0_0_out_buf16);
-and2$ nand_13_1_1(nand_13_1_1_out,nand_10_0_0_out,nand_12_0_0_out_buf16);
+nand4$ nand_13_0_1(FSM_ADDR_BUS_ENBAR,nand_13_1_1_out,nand_12_0_0_out_buf16,nand_8_0_0_out_buf16,nand_9_0_0_out_buf16);
+and2$ nand_13_1_1(nand_13_1_1_out,nand_10_0_0_out,nand_7_0_0_out);
 wire nand_14_1_1_out;
 nand4$ nand_14_0_1(CC_FSM_FILL_BUSY,nand_14_1_1_out,nand_5_0_0_out,nand_6_0_0_out,nand_9_0_0_out_buf16);
 and3$ nand_14_1_1(nand_14_1_1_out,nand_11_0_0_out_buf16,nand_12_0_0_out_buf16,nand_13_0_0_out_buf16);

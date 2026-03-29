@@ -53,8 +53,6 @@
 ~/MICROARCH/project/hdl/cache/controllers/sticky_bit_fsm.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_64b.v
 ~/MICROARCH/project/hdl/cache/top/full_cache.v
-~/MICROARCH/project/hdl/cache/data_stores/store_queue_entry.v
-~/MICROARCH/project/hdl/cache/data_stores/store_queue.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux32_16b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_bytes_var_256b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/rshf_chunks.v
@@ -63,7 +61,7 @@
 ~/MICROARCH/project/hdl/stages/mem/sticky_bit_load_fsm.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_var_32b.v
 ~/MICROARCH/project/hdl/cache/tlb/tlb_wrapper.v
-~/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_32b.v
+~/MICROARCH/project/hdl/local-lib/comparators/cmp_gt_32b.v
 ~/MICROARCH/project/hdl/local-lib/adders/PA_4b.v
 ~/MICROARCH/project/hdl/stages/mem/stage_mem.v
 ~/MICROARCH/project/hvl/stages/mem/stage_mem_tb/stage_mem_tb.v

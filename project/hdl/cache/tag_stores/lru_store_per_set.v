@@ -278,10 +278,10 @@ dff$ dff_4(clk, D4_gated_rst, Q4_prebuf, Q4_bar_prebuf, rst, 1'b1);
 
 /* INVERT STATE BITS */
 
-bufferH64$  bufferH64$_Q4_bar(Q4_bar, Q4_bar_prebuf);
-bufferH64$  bufferH64$_Q3_bar(Q3_bar, Q3_bar_prebuf);
+bufferH16$  bufferH16$_Q4_bar(Q4_bar, Q4_bar_prebuf);
+bufferH16$  bufferH16$_Q3_bar(Q3_bar, Q3_bar_prebuf);
 bufferH64$  bufferH64$_Q2_bar(Q2_bar, Q2_bar_prebuf);
 bufferH64$  bufferH64$_Q1_bar(Q1_bar, Q1_bar_prebuf);
-bufferH64$  bufferH64$_Q0_bar(Q0_bar, Q0_bar_prebuf);
+bufferH16$  bufferH16$_Q0_bar(Q0_bar, Q0_bar_prebuf);
 
 endmodule
