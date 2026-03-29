@@ -53,7 +53,7 @@ module stage_mem #(
   parameter MMXR_DATA_BIT_WIDTH=64,
   parameter SLIM_BIT_WIDTH=32,
 
-  parameter MEM_CONTROL_SIGS_BIT_WIDTH=54
+  parameter MEM_CONTROL_SIGS_BIT_WIDTH=57
 
 ) (
   input                                       clk,
@@ -169,7 +169,7 @@ bufferH16$    bufferH16$_to_mem_valid_buf16(to_mem_valid_buf16, to_mem_valid);
 
 /*** CONTROL SIGNALS ***/
 
-wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux;
+wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux, rm, op_ovr, palu_size;
 wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds;
 wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
 wire [3:0] gp_dsta_mux, store_data_mux;
@@ -184,7 +184,7 @@ mem_sig mem_sig_inst (
   .cmpxchg(cmpxchg), .cmovc(cmovc),
   .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
   .store_data_mux(store_data_mux), .rw(rw),
-  .ds(ds), .mem_ds(mem_ds)
+  .ds(ds), .mem_ds(mem_ds), .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size)
 );
 
 wire [1:0] rw_buf16;
