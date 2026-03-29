@@ -20,7 +20,7 @@ module tb_exhaustive_decoder();
     wire [7:0] sib;
     wire [1:0] disp_size_mux;
     wire [31:0] disp;
-    wire [1:0] imm_size;
+    wire [2:0] imm_size; 
     wire [47:0] imm;
     wire [1:0] addressing_mode;
     wire [3:0] instr_length;
@@ -51,12 +51,12 @@ module tb_exhaustive_decoder();
     // --------------------------------------------------------
     integer file, r;
     
-    // FIXED: Upgraded to 32-bit integers to prevent %x memory overflow corruption
+    // Upgraded to 32-bit integers to prevent %x memory overflow corruption
     integer exp_len;
     integer exp_opsize, exp_rep, exp_ext, exp_modrm_v;
     integer exp_opcode, exp_modrm, exp_sib;
     
-    // FIXED: Flattened the array so older Verilog compilers don't crash on fscanf
+    // Flattened the array so older Verilog compilers don't crash on fscanf
     integer b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15; 
 
     integer test_count = 0;
@@ -89,7 +89,7 @@ module tb_exhaustive_decoder();
                         exp_len, exp_opsize, exp_rep, exp_ext, exp_opcode, exp_modrm_v, exp_modrm, exp_sib,
                         b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15);
 
-            // FIXED: Only process if we read exactly 24 items (Prevents blank EOF line crashes)
+            // Only process if we read exactly 24 items (Prevents blank EOF line crashes)
             if (r == 24) begin
                 
                 // Pack the explicit bytes into the 128-bit cache_line vector.

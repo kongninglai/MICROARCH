@@ -20,7 +20,7 @@ module logic_stall_flush(
         input wire [31:0] i_eip,
 
         //Instr Valid Logic
-        input wire [3:0] tail_ptr,
+        input wire [4:0] tail_ptr,
         input wire [3:0] incr_amt,
 
         //Other Inputs
@@ -33,7 +33,7 @@ module logic_stall_flush(
 
     wire instr_invalid, instr_valid_w;
     cmp_gen_20b INSTR_VALID( //Instruction is crossing cache line boundary if incr_amt > tail_ptr
-        .in0({16'b0, incr_amt}), .in1({16'b0, tail_ptr}),
+        .in0({16'b0, incr_amt}), .in1({15'b0, tail_ptr}),
         .lt(), .eq(), .gt(instr_invalid)
     );	
     inv1$ INV_INSTR_VALID(instr_valid_w, instr_invalid);

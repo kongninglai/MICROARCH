@@ -7,8 +7,7 @@ module choose_eip(
     input wire rst_bar, 
 
     //eip incr logic
-    input wire [3:0] instr_length,
-    output wire [31:0] i_eip,
+    input wire [3:0] instr_length,    
 
     input wire ld_pr_rr, //to load register read pipeline registers signal
     input wire instr_valid, 
@@ -20,13 +19,14 @@ module choose_eip(
     input wire [1:0] branch_type,
     input wire hit, //from btb to indicate if we have a bp target or not (currently hardcoded to 0)
 
+    output wire [31:0] i_eip,
+    output wire [31:0] o_eip,
     output wire ld_eip,
     output wire [31:0] eip_true,
     output wire take_branch
 
 );  
 
-    wire [31:0] o_eip;
     eip_incr EIP_INCR_LOGIC(
         .incr_amt(instr_length),
         .eip(o_eip),

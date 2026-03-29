@@ -25,9 +25,4 @@
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder
 
 // Testbench for Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_tb/block_decoder_tb.v
-// /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_tb/block_decoder_tb2.v
-// /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_tb/block_decoder_tb3.v
-// /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_tb/block_decoder_tb4.v
-
-
+/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/pf_expn_tb/pf_expn_tb.v

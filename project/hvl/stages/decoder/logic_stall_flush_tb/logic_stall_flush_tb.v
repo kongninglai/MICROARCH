@@ -4,7 +4,7 @@ module tb_logic_instr_valid();
 
     // 1. Inputs
     reg [31:0] i_eip;
-    reg [3:0]  tail_ptr;
+    reg [4:0]  tail_ptr;
     reg [3:0]  incr_amt;
     
     reg mispredict_src_ex;
@@ -77,17 +77,17 @@ module tb_logic_instr_valid();
 
         // DEFAULT STATE: All good. (Load = 1, Valid = 1)
         i_eip = 32'h0000_1000; 
-        incr_amt = 4'd4; tail_ptr = 4'd10;
+        incr_amt = 4'd4; tail_ptr = 5'd10;
         {stall_ex, stall_rr, stall_mem, stall_wb} = 4'b0000;
         {mispredict_src_ex, v_excptn_src_wb, v_ld_cs_src_ex} = 3'b000;
         #10;
         check_result(1'b1, 1'b1, "DEFAULT STATE");
 
         // TEST 1: Cache line boundary crossed!
-        incr_amt = 4'd8; tail_ptr = 4'd5;
+        incr_amt = 4'd8; tail_ptr = 5'd5;
         #10;
         check_result(1'b1, 1'b0, "TEST 1: Cache Boundary Crossed");
-        incr_amt = 4'd4; tail_ptr = 4'd10; // reset
+        incr_amt = 4'd4; tail_ptr = 5'd10; // reset
         
         // TEST 2: Stall in Memory Stage.
         stall_mem = 1'b1;
@@ -107,7 +107,7 @@ module tb_logic_instr_valid();
         i_eip = 32'h0010_0000;
         stall_wb = 1'b1;
         v_ld_cs_src_ex = 1'b1;
-        incr_amt = 4'd15; tail_ptr = 4'd2;
+        incr_amt = 4'd15; tail_ptr = 5'd2;
         #10;
         check_result(1'b0, 1'b0, "TEST 5: Total Failure State");
 
