@@ -410,7 +410,7 @@ module rr_to_ag_tb;
         .palu_size(palu_size)
     );
 
-    always #3 clk = ~clk;
+    always #5 clk = ~clk;
 
     task clear_inputs;
     begin

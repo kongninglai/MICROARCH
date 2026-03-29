@@ -723,7 +723,7 @@ module ag_to_mem_tb;
         .op_ovr(to_mem_op_ovr),
         .palu_size(to_mem_palu_size)
     );
-    always #6 clk = ~clk;
+    always #5 clk = ~clk;
 
     task clear_inputs;
     begin
