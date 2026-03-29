@@ -93,6 +93,7 @@ module stage_decode(
     );
 
     wire hit;
+    wire cur_instr_prediction;
     choose_eip EIP_LOGIC(
         .clk(clk),
         .rst_bar(rst_bar),
@@ -117,9 +118,6 @@ module stage_decode(
         .take_branch(to_f_take_branch)
     );
 
-
-
-    wire cur_instr_prediction;
     bp BP(
         .clk(clk),
         .rst_bar(rst_bar),

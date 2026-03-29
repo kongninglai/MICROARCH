@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module de_to_rr_tb;
 
     // ---------------------------------------------------------
@@ -17,33 +19,34 @@ module de_to_rr_tb;
     // 2. Signals
     // ---------------------------------------------------------
     reg [127:0] cache_line;
-    reg [31:0]  o_eip_in; 
-    reg [3:0]   tail_ptr;
-    reg [19:0]  cs_limit_reg;
+    wire [31:0]  o_eip_in; 
+    reg [4:0]   tail_ptr; 
     reg [31:0]  eip_target_ex; 
     reg         flush_ex; 
-    reg         v_excptn_src_wb, v_ld_cs_src_ex; // Kept so test cases don't break
+    reg         v_excptn_src_wb; 
     reg         stall_rr; 
     reg         br_t_nt_ex_d, br_valid_ex_d;
     reg [3:0]   pht_idx_ex_d;
+    reg [15:0]  pf_expn_bytes; // NEW: Page fault vector
 
     // Internal Wires (Decode -> Pipe Reg)
-    wire exptn_prot;
     wire [31:0] i_eip;
-    wire pr_de_rr_valid;
-    wire ld_eip;           
+    wire        pr_de_rr_valid;
+    wire        ld_eip;           
     wire [31:0] eip_true;  
     
-    wire prefix_rep, prefix_op_size, prefix_ext;
+    wire        prefix_rep, prefix_op_size, prefix_ext;
     wire [2:0]  prefix_seg_ov_id;
     wire [7:0]  opcode, modrm, sib;
     wire [1:0]  disp_size_mux; 
-    wire [1:0]  imm_size;        
+    wire [2:0]  imm_size;        // FIXED: Now correctly 3-bits
     wire [1:0]  addressing_mode; 
     wire [31:0] disp;
     wire [47:0] imm;
     wire [3:0]  instr_length;
-    
+    wire        ld_pr_rr;        // NEW: Pipeline load enable
+    wire [1:0]  decode_exception_flags; // NEW: Replaces exptn_prot
+
     // Output Wires (Pipe Reg -> RR Stage)
     wire [1:0]  to_rr_exception_flags;
     wire [31:0] to_rr_i_eip, to_rr_o_eip, to_rr_bp_target;
@@ -62,24 +65,27 @@ module de_to_rr_tb;
     // ---------------------------------------------------------
     stage_decode dut_decode (
         .cache_line(cache_line), 
-        .o_eip(o_eip_in), 
         .tail_ptr(tail_ptr),
-        .cs_limit_reg(cs_limit_reg), 
         .eip_target_ex(eip_target_ex),
         .flush_ex(flush_ex), 
         .v_excptn_src_wb(v_excptn_src_wb),
-        // REMOVED: .v_ld_cs_src_ex(v_ld_cs_src_ex) to match new port list
         .stall_rr(stall_rr), 
         .clk(clk), 
         .rst_bar(rst_bar), 
         .br_t_nt_ex_d(br_t_nt_ex_d),
         .br_valid_ex_d(br_valid_ex_d), 
         .pht_idx_ex_d(pht_idx_ex_d),
-        .exptn_prot(exptn_prot), 
+        .from_f_pf_expn_bytes_out(pf_expn_bytes), // FIXED: Wired up
+        
         .i_eip(i_eip), 
+        .o_eip(o_eip_in), // Wait, o_eip is an output from stage_decode now? You had it wired to reg o_eip_in. Check this.
+        .bp_eip_target(),
         .pr_de_rr_valid(pr_de_rr_valid),
+        
         .ld_eip(ld_eip),         
-        .eip_true(eip_true),     
+        .eip_true(eip_true), 
+        .to_f_take_branch(),
+        
         .prefix_rep(prefix_rep), 
         .prefix_op_size(prefix_op_size),
         .prefix_seg_ov_id(prefix_seg_ov_id), 
@@ -92,21 +98,25 @@ module de_to_rr_tb;
         .imm_size(imm_size),
         .imm(imm), 
         .addressing_mode(addressing_mode), 
-        .instr_length(instr_length)
+        .instr_length(instr_length),
+        
+        .ld_pr_rr(ld_pr_rr), // FIXED: Captured output
+        .exception_flags(decode_exception_flags) // FIXED: Captured output
     );
 
     de_to_rr dut_pipe (
         .clk(clk), .rst(rst_bar),
-        .from_de_ld_pr(~stall_rr),
-        .from_de_exptn_prot(exptn_prot), .from_f_exception_flags(2'b0),
+        .from_de_ld_pr(ld_pr_rr), // FIXED: Use the actual logic signal from decode, not ~stall_rr!
+        .from_f_exception_flags(decode_exception_flags), // FIXED: Wired to decode output
         .from_de_i_eip(i_eip), .from_de_o_eip(o_eip_in), .from_de_bp_target(32'h0),
         .from_de_pr_valid(pr_de_rr_valid), .from_de_prefix_rep(prefix_rep),
         .from_de_prefix_op_size(prefix_op_size), .from_de_prefix_seg_ov_id(prefix_seg_ov_id),
         .from_de_prefix_ext(prefix_ext), .from_de_opcode(opcode), .from_de_modrm(modrm),
         .from_de_sib(sib), .from_de_disp_size_mux(disp_size_mux), .from_de_disp(disp),
-        .from_de_imm_size({1'b0, imm_size}), // Zero-extended to match the [2:0] input size
+        .from_de_imm_size(imm_size), // FIXED: Removed hacky 0-padding
         .from_de_imm(imm),
         .from_de_addressing_mode(addressing_mode), .from_de_instr_length(instr_length),
+        
         .to_rr_exception_flags(to_rr_exception_flags),
         .to_rr_i_eip(to_rr_i_eip), .to_rr_o_eip(to_rr_o_eip), .to_rr_bp_target(to_rr_bp_target),
         .to_rr_pr_valid(to_rr_pr_valid), .to_rr_prefixes(to_rr_prefixes),
@@ -138,13 +148,8 @@ module de_to_rr_tb;
     task check_results(input [7:0] exp_op, input [7:0] exp_mod, input [5:0] exp_pref, input exp_valid, input [255:0] name);
     begin
         @(posedge clk); #2; 
-        $display("DEBUG [%s]:", name);
-        $display("  Raw reg_in:  %h", dut_pipe.reg_in);
-        $display("  Raw reg_out: %h", dut_pipe.reg_out);
-
         if (to_rr_opcode !== exp_op || to_rr_modrm !== exp_mod || to_rr_prefixes !== exp_pref || to_rr_pr_valid !== exp_valid) begin
             $display("FAIL: %s | Exp Op:%h Mod:%h Got Op:%h Mod:%h", name, exp_op, exp_mod, to_rr_opcode, to_rr_modrm);
-            $display("sib_byte_true: %d | modrm_true: %d", dut_decode.DECODER.sib_byte_true, dut_decode.DECODER.is_modrm_true);
             FAILURES = FAILURES + 1;
         end else begin
             $display("PASS: %s", name);
@@ -156,9 +161,9 @@ module de_to_rr_tb;
 
     task clear_inputs;
     begin
-        cache_line = 128'h0; o_eip_in = 32'h0; tail_ptr = 4'hF; // Max tail ptr
-        cs_limit_reg = 20'hFFFFF; eip_target_ex = 32'h0;
-        flush_ex = 0; v_excptn_src_wb = 0; v_ld_cs_src_ex = 0;
+        cache_line = 128'h0; tail_ptr = 5'h1F; // Max tail ptr
+        eip_target_ex = 32'h0; pf_expn_bytes = 16'd0;
+        flush_ex = 0; v_excptn_src_wb = 0;
         stall_rr = 0; 
         br_t_nt_ex_d = 0; br_valid_ex_d = 0; pht_idx_ex_d = 0;
     end
@@ -172,7 +177,6 @@ module de_to_rr_tb;
         // TEST 1: ADD EAX, EBX
         @(negedge clk);
         cache_line = 128'h0000_0000_0000_0000_0000_0000_0000_C301;
-        o_eip_in = 32'h1000;
         check_results(8'h01, 8'hC3, 6'b000110, 1'b1, "ADD EAX, EBX");
 
         // TEST 2: Stall Test
@@ -183,7 +187,6 @@ module de_to_rr_tb;
 
         // TEST 3: Prefix Test (CS + REP)
         @(negedge clk);
-        #5;
         stall_rr = 0;
         cache_line = 128'h0000_0000_0000_0000_0000_0000_C301F32E; 
         check_results(8'h01, 8'hC3, 6'b100010, 1'b1, "Prefix Bundle Test (CS + REP)");

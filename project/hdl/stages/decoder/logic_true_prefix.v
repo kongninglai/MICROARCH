@@ -113,7 +113,6 @@ module logic_true_prefix(
         .OUT0(prefix_num[0])
     );
 
-    wire is_seg_ov;
     logic_seg_ov SEGMENT_OVERRIDE_REG_ID_LOGIC (
         .is_es0(is_es0), .is_es1(is_es1), .is_es2(is_es2), .is_es3(is_es3),
         .is_cs0(is_cs0), .is_cs1(is_cs1), .is_cs2(is_cs2), .is_cs3(is_cs3),

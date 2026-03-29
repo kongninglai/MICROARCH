@@ -18,10 +18,10 @@ module logic_seg_ov(
 );  
     //Stage 1 - 0.24ns
     wire is_any_prefix0_buf, is_any_prefix1_buf, is_any_prefix2_buf, is_any_prefix3_buf;
-    buffer8$ any_prefix0_wire_buf(is_any_prefix0_buf, is_any_prefix0);
-    buffer8$ any_prefix1_wire_buf(is_any_prefix1_buf, is_any_prefix1);
-    buffer8$ any_prefix2_wire_buf(is_any_prefix2_buf, is_any_prefix2);
-    buffer8$ any_prefix3_wire_buf(is_any_prefix3_buf, is_any_prefix3);
+    buffer$ any_prefix0_wire_buf(is_any_prefix0_buf, is_any_prefix0);
+    buffer$ any_prefix1_wire_buf(is_any_prefix1_buf, is_any_prefix1);
+    buffer$ any_prefix2_wire_buf(is_any_prefix2_buf, is_any_prefix2);
+    buffer$ any_prefix3_wire_buf(is_any_prefix3_buf, is_any_prefix3);
 
     //Stage 2 - 0.2ns
     wire grp0_0, grp0_1, grp0_2, grp0_3;

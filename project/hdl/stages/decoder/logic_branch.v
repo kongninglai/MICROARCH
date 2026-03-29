@@ -51,7 +51,7 @@ module logic_branch(
     or2$ OR_UNCOND(is_uncond_candidate, is_uncond_l, is_uncond_u);
     and2$ AND_UNCOND(is_uncond, is_uncond_candidate, ext_opcode_bar); //opcode only uncond if no 0F
     
-    wire is_far_and, is_far_or1, is_far_or2, is_far_or3, ext_opcode_bar;
+    wire is_far_and, is_far_or1, is_far_or2, is_far_or3;
     or3$ is_far_or_1(.out(is_far_or1), .in0(call_ptr), .in1(jmp_ptr), .in2(ret_far));
     or2$ is_far_or_2(.out(is_far_or2), .in0(iRETd), .in1(ret_imm_far));
     or2$ is_far_or_3(.out(is_far_or3), .in0(is_far_or1), .in1(is_far_or2));
