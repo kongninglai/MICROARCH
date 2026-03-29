@@ -1,0 +1,12 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib3
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+~/MICROARCH/project/hdl/local-lib/gates/big_or.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux3_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux4_32.v
+~/MICROARCH/project/hdl/stages/execute/bsf/bsf.v
+~/MICROARCH/project/hdl/stages/execute/bsf/ex_bsf.v
+~/MICROARCH/project/hvl/stages/execute/bsf/ex_bsf_tb/ex_bsf_tb.v

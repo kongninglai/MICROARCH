@@ -3,7 +3,7 @@ module mem_to_ex(
     input rst_n,
     input we,
 
-    input [52:0]     from_mem_control_sigs,
+    input [54:0]     from_mem_control_sigs,
     input [2:0]      from_mem_dstidA,
     input [2:0]      from_mem_dstidB,
     input [31:0]     from_mem_srcregA,
@@ -36,7 +36,7 @@ module mem_to_ex(
     input [1:0]      from_mem_exception,
     input            from_mem_valid,
     
-    output [52:0]    to_ex_control_sigs,
+    output [54:0]    to_ex_control_sigs,
     output [2:0]     to_ex_dstidA,
     output [2:0]     to_ex_dstidB,
     output [31:0]    to_ex_srcregA,
@@ -70,7 +70,7 @@ module mem_to_ex(
     output           to_ex_valid
 );
 
-    wire [683:0] reg_din, reg_q, reg_qb;
+    wire [685:0] reg_din, reg_q, reg_qb;
     assign reg_din = {from_mem_control_sigs, 
                       from_mem_dstidA, 
                       from_mem_dstidB, 

@@ -13,7 +13,8 @@ module regunit_tb;
     reg [5:0] from_rr_modrm;
     reg [5:0] from_rr_sib;
     reg from_rr_has_sib;
-    reg [2:0] from_rr_sig_gprd0_mux;
+    reg [1:0] from_rr_sig_gprd0_mux;
+    reg from_rr_sig_gprd1_mux;
     reg [1:0] from_rr_sig_gprd2_mux;
     reg from_rr_sig_srcregA_mux;
     reg from_rr_sig_srcregB_mux;
@@ -37,9 +38,10 @@ module regunit_tb;
     wire [15:0] to_rr_srcSREG;
     wire [15:0] to_rr_SREG1;
     wire [15:0] to_rr_SREG2;
-    wire [19:0] to_rr_SLIM1;
-    wire [19:0] to_rr_SLIM2;
+    wire [31:0] to_rr_SLIM1;
+    wire [31:0] to_rr_SLIM2;
     wire [15:0] CS;
+    wire [31:0] CS_LIMIT;
     wire [2:0] to_dep_srcSREG_idx;
     wire [2:0] to_dep_SREG1_idx;
     wire [2:0] to_dep_SREG2_idx;
@@ -72,6 +74,7 @@ module regunit_tb;
         .from_rr_sib(from_rr_sib),
         .from_rr_has_sib(from_rr_has_sib),
         .from_rr_sig_gprd0_mux(from_rr_sig_gprd0_mux),
+        .from_rr_sig_gprd1_mux(from_rr_sig_gprd1_mux),
         .from_rr_sig_gprd2_mux(from_rr_sig_gprd2_mux),
         .from_rr_sig_srcregA_mux(from_rr_sig_srcregA_mux),
         .from_rr_sig_srcregB_mux(from_rr_sig_srcregB_mux),
@@ -98,6 +101,7 @@ module regunit_tb;
         .to_rr_SLIM1(to_rr_SLIM1),
         .to_rr_SLIM2(to_rr_SLIM2),
         .CS(CS),
+        .CS_LIMIT(CS_LIMIT),
         .to_dep_srcSREG_idx(to_dep_srcSREG_idx),
         .to_dep_SREG1_idx(to_dep_SREG1_idx),
         .to_dep_SREG2_idx(to_dep_SREG2_idx),
@@ -131,7 +135,8 @@ module regunit_tb;
             from_rr_modrm = 6'd0;
             from_rr_sib = 6'd0;
             from_rr_has_sib = 1'b0;
-            from_rr_sig_gprd0_mux = 3'd0;
+            from_rr_sig_gprd0_mux = 2'd0;
+            from_rr_sig_gprd1_mux = 1'd0;
             from_rr_sig_gprd2_mux = 2'd0;
             from_rr_sig_srcregA_mux = 1'b0;
             from_rr_sig_srcregB_mux = 1'b0;
@@ -164,7 +169,8 @@ module regunit_tb;
         input [5:0] modrm;
         input [5:0] sib;
         input has_sib;
-        input [2:0] sig_gprd0_mux;
+        input [1:0] sig_gprd0_mux;
+        input sig_gprd1_mux;
         input [1:0] sig_gprd2_mux;
         input sig_srcregA_mux;
         input sig_srcregB_mux;
@@ -177,6 +183,7 @@ module regunit_tb;
         from_rr_sib = sib;
         from_rr_has_sib = has_sib;
         from_rr_sig_gprd0_mux = sig_gprd0_mux;
+        from_rr_sig_gprd1_mux = sig_gprd1_mux;
         from_rr_sig_gprd2_mux = sig_gprd2_mux;
         from_rr_sig_srcregA_mux = sig_srcregA_mux;
         from_rr_sig_srcregB_mux = sig_srcregB_mux;
@@ -227,7 +234,7 @@ module regunit_tb;
     begin
         $display("srcregA=(%0d)%08h, srcregB=(%0d)%08h, srcregC=(%0d)%08h", to_dep_srcregA_idx, to_rr_srcregA, to_dep_srcregB_idx, to_rr_srcregB, to_dep_srcregC_idx, to_rr_srcregC);
         $display("basereg1=(%0d)%08h, indexreg1=(%0d)%08h, basereg2=(%0d)%08h", to_dep_basereg1_idx, to_rr_basereg1, to_dep_indexreg1_idx, to_rr_indexreg1, to_dep_basereg2_idx, to_rr_basereg2);
-        $display("srcSREG=(%0d)%04h, SREG1:SLIM1=(%0d)%04h : %05h, SREG2:SLIM2=(%0d)%04h : %05h, CS=%04h", to_dep_srcSREG_idx, to_rr_srcSREG, to_dep_SREG1_idx, to_rr_SREG1, to_rr_SLIM1, to_dep_SREG2_idx, to_rr_SREG2, to_rr_SLIM2, CS);
+        $display("srcSREG=(%0d)%04h, SREG1:SLIM1=(%0d)%04h : %08h, SREG2:SLIM2=(%0d)%04h : %08h, CS=%04h, CS_LIMIT=%08h", to_dep_srcSREG_idx, to_rr_srcSREG, to_dep_SREG1_idx, to_rr_SREG1, to_rr_SLIM1, to_dep_SREG2_idx, to_rr_SREG2, to_rr_SLIM2, CS, CS_LIMIT);
         $display("MMA=(%0d)%0h, MMB=(%0d)%0h", to_dep_MMA_idx, to_rr_MMA, to_dep_MMB_idx, to_rr_MMB);
     end
     endtask
@@ -290,7 +297,7 @@ module regunit_tb;
         $display("TEST CASE1: ADD EAX, ECX");
         $display("======================================");
         // 01 C8=00000001 11001000
-        apply_rr_inputs(8'h01, 6'b001000, 6'b0, 1'b0, 3'bx, 2'b00, 1'b1, 1'b1, 2'b10, 1'bx, 3'b0);
+        apply_rr_inputs(8'h01, 6'b001000, 6'b0, 1'b0, 2'bx, 1'b0, 2'b00, 1'b1, 1'b1, 2'b10, 1'bx, 3'b0);
         #8
         print_all_outputs();
 
@@ -298,7 +305,7 @@ module regunit_tb;
         $display("TEST CASE2: ADD [EBX], CH");
         $display("======================================");
         // 00 2b=00000000 00101011
-        apply_rr_inputs(8'h00, 6'b101011, 6'b0, 1'b0, 3'bx, 2'b10, 1'bx, 1'b1, 2'b00, 1'b1, 3'b011);
+        apply_rr_inputs(8'h00, 6'b101011, 6'b0, 1'b0, 2'bx, 1'b0, 2'b10, 1'b1, 1'b1, 2'b00, 1'b1, 3'b011);
         #8
         print_all_outputs();
 
