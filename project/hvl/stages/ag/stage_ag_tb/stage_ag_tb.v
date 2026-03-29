@@ -51,8 +51,8 @@ module stage_ag_tb;
     wire [15:0] from_regunit_srcSREG;
     wire [15:0] from_regunit_SREG1;
     wire [15:0] from_regunit_SREG2;
-    wire [19:0] from_regunit_SLIM1;
-    wire [19:0] from_regunit_SLIM2;
+    wire [31:0] from_regunit_SLIM1;
+    wire [31:0] from_regunit_SLIM2;
     wire [15:0] from_regunit_CS;
     wire [63:0] from_regunit_MMA;
     wire [63:0] from_regunit_MMB;
@@ -87,7 +87,7 @@ module stage_ag_tb;
 
     wire [10:0] to_dep_needREGS;
 
-    wire [19:0] from_regunit_cs_limit;
+    wire [31:0] from_regunit_cs_limit;
 
     reg [2:0] from_wb_gpwr0_idx;
     reg [31:0] from_wb_gpwr0_data;
@@ -752,8 +752,8 @@ module stage_ag_tb;
         $display("srcregA=%08h, srcregB=%08h, srcregC=%08h", from_ag_srcregA, from_ag_srcregB, from_ag_srcregC);
         $display("srcSREG=%04h, MMA=%016h, MMB=%016h", from_ag_srcSREG, from_ag_MMA, from_ag_MMB);
         $display("target_cs=%04h", from_ag_target_cs);
-        $display("ld_addr=%08h, ld_offset=%08h, ld_slim=%05h", from_ag_ld_addr, from_ag_ld_offset, from_ag_ld_slim);
-        $display("st_addr=%08h, st_offset=%08h, st_slim=%05h", from_ag_st_addr, from_ag_st_offset, from_ag_st_slim);
+        $display("ld_addr=%08h, ld_offset=%08h, ld_slim=%08h", from_ag_ld_addr, from_ag_ld_offset, from_ag_ld_slim);
+        $display("st_addr=%08h, st_offset=%08h, st_slim=%08h", from_ag_st_addr, from_ag_st_offset, from_ag_st_slim);
         $display("inc_esp=%08h, dec_esp=%05h", from_ag_inc_esp, from_ag_dec_esp);
         $display("imm=%08h", from_ag_imm);
         $display("exception=%02b", from_ag_exception);

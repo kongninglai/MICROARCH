@@ -42,8 +42,8 @@ module stage_rr(
     input [15:0] from_regunit_srcSREG,
     input [15:0] from_regunit_SREG1,
     input [15:0] from_regunit_SREG2,
-    input [19:0] from_regunit_SLIM1,
-    input [19:0] from_regunit_SLIM2,
+    input [31:0] from_regunit_SLIM1,
+    input [31:0] from_regunit_SLIM2,
     input [15:0] from_regunit_CS,
 
     input [63:0] from_regunit_MMA,
@@ -256,8 +256,9 @@ module stage_rr(
 
     mux2$ mux2_scale[1:0](from_rr_scale_mux, 2'b00, to_rr_sib[7:6], to_rr_addr_mode[1]);
 
-    ze #(.INP_WIDTH(20),.OUT_WIDTH(32)) ze_slim1(.in(from_regunit_SLIM1), .out(from_rr_slim1));
-    ze #(.INP_WIDTH(20),.OUT_WIDTH(32)) ze_slim2(.in(from_regunit_SLIM2), .out(from_rr_slim2));
+    assign from_rr_slim1 = from_regunit_SLIM1;
+    assign from_rr_slim2 = from_regunit_SLIM2;
+
     assign from_rr_sreg2=from_regunit_SREG2;
     // assign from_rr_slim2=from_regunit_SLIM2;
     assign from_rr_base2=from_regunit_basereg2;

@@ -38,10 +38,10 @@ module regunit_tb;
     wire [15:0] to_rr_srcSREG;
     wire [15:0] to_rr_SREG1;
     wire [15:0] to_rr_SREG2;
-    wire [19:0] to_rr_SLIM1;
-    wire [19:0] to_rr_SLIM2;
+    wire [31:0] to_rr_SLIM1;
+    wire [31:0] to_rr_SLIM2;
     wire [15:0] CS;
-    wire [19:0] CS_LIMIT;
+    wire [31:0] CS_LIMIT;
     wire [2:0] to_dep_srcSREG_idx;
     wire [2:0] to_dep_SREG1_idx;
     wire [2:0] to_dep_SREG2_idx;
@@ -234,7 +234,7 @@ module regunit_tb;
     begin
         $display("srcregA=(%0d)%08h, srcregB=(%0d)%08h, srcregC=(%0d)%08h", to_dep_srcregA_idx, to_rr_srcregA, to_dep_srcregB_idx, to_rr_srcregB, to_dep_srcregC_idx, to_rr_srcregC);
         $display("basereg1=(%0d)%08h, indexreg1=(%0d)%08h, basereg2=(%0d)%08h", to_dep_basereg1_idx, to_rr_basereg1, to_dep_indexreg1_idx, to_rr_indexreg1, to_dep_basereg2_idx, to_rr_basereg2);
-        $display("srcSREG=(%0d)%04h, SREG1:SLIM1=(%0d)%04h : %05h, SREG2:SLIM2=(%0d)%04h : %05h, CS=%04h", to_dep_srcSREG_idx, to_rr_srcSREG, to_dep_SREG1_idx, to_rr_SREG1, to_rr_SLIM1, to_dep_SREG2_idx, to_rr_SREG2, to_rr_SLIM2, CS);
+        $display("srcSREG=(%0d)%04h, SREG1:SLIM1=(%0d)%04h : %08h, SREG2:SLIM2=(%0d)%04h : %08h, CS=%04h, CS_LIMIT=%08h", to_dep_srcSREG_idx, to_rr_srcSREG, to_dep_SREG1_idx, to_rr_SREG1, to_rr_SLIM1, to_dep_SREG2_idx, to_rr_SREG2, to_rr_SLIM2, CS, CS_LIMIT);
         $display("MMA=(%0d)%0h, MMB=(%0d)%0h", to_dep_MMA_idx, to_rr_MMA, to_dep_MMB_idx, to_rr_MMB);
     end
     endtask

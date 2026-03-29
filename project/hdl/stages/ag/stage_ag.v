@@ -144,11 +144,12 @@ module stage_ag(
     lshf_const #(.WIDTH(32), .SHF_AMT(3)) lshf3_intex_vec(.in(ze32_intex_vec), .out(shifted_intex_vec));
     PA_32b PA_intex_idtr(.s(addr_intex_idtr), .in0(32'h02000000), .in1(shifted_intex_vec));
 
-    wire [31:0] ld_addr1_or_2;
+    wire [31:0] ld_addr1_or_2, ld_slim1_or_2;
     mux2_32 mux_ld_addr(ld_addr1_or_2, addr1, addr2, load_addr_mux);
     mux2_32 mux_ld_addr_with_intex(from_ag_ld_addr, ld_addr1_or_2, addr_intex_idtr, intex);
     mux2_32 mux_ld_offset(from_ag_ld_offset, offset1, offset2, load_addr_mux);
-    mux2_32 mux_ld_slim(from_ag_ld_slim, to_ag_slim1, to_ag_slim2, load_addr_mux);
+    mux2_32 mux_ld_slim(ld_slim1_or_2, to_ag_slim1, to_ag_slim2, load_addr_mux);
+    mux2_32 mux_ld_slim_with_intex(from_ag_ld_slim, ld_slim1_or_2, 32'hffff_ffff, intex);
 
     mux2_32 mux_st_addr(from_ag_st_addr, addr1, addr2, store_addr_mux);
     mux2_32 mux_st_offset(from_ag_st_offset, offset1, offset2, store_addr_mux);

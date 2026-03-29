@@ -52,8 +52,8 @@ module stage_ex_tb;
     wire [15:0] from_regunit_srcSREG;
     wire [15:0] from_regunit_SREG1;
     wire [15:0] from_regunit_SREG2;
-    wire [19:0] from_regunit_SLIM1;
-    wire [19:0] from_regunit_SLIM2;
+    wire [31:0] from_regunit_SLIM1;
+    wire [31:0] from_regunit_SLIM2;
     wire [15:0] from_regunit_CS;
     wire [63:0] from_regunit_MMA;
     wire [63:0] from_regunit_MMB;
@@ -88,7 +88,7 @@ module stage_ex_tb;
 
     wire [10:0] to_dep_needREGS;
 
-    wire [19:0] from_regunit_cs_limit;
+    wire [31:0] from_regunit_cs_limit;
 
     reg [2:0] from_wb_gpwr0_idx;
     reg [31:0] from_wb_gpwr0_data;
@@ -1287,7 +1287,7 @@ module stage_ex_tb;
         $display("store_data=%016h", from_ex_store_data);
         $display("eflags=%08h", dut_stage_ex.eflags_inst.eflags_din);
         $display("ld_cs=%0b, cs_target=%08h", from_ex_ld_cs, from_ex_cs_target);
-        $display("br_valid=%0b, br_t_nt=%0b, eip_target=%08h, flush=%0b", from_ex_br_valid, from_ex_br_t_nt, from_ex_eip_target, from_ex_flush);
+        $display("mispredict=%0b, br_valid=%0b, br_t_nt=%0b, eip_target=%08h, flush=%0b", dut_stage_ex.mispredict, from_ex_br_valid, from_ex_br_t_nt, from_ex_eip_target, from_ex_flush);
         $display("store_is_io_line0=%0b, store_addr_line0=%03h, store_mask_line0=%04h, store_queue_alloc_line0=%0b", from_ex_store_is_io_line_0, from_ex_store_addr_line_0, from_ex_store_mask_line_0, from_ex_store_queue_alloc_line_0);
         $display("store_addr_line1=%03h, store_mask_line1=%04h, store_queue_alloc_line1=%0b, store_data_shf_amt=%0h", from_ex_store_addr_line_1, from_ex_store_mask_line_1, from_ex_store_queue_alloc_line_1, from_ex_store_data_shf_amt);
         $display("exception=%02b", from_ex_exception);
@@ -1939,7 +1939,7 @@ module stage_ex_tb;
         $display("======================================");
         $display("TEST CASE%0d: JNBE FF (CF=1, Not Taken, sign-extended)", NUM_TESTS);
         $display("======================================");
-        // 77 02
+        // 77 FF
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         set_cf_with_add();
@@ -2157,8 +2157,9 @@ module stage_ex_tb;
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         test_with_nops(6'b000110, 8'ha5, 8'bx, 8'bx, 32'bx, 2'b00,
                         48'bx, 3'b000, 2'b00, 32'h1234, 32'h1235, 32'h00003456, 2'b0, 1'b1);
-        // $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
-        // $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+                        
+        $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+        $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
         $finish;
     end
 

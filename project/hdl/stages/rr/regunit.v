@@ -34,10 +34,10 @@ module regunit(
     output [15:0] to_rr_srcSREG,
     output [15:0] to_rr_SREG1,
     output [15:0] to_rr_SREG2,
-    output [19:0] to_rr_SLIM1,
-    output [19:0] to_rr_SLIM2,
+    output [31:0] to_rr_SLIM1,
+    output [31:0] to_rr_SLIM2,
     output [15:0] CS,
-    output [19:0] CS_LIMIT,
+    output [31:0] CS_LIMIT,
     output [2:0] to_dep_srcSREG_idx,
     output [2:0] to_dep_SREG1_idx,
     output [2:0] to_dep_SREG2_idx,
@@ -167,14 +167,26 @@ module regunit(
     mux2_16$ mux2_srcsreg(to_rr_srcSREG, segrd0_data, segrd1_data, from_rr_sig_srcsreg_mux);
     mux2$ mux2_srcsreg_idx[2:0](to_dep_srcSREG_idx, segrd0_idx, segrd1_idx, from_rr_sig_srcsreg_mux);
 
+    wire [31:0] seg_slim1_out, seg_slim2_out;
+    wire sreg1_is_ss, sreg2_is_ss, inv_segrd0_idx1_out, inv_segrd1_idx1_out;
+    inv1$ inv_sreg0_idx1(inv_segrd0_idx1_out, segrd0_idx[1]);
+    nor2$ nor_sreg1_is_ss(sreg1_is_ss, inv_segrd0_idx1_out, segrd0_idx[0]);
+
     assign to_rr_SREG1 = segrd0_data;
-    assign to_rr_SLIM1 = segrd0_limit;
+    assign seg_slim1_out = {12'b0, segrd0_limit};
+    mux2_32 mux2_slim1_ignore_ss(to_rr_SLIM1, seg_slim1_out, 32'hffff_ffff, sreg1_is_ss);
     assign to_dep_SREG1_idx = segrd0_idx;
 
+    inv1$ inv_sreg1_idx1(inv_segrd1_idx1_out, segrd1_idx[1]);
+    nor2$ nor_sreg2_is_ss(sreg2_is_ss, inv_segrd1_idx1_out, segrd1_idx[0]);
+
     assign to_rr_SREG2 = segrd1_data;
-    assign to_rr_SLIM2 = segrd1_limit;
+    assign seg_slim2_out = {12'b0, segrd1_limit};
+    mux2_32 mux2_slim2_ignore_ss(to_rr_SLIM2, seg_slim2_out, 32'hffff_ffff, sreg2_is_ss);
     assign to_dep_SREG2_idx = segrd1_idx;
 
+    wire [19:0] cs_limit_out;
+    assign CS_LIMIT = {12'b0, cs_limit_out};
     regfile_seg segrf(  
         .clk(clk),
         .rst_n(rst_n),
@@ -186,7 +198,7 @@ module regunit(
         .segrd0_limit(segrd0_limit),
         .segrd1_limit(segrd1_limit),
         .cs(CS),
-        .cs_limit(CS_LIMIT),
+        .cs_limit(cs_limit_out),
         .segwr_idx(from_wb_segwr_idx),
         .segwr_data(from_wb_segwr_data),
         .segwr_en(from_wb_segwr_en),

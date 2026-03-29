@@ -40,7 +40,7 @@ module stage_ex(
     input [15:0]    to_ex_tempCS,
 
     /* CS LIMIT */
-    input [19:0]        to_ex_cs_limit, 
+    input [31:0]        to_ex_cs_limit, 
 
     /* FLUSH SIGNAL */
     output              from_ex_flush, 
@@ -289,6 +289,7 @@ module stage_ex(
         .load_result(to_ex_load_result),
         .rel_eip(to_ex_rel_eip),
         .pred_eip(to_ex_pred_eip),
+        .ieip(to_ex_ieip),
         .sig_con_jump(sig_con_jmp),
         .sig_eip_mux(sig_eip_mux),
         .sig_op_ovr(sig_op_ovr),
@@ -322,7 +323,7 @@ module stage_ex(
 
     wire valid_ld_CS, valid_ld_EIP;
     and2$ and2_valid_ldCS(valid_ld_CS, valid_instruction, sig_ldCS);
-    and3$ and3_valid_ldEIP(valid_ld_EIP, valid_instruction, is_taken_branch, mispredict);
+    and3$ and3_valid_ldEIP(valid_ld_EIP, valid_instruction, sig_ldEIP, mispredict);
     or2$ or_flush(from_ex_flush, valid_ld_CS, valid_ld_EIP);
     assign from_ex_ld_cs = valid_ld_CS;
     

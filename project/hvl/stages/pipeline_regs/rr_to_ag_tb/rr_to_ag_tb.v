@@ -51,8 +51,8 @@ module rr_to_ag_tb;
     wire [15:0] from_regunit_srcSREG;
     wire [15:0] from_regunit_SREG1;
     wire [15:0] from_regunit_SREG2;
-    wire [19:0] from_regunit_SLIM1;
-    wire [19:0] from_regunit_SLIM2;
+    wire [31:0] from_regunit_SLIM1;
+    wire [31:0] from_regunit_SLIM2;
     wire [15:0] from_regunit_CS;
     wire [63:0] from_regunit_MMA;
     wire [63:0] from_regunit_MMB;
@@ -87,7 +87,7 @@ module rr_to_ag_tb;
 
     wire [10:0] to_dep_needREGS;
 
-    wire [19:0] from_regunit_cs_limit;
+    wire [31:0] from_regunit_cs_limit;
 
     reg [2:0] from_wb_gpwr0_idx;
     reg [31:0] from_wb_gpwr0_data;
@@ -544,9 +544,9 @@ module rr_to_ag_tb;
         $display("(%0d)srcregA=[%0d]%08h, (%0d)srcregB=[%0d]%08h, (%0d)srcregC=[%0d]%08h", to_dep_needREGS[10], to_dep_srcregA_idx, from_rr_srcregA, to_dep_needREGS[9], to_dep_srcregB_idx, from_rr_srcregB, to_dep_needREGS[8], to_dep_srcregC_idx, from_rr_srcregC);
         $display("(%0d)srcSREG=[%0d]%04h, (%0d)MMA=[%0d]%016h, (%0d)MMB=[%0d]%016h", to_dep_needREGS[4], to_dep_srcSREG_idx, from_rr_srcSREG, to_dep_needREGS[1], to_dep_MMA_idx, from_rr_MMA, to_dep_needREGS[0], to_dep_MMB_idx, from_rr_MMB);
         $display("imm=%08h", from_rr_imm);
-        $display("(%0d)sreg1=[%0d]%04h, slim1=%05h", to_dep_needREGS[3], to_dep_SREG1_idx, from_rr_sreg1, from_rr_slim1);
+        $display("(%0d)sreg1=[%0d]%04h, slim1=%08h", to_dep_needREGS[3], to_dep_SREG1_idx, from_rr_sreg1, from_rr_slim1);
         $display("(%0d)base1=[%0d]%08h, (%0d)index1=[%0d]%08h, scale_mux=%02b, disp=%08h", to_dep_needREGS[7], to_dep_basereg1_idx, from_rr_base1, to_dep_needREGS[5], to_dep_indexreg1_idx, from_rr_index1, from_rr_scale_mux, from_rr_disp);
-        $display("(%0d)sreg2=[%0d]%04h, slim2=%04h", to_dep_needREGS[2], to_dep_SREG2_idx, from_rr_sreg2, from_rr_slim2);
+        $display("(%0d)sreg2=[%0d]%04h, slim2=%08h", to_dep_needREGS[2], to_dep_SREG2_idx, from_rr_sreg2, from_rr_slim2);
         $display("(%0d)base2=[%0d]%08h", to_dep_needREGS[6], to_dep_basereg2_idx, from_rr_base2);
         $display("intex_vec=%04b, exception=%02b", from_rr_intex_vec, from_rr_exception);
         $display("oeip=%08h, ieip=%08h, pred_eip=%08h, cs=%04h", from_rr_oeip, from_rr_ieip, from_rr_pred_eip, from_rr_cs);
@@ -564,9 +564,9 @@ module rr_to_ag_tb;
         $display("srcregA=%08h, srcregB=%08h, srcregC=%08h", to_ag_srcregA, to_ag_srcregB, to_ag_srcregC);
         $display("srcSREG=%04h, MMA=%016h, MMB=%016h", to_ag_srcSREG, to_ag_MMA, to_ag_MMB);
         $display("imm=%08h", to_ag_imm);
-        $display("sreg1=%04h, slim1=%05h", to_ag_sreg1, to_ag_slim1);
+        $display("sreg1=%04h, slim1=%08h", to_ag_sreg1, to_ag_slim1);
         $display("base1=%08h, index1=%08h, scale_mux=%02b, disp=%08h", to_ag_base1, to_ag_index1, to_ag_scale_mux, to_ag_disp);
-        $display("sreg2=%04h, slim2=%04h", to_ag_sreg2, to_ag_slim2);
+        $display("sreg2=%04h, slim2=%08h", to_ag_sreg2, to_ag_slim2);
         $display("base2=%08h", to_ag_base2);
         $display("intex_vec=%04b, exception=%02b", to_ag_intex_vec, to_ag_exception);
         $display("oeip=%08h, ieip=%08h, pred_eip=%08h, cs=%04h", to_ag_oeip, to_ag_ieip, to_ag_pred_eip, to_ag_cs);
@@ -761,7 +761,7 @@ module rr_to_ag_tb;
         @(posedge clk);
         apply_de_inputs(6'b000001, 8'h7f, 8'h39, 8'bx, 32'bx, 2'b00,
                         48'bx, 3'b000, 2'b01, 32'h0, 32'h4, 1'b1);
-        #4
+        #5
         print_from_rr_outputs();
         print_to_ag_outputs();
         $display("\n");

@@ -51,8 +51,8 @@ module ag_to_mem_tb;
     wire [15:0] from_regunit_srcSREG;
     wire [15:0] from_regunit_SREG1;
     wire [15:0] from_regunit_SREG2;
-    wire [19:0] from_regunit_SLIM1;
-    wire [19:0] from_regunit_SLIM2;
+    wire [31:0] from_regunit_SLIM1;
+    wire [31:0] from_regunit_SLIM2;
     wire [15:0] from_regunit_CS;
     wire [63:0] from_regunit_MMA;
     wire [63:0] from_regunit_MMB;
@@ -87,7 +87,7 @@ module ag_to_mem_tb;
 
     wire [10:0] to_dep_needREGS;
 
-    wire [19:0] from_regunit_cs_limit;
+    wire [31:0] from_regunit_cs_limit;
 
     reg [2:0] from_wb_gpwr0_idx;
     reg [31:0] from_wb_gpwr0_data;
@@ -166,6 +166,7 @@ module ag_to_mem_tb;
         .to_regunit_sib(to_regunit_sib),
         .to_regunit_has_sib(to_regunit_has_sib),
         .to_regunit_sig_gprd0_mux(to_regunit_sig_gprd0_mux),
+        .to_regunit_sig_gprd1_mux(to_regunit_sig_gprd1_mux),
         .to_regunit_sig_gprd2_mux(to_regunit_sig_gprd2_mux),
         .to_regunit_sig_srcregA_mux(to_regunit_sig_srcregA_mux),
         .to_regunit_sig_srcregB_mux(to_regunit_sig_srcregB_mux),
@@ -283,6 +284,7 @@ module ag_to_mem_tb;
         .from_rr_sib(to_regunit_sib),
         .from_rr_has_sib(to_regunit_has_sib),
         .from_rr_sig_gprd0_mux(to_regunit_sig_gprd0_mux),
+        .from_rr_sig_gprd1_mux(to_regunit_sig_gprd1_mux),
         .from_rr_sig_gprd2_mux(to_regunit_sig_gprd2_mux),
         .from_rr_sig_srcregA_mux(to_regunit_sig_srcregA_mux),
         .from_rr_sig_srcregB_mux(to_regunit_sig_srcregB_mux),
@@ -877,9 +879,9 @@ module ag_to_mem_tb;
         $display("(%0d)srcregA=[%0d]%08h, (%0d)srcregB=[%0d]%08h, (%0d)srcregC=[%0d]%08h", to_dep_needREGS[10], to_dep_srcregA_idx, from_rr_srcregA, to_dep_needREGS[9], to_dep_srcregB_idx, from_rr_srcregB, to_dep_needREGS[8], to_dep_srcregC_idx, from_rr_srcregC);
         $display("(%0d)srcSREG=[%0d]%04h, (%0d)MMA=[%0d]%016h, (%0d)MMB=[%0d]%016h", to_dep_needREGS[4], to_dep_srcSREG_idx, from_rr_srcSREG, to_dep_needREGS[1], to_dep_MMA_idx, from_rr_MMA, to_dep_needREGS[0], to_dep_MMB_idx, from_rr_MMB);
         $display("imm=%08h", from_rr_imm);
-        $display("(%0d)sreg1=[%0d]%04h, slim1=%05h", to_dep_needREGS[3], to_dep_SREG1_idx, from_rr_sreg1, from_rr_slim1);
+        $display("(%0d)sreg1=[%0d]%04h, slim1=%08h", to_dep_needREGS[3], to_dep_SREG1_idx, from_rr_sreg1, from_rr_slim1);
         $display("(%0d)base1=[%0d]%08h, (%0d)index1=[%0d]%08h, scale_mux=%02b, disp=%08h", to_dep_needREGS[7], to_dep_basereg1_idx, from_rr_base1, to_dep_needREGS[5], to_dep_indexreg1_idx, from_rr_index1, from_rr_scale_mux, from_rr_disp);
-        $display("(%0d)sreg2=[%0d]%04h, slim2=%04h", to_dep_needREGS[2], to_dep_SREG2_idx, from_rr_sreg2, from_rr_slim2);
+        $display("(%0d)sreg2=[%0d]%04h, slim2=%08h", to_dep_needREGS[2], to_dep_SREG2_idx, from_rr_sreg2, from_rr_slim2);
         $display("(%0d)base2=[%0d]%08h", to_dep_needREGS[6], to_dep_basereg2_idx, from_rr_base2);
         $display("intex_vec=%04b, exception=%02b", from_rr_intex_vec, from_rr_exception);
         $display("oeip=%08h, ieip=%08h, pred_eip=%08h, cs=%04h", from_rr_oeip, from_rr_ieip, from_rr_pred_eip, from_rr_cs);
@@ -899,8 +901,8 @@ module ag_to_mem_tb;
         $display("srcregA=%08h, srcregB=%08h, srcregC=%08h", from_ag_srcregA, from_ag_srcregB, from_ag_srcregC);
         $display("srcSREG=%04h, MMA=%016h, MMB=%016h", from_ag_srcSREG, from_ag_MMA, from_ag_MMB);
         $display("target_cs=%04h", from_ag_target_cs);
-        $display("ld_addr=%08h, ld_offset=%08h, ld_slim=%05h", from_ag_ld_addr, from_ag_ld_offset, from_ag_ld_slim);
-        $display("st_addr=%08h, st_offset=%08h, st_slim=%05h", from_ag_st_addr, from_ag_st_offset, from_ag_st_slim);
+        $display("ld_addr=%08h, ld_offset=%08h, ld_slim=%08h", from_ag_ld_addr, from_ag_ld_offset, from_ag_ld_slim);
+        $display("st_addr=%08h, st_offset=%08h, st_slim=%08h", from_ag_st_addr, from_ag_st_offset, from_ag_st_slim);
         $display("inc_esp=%08h, dec_esp=%05h", from_ag_inc_esp, from_ag_dec_esp);
         $display("imm=%08h", from_ag_imm);
         $display("exception=%02b", from_ag_exception);
