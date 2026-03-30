@@ -45,6 +45,17 @@ module stage_wb #(
   input                                       clk,
   input                                       rst_n,
 
+  /*** Inputs from pipeline registers (execute-related) ***/
+  input   [11:0]                              to_wb_control_sigs,
+  input   [2:0]                               to_wb_dstidA, 
+  input   [2:0]                               to_wb_dstidB,
+  input   [31:0]                              to_wb_gp_wr_data_1,
+  input   [31:0]                              to_wb_gp_wr_data_2,
+  input   [15:0]                              to_wb_seg_wr_data,
+  input   [63:0]                              to_wb_mmx_wr_data,
+  input   [31:0]                              to_wb_oeip,
+  input   [15:0]                              to_wb_cs,
+
   /*** Inputs from pipeline registers (memory-related) ***/
   input   [STORE_DATA_BIT_WIDTH-1:0]          to_wb_store_data,
   input                                       to_wb_store_is_io_line_0,
@@ -55,7 +66,6 @@ module stage_wb #(
   input   [CHIPS_PER_RANK-1:0]                to_wb_store_mask_line_1,
   input                                       to_wb_store_queue_alloc_line_1,
   input   [TWO_LINES_SHF_AMT_BIT_WIDTH-1:0]   to_wb_store_data_shf_amt,
-
   /*** Valid / exception inputs from pipeline registers ***/
   input   [1:0]                               to_wb_exception,
   input                                       to_wb_valid,
@@ -64,6 +74,27 @@ module stage_wb #(
   input                                       WBE_BUSY,
   input                                       DCACHE_HIT,
   input                                       DCACHE_STALL,
+
+  /*** Outputs to regunit module (register-related) ***/
+  output  [2:0]                               from_wb_gpwr0_idx,
+  output  [31:0]                              from_wb_gpwr0_data,
+  output  [1:0]                               from_wb_gpwr0_size,
+  output                                      from_wb_gpwr0_en,
+  output  [2:0]                               from_wb_gpwr1_idx,
+  output  [31:0]                              from_wb_gpwr1_data,
+  output  [1:0]                               from_wb_gpwr1_size,
+  output                                      from_wb_gpwr1_en,
+  output  [2:0]                               from_wb_segwr_idx,
+  output  [15:0]                              from_wb_segwr_data,
+  output                                      from_wb_segwr_en,
+  output  [2:0]                               from_wb_mmxwr_idx,
+  output  [63:0]                              from_wb_mmxwr_data,
+  output                                      from_wb_mmxwr_en,
+
+  /*** Outputs to temp registers (exception-related) ***/
+  output  [15:0]                              from_wb_temp_cs,
+  output  [31:0]                              from_wb_temp_eip,
+  output  [1:0]                               from_wb_temp_exception,
 
   /*** Outputs to full_cache module (store-queue-related) ***/
   output                                      STOREQ_STORING,
@@ -83,6 +114,43 @@ module stage_wb #(
   output                                      from_wb_valid_store_inst,
   output                                      from_wb_flush
 );
+
+assign from_wb_temp_cs = to_wb_cs;
+assign from_wb_temp_eip = to_wb_oeip;
+assign from_wb_temp_exception = to_wb_exception;
+
+/*** REGFILE UPDATE LOGIC ***/
+wire gpwr0_en, gp_wr1_en, segwr_en, mmxwr_en;
+wire [1:0] dstA_size, dstB_size, rw, ds;
+wb_sig dut_wb_sig(
+    .ucode_sig(to_wb_control_sigs),
+    .gpwr0_en(gpwr0_en),
+    .gpwr1_en(gpwr1_en),
+    .segwr_en(segwr_en),
+    .mmxwr_en(mmxwr_en),
+    .dstA_size(dstA_size),
+    .dstB_size(dstB_size),
+    .rw(rw),
+    .ds(ds)
+);
+
+assign from_wb_gpwr0_idx = to_wb_dstidA;
+assign from_wb_gpwr0_data = to_wb_gp_wr_data_1;
+assign from_wb_gpwr0_en = gpwr0_en;
+assign from_wb_gpwr0_size = dstA_size;
+
+assign from_wb_gpwr1_idx = to_wb_dstidB;
+assign from_wb_gpwr1_data = to_wb_gp_wr_data_2;
+assign from_wb_gpwr1_en = gpwr1_en;
+assign from_wb_gpwr1_size = dstB_size;
+
+assign from_wb_segwr_idx = to_wb_dstidA;
+assign from_wb_segwr_data = to_wb_seg_wr_data;
+assign from_wb_segwr_en = segwr_en;
+
+assign from_wb_mmxwr_idx = to_wb_dstidA;
+assign from_wb_mmxwr_data = to_wb_mmx_wr_data;
+assign from_wb_mmxwr_en = mmxwr_en;
 
 wire to_wb_valid_buf16;
 bufferH16$  bufferH16$_to_wb_valid_buf16(to_wb_valid_buf16, to_wb_valid);
