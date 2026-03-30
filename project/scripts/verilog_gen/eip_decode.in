@@ -1,0 +1,16 @@
+.i 2	
+.o 2	
+.ilb P1 P0
+.ob OUT1 OUT0
+
+00 00
+01 01
+10 10
+11 11
+
+flush take_branch
+
+i_eip
+bp_eip_target
+o_eip
+ex_eip_target

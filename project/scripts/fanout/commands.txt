@@ -2,60 +2,10 @@ Step 1: cd to directory with top level Verilog files
 Step 2: mkdir fanout; cd fanout; module load synopsys/syn; design_vision -no_gui
 Step 3: analyze -format Verilog {files}; elaborate <top_level>; current_design <top_level>; set target_library ""; set link_library "*"; link;
 NOTES FOR STEP 3: top_level file should be the first one listed in {files}. Include junk.v in {files}.
-Step 4: either use Mircea's script (just copy paste script below) or use "all_high_fanout -nets -threshold 5"
-NOTES FOR STEP 4: Mircea's script may break under some circumstances. Should mostly depend on all_high_fanout, provided you add junk.v to the file list.
+Step 4: either use Mircea's script (just copy paste fanout_script.tcl) or use "all_high_fanout -nets -threshold 5"
+NOTES FOR STEP 4: Mircea's script may break under some circumstances. You can mostly depend on all_high_fanout, provided you add junk.v to the file list.
+EDIT: Mircea's script has been modified to now also use all_high_fanout. See fanout_script.tcl.
 
 Example for Step 3 for PA_8b.v:
 analyze -format Verilog {../PA_8b.v ../gen_prop.v ../gen_prop_2.v junk.v ~/MICROARCH/project/hdl/local-lib/gates/xor3LL.v}; 
 elaborate PA_8b; current_design PA_8b; set target_library ""; set link_library "*"; link;
-
-foreach_in_collection n [get_nets -hier *] {
-
-    # Count load pins (fanout)
-    set loads [get_pins -of_objects $n -filter "direction == in"]
-    set fo [sizeof_collection $loads]
-
-    if {$fo <= 4} { continue }
-
-    # Get driver
-    set drv_pin  [get_pins -of_objects $n -filter "direction == out"]
-    if {[sizeof_collection $drv_pin] == 0} { continue }
-
-    set drv_cell [get_cells -of_objects $drv_pin]
-    set ref      [get_attribute $drv_cell ref_name]
-    set netname  [get_object_name $n]
-
-    # -------------------------------------------------
-    # Ignore constant drivers (Logic0 / Logic1)
-    # -------------------------------------------------
-    if {[string match "*Logic0*" $netname] ||
-        [string match "*Logic1*" $netname] ||
-        [string match "*Logic0*" $ref] ||
-        [string match "*Logic1*" $ref]} {
-        continue
-    }
-
-    # -------------------------------------------------
-    # Check buffering rules
-    # -------------------------------------------------
-
-    if {$fo <= 16 &&
-        $ref != "bufferH16$" && $ref != "bufferHInv16$"} {
-        echo "VIOLATION: $netname fanout=$fo not driven by H16"
-    }
-
-    if {$fo > 16 && $fo <= 64 &&
-        $ref != "bufferH64$" && $ref != "bufferHInv64$"} {
-        echo "VIOLATION: $netname fanout=$fo not driven by H64"
-    }
-
-    if {$fo > 64 && $fo <= 256 &&
-        $ref != "bufferH256$" && $ref != "bufferHInv256$"} {
-        echo "VIOLATION: $netname fanout=$fo not driven by H256"
-    }
-
-    if {$fo > 256 && $fo <= 1024 &&
-        $ref != "bufferH1024$" && $ref != "bufferHInv1024$"} {
-        echo "VIOLATION: $netname fanout=$fo not driven by H1024"
-    }
-}

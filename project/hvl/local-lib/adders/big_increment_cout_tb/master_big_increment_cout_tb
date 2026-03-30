@@ -1,0 +1,7 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+~/MICROARCH/project/hdl/local-lib/gates/big_and.v
+~/MICROARCH/project/hdl/local-lib/adders/big_increment_cout.v
+~/MICROARCH/project/hvl/local-lib/adders/big_increment_cout_tb/big_increment_cout_behav.v
+~/MICROARCH/project/hvl/local-lib/adders/big_increment_cout_tb/big_increment_cout_tb.v

@@ -17,13 +17,18 @@ remove_one_sim() {
 
 export -f remove_one_sim
 
-# Find all sim/ directories under ROOT and remove them in parallel
+# Remove all sim/ directories in parallel
 while read -r simdir; do
   remove_one_sim "$simdir" &
   pids+=($!)
 done < <(find "$ROOT" -type d -name sim)
 
-# Wait for all jobs to finish
+# Wait for all jobs
 for pid in "${pids[@]}"; do
   wait "$pid"
 done
+
+echo "Cleaning up empty directories..."
+find "$ROOT" -depth -type d -empty -exec rmdir {} +
+
+echo "Cleanup complete"

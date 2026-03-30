@@ -45,6 +45,7 @@ always @(posedge clk) begin
         buffer[idx] = disk_read_byte(disk_addr, (idx[11:0] - start_mem_addr[3:0]));
       end
     end
+    @(negedge clk);
     buf_valid <= 1'b1;
     busy      <= 1'b0;
   end else if (!busy) begin

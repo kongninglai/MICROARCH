@@ -1,0 +1,11 @@
+0:  83 00 01                add    DWORD PTR [eax],0x1
+3:  83 40 04 01             add    DWORD PTR [eax+0x4],0x1
+7:  83 04 24 01             add    DWORD PTR [esp],0x1
+b:  83 44 24 08 01          add    DWORD PTR [esp+0x8],0x1
+10: 83 45 00 01             add    DWORD PTR [ebp+0x0],0x1
+14: 83 05 78 56 34 12 01    add    DWORD PTR ds:0x12345678,0x1
+1b: 83 45 08 01             add    DWORD PTR [ebp+0x8],0x1
+1f: 83 85 34 12 00 00 01    add    DWORD PTR [ebp+0x1234],0x1
+26: 83 04 24 01             add    DWORD PTR [esp],0x1
+2a: 83 84 24 78 56 34 12 01   add    DWORD PTR [esp+0x12345678],0x1
+32: 83 04 85 20 00 00 00 01  add    DWORD PTR [eax*4+0x20],0x1

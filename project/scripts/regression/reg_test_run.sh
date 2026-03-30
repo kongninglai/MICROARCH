@@ -45,8 +45,15 @@ run_one_sim() {
       exit 0
     fi
 
-    failures=$(grep -Eo 'FAILURES *= *[0-9]+' sim.log | awk '{print $NF}')
-    successes=$(grep -Eo 'SUCCESSES *= *[0-9]+' sim.log | awk '{print $NF}')
+    if ! failures=$(grep -Eo 'FAILURES *= *[0-9]+' sim.log | awk '{print $NF}'); then
+      echo "No failure message found"
+      failures=""
+    fi
+
+    if ! successes=$(grep -Eo 'SUCCESSES *= *[0-9]+' sim.log | awk '{print $NF}'); then
+      echo "No success message found"
+      successes=""
+    fi
 
     failures=${failures:-999}
     successes=${successes:-0}
@@ -70,7 +77,7 @@ while read -r leaf_dir; do
   run_one_sim "$leaf_dir" &
   pids+=($!)
 done < <(
-  find "$ROOT" -type d -links 2
+  find "$ROOT" -type d -links 2 -not -empty
 )
 
 for pid in "${pids[@]}"; do

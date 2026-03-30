@@ -23,32 +23,37 @@ def decode_addr(addr):
     return rank, chip, row
 
 def parse_file(filename):
+    current_addr = None
+
     with open(filename, "r") as f:
         for line in f:
             line = line.strip()
 
-            if not line or not line.startswith("0x"):
+            if not line:
                 continue
 
-            m = re.match(r'0x([0-9a-fA-F]+):', line)
-            if not m:
-                continue
+            if line.startswith("0x"):
+                m = re.match(r'0x([0-9a-fA-F]+):', line)
+                if not m:
+                    continue
 
-            base_addr = int(m.group(1), 16)
+                current_addr = int(m.group(1), 16)
+                data_part = line.split(":")[1].split("//")[0]
+            else:
+                if current_addr is None:
+                    continue
+                data_part = line.split("//")[0]
 
-            data_part = line.split(":")[1].split("//")[0]
             byte_list = data_part.strip().split()
-
-            addr = base_addr
 
             for b in byte_list:
                 if len(b) != 2:
                     continue
 
-                rank, chip, row = decode_addr(addr)
+                rank, chip, row = decode_addr(current_addr)
                 mem[(rank, chip)][row] = b.lower()
 
-                addr += 1
+                current_addr += 1
 
 def dump_hex_files():
     if not os.path.exists(OUT_DIR):

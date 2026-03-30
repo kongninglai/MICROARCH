@@ -1,5 +1,6 @@
 /home/projects/courses/spring_22/ee382n19_16785/lib/time
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
 ~/MICROARCH/project/hdl/stages/mem/sticky_bit_load_fsm.v
 ~/MICROARCH/project/hvl/stages/mem/sticky_bit_load_fsm_tb/sticky_bit_load_fsm_behav.v
 ~/MICROARCH/project/hvl/stages/mem/sticky_bit_load_fsm_tb/sticky_bit_load_fsm_tb.v
