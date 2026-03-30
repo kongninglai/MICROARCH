@@ -57,5 +57,6 @@
 ~/MICROARCH/project/hdl/cache/data_stores/store_queue.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux32_16b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_bytes_var_256b.v
+~/MICROARCH/project/hdl/stages/rr/ucode_rom/wb_sig.v
 ~/MICROARCH/project/hdl/stages/wb/stage_wb.v
 ~/MICROARCH/project/hvl/stages/wb/stage_wb_tb/stage_wb_tb.v
