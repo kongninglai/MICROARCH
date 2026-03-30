@@ -5,7 +5,7 @@ initial begin
   $vcdpluson(0, ex_to_wb_tb); 
 end
 
-localparam WIDTH = 340;
+localparam WIDTH = 339;
 localparam CYCLE_TIME = 10.0;
 
 reg clk, rst_n, we;
@@ -15,7 +15,7 @@ reg [WIDTH-1:0] out_exp;
 
 always #(CYCLE_TIME/2.0) clk = ~clk;
 
-reg [12:0] from_ex_control_sigs;
+reg [11:0] from_ex_control_sigs;
 reg [2:0] from_ex_dstidA;
 reg [2:0] from_ex_dstidB;
 reg [31:0] from_ex_gp_wr_data_1;
@@ -35,7 +35,7 @@ reg [15:0] from_ex_cs;
 reg [31:0] from_ex_oeip;
 reg from_ex_valid;
 reg [1:0] from_ex_exception;
-wire [12:0] to_wb_control_sigs;
+wire [11:0] to_wb_control_sigs;
 wire [2:0] to_wb_dstidA;
 wire [2:0] to_wb_dstidB;
 wire [31:0] to_wb_gp_wr_data_1;

@@ -1,0 +1,9 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib3
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+~/MICROARCH/project/hdl/local-lib/regfiles/reg16e.v
+~/MICROARCH/project/hdl/stages/wb/temp_exception_regs.v
+~/MICROARCH/project/hvl/stages/wb/temp_exception_regs_tb/temp_exception_regs_bh.v
+~/MICROARCH/project/hvl/stages/wb/temp_exception_regs_tb/temp_exception_regs_tb.v

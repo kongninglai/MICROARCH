@@ -54,7 +54,7 @@ module stage_ex(
     output [31:0]       from_ex_eip_target,
     /*TODO: ADD from_ex_pht_idx[3:0] */
 
-    output [12:0]       from_ex_control_sigs,
+    output [11:0]       from_ex_control_sigs,
     output [2:0]        from_ex_dstidA, 
     output [2:0]        from_ex_dstidB,
     output [31:0]       from_ex_gp_wr_data_1,
@@ -72,6 +72,7 @@ module stage_ex(
     output [4:0]        from_ex_store_data_shf_amt,
     output [15:0]       from_ex_cs,
     output [31:0]       from_ex_oeip,
+    output              from_ex_valid_store_inst,
     output              from_ex_valid,
     output [1:0]        from_ex_exception
 ); 
@@ -344,7 +345,18 @@ module stage_ex(
     inv1$ inv1_cmpxchg_ZF(cmpxchg_ZF_inv, cmp_eflags[6]);
     mux2$ mux2_ldB_cond(ldB_cond, sig_ldAB[0], cmpxchg_ZF_inv, sig_cmpxchg);
 
+    wire gpwr0_en, gpwr1_en, mmxwr_en, segwr_en;
+    wire inv_ldSEG_out;
+    inv1$ inv_ldSEG(inv_ldSEG_out, sig_ldREGS[1]);
+    and4$ and_gpwr0_en(gpwr0_en, ldA_cond, sig_ldREGS[2], inv_ldSEG_out, valid_instruction);
+
+    and3$ and_gpwr1_en(gpwr1_en, ldB_cond, sig_ldREGS[2], valid_instruction);
+    and3$ and_segwr_en(segwr_en, sig_ldAB[1], sig_ldREGS[1], valid_instruction);
+    and3$ and_mmxwr_en(mmxwr_en, sig_ldAB[1], sig_ldREGS[0], valid_instruction);
+
     assign from_ex_control_sigs = {
-        {ldA_cond, ldB_cond}, sig_dstA_size, sig_dstB_size, sig_ldREGS, sig_rw, sig_ds
+        {gpwr0_en, gpwr1_en, segwr_en, mmxwr_en}, sig_dstA_size, sig_dstB_size, sig_rw, sig_ds
     };
+
+    and2$ and2_valid_store_inst(from_ex_valid_store_inst, valid_instruction, sig_rw[0]);
 endmodule

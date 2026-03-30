@@ -1,8 +1,8 @@
-module stage_ex_tb;
+module stage_wb_reg_tb;
 
     initial begin
-        $vcdplusfile("stage_ex_tb.dump.vpd");
-        $vcdpluson(0, stage_ex_tb); 
+        $vcdplusfile("stage_wb_reg_tb.dump.vpd");
+        $vcdpluson(0, stage_wb_reg_tb); 
     end
 
     integer i;
@@ -90,22 +90,22 @@ module stage_ex_tb;
 
     wire [31:0] from_regunit_cs_limit;
 
-    reg [2:0] from_wb_gpwr0_idx;
-    reg [31:0] from_wb_gpwr0_data;
-    reg [1:0] from_wb_gpwr0_size;
-    reg from_wb_gpwr0_en;
-    reg [2:0] from_wb_gpwr1_idx;
-    reg [31:0] from_wb_gpwr1_data;
-    reg [1:0] from_wb_gpwr1_size;
-    reg from_wb_gpwr1_en;
-    reg [2:0] from_wb_segwr_idx;
-    reg [15:0] from_wb_segwr_data;
-    reg from_wb_segwr_en;
-    reg [15:0] from_ex_cs_wr_data;
-    reg from_ex_cs_wr_en;
-    reg [2:0] from_wb_mmxwr_idx;
-    reg [63:0] from_wb_mmxwr_data;
-    reg from_wb_mmxwr_en;
+    wire [2:0]   from_wb_gpwr0_idx;
+    wire [31:0]  from_wb_gpwr0_data;
+    wire [1:0]   from_wb_gpwr0_size;
+    wire         from_wb_gpwr0_en;
+    wire [2:0]   from_wb_gpwr1_idx;
+    wire [31:0]  from_wb_gpwr1_data;
+    wire [1:0]   from_wb_gpwr1_size;
+    wire         from_wb_gpwr1_en;
+    wire [2:0]   from_wb_segwr_idx;
+    wire [15:0]  from_wb_segwr_data;
+    wire         from_wb_segwr_en;
+    wire [15:0]  from_ex_cs_target;
+    wire         from_ex_ld_cs;
+    wire [2:0]   from_wb_mmxwr_idx;
+    wire [63:0]  from_wb_mmxwr_data;
+    wire         from_wb_mmxwr_en;
 
     wire [2:0] to_dep_srcregA_idx;
     wire [2:0] to_dep_srcregB_idx;
@@ -331,8 +331,8 @@ module stage_ex_tb;
         .from_wb_segwr_idx(from_wb_segwr_idx),
         .from_wb_segwr_data(from_wb_segwr_data),
         .from_wb_segwr_en(from_wb_segwr_en),
-        .from_ex_cs_wr_data(from_ex_cs_wr_data),
-        .from_ex_cs_wr_en(from_ex_cs_wr_en),
+        .from_ex_cs_wr_data(from_ex_cs_target),
+        .from_ex_cs_wr_en(from_ex_ld_cs),
         .from_wb_mmxwr_idx(from_wb_mmxwr_idx),
         .from_wb_mmxwr_data(from_wb_mmxwr_data),
         .from_wb_mmxwr_en(from_wb_mmxwr_en)
@@ -410,9 +410,10 @@ module stage_ex_tb;
         .op_ovr(op_ovr),
         .palu_size(palu_size)
     );
+
     wire from_mem_stall;
-    wire from_ex_valid_store_inst;
     reg from_mem_valid_store_inst;
+    wire from_ex_valid_store_inst;
     reg from_wb_stall_if_mem_en;
     reg from_wb_valid_store_inst;
 
@@ -915,10 +916,8 @@ module stage_ex_tb;
     reg [15:0] to_ex_tempCS;
 
     wire from_ex_flush;
-    wire from_ex_ld_cs;
     wire from_ex_br_t_nt;
     wire from_ex_br_valid;
-    wire [15:0] from_ex_cs_target;
     wire [31:0] from_ex_eip_target;
     wire [11:0] from_ex_control_sigs;
     wire [2:0] from_ex_dstidA;
@@ -938,7 +937,6 @@ module stage_ex_tb;
     wire [4:0] from_ex_store_data_shf_amt;
     wire [15:0] from_ex_cs;
     wire [31:0] from_ex_oeip;
-    
     wire from_ex_valid;
     wire [1:0] from_ex_exception;
 
@@ -1026,6 +1024,146 @@ module stage_ex_tb;
         .ds(from_ex_ds)
     );
 
+    wire [11:0] to_wb_control_sigs;
+    wire [2:0] to_wb_dstidA;
+    wire [2:0] to_wb_dstidB;
+    wire [31:0] to_wb_gp_wr_data_1;
+    wire [31:0] to_wb_gp_wr_data_2;
+    wire [15:0] to_wb_seg_wr_data;
+    wire [63:0] to_wb_mmx_wr_data;
+    wire [63:0] to_wb_store_data;
+    wire to_wb_store_is_io_line_0;
+    wire [10:0] to_wb_store_addr_line_0;
+    wire [15:0] to_wb_store_mask_line_0;
+    wire to_wb_store_queue_alloc_line_0;
+    wire [10:0] to_wb_store_addr_line_1;
+    wire [15:0] to_wb_store_mask_line_1;
+    wire to_wb_store_queue_alloc_line_1;
+    wire [4:0] to_wb_store_data_shf_amt;
+    wire [15:0] to_wb_cs;
+    wire [31:0] to_wb_oeip;
+    wire to_wb_valid;
+    wire [1:0] to_wb_exception;
+
+    ex_to_wb dut_ex_to_wb (
+        .clk(clk),
+        .rst_n(rst_n),
+        .we(1'b1),
+        .from_ex_control_sigs(from_ex_control_sigs),
+        .from_ex_dstidA(from_ex_dstidA),
+        .from_ex_dstidB(from_ex_dstidB),
+        .from_ex_gp_wr_data_1(from_ex_gp_wr_data_1),
+        .from_ex_gp_wr_data_2(from_ex_gp_wr_data_2),
+        .from_ex_seg_wr_data(from_ex_seg_wr_data),
+        .from_ex_mmx_wr_data(from_ex_mmx_wr_data),
+        .from_ex_store_data(from_ex_store_data),
+        .from_ex_store_is_io_line_0(from_ex_store_is_io_line_0),
+        .from_ex_store_addr_line_0(from_ex_store_addr_line_0),
+        .from_ex_store_mask_line_0(from_ex_store_mask_line_0),
+        .from_ex_store_queue_alloc_line_0(from_ex_store_queue_alloc_line_0),
+        .from_ex_store_addr_line_1(from_ex_store_addr_line_1),
+        .from_ex_store_mask_line_1(from_ex_store_mask_line_1),
+        .from_ex_store_queue_alloc_line_1(from_ex_store_queue_alloc_line_1),
+        .from_ex_store_data_shf_amt(from_ex_store_data_shf_amt),
+        .from_ex_cs(from_ex_cs),
+        .from_ex_oeip(from_ex_oeip),
+        .from_ex_valid(from_ex_valid),
+        .from_ex_exception(from_ex_exception),
+        .to_wb_control_sigs(to_wb_control_sigs),
+        .to_wb_dstidA(to_wb_dstidA),
+        .to_wb_dstidB(to_wb_dstidB),
+        .to_wb_gp_wr_data_1(to_wb_gp_wr_data_1),
+        .to_wb_gp_wr_data_2(to_wb_gp_wr_data_2),
+        .to_wb_seg_wr_data(to_wb_seg_wr_data),
+        .to_wb_mmx_wr_data(to_wb_mmx_wr_data),
+        .to_wb_store_data(to_wb_store_data),
+        .to_wb_store_is_io_line_0(to_wb_store_is_io_line_0),
+        .to_wb_store_addr_line_0(to_wb_store_addr_line_0),
+        .to_wb_store_mask_line_0(to_wb_store_mask_line_0),
+        .to_wb_store_queue_alloc_line_0(to_wb_store_queue_alloc_line_0),
+        .to_wb_store_addr_line_1(to_wb_store_addr_line_1),
+        .to_wb_store_mask_line_1(to_wb_store_mask_line_1),
+        .to_wb_store_queue_alloc_line_1(to_wb_store_queue_alloc_line_1),
+        .to_wb_store_data_shf_amt(to_wb_store_data_shf_amt),
+        .to_wb_cs(to_wb_cs),
+        .to_wb_oeip(to_wb_oeip),
+        .to_wb_valid(to_wb_valid),
+        .to_wb_exception(to_wb_exception)
+    );
+
+    wire [31:0] from_wb_temp_eip;
+    wire [15:0] from_wb_temp_cs;
+    wire [1:0] from_wb_temp_exception;
+
+    stage_wb dut_stage_wb (
+    .clk(clk),
+    .rst_n(rst_n),
+
+    .to_wb_control_sigs(to_wb_control_sigs),
+    .to_wb_dstidA(to_wb_dstidA), 
+    .to_wb_dstidB(to_wb_dstidB),
+    .to_wb_gp_wr_data_1(to_wb_gp_wr_data_1),
+    .to_wb_gp_wr_data_2(to_wb_gp_wr_data_2),
+    .to_wb_seg_wr_data(to_wb_seg_wr_data),
+    .to_wb_mmx_wr_data(to_wb_mmx_wr_data),
+    .to_wb_oeip(to_wb_oeip),
+    .to_wb_cs(to_wb_cs),
+
+    .from_wb_gpwr0_idx(from_wb_gpwr0_idx),
+    .from_wb_gpwr0_data(from_wb_gpwr0_data),
+    .from_wb_gpwr0_size(from_wb_gpwr0_size),
+    .from_wb_gpwr0_en(from_wb_gpwr0_en),
+    .from_wb_gpwr1_idx(from_wb_gpwr1_idx),
+    .from_wb_gpwr1_data(from_wb_gpwr1_data),
+    .from_wb_gpwr1_size(from_wb_gpwr1_size),
+    .from_wb_gpwr1_en(from_wb_gpwr1_en),
+    .from_wb_segwr_idx(from_wb_segwr_idx),
+    .from_wb_segwr_data(from_wb_segwr_data),
+    .from_wb_segwr_en(from_wb_segwr_en),
+    .from_wb_mmxwr_idx(from_wb_mmxwr_idx),
+    .from_wb_mmxwr_data(from_wb_mmxwr_data),
+    .from_wb_mmxwr_en(from_wb_mmxwr_en),
+
+    .from_wb_temp_cs(from_wb_temp_cs),
+    .from_wb_temp_eip(from_wb_temp_eip),
+    .from_wb_temp_exception(from_wb_temp_exception),
+
+
+    .to_wb_store_data(to_wb_store_data),
+    .to_wb_store_is_io_line_0(to_wb_store_is_io_line_0),
+
+    .to_wb_store_addr_line_0(to_wb_store_addr_line_0),
+    .to_wb_store_mask_line_0(to_wb_store_mask_line_0),
+    .to_wb_store_queue_alloc_line_0(to_wb_store_queue_alloc_line_0),
+
+    .to_wb_store_addr_line_1(to_wb_store_addr_line_1),
+    .to_wb_store_mask_line_1(to_wb_store_mask_line_1),
+    .to_wb_store_queue_alloc_line_1(to_wb_store_queue_alloc_line_1),
+
+    .to_wb_store_data_shf_amt(to_wb_store_data_shf_amt),
+    .to_wb_exception(to_wb_exception),
+    .to_wb_valid(to_wb_valid),
+
+    .WBE_BUSY(),
+    .DCACHE_HIT(),
+    .DCACHE_STALL(),
+
+    .STOREQ_STORING(),
+    .STOREQ_LAST_ENTRY(),
+    .STOREQ_DATA(),
+    .STOREQ_DATA_WR_MASK(),
+    .STOREQ_PHYS_ADDR(),
+
+    .WB_PR_ST_ADDR_L0(),
+    .WB_PR_ST_MASK_L0(),
+    .WB_SHF_ST_DATA_L0(),
+    .WB_VALID_IO_STORE_INST(),
+
+    .from_wb_stall_if_mem_en(),
+    .from_wb_valid_store_inst(),
+    .from_wb_flush(from_wb_flush)
+    );
+
     always #5 clk = ~clk;
 
     task clear_inputs;
@@ -1052,62 +1190,9 @@ module stage_ex_tb;
             to_ex_CMPS1 = 32'b0;
             to_ex_tempEIP = 32'b0;
             to_ex_tempCS = 16'b0;
-
-            from_wb_gpwr0_idx   = 'b0;
-            from_wb_gpwr0_data  = 'b0;
-            from_wb_gpwr0_size  = 'b0;
-            from_wb_gpwr0_en    = 'b0;
-            from_wb_gpwr1_idx   = 'b0;
-            from_wb_gpwr1_data  = 'b0;
-            from_wb_gpwr1_size  = 'b0;
-            from_wb_gpwr1_en    = 'b0;
-            from_wb_segwr_idx   = 'b0;
-            from_wb_segwr_data  = 'b0;
-            from_wb_segwr_en    = 'b0;
-            from_ex_cs_wr_data  = 'b0;
-            from_ex_cs_wr_en    = 'b0;
-            from_wb_mmxwr_idx   = 'b0;
-            from_wb_mmxwr_data  = 'b0;
-            from_wb_mmxwr_en    = 'b0;
     end 
     endtask
 
-    task apply_exwb_inputs;
-        input [2:0] gpwr0_idx;
-        input [31:0] gpwr0_data;
-        input [1:0] gpwr0_size;
-        input gpwr0_en;
-        input [2:0] gpwr1_idx;
-        input [31:0] gpwr1_data;
-        input [1:0] gpwr1_size;
-        input gpwr1_en;
-        input [2:0] segwr_idx;
-        input [15:0] segwr_data;
-        input segwr_en;
-        input [15:0] cs_wr_data;
-        input cs_wr_en;
-        input [2:0] mmxwr_idx;
-        input [63:0] mmxwr_data;
-        input mmxwr_en;
-    begin 
-        from_wb_gpwr0_idx   = gpwr0_idx; 
-        from_wb_gpwr0_data  = gpwr0_data;
-        from_wb_gpwr0_size  = gpwr0_size;
-        from_wb_gpwr0_en    = gpwr0_en;  
-        from_wb_gpwr1_idx   = gpwr1_idx; 
-        from_wb_gpwr1_data  = gpwr1_data;
-        from_wb_gpwr1_size  = gpwr1_size;
-        from_wb_gpwr1_en    = gpwr1_en;  
-        from_wb_segwr_idx   = segwr_idx; 
-        from_wb_segwr_data  = segwr_data;
-        from_wb_segwr_en    = segwr_en;  
-        from_ex_cs_wr_data  = cs_wr_data;
-        from_ex_cs_wr_en    = cs_wr_en;  
-        from_wb_mmxwr_idx   = mmxwr_idx; 
-        from_wb_mmxwr_data  = mmxwr_data;
-        from_wb_mmxwr_en    = mmxwr_en;  
-    end
-    endtask
 
     task apply_de_inputs;
         input [5:0] prefix;
@@ -1298,6 +1383,78 @@ module stage_ex_tb;
     end
     endtask
 
+    task print_wb_outputs;
+    begin 
+        $display("************************************************");
+        $display("*                WB OUT                        *");
+        $display("************************************************");
+        $display("(load=%0b) gpwr0_idx=%0d, gpwr0_data=%0h, gpwr0_size=%0b", from_wb_gpwr0_en, from_wb_gpwr0_idx, from_wb_gpwr0_data, from_wb_gpwr0_size);
+        $display("(load=%0b) gpwr1_idx=%0d, gpwr1_data=%0h, gpwr1_size=%0b", from_wb_gpwr1_en, from_wb_gpwr1_idx, from_wb_gpwr1_data, from_wb_gpwr1_size);
+        $display("(load=%0b) segwr_idx=%0d, segwr_data=%0h", from_wb_segwr_en, from_wb_segwr_idx, from_wb_segwr_data);
+        $display("(load=%0b) mmxwr_idx=%0d, mmxwr_data=%0h", from_wb_mmxwr_en, from_wb_mmxwr_idx, from_wb_mmxwr_data);
+        $display("temp_cs=%0h, temp_eip=%0h, temp_exception=%0b", from_wb_temp_cs, from_wb_temp_eip, from_wb_temp_exception);
+        $display("flush=%0b", from_wb_flush);
+    end
+    endtask
+
+    task print_arch_status;
+    begin 
+        $display("======================================");
+        $display("General Purpose RegFile");
+        $display("======================================");
+        for(i = 0; i < 8; i = i + 1) begin
+            $display("reg[%0d] = %h", i, dut_regunit.gprf.q[i]);
+        end
+
+        $display("======================================");
+        $display("Segement RegFile");
+        $display("======================================");
+        for(i = 0; i < 8; i = i + 1) begin
+            if(i==1) begin 
+                $display("reg[%0d](CS) = %h", i, dut_regunit.segrf.cs_q);
+            end else begin 
+                $display("reg[%0d] = %h", i, dut_regunit.segrf.seg_rf.q[i]);
+            end
+        end
+
+        $display("======================================");
+        $display("MMX RegFile");
+        $display("======================================");
+        for(i = 0; i < 8; i = i + 1) begin
+            $display("reg[%0d] = %h", i, dut_regunit.mmxrf.mmx_regs.q[i]);
+        end
+        $display("\n");
+
+        $display("eflags=%08h", dut_stage_ex.eflags_out);
+        $display("\n");
+    end
+    endtask
+
+    task print_gpr;
+        input [2:0] idx;
+    begin 
+        $display("GP REG[%0d] = %h", idx, dut_regunit.gprf.q[idx]);
+    end
+    endtask
+
+    task print_segr;
+        input [2:0] idx;
+    begin 
+        if(idx==3'd1) begin 
+            $display("SEG REG[%0d](CS) = %h", idx, dut_regunit.segrf.cs_q);
+        end else begin 
+            $display("SEG REG[%0d] = %h", idx, dut_regunit.segrf.seg_rf.q[idx]);
+        end
+    end
+    endtask
+
+    task print_mmxr;
+        input [2:0] idx;
+    begin 
+        $display("MMX REG[%0d] = %h", idx, dut_regunit.mmxrf.mmx_regs.q[idx]);
+    end
+    endtask
+
     task insert_nop; 
         apply_de_inputs(6'b000110, 8'h01, 8'hc0, 8'bx, 32'bx, 2'b00,
                         48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'h0, 2'b0, 1'b0);
@@ -1368,11 +1525,16 @@ module stage_ex_tb;
         @(posedge clk);
         insert_nop();
         #8
-        print_ex_outputs();
+        // print_ex_outputs();
         @(posedge clk);
         insert_nop();
         #8
-        $display("eflags=%08h", dut_stage_ex.eflags_out);
+        print_wb_outputs();
+        @(posedge clk);
+        insert_nop();
+        #8
+        print_arch_status();
+        // $display("eflags=%08h", dut_stage_ex.eflags_out);
         $display("\n");
         NUM_TESTS = NUM_TESTS + 1;
     end
@@ -1413,96 +1575,20 @@ module stage_ex_tb;
         @(posedge clk);
         rst_n = 1'b1;
 
-        @(negedge clk);
-        apply_exwb_inputs(3'd0, 32'h0000_0000, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd0, 16'h0000, 1'b1, 16'h1111, 1'b1, 3'd0, 64'h0000_0000_0000_0000, 1'b1);
-        @(negedge clk);
-        apply_exwb_inputs(3'd1, 32'h1111_1111, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd1, 16'h1111, 1'b0, 16'b0, 1'b0, 3'd1, 64'h1111_1111_1111_1111, 1'b1);
-        @(negedge clk);
-        apply_exwb_inputs(3'd2, 32'h2222_2222, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd2, 16'h2222, 1'b1, 16'b0, 1'b0, 3'd2, 64'h2222_2222_2222_2222, 1'b1);
-        @(negedge clk);
-        apply_exwb_inputs(3'd3, 32'h3333_3333, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd3, 16'h3333, 1'b1, 16'b0, 1'b0, 3'd3, 64'h3333_3333_3333_3333, 1'b1);
-        @(negedge clk);
-        apply_exwb_inputs(3'd4, 32'h4444_4444, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd4, 16'h4444, 1'b1, 16'b0, 1'b0, 3'd4, 64'h4444_4444_4444_4444, 1'b1);
-        @(negedge clk);
-        apply_exwb_inputs(3'd5, 32'h5555_5555, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd5, 16'h5555, 1'b1, 16'b0, 1'b0, 3'd5, 64'h5555_5555_5555_5555, 1'b1);
-        @(negedge clk);
-        apply_exwb_inputs(3'd6, 32'h6666_6666, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd6, 16'h6666, 1'b1, 16'b0, 1'b0, 3'd6, 64'h6666_6666_6666_6666, 1'b1);
-        @(negedge clk);
-        apply_exwb_inputs(3'd7, 32'h7777_7777, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd7, 16'h7777, 1'b1, 16'b0, 1'b0, 3'd7, 64'h7777_7777_7777_7777, 1'b1);
-        @(negedge clk);
         clear_inputs();
-        $display("======================================");
-        $display("General Purpose RegFile");
-        $display("======================================");
-        for(i = 0; i < 8; i = i + 1) begin
-            $display("reg[%0d] = %h", i, dut_regunit.gprf.q[i]);
-        end
-
-        $display("======================================");
-        $display("Segement RegFile");
-        $display("======================================");
-        for(i = 0; i < 8; i = i + 1) begin
-            if(i==1) begin 
-                $display("reg[%0d](CS) = %h", i, dut_regunit.segrf.cs_q);
-            end else begin 
-                $display("reg[%0d] = %h", i, dut_regunit.segrf.seg_rf.q[i]);
-            end
-        end
-
-        $display("======================================");
-        $display("MMX RegFile");
-        $display("======================================");
-        for(i = 0; i < 8; i = i + 1) begin
-            $display("reg[%0d] = %h", i, dut_regunit.mmxrf.mmx_regs.q[i]);
-        end
-        $display("\n");
-
-        $display("eflags=%08h", dut_stage_ex.eflags_out);
-        $display("\n");
         
-        /* ******************************************************* */
-        /* *                      ALU                            * */
-        /* ******************************************************* */
-
+        print_arch_status();
         $display("======================================");
-        $display("TEST CASE%0d: ADD EAX, ECX", NUM_TESTS);
-        $display("======================================");
-        // 01 C8
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h01, 8'hc8, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: ADD BH, 0x8", NUM_TESTS);
+        $display("[ALU] TEST CASE%0d: ADD BH, 0x8", NUM_TESTS);
         $display("======================================");
         // 80 c7 08
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
         test_with_nops(6'b000110, 8'h80, 8'hc7, 8'bx, 32'bx, 2'b00,
                         48'h8, 3'b001, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: ADD BX, 0x1234", NUM_TESTS);
-        $display("======================================");
-        // 66 81 c3 34 12
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'h81, 8'hc3, 8'bx, 32'bx, 2'b00,
-                        48'h1234, 3'b010, 2'b01, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
-        
-        
-        $display("======================================");
-        $display("TEST CASE%0d: ADD [EBX], CH", NUM_TESTS);
-        $display("======================================");
-        // 00 2b=00000000 00101011
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h00, 8'h2b, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
 
         $display("======================================");
-        $display("TEST CASE%0d: ADD EAX, 0x12345678", NUM_TESTS);
+        $display("[ALU] TEST CASE%0d: ADD EAX, 0x12345678", NUM_TESTS);
         $display("======================================");
         // 05 78 56 34 12
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
@@ -1511,653 +1597,96 @@ module stage_ex_tb;
                         48'h12345678, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
         
         $display("======================================");
-        $display("TEST CASE%0d: ADC EAX, ECX", NUM_TESTS);
+        $display("[ALU] TEST CASE%0d: ADD AX, BX", NUM_TESTS);
         $display("======================================");
-        // 11 C8
+        // 66 01 D8
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h11, 8'hC8, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
-        
-
-        $display("======================================");
-        $display("TEST CASE%0d: AND [EBX], EAX", NUM_TESTS);
-        $display("======================================");
-        // 21 03
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h21, 8'h03, 8'bx, 32'bx, 2'b00,
+        test_with_nops(6'b010110, 8'h01, 8'hD8, 8'bx, 32'bx, 2'b00,
                         48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
 
+
         $display("======================================");
-        $display("TEST CASE%0d: OR CX, DX", NUM_TESTS);
+        $display("[CMPXCHG] TEST CASE%0d: MOV EAX, 0x5", NUM_TESTS);
         $display("======================================");
-        // 66 09 d1
+        // b8 05 00 00 00
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'h09, 8'hd1, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
+        test_with_nops(6'b000110, 8'hb8, 8'bx, 8'bx, 32'bx, 2'b00,
+                        48'h5, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
         
         $display("======================================");
-        $display("TEST CASE%0d: SBB EDX, ECX", NUM_TESTS);
+        $display("[CMPXCHG] TEST CASE%0d: MOV EBX, 0x5", NUM_TESTS);
         $display("======================================");
-        // 19 CA
+        // bb 05 00 00 00
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h19, 8'hCA, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
+        test_with_nops(6'b000110, 8'hbb, 8'bx, 8'bx, 32'bx, 2'b00,
+                        48'h5, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
 
-        // /* ******************************************************* */
-        // /* *                     PALU                            * */
-        // /* ******************************************************* */
         $display("======================================");
-        $display("TEST CASE%0d: PACKSSWB MM1, MM2", NUM_TESTS);
+        $display("[CMPXCHG] TEST CASE%0d: MOV ECX, 0x9", NUM_TESTS);
         $display("======================================");
-        // 0f 63 ca
+        // b9 09 00 00 00
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000111, 8'h63, 8'hCA, 8'bx, 32'bx, 2'b00,
+        test_with_nops(6'b000110, 8'hb9, 8'bx, 8'bx, 32'bx, 2'b00,
+                        48'h9, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
+
+        $display("======================================");
+        $display("[CMPXCHG] TEST CASE%0d: CMPXCHG EBX, ECX", NUM_TESTS);
+        $display("======================================");
+        // 0f b1 cb
+        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
+        test_with_nops(6'b000111, 8'hb1, 8'hcb, 8'bx, 32'bx, 2'b00,
                         48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
         
         $display("======================================");
-        $display("TEST CASE%0d: PACKSSDW MM0,[EBX]", NUM_TESTS);
+        $display("[CMPXCHG] TEST CASE%0d: CMPXCHG EBX, ECX", NUM_TESTS);
         $display("======================================");
-        // 0f 6b 03
+        // 0f b1 cb
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000111, 8'h6b, 8'h03, 8'bx, 32'bx, 2'b00,
+        test_with_nops(6'b000111, 8'hb1, 8'hcb, 8'bx, 32'bx, 2'b00,
                         48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: PADDW MM0, [EBX]", NUM_TESTS);
-        $display("======================================");
-        // 0f fd 03
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000111, 8'hfd, 8'h03, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: PAVGB MM0, MM2", NUM_TESTS);
-        $display("======================================");
-        // 0f e0 c2
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000111, 8'he0, 8'hc2, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: PAVGW MM0, [EBX]", NUM_TESTS);
-        $display("======================================");
-        // 0f e3 03
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000111, 8'he3, 8'h03, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
-
-        // /* ******************************************************* */
-        // /* *                      BSF                            * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: BSF AX, DX", NUM_TESTS);
-        $display("======================================");
-        // 66 0f bc c2
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010111, 8'hbc, 8'hc2, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h4, 32'bx, 2'b0, 1'b1);
-
-        // /* ******************************************************* */
-        // /* *                       NOT                            * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: NOT AL", NUM_TESTS);
-        $display("======================================");
-        // f6 d0
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hf6, 8'hd0, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: NOT [ECX]", NUM_TESTS);
-        $display("======================================");
-        // 66 f7 11
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'hf7, 8'h11, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
-
-        // /* ******************************************************* */
-        // /* *                       AAA                            * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: AAA (manually set AL=0xF)", NUM_TESTS);
-        $display("======================================");
-        // 37
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h37, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-
-        // /* ******************************************************* */
-        // /* *                       SHF                            * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: SAL BL, 2", NUM_TESTS);
-        $display("======================================");
-        // c0 e3 02
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hc0, 8'he3, 8'bx, 32'bx, 2'b00,
-                        48'h2, 3'b001, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
         
         $display("======================================");
-        $display("TEST CASE%0d: SAL EBX, CL", NUM_TESTS);
+        $display("[MMX] TEST CASE%0d: MOVQ MM0, [EBX]", NUM_TESTS);
         $display("======================================");
-        // d3 e3 =11100011
+        // 0f 6f 03
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hd3, 8'he3, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
+        test_with_nops(6'b000111, 8'h6f, 8'h03, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
         
         $display("======================================");
-        $display("TEST CASE%0d: SAR CL, 2", NUM_TESTS);
+        $display("[MMX] TEST CASE%0d: PAVGB MM2, MM0", NUM_TESTS);
         $display("======================================");
-        // c0 f9 02
+        // 0f e0 d0
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hc0, 8'hf9, 8'bx, 32'bx, 2'b00,
-                        48'h2, 3'b001, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
-
+        test_with_nops(6'b000111, 8'he0, 8'hd0, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
+        
         $display("======================================");
-        $display("TEST CASE%0d: SAR EBX, CL", NUM_TESTS);
+        $display("[STACK] TEST CASE%0d: MOV ESP 0x1234", NUM_TESTS);
         $display("======================================");
-        // d3 fb
+        // bc 34 12 00 00
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hd3, 8'hfb, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
-
-        // /* ******************************************************* */
-        // /* *                     POP/PUSH                          * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: POP EAX", NUM_TESTS);
-        $display("======================================");
-        // 58
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h58, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
+        test_with_nops(6'b000110, 8'hbc, 8'bx, 8'bx, 32'bx, 2'b00,
+                        48'h1234, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
 
         $display("======================================");
-        $display("TEST CASE%0d: POP word [EBX]", NUM_TESTS);
-        $display("======================================");
-        // 66 8f 03
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'h8f, 8'h03, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: POP DS", NUM_TESTS);
+        $display("[STACK] TEST CASE%0d: POP DS", NUM_TESTS);
         $display("======================================");
         // 1f
         // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
         // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'h1f, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-         
-        $display("======================================");
-        $display("TEST CASE%0d: PUSH CX", NUM_TESTS);
-        $display("======================================");
-        // 66 51
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'h51, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
+        test_with_nops(6'b000110, 8'h1f, 8'bx, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
 
-        $display("======================================");
-        $display("TEST CASE%0d: PUSH word [EBX]", NUM_TESTS);
-        $display("======================================");
-        // 66 ff 33
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'hff, 8'h33, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: PUSH 0x11", NUM_TESTS);
-        $display("======================================");
-        // 6a 11
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h6a, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h11, 3'b001, 2'b00, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: PUSH CS", NUM_TESTS);
-        $display("======================================");
-        // 0e
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h0e, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-
-        // /* ******************************************************* */
-        // /* *                      MOV                            * */
-        // /* ******************************************************* */
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOV AX, CX", NUM_TESTS);
-        $display("======================================");
-        // 66 89 c8
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'h89, 8'hc8, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOV WORD [EBX], CX", NUM_TESTS);
-        $display("======================================");
-        // 66 89 0b
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'h89, 8'h0b, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOV BYTE AL, [ECX]", NUM_TESTS);
-        $display("======================================");
-        // 8a 01
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h8a, 8'h01, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOV DS, AX", NUM_TESTS);
-        $display("======================================");
-        // 8e d8
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h8e, 8'hd8, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: MOV DS, WORD [EBX]", NUM_TESTS);
-        $display("======================================");
-        // 8e 1b
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h8e, 8'h1b, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOV WORD [EBX], DS", NUM_TESTS);
-        $display("======================================");
-        // 8c 1b
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h8c, 8'h1b, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOV EAX, 0x12345678", NUM_TESTS);
-        $display("======================================");
-        // b8 78 56 34 12 
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hb8, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h12345678, 3'b100, 2'b00, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOV [EBX+2*ESI+1], 0x12345678", NUM_TESTS);
-        $display("======================================");
-        // c7 44 73 01 78 56 34 12 
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hc7, 8'h44, 8'h73, 32'h01, 2'b01,
-                        48'h12345678, 3'b100, 2'b11, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOVQ [EBX], MM1", NUM_TESTS);
-        $display("======================================");
-        // 0f 7f 0b 
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000111, 8'h7f, 8'h0b, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOVQ MM0, MM4", NUM_TESTS);
-        $display("======================================");
-        // 0f 6f c4
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000111, 8'h6f, 8'hc4, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-
-        // /* ******************************************************* */
-        // /* *                     CMOV                            * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: CMOVC EAX, ECX (CF=0)", NUM_TESTS);
-        $display("======================================");
-        // 0f 42 c1
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000111, 8'h42, 8'hc1, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: CMOVC EAX, ECX (Set CF=1)", NUM_TESTS);
-        $display("======================================");
-        // 0f 42 c1
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        set_cf_with_add();
-        test_with_nops(6'b000111, 8'h42, 8'hc1, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        clear_eflags_with_add();
-
-        // /* ******************************************************* */
-        // /* *                     XCHG                            * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: XCHG CX, AX", NUM_TESTS);
-        $display("======================================");
-        // 66 91
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'h91, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: XCHG byte [EBX], CH", NUM_TESTS);
-        $display("======================================");
-        // 86 2b
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h86, 8'h2b, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: XCHG BL, CH", NUM_TESTS);
-        $display("======================================");
-        // 86 eb
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h86, 8'heb, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-
-        // /* ******************************************************* */
-        // /* *                  CMPXCHG                            * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: CMPXCHG AL, CH", NUM_TESTS);
-        $display("======================================");
-        // 0f b0 e8
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000111, 8'hb0, 8'he8, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: CMPXCHG WORD [EBX], CX", NUM_TESTS);
-        $display("======================================");
-        // 66 0f b1 0b
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010111, 8'hb1, 8'h0b, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h1, 32'bx, 2'b0, 1'b1);
-        
-        // /* ******************************************************* */
-        // /* *                     Jcc                             * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: JNBE 2 (Taken)", NUM_TESTS);
-        $display("======================================");
-        // 77 02
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h77, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h02, 3'b001, 2'b00, 32'h0, 32'h2, 32'h4, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: JNBE 2 (ZF=1, Not Taken)", NUM_TESTS);
-        $display("======================================");
-        // 77 02
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        set_zf_with_add();
-        test_with_nops(6'b000110, 8'h77, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h02, 3'b001, 2'b00, 32'h0, 32'h2, 32'h4, 2'b0, 1'b1);
-        clear_eflags_with_add();
-
-        $display("======================================");
-        $display("TEST CASE%0d: JNBE FF (CF=1, Not Taken, sign-extended)", NUM_TESTS);
-        $display("======================================");
-        // 77 FF
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        set_cf_with_add();
-        test_with_nops(6'b000110, 8'h77, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'hFF, 3'b001, 2'b00, 32'h0, 32'h2, 32'h4, 2'b0, 1'b1);
-        clear_eflags_with_add();
-
-        $display("======================================");
-        $display("TEST CASE%0d: JNE 0x11111111 (Taken but with exception)", NUM_TESTS);
-        $display("======================================");
-        // 0F 85 11 11 11 11
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000111, 8'h85, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h1111_1111, 3'b100, 2'b00, 32'h0, 32'h6, 32'h4, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: JNE 0x11111111 (Taken, with operand_override so no exception)", NUM_TESTS);
-        $display("======================================");
-        // 66 0F 85 11 11 11 11
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010111, 8'h85, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h1111_1111, 3'b100, 2'b00, 32'h0, 32'h7, 32'h4, 2'b0, 1'b1);
-
-        /* ******************************************************* */
-        /* *                     JMP                             * */
-        /* ******************************************************* */
-
-        $display("======================================");
-        $display("TEST CASE%0d: JMP 0xFFFF (Taken, Predict Correctly)", NUM_TESTS);
-        $display("======================================");
-        // 66 e9 ff fb
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'he9, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'hfffb, 3'b010, 2'b00, 32'h7, 32'hb, 32'h6, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: JMP DX (Taken, Predict Incorrectly)", NUM_TESTS);
-        $display("======================================");
-        // 66 ff e2
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'hff, 8'he2, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'h6, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: JMP DWORD [EBX] (Taken, Predict Incorrectly, Exception)", NUM_TESTS);
-        $display("======================================");
-        // ff 23
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hff, 8'h23, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'h6, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: JMP far 0x12:0x3456 (Taken, Predict Incorrectly, No Exception)", NUM_TESTS);
-        $display("======================================");
-        // ea 56 34 00 00 12 00 
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hea, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h001200003456, 3'b110, 2'b00, 32'h0, 32'h3, 32'h00003456, 2'b0, 1'b1);
-
-        /* ******************************************************* */
-        /* *                     CALL                            * */
-        /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: CALL 0x4 (Taken, Predict Incorrectly, No Exception)", NUM_TESTS);
-        $display("======================================");
-        // e8 04 00 00 00  
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'he8, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h4, 3'b100, 2'b00, 32'h0, 32'h5, 32'h3, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: CALL BX (Taken, Predict Incorrectly, No Exception)", NUM_TESTS);
-        $display("======================================");
-        // 66 ff d3
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'hff, 8'hd3, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h0, 32'h3, 32'h3, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: CALL dword [EBX] (Taken, Predict Incorrectly, Exception)", NUM_TESTS);
-        $display("======================================");
-        // ff 13
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hff, 8'h13, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'h3, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: CALL far 0x12:0x3456789a (Taken, Predict Incorrectly, No Exception)", NUM_TESTS);
-        $display("======================================");
-        // 9a 9a 78 56 34 12 00
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'h9a, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h00123456789a, 3'b110, 2'b00, 32'h0, 32'h7, 32'h00003456, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: CALL far 0x12:0x3456 (Taken, Predict Incorrectly, No Exception)", NUM_TESTS);
-        $display("======================================");
-        // 66 56 34 12 00
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'h9a, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h00123456, 3'b100, 2'b00, 32'h0, 32'h8, 32'h00003456, 2'b0, 1'b1);
-
-        // /* ******************************************************* */
-        // /* *                      RET                            * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: RET near (Taken, Predict Incorrectly, No Exception)", NUM_TESTS);
-        $display("======================================");
-        // C3
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hC3, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h1234, 32'h1235, 32'h00003456, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: RET near (with operand_size override)", NUM_TESTS);
-        $display("======================================");
-        // 66 C3
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'hC3, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h1234, 32'h1236, 32'h00003456, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: RET near 0x8", NUM_TESTS);
-        $display("======================================");
-        // C2 08 00
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hC2, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h8, 3'b010, 2'b00, 32'h1234, 32'h1237, 32'h00003456, 2'b0, 1'b1);
-
-        $display("======================================");
-        $display("TEST CASE%0d: RET far", NUM_TESTS);
-        $display("======================================");
-        // cb
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hcb, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h1234, 32'h1235, 32'h00003456, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TTEST CASE%0d: RET far (with operand_size override)", NUM_TESTS);
-        $display("======================================");
-        // 66 cb
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'hcb, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h1234, 32'h1235, 32'h00003456, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: RET far 0x8", NUM_TESTS);
-        $display("======================================");
-        // ca 08 00
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hca, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'h8, 3'b010, 2'b00, 32'h1234, 32'h1237, 32'h00003456, 2'b0, 1'b1);
-        
-        // /* ******************************************************* */
-        // /* *                  STD/CLD/MOVS                         * */
-        // /* ******************************************************* */
-        $display("======================================");
-        $display("TEST CASE%0d: STD", NUM_TESTS);
-        $display("======================================");
-        // fd
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hfd, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h1234, 32'h1235, 32'h00003456, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOVSB", NUM_TESTS);
-        $display("======================================");
-        // a4
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'ha4, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h1234, 32'h1235, 32'h00003456, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOVSW", NUM_TESTS);
-        $display("======================================");
-        // 66 a5
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b010110, 8'ha5, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h1234, 32'h1235, 32'h00003456, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: CLD", NUM_TESTS);
-        $display("======================================");
-        // fc
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'hfc, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h1234, 32'h1235, 32'h00003456, 2'b0, 1'b1);
-        
-        $display("======================================");
-        $display("TEST CASE%0d: MOVSD", NUM_TESTS);
-        $display("======================================");
-        // a5
-        // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-        test_with_nops(6'b000110, 8'ha5, 8'bx, 8'bx, 32'bx, 2'b00,
-                        48'bx, 3'b000, 2'b00, 32'h1234, 32'h1235, 32'h00003456, 2'b0, 1'b1);
                         
         $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
         $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
