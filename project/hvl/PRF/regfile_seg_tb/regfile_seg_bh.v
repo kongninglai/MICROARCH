@@ -9,7 +9,7 @@ module regfile_seg_bh (
     output [19:0] segrd0_limit,
     output [19:0] segrd1_limit,
     output [15:0] cs,
-
+    output [19:0] cs_limit,
     input [2:0] segwr_idx,
     input [15:0] segwr_data,
     input segwr_en,
@@ -77,4 +77,5 @@ module regfile_seg_bh (
     end
     assign segrd0_limit = slim0;
     assign segrd1_limit = slim1;
+    assign cs_limit = 20'h04fff;
 endmodule

@@ -1,0 +1,8 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib3
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+~/MICROARCH/project/hdl/stages/pipeline_regs/ex_to_wb/reg_ex_to_wb.v
+~/MICROARCH/project/hdl/stages/pipeline_regs/ex_to_wb/ex_to_wb.v
+~/MICROARCH/project/hvl/stages/pipeline_regs/ex_to_wb_tb/ex_to_wb_tb.v

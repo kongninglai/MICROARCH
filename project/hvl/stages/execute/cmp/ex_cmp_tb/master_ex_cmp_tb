@@ -1,0 +1,27 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib3
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+~/MICROARCH/project/hdl/local-lib/gates/big_or.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_16.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux3_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux4_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_64.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux4_64.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_64.v
+~/MICROARCH/project/hdl/local-lib/gates/xor3LL.v
+~/MICROARCH/project/hdl/local-lib/gates/xor4LL.v
+~/MICROARCH/project/hdl/local-lib/gates/xor8LL.v
+~/MICROARCH/project/hdl/local-lib/adders/gen_prop.v
+~/MICROARCH/project/hdl/local-lib/adders/gen_prop_2.v
+~/MICROARCH/project/hdl/local-lib/adders/FA_32b.v
+~/MICROARCH/project/hdl/local-lib/adders/HA_32b.v
+~/MICROARCH/project/hdl/local-lib/adders/SUB_32b.v
+~/MICROARCH/project/hdl/stages/execute/eflags/set_sf_zf_pf.v
+~/MICROARCH/project/hdl/stages/execute/cmp/cmp_eflags.v
+~/MICROARCH/project/hdl/stages/execute/cmp/ex_cmp.v
+~/MICROARCH/project/hvl/stages/execute/cmp/ex_cmp_tb/ex_cmp_tb.v

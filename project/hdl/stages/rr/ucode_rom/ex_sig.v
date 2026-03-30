@@ -1,0 +1,39 @@
+module ex_sig(
+    input [54:0] ucode_sig,
+    output [1:0] ldAB,
+    output [1:0] dstA_size,
+    output [1:0] dstB_size,
+    output [2:0] ldREGS,
+    output ldEFLAGS,
+    output ldEIP,
+    output ldCS,
+    output alu_srcb_mux,
+    output [1:0] shf_srcb_mux,
+    output [2:0] eflags_mux,
+    output [2:0] eip_mux,
+    output [1:0] cs_mux,
+    output [1:0] mmx_op,
+    output [2:0] alu_op,
+    output shf_op,
+    output cmps,
+    output [1:0] con_jmp,
+    output cmpxchg,
+    output cmovc,
+    output [3:0] gp_dsta_mux,
+    output [2:0] gp_dstb_mux,
+    output seg_dst_mux,
+    output [1:0] mm_dst_mux,
+    output [3:0] store_data_mux,
+    output [1:0] rw,
+    output [1:0] ds,
+    output rm, 
+    output op_ovr,
+    output palu_size
+);
+    assign {
+        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
+        ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux,
+        ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
+        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size
+    } = ucode_sig;
+endmodule
