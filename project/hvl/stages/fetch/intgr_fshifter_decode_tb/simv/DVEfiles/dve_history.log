@@ -6,14 +6,14 @@ gui_create_pref_key -category {schem_pin_hc} -key {textExtFont} -value_type {str
 
 # State setting overrides
 gui_state_default_create -off -ini
-gui_set_state_value -category Globals -key recent_databases -value {{gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/pipeline_regs/de_to_rr_tb/sim/de_to_rr_tb.dump.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/stage_decoder_tb/sim/advanced_decode.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_tb/sim/block_decoder_tb.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/Spring2026/uarch_pset4/pset4/pipeline_hex_test.vcd -design V1} {gui_open_db -file TOP.dump.vpd -design V1}}
-gui_set_state_value -category Globals -key recent_sessions -value {{gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_tb/sim/session.block_decoder_tb.vpd.vpd.tcl} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/Spring2026/pset1b/session.TOP.dump.vpd.tcl -ignore_errors} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/Spring2026/pset1b/session.TOP.dump.vpd.tcl} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/vlsi1/lab3_temp/rtl/session.inter.vpd.tcl -ignore_errors} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/vlsi1/lab3_temp/rtl/session.inter.vpd.tcl}}
-gui_set_state_value -category Layout -key child_console_size_x -value 1429
-gui_set_state_value -category Layout -key child_console_size_y -value 145
+gui_set_state_value -category Globals -key recent_databases -value {{gui_open_db -file intgr_fshifter_decode.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/intgr_fshifter_decode.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/pipeline_regs/de_to_rr_tb/sim/de_to_rr_tb.dump.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/stage_decoder_tb/sim/advanced_decode.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_tb/sim/block_decoder_tb.vpd -design V1}}
+gui_set_state_value -category Globals -key recent_sessions -value {{gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl -ignore_errors} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_tb/sim/session.block_decoder_tb.vpd.vpd.tcl} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/Spring2026/pset1b/session.TOP.dump.vpd.tcl -ignore_errors} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/Spring2026/pset1b/session.TOP.dump.vpd.tcl}}
+gui_set_state_value -category Layout -key child_console_size_x -value 1427
+gui_set_state_value -category Layout -key child_console_size_y -value 143
 gui_set_state_value -category Layout -key child_data_coltype -value 111
 gui_set_state_value -category Layout -key child_data_colvalue -value 135
 gui_set_state_value -category Layout -key child_data_colvariable -value 180
-gui_set_state_value -category Layout -key child_data_size_x -value 386
+gui_set_state_value -category Layout -key child_data_size_x -value 384
 gui_set_state_value -category Layout -key child_data_size_y -value 589
 gui_set_state_value -category Layout -key child_driver_size_x -value 1185
 gui_set_state_value -category Layout -key child_driver_size_y -value 174
@@ -21,7 +21,7 @@ gui_set_state_value -category Layout -key child_hier_col3 -value {-1}
 gui_set_state_value -category Layout -key child_hier_colhier -value 298
 gui_set_state_value -category Layout -key child_hier_colpd -value 0
 gui_set_state_value -category Layout -key child_hier_coltype -value 133
-gui_set_state_value -category Layout -key child_hier_size_x -value 426
+gui_set_state_value -category Layout -key child_hier_size_x -value 424
 gui_set_state_value -category Layout -key child_hier_size_y -value 589
 gui_set_state_value -category Layout -key child_hier_sort_column -value 1
 gui_set_state_value -category Layout -key child_schematic_docknewline -value false
@@ -32,25 +32,25 @@ gui_set_state_value -category Layout -key child_schematic_size_y -value 312
 gui_set_state_value -category Layout -key child_source_docknewline -value false
 gui_set_state_value -category Layout -key child_source_pos_x -value {-2}
 gui_set_state_value -category Layout -key child_source_pos_y -value {-15}
-gui_set_state_value -category Layout -key child_source_size_x -value 620
+gui_set_state_value -category Layout -key child_source_size_x -value 622
 gui_set_state_value -category Layout -key child_source_size_y -value 584
 gui_set_state_value -category Layout -key child_wave_colname -value 209
-gui_set_state_value -category Layout -key child_wave_colvalue -value 209
+gui_set_state_value -category Layout -key child_wave_colvalue -value 210
 gui_set_state_value -category Layout -key child_wave_left -value 423
-gui_set_state_value -category Layout -key child_wave_right -value 1033
+gui_set_state_value -category Layout -key child_wave_right -value 1031
 gui_set_state_value -category Layout -key main_pos_x -value 8
 gui_set_state_value -category Layout -key main_pos_y -value 31
-gui_set_state_value -category Layout -key main_size_x -value 1437
-gui_set_state_value -category Layout -key main_size_y -value 864
+gui_set_state_value -category Layout -key main_size_x -value 1435
+gui_set_state_value -category Layout -key main_size_y -value 862
 gui_set_state_value -category Layout -key stand_wave_child_docknewline -value false
 gui_set_state_value -category Layout -key stand_wave_child_pos_x -value {-2}
 gui_set_state_value -category Layout -key stand_wave_child_pos_y -value {-15}
-gui_set_state_value -category Layout -key stand_wave_child_size_x -value 1466
-gui_set_state_value -category Layout -key stand_wave_child_size_y -value 761
+gui_set_state_value -category Layout -key stand_wave_child_size_x -value 1464
+gui_set_state_value -category Layout -key stand_wave_child_size_y -value 759
 gui_set_state_value -category Layout -key stand_wave_top_pos_x -value 8
 gui_set_state_value -category Layout -key stand_wave_top_pos_y -value 31
-gui_set_state_value -category Layout -key stand_wave_top_size_x -value 1469
-gui_set_state_value -category Layout -key stand_wave_top_size_y -value 896
+gui_set_state_value -category Layout -key stand_wave_top_size_x -value 1467
+gui_set_state_value -category Layout -key stand_wave_top_size_y -value 894
 gui_create_state_key -category FindDialog -key m_pMatchCase -value_type bool -value false
 gui_create_state_key -category FindDialog -key m_pMatchWord -value_type bool -value false
 gui_create_state_key -category FindDialog -key m_pUseCombo -value_type string -value {}
@@ -65,132 +65,29 @@ gui_state_default_create -off
 
 # Begin command logging
 gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/intgr_fshifter_decode.vpd -design V1
-gui_list_expand -id Hier.1   tb_intgr_fshifter_decode
-gui_list_action -id  Hier.1 tb_intgr_fshifter_decode
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.from_f_cache_line[127:0]}   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.from_f_cl_pf   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.from_ex_pht_idx[3:0]}   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.from_f_cache_line[127:0]}   }
-gui_list_select -id Hier.1 -current_item_name tb_intgr_fshifter_decode.uut -current_item_type Scope  -selected  { tb_intgr_fshifter_decode.uut   }
-gui_list_select -id Hier.1 -current_item_name tb_intgr_fshifter_decode -current_item_type Scope  -selected  { tb_intgr_fshifter_decode   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.from_f_icache_valid   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.from_f_icache_valid  {tb_intgr_fshifter_decode.to_rr_exception_flags[1:0]}   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.from_f_icache_valid  {tb_intgr_fshifter_decode.to_rr_exception_flags[1:0]}  {tb_intgr_fshifter_decode.to_rr_prefixes[5:0]}   }
-gui_list_select -id Data.1 { {tb_intgr_fshifter_decode.to_rr_opcode[7:0]}  {tb_intgr_fshifter_decode.to_rr_modrm[7:0]}  {tb_intgr_fshifter_decode.to_rr_sib[7:0]}  {tb_intgr_fshifter_decode.to_rr_disp_size_mux[1:0]}  {tb_intgr_fshifter_decode.to_rr_disp[31:0]}  {tb_intgr_fshifter_decode.to_rr_imm_size[2:0]}  {tb_intgr_fshifter_decode.to_rr_imm[47:0]}  {tb_intgr_fshifter_decode.to_rr_addressing_mode[1:0]}  {tb_intgr_fshifter_decode.to_rr_instr_length[3:0]}   }
-gui_open_window Wave
-gui_list_add -id Wave.1 -from Data.1 { {tb_intgr_fshifter_decode.from_f_cache_line[127:0]} tb_intgr_fshifter_decode.from_f_icache_valid {tb_intgr_fshifter_decode.to_rr_exception_flags[1:0]} {tb_intgr_fshifter_decode.to_rr_prefixes[5:0]} {tb_intgr_fshifter_decode.to_rr_opcode[7:0]} {tb_intgr_fshifter_decode.to_rr_modrm[7:0]} {tb_intgr_fshifter_decode.to_rr_sib[7:0]} {tb_intgr_fshifter_decode.to_rr_disp_size_mux[1:0]} {tb_intgr_fshifter_decode.to_rr_disp[31:0]} {tb_intgr_fshifter_decode.to_rr_imm_size[2:0]} {tb_intgr_fshifter_decode.to_rr_imm[47:0]} {tb_intgr_fshifter_decode.to_rr_addressing_mode[1:0]} {tb_intgr_fshifter_decode.to_rr_instr_length[3:0]} } -insertionbar
-gui_list_select -id Hier.1 -current_item_name tb_intgr_fshifter_decode.uut -current_item_type Scope  -selected  { tb_intgr_fshifter_decode.uut   }
-gui_list_expand -id Hier.1   tb_intgr_fshifter_decode.uut
-gui_list_action -id  Hier.1 tb_intgr_fshifter_decode.uut
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.STAGE_DECODE.tail_ptr[4:0]}   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.STAGE_DECODE.tail_ptr[4:0]}  tb_intgr_fshifter_decode.uut.STAGE_DECODE.pr_de_rr_valid   }
-gui_list_select -id Hier.1 -current_item_name tb_intgr_fshifter_decode.uut.STAGE_DECODE -current_item_type Scope  -selected  { tb_intgr_fshifter_decode.uut.STAGE_DECODE   }
-gui_list_expand -id Hier.1   tb_intgr_fshifter_decode.uut.STAGE_DECODE
-gui_list_action -id  Hier.1 tb_intgr_fshifter_decode.uut.STAGE_DECODE
-gui_list_collapse -id  Hier.1   tb_intgr_fshifter_decode.uut.STAGE_DECODE
-gui_list_add -id Wave.1 -from Data.1 { {tb_intgr_fshifter_decode.uut.STAGE_DECODE.tail_ptr[4:0]} tb_intgr_fshifter_decode.uut.STAGE_DECODE.pr_de_rr_valid } -insertionbar
-gui_list_select -id Hier.1 -current_item_name tb_intgr_fshifter_decode.uut.FETCH_BUFF -current_item_type Scope  -selected  { tb_intgr_fshifter_decode.uut.FETCH_BUFF   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]}   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]}   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.tail_ptr[4:0]}   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.tail_ptr[4:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.tail_ptr[4:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_pf_expn_bytes_out[15:0]}   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.tail_ptr[4:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_pf_expn_bytes_out[15:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_cache_line_load_signal   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.tail_ptr[4:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_pf_expn_bytes_out[15:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_cache_line_load_signal  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.wr_en[30:0]}   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.tail_ptr[4:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_pf_expn_bytes_out[15:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_cache_line_load_signal  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.wr_en[30:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_reg_we   }
-gui_list_select -id Data.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.tail_ptr[4:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_pf_expn_bytes_out[15:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_cache_line_load_signal  {tb_intgr_fshifter_decode.uut.FETCH_BUFF.wr_en[30:0]}  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_reg_we  tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_signal   }
-gui_list_select -id Data.1 { tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_reg_en   }
-gui_list_add -id Wave.1 -from Data.1 { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len[3:0]} {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]} tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we {tb_intgr_fshifter_decode.uut.FETCH_BUFF.tail_ptr[4:0]} {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]} {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_pf_expn_bytes_out[15:0]} tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_cache_line_load_signal {tb_intgr_fshifter_decode.uut.FETCH_BUFF.wr_en[30:0]} tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_signal tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_reg_we tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_reg_en } -insertionbar
-gui_marker_move -id  Wave.1 C1 95
+set DIALOGS::LOADFILEDIR [file dirname /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl]; gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl
 gui_wv_scroll_hslidermove -id  Wave.1 150
 gui_wv_scroll_hslidermove -id  Wave.1 300
 gui_wv_scroll_hslidermove -id  Wave.1 450
 gui_wv_scroll_hslidermove -id  Wave.1 600
 gui_wv_scroll_hslidermove -id  Wave.1 750
-gui_wv_scroll_hslidermove -id  Wave.1 900
-gui_wv_scroll_hslidermove -id  Wave.1 1050
-gui_wv_scroll_hslidermove -id  Wave.1 1200
-gui_wv_scroll_hslidermove -id  Wave.1 1350
-gui_wv_scroll_hslidermove -id  Wave.1 1500
-gui_wv_scroll_hslidermove -id  Wave.1 1650
-gui_wv_scroll_hslidermove -id  Wave.1 1800
-gui_wv_scroll_hslidermove -id  Wave.1 2100
-gui_wv_scroll_hslidermove -id  Wave.1 2250
-gui_wv_scroll_hslidermove -id  Wave.1 2700
-gui_wv_scroll_hslidermove -id  Wave.1 2850
-gui_wv_scroll_hslidermove -id  Wave.1 3150
-gui_wv_scroll_hslidermove -id  Wave.1 3450
-gui_wv_scroll_hslidermove -id  Wave.1 3600
-gui_wv_scroll_hslidermove -id  Wave.1 3750
-gui_wv_scroll_hslidermove -id  Wave.1 4050
-gui_wv_scroll_hslidermove -id  Wave.1 4200
-gui_wv_scroll_hslidermove -id  Wave.1 4350
-gui_wv_scroll_hslidermove -id  Wave.1 4500
-gui_wv_scroll_hslidermove -id  Wave.1 4650
-gui_wv_scroll_hslidermove -id  Wave.1 4800
-gui_wv_scroll_hslidermove -id  Wave.1 4950
-gui_wv_scroll_hslidermove -id  Wave.1 5250
-gui_wv_scroll_hslidermove -id  Wave.1 5400
-gui_wv_scroll_hslidermove -id  Wave.1 5850
-gui_wv_scroll_hslidermove -id  Wave.1 6000
-gui_wv_scroll_hslidermove -id  Wave.1 6450
-gui_wv_scroll_hslidermove -id  Wave.1 6600
-gui_wv_scroll_hslidermove -id  Wave.1 7200
-gui_wv_scroll_hslidermove -id  Wave.1 7350
-gui_wv_scroll_hslidermove -id  Wave.1 7800
-gui_wv_scroll_hslidermove -id  Wave.1 7950
-gui_wv_scroll_hslidermove -id  Wave.1 8400
-gui_wv_scroll_hslidermove -id  Wave.1 8550
-gui_wv_scroll_hslidermove -id  Wave.1 8850
-gui_wv_scroll_hslidermove -id  Wave.1 9000
-gui_wv_scroll_hslidermove -id  Wave.1 9450
-gui_wv_scroll_hslidermove -id  Wave.1 9600
-gui_wv_scroll_hslidermove -id  Wave.1 9750
-gui_wv_scroll_hslidermove -id  Wave.1 9900
-gui_wv_scroll_hslidermove -id  Wave.1 10500
-gui_wv_scroll_hslidermove -id  Wave.1 10650
-gui_wv_scroll_hslidermove -id  Wave.1 10950
-gui_wv_scroll_hslidermove -id  Wave.1 11100
-gui_wv_scroll_hslidermove -id  Wave.1 11250
-gui_marker_move -id  Wave.1 C1 3873
-gui_set_time_units 1ns
-gui_marker_move -id  Wave.1 C1 3.775
-gui_wv_scroll_hslidermove -id  Wave.1 11400
-gui_wv_scroll_hslidermove -id  Wave.1 11550
-gui_wv_scroll_hslidermove -id  Wave.1 11700
-gui_wv_scroll_hslidermove -id  Wave.1 11850
-gui_wv_scroll_hslidermove -id  Wave.1 12000
-gui_wv_scroll_hslidermove -id  Wave.1 12150
-gui_wv_scroll_hslidermove -id  Wave.1 12300
-gui_wv_scroll_hslidermove -id  Wave.1 12600
-gui_wv_scroll_hslidermove -id  Wave.1 12900
+gui_marker_move -id  Wave.1 C1 91.653
 gui_zoom -window Wave.1 -factor 0.5
 gui_zoom -window Wave.1 -factor 0.5
 gui_zoom -window Wave.1 -factor 0.5
 gui_zoom -window Wave.1 -factor 0.5
-gui_zoom -window Wave.1 -factor 0.5
-gui_zoom -window Wave.1 -factor 0.5
-gui_zoom -window Wave.1 -factor 0.5
-gui_zoom -window Wave.1 -factor 0.5
-gui_marker_move -id  Wave.1 C1 38.959
-gui_marker_move -id  Wave.1 C1 40.152
-gui_marker_move -id  Wave.1 C1 53.281
+gui_zoom -window Wave.1 -factor 2
+gui_wv_scroll_hslidermove -id  Wave.1 0
+gui_marker_move -id  Wave.1 C1 100
+gui_list_move  -id  Wave.1    -sid  Wave.1   -after {tb_intgr_fshifter_decode.to_rr_opcode[7:0]} {{tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk}} 
 gui_list_select -id Wave.1 -selected  { {tb_intgr_fshifter_decode.to_rr_opcode[7:0]}   }
-gui_list_select -id Wave.1 -selected  { tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_cache_line_load_signal   }
+gui_list_select -id Wave.1 -selected  { tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk   }
+gui_list_move  -id  Wave.1    -sid  Wave.1   -after Group1 {{tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk}}
+gui_marker_move -id  Wave.1 C1 174.936
+gui_marker_move -id  Wave.1 C1 100
 gui_list_select -id Wave.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}   }
-gui_marker_move -id  Wave.1 C1 64.363
-gui_marker_move -id  Wave.1 C1 57.25
-gui_list_select -id Data.1 -selected  { tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk   }
-gui_list_select -id Data.1 -selected  { tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk  tb_intgr_fshifter_decode.uut.FETCH_BUFF.rst_bar   }
-gui_list_add -id Wave.1 -from Data.1 { tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk tb_intgr_fshifter_decode.uut.FETCH_BUFF.rst_bar } -insertionbar
-gui_marker_move -id  Wave.1 C1 25
-gui_marker_move -id  Wave.1 C1 30
-gui_marker_move -id  Wave.1 C1 40.664
-gui_marker_move -id  Wave.1 C1 47.569
-gui_marker_move -id  Wave.1 C1 58.31
-gui_marker_move -id  Wave.1 C1 65.08
-gui_marker_move -id  Wave.1 C1 40
-gui_marker_move -id  Wave.1 C1 45
-gui_save_session -savedb relative -global { Breakpoint Bus Radix Expression TimeShift Compare SignalGroup Highlight Stack }  -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl
-gui_list_select -id Wave.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line[127:0]}   }
+gui_list_move  -id  Wave.1    -sid  Wave.1   -after {tb_intgr_fshifter_decode.to_rr_exception_flags[1:0]} {{tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}} 
+gui_list_move  -id  Wave.1    -sid  Wave.1   -after {tb_intgr_fshifter_decode.from_f_cache_line[127:0]} {{tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}} 
+gui_marker_move -id  Wave.1 C1 150
+gui_marker_move -id  Wave.1 C1 250
+gui_marker_move -id  Wave.1 C1 351.922

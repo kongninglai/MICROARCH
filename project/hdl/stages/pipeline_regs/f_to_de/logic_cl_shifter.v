@@ -33,19 +33,19 @@ module logic_cl_shifter(
         .out(rshft_cl_jmp)
     );
 
-        //Regular Cache line (only align with tailpointer)
-        wire [255:0] lshft_cl;
-        lshf_bytes_var_256b #(.WIDTH(256), .SHF_ZEROS(1)) lshf_cl_aligned( //align with tail pointer
-            .in({128'd0, cl}),
-            .shf_amt(tail_ptr), //when doing this shifting logic, tail_ptr < 16 bc we req cl
-            .out(lshft_cl)
-        );
+    //Regular Cache line (only align with tailpointer)
+    wire [255:0] lshft_cl;
+    lshf_bytes_var_256b #(.WIDTH(256), .SHF_ZEROS(1)) lshf_cl_aligned( //align with tail pointer
+        .in({128'd0, cl}),
+        .shf_amt(tail_ptr), //when doing this shifting logic, tail_ptr < 16 bc we req cl
+        .out(lshft_cl)
+    );
 
-        wire [255:0] final_cl_256;
-        mux2_256 final_cl(
-            .out(final_cl_256), .in0(lshft_cl), .in1({128'd0, rshft_cl_jmp}), .s0(eip_redirection)
-        );
+    wire [255:0] final_cl_256;
+    mux2_256 final_cl(
+        .out(final_cl_256), .in0(lshft_cl), .in1({128'd0, rshft_cl_jmp}), .s0(eip_redirection)
+    );
 
-        assign cl_aligned = final_cl_256[247:0];
+    assign cl_aligned = final_cl_256[247:0];
 
-    endmodule
+endmodule

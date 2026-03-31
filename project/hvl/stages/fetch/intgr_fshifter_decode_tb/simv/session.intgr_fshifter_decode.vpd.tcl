@@ -1,6 +1,6 @@
 # Begin_DVE_Session_Save_Info
 # DVE full session
-# Saved on Sun Mar 29 15:09:02 2026
+# Saved on Mon Mar 30 00:31:36 2026
 # Designs open: 1
 #   V1: intgr_fshifter_decode.vpd
 # Toplevel windows open: 2
@@ -68,7 +68,7 @@ if {![gui_exist_window -window TopLevel.1]} {
 } else { 
     set TopLevel.1 TopLevel.1
 }
-gui_show_window -window ${TopLevel.1} -show_state normal -rect {{8 31} {1436 863}}
+gui_show_window -window ${TopLevel.1} -show_state normal -rect {{8 31} {1435 862}}
 
 # ToolBar settings
 gui_set_toolbar_attributes -toolbar {TimeOperations} -dock_state top
@@ -109,23 +109,23 @@ gui_hide_toolbar -toolbar {Testbench}
 # End ToolBar settings
 
 # Docked window settings
-set HSPane.1 [gui_create_window -type HSPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 426]
+set HSPane.1 [gui_create_window -type HSPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 425]
 catch { set Hier.1 [gui_share_window -id ${HSPane.1} -type Hier] }
-gui_set_window_pref_key -window ${HSPane.1} -key dock_width -value_type integer -value 426
+gui_set_window_pref_key -window ${HSPane.1} -key dock_width -value_type integer -value 425
 gui_set_window_pref_key -window ${HSPane.1} -key dock_height -value_type integer -value -1
 gui_set_window_pref_key -window ${HSPane.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${HSPane.1} {{left 0} {top 0} {width 425} {height 589} {dock_state left} {dock_on_new_line true} {child_hier_colhier 298} {child_hier_coltype 133} {child_hier_colpd 0} {child_hier_col1 0} {child_hier_col2 1} {child_hier_col3 -1}}
-set DLPane.1 [gui_create_window -type DLPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 386]
+gui_update_layout -id ${HSPane.1} {{left 0} {top 0} {width 424} {height 589} {dock_state left} {dock_on_new_line true} {child_hier_colhier 298} {child_hier_coltype 133} {child_hier_colpd 0} {child_hier_col1 0} {child_hier_col2 1} {child_hier_col3 -1}}
+set DLPane.1 [gui_create_window -type DLPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 385]
 catch { set Data.1 [gui_share_window -id ${DLPane.1} -type Data] }
-gui_set_window_pref_key -window ${DLPane.1} -key dock_width -value_type integer -value 386
+gui_set_window_pref_key -window ${DLPane.1} -key dock_width -value_type integer -value 385
 gui_set_window_pref_key -window ${DLPane.1} -key dock_height -value_type integer -value 589
 gui_set_window_pref_key -window ${DLPane.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${DLPane.1} {{left 0} {top 0} {width 385} {height 589} {dock_state left} {dock_on_new_line true} {child_data_colvariable 180} {child_data_colvalue 135} {child_data_coltype 111} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
-set Console.1 [gui_create_window -type Console -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line true -dock_extent 145]
+gui_update_layout -id ${DLPane.1} {{left 0} {top 0} {width 384} {height 589} {dock_state left} {dock_on_new_line true} {child_data_colvariable 180} {child_data_colvalue 135} {child_data_coltype 111} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
+set Console.1 [gui_create_window -type Console -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line true -dock_extent 144]
 gui_set_window_pref_key -window ${Console.1} -key dock_width -value_type integer -value 1429
-gui_set_window_pref_key -window ${Console.1} -key dock_height -value_type integer -value 145
+gui_set_window_pref_key -window ${Console.1} -key dock_height -value_type integer -value 144
 gui_set_window_pref_key -window ${Console.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${Console.1} {{left 0} {top 0} {width 1428} {height 144} {dock_state bottom} {dock_on_new_line true}}
+gui_update_layout -id ${Console.1} {{left 0} {top 0} {width 1427} {height 143} {dock_state bottom} {dock_on_new_line true}}
 #### Start - Readjusting docked view's offset / size
 set dockAreaList { top left right bottom }
 foreach dockArea $dockAreaList {
@@ -162,7 +162,7 @@ if {![gui_exist_window -window TopLevel.2]} {
 } else { 
     set TopLevel.2 TopLevel.2
 }
-gui_show_window -window ${TopLevel.2} -show_state normal -rect {{8 31} {1468 895}}
+gui_show_window -window ${TopLevel.2} -show_state normal -rect {{8 31} {1467 894}}
 
 # ToolBar settings
 gui_set_toolbar_attributes -toolbar {TimeOperations} -dock_state top
@@ -210,7 +210,7 @@ gui_sync_global -id ${TopLevel.2} -option true
 # MDI window settings
 set Wave.1 [gui_create_window -type {Wave}  -parent ${TopLevel.2}]
 gui_show_window -window ${Wave.1} -show_state maximized
-gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 423} {child_wave_right 1032} {child_wave_colname 209} {child_wave_colvalue 209} {child_wave_col1 0} {child_wave_col2 1}}
+gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 423} {child_wave_right 1031} {child_wave_colname 209} {child_wave_colvalue 210} {child_wave_col1 0} {child_wave_col2 1}}
 
 # End MDI window settings
 
@@ -251,13 +251,14 @@ gui_set_time_units 1ns
 # Global: Signal Groups
 gui_load_child_values {tb_intgr_fshifter_decode.uut.STAGE_DECODE}
 gui_load_child_values {tb_intgr_fshifter_decode.uut.FETCH_BUFF}
+gui_load_child_values {tb_intgr_fshifter_decode}
 
 
-set _session_group_1 Group1
-gui_sg_create "$_session_group_1"
-set Group1 "$_session_group_1"
+set _session_group_2 Group1
+gui_sg_create "$_session_group_2"
+set Group1 "$_session_group_2"
 
-gui_sg_addsignal -group "$_session_group_1" { tb_intgr_fshifter_decode.from_f_cache_line tb_intgr_fshifter_decode.from_f_icache_valid tb_intgr_fshifter_decode.to_rr_exception_flags tb_intgr_fshifter_decode.to_rr_prefixes tb_intgr_fshifter_decode.to_rr_opcode tb_intgr_fshifter_decode.to_rr_modrm tb_intgr_fshifter_decode.to_rr_sib tb_intgr_fshifter_decode.to_rr_disp_size_mux tb_intgr_fshifter_decode.to_rr_disp tb_intgr_fshifter_decode.to_rr_imm_size tb_intgr_fshifter_decode.to_rr_imm tb_intgr_fshifter_decode.to_rr_addressing_mode tb_intgr_fshifter_decode.to_rr_instr_length tb_intgr_fshifter_decode.uut.STAGE_DECODE.tail_ptr tb_intgr_fshifter_decode.uut.STAGE_DECODE.pr_de_rr_valid tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we tb_intgr_fshifter_decode.uut.FETCH_BUFF.tail_ptr tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_pf_expn_bytes_out tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_cache_line_load_signal tb_intgr_fshifter_decode.uut.FETCH_BUFF.wr_en tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_signal tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_reg_we tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_reg_en tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk tb_intgr_fshifter_decode.uut.FETCH_BUFF.rst_bar }
+gui_sg_addsignal -group "$_session_group_2" { tb_intgr_fshifter_decode.from_f_cache_line tb_intgr_fshifter_decode.from_f_icache_valid tb_intgr_fshifter_decode.to_rr_exception_flags tb_intgr_fshifter_decode.to_rr_prefixes tb_intgr_fshifter_decode.to_rr_opcode tb_intgr_fshifter_decode.to_rr_modrm tb_intgr_fshifter_decode.to_rr_sib tb_intgr_fshifter_decode.to_rr_disp_size_mux tb_intgr_fshifter_decode.to_rr_disp tb_intgr_fshifter_decode.to_rr_imm_size tb_intgr_fshifter_decode.to_rr_imm tb_intgr_fshifter_decode.to_rr_addressing_mode tb_intgr_fshifter_decode.to_rr_instr_length tb_intgr_fshifter_decode.uut.STAGE_DECODE.tail_ptr tb_intgr_fshifter_decode.uut.STAGE_DECODE.pr_de_rr_valid tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_instr_len tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_f_cache_line tb_intgr_fshifter_decode.uut.FETCH_BUFF.shft_reg_we tb_intgr_fshifter_decode.uut.FETCH_BUFF.tail_ptr tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_pf_expn_bytes_out tb_intgr_fshifter_decode.uut.FETCH_BUFF.from_de_cache_line_load_signal tb_intgr_fshifter_decode.uut.FETCH_BUFF.wr_en tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_signal tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_reg_we tb_intgr_fshifter_decode.uut.FETCH_BUFF.shift_reg_en tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk tb_intgr_fshifter_decode.uut.FETCH_BUFF.rst_bar }
 
 # Global: Highlighting
 
@@ -327,7 +328,7 @@ gui_list_create_group_when_add -wave -disable
 gui_marker_set_ref -id ${Wave.1}  C1
 gui_wv_zoom_timerange -id ${Wave.1} 0 86.272
 gui_list_add_group -id ${Wave.1} -after {New Group} {Group1}
-gui_list_select -id ${Wave.1} {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes }
+gui_list_select -id ${Wave.1} {tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk }
 gui_seek_criteria -id ${Wave.1} {Any Edge}
 
 
@@ -346,7 +347,7 @@ gui_list_set_filter -id ${Wave.1} -text {*}
 gui_list_set_insertion_bar  -id ${Wave.1} -group Group1  -position in
 
 gui_marker_move -id ${Wave.1} {C1} 45
-gui_view_scroll -id ${Wave.1} -vertical -set 94
+gui_view_scroll -id ${Wave.1} -vertical -set 95
 gui_show_grid -id ${Wave.1} -enable false
 # Restore toplevel window zorder
 # The toplevel window could be closed if it has no view/pane
