@@ -1,8 +1,8 @@
 module  mux8_tb;
 
 initial begin
-  $vcdplusfile("mux8_tb.dump.vpd");
-  $vcdpluson(0, mux8_tb); 
+  // $vcdplusfile("mux8_tb.dump.vpd");
+  // $vcdpluson(0, mux8_tb); 
 end
 
 localparam IN_WIDTH = 8 + 3;

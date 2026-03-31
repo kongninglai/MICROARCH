@@ -1,9 +1,9 @@
 module  kb_tb;
 
 initial begin
-  $vcdplusfile("kb_tb.dump.vpd");
-  $vcdpluson(0, kb_tb); 
-  $vcdpluson(0, kb_tb.DUT); 
+  // $vcdplusfile("kb_tb.dump.vpd");
+  // $vcdpluson(0, kb_tb); 
+  // $vcdpluson(0, kb_tb.DUT); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;

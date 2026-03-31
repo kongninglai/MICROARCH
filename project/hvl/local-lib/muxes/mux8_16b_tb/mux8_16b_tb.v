@@ -1,8 +1,8 @@
 module mux8_16b_tb;
 
 initial begin
-  $vcdplusfile("mux8_16b_tb.dump.vpd");
-  $vcdpluson(0, mux8_16b_tb);
+  // $vcdplusfile("mux8_16b_tb.dump.vpd");
+  // $vcdpluson(0, mux8_16b_tb);
 end
 
 localparam WIDTH = 16;

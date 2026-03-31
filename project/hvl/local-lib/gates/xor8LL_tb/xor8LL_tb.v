@@ -1,8 +1,8 @@
 module  xor8LL_tb;
 
 initial begin
-  $vcdplusfile("xor8LL_tb.dump.vpd");
-  $vcdpluson(0, xor8LL_tb); 
+  // $vcdplusfile("xor8LL_tb.dump.vpd");
+  // $vcdpluson(0, xor8LL_tb); 
 end
 
 reg   [7:0] in;

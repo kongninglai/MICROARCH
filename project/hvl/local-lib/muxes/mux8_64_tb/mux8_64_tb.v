@@ -1,8 +1,8 @@
 module  mux8_32_tb;
 
 initial begin
-  $vcdplusfile("mux8_32_tb.dump.vpd");
-  $vcdpluson(0, mux8_32_tb); 
+  // $vcdplusfile("mux8_32_tb.dump.vpd");
+  // $vcdpluson(0, mux8_32_tb); 
 end
 
 

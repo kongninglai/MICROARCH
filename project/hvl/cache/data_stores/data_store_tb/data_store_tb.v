@@ -1,8 +1,8 @@
 module data_store_tb;
 
 initial begin
-  $vcdplusfile("data_store_tb.dump.vpd");
-  $vcdpluson(0, data_store_tb);
+  // $vcdplusfile("data_store_tb.dump.vpd");
+  // $vcdpluson(0, data_store_tb);
 end
 
 localparam RANK_BIT_WIDTH     = 128;

@@ -1,12 +1,12 @@
 module full_cache_tb;
 
 initial begin
-  $vcdplusfile("full_cache_tb.dump.vpd");
-  $vcdpluson(0, full_cache_tb);
-  $vcdpluson(0, full_cache_tb.DUT);
-  $vcdpluson(0, full_cache_tb.DUT.icache_tag_store.tag_store_generation[0].ram8b8w$_tag_store_one_way.mem);
-  $vcdpluson(0, full_cache_tb.DUT.icache_tag_store.tag_store_generation[3].ram8b8w$_tag_store_one_way.mem);
-  $vcdpluson(0, full_cache_tb.DUT.dcache_data_store.data_store_generation[0].data_position_generation[0].ram8b8w$_data_store_one_bus.mem);
+  // $vcdplusfile("full_cache_tb.dump.vpd");
+  // $vcdpluson(0, full_cache_tb);
+  // $vcdpluson(0, full_cache_tb.DUT);
+  // $vcdpluson(0, full_cache_tb.DUT.icache_tag_store.tag_store_generation[0].ram8b8w$_tag_store_one_way.mem);
+  // $vcdpluson(0, full_cache_tb.DUT.icache_tag_store.tag_store_generation[3].ram8b8w$_tag_store_one_way.mem);
+  // $vcdpluson(0, full_cache_tb.DUT.dcache_data_store.data_store_generation[0].data_position_generation[0].ram8b8w$_data_store_one_bus.mem);
 end
 
 localparam MEM_BYTE_CAPACITY   = 32768;

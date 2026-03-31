@@ -1,8 +1,8 @@
 module rr_to_ag_tb;
 
     initial begin
-        $vcdplusfile("rr_to_ag_tb.dump.vpd");
-        $vcdpluson(0, rr_to_ag_tb); 
+        // $vcdplusfile("rr_to_ag_tb.dump.vpd");
+        // $vcdpluson(0, rr_to_ag_tb); 
     end
 
     integer i;

@@ -1,8 +1,8 @@
 module  big_increment_tb;
 
 initial begin
-  $vcdplusfile("big_increment_tb.dump.vpd");
-  $vcdpluson(0, big_increment_tb); 
+  // $vcdplusfile("big_increment_tb.dump.vpd");
+  // $vcdpluson(0, big_increment_tb); 
 end
 
 localparam WIDTH = 3;

@@ -1,8 +1,8 @@
 module  big_decrement_tb;
 
 initial begin
-  $vcdplusfile("big_decrement_tb.dump.vpd");
-  $vcdpluson(0, big_decrement_tb); 
+  // $vcdplusfile("big_decrement_tb.dump.vpd");
+  // $vcdpluson(0, big_decrement_tb); 
 end
 
 localparam WIDTH = 32;

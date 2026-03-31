@@ -1,8 +1,8 @@
 module  seg_limit_tb;
 
 initial begin
-  $vcdplusfile("seg_limit_tb.dump.vpd");
-  $vcdpluson(0, seg_limit_tb); 
+  // $vcdplusfile("seg_limit_tb.dump.vpd");
+  // $vcdpluson(0, seg_limit_tb); 
 end
 
 localparam WIDTH = 32;

@@ -1,7 +1,7 @@
 module regfile_3r2w_tb;
 initial begin
-  $vcdplusfile("regfile_3r2w_tb.dump.vpd");
-  $vcdpluson(0, regfile_3r2w_tb); 
+  // $vcdplusfile("regfile_3r2w_tb.dump.vpd");
+  // $vcdpluson(0, regfile_3r2w_tb); 
 end
 
   integer FAILURES  = 0;

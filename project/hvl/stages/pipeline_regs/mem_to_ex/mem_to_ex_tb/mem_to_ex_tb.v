@@ -1,8 +1,8 @@
 module mem_to_ex_tb;
 
 initial begin
-  $vcdplusfile("mem_to_ex_tb.dump.vpd");
-  $vcdpluson(0, mem_to_ex_tb); 
+  // $vcdplusfile("mem_to_ex_tb.dump.vpd");
+  // $vcdpluson(0, mem_to_ex_tb); 
 end
 
 localparam WIDTH = 684;

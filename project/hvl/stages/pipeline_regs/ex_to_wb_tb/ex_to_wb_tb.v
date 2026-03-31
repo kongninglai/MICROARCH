@@ -1,8 +1,8 @@
 module ex_to_wb_tb;
 
 initial begin
-  $vcdplusfile("ex_to_wb_tb.dump.vpd");
-  $vcdpluson(0, ex_to_wb_tb); 
+  // $vcdplusfile("ex_to_wb_tb.dump.vpd");
+  // $vcdpluson(0, ex_to_wb_tb); 
 end
 
 localparam WIDTH = 339;

@@ -1,8 +1,8 @@
 module  decoder4_16_tb;
 
 initial begin
-  $vcdplusfile("decoder4_16_tb.dump.vpd");
-  $vcdpluson(0, decoder4_16_tb); 
+  // $vcdplusfile("decoder4_16_tb.dump.vpd");
+  // $vcdpluson(0, decoder4_16_tb); 
 end
 
 localparam INP_WIDTH = 4;

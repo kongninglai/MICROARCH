@@ -1,8 +1,8 @@
 module  cmp_gen_20b_tb;
 
 initial begin
-  $vcdplusfile("cmp_gen_20b_tb.dump.vpd");
-  $vcdpluson(0, cmp_gen_20b_tb); 
+  // $vcdplusfile("cmp_gen_20b_tb.dump.vpd");
+  // $vcdpluson(0, cmp_gen_20b_tb); 
 end
 
 localparam WIDTH = 20;

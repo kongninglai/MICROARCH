@@ -3,8 +3,8 @@
 module ex_cmp_tb;
 
 initial begin
-  $vcdplusfile("ex_cmp_tb.dump.vpd");
-  $vcdpluson(0, ex_cmp_tb); 
+  // $vcdplusfile("ex_cmp_tb.dump.vpd");
+  // $vcdpluson(0, ex_cmp_tb); 
 end
 
     reg  [1:0]  ds;

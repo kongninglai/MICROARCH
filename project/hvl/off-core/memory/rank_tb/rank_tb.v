@@ -1,13 +1,13 @@
 module  rank_tb;
 
 initial begin
-  $vcdplusfile("rank_tb.dump.vpd");
-  $vcdpluson(0, rank_tb); 
-  $vcdpluson(0, rank_tb.REF.rank_mem); 
-  $vcdpluson(0, rank_tb.DUT.chip_generation[0].sram128x8$_inst.mem); 
-  $vcdpluson(0, rank_tb.DUT.chip_generation[1].sram128x8$_inst.mem); 
-  $vcdpluson(0, rank_tb.DUT.chip_generation[2].sram128x8$_inst.mem); 
-  $vcdpluson(0, rank_tb.DUT.chip_generation[3].sram128x8$_inst.mem); 
+  // $vcdplusfile("rank_tb.dump.vpd");
+  // $vcdpluson(0, rank_tb); 
+  // $vcdpluson(0, rank_tb.REF.rank_mem); 
+  // $vcdpluson(0, rank_tb.DUT.chip_generation[0].sram128x8$_inst.mem); 
+  // $vcdpluson(0, rank_tb.DUT.chip_generation[1].sram128x8$_inst.mem); 
+  // $vcdpluson(0, rank_tb.DUT.chip_generation[2].sram128x8$_inst.mem); 
+  // $vcdpluson(0, rank_tb.DUT.chip_generation[3].sram128x8$_inst.mem); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;

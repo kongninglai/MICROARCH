@@ -33,7 +33,7 @@ run_one_sim() {
 
     find . -mindepth 1 -delete
 
-    if ! vcs -full64 -v2005 -debug_all -f ../master* > build.log 2>&1; then
+    if ! vcs -full64 -v2005 -f ../master* > build.log 2>&1; then
       printf "%-30s COMPILE_ERROR\n" "$tb_name" > "$out"
       echo "Compile failed in $tb_name"
       exit 0

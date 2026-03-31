@@ -1,8 +1,8 @@
 module  ze_tb;
 
 initial begin
-  $vcdplusfile("ze_tb.dump.vpd");
-  $vcdpluson(0, ze_tb); 
+  // $vcdplusfile("ze_tb.dump.vpd");
+  // $vcdpluson(0, ze_tb); 
 end
 
 localparam INP_WIDTH = 16;

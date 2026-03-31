@@ -1,8 +1,8 @@
 module  gen_prop_2_tb;
 
 initial begin
-  $vcdplusfile("gen_prop_2_tb.dump.vpd");
-  $vcdpluson(0, gen_prop_2_tb); 
+  // $vcdplusfile("gen_prop_2_tb.dump.vpd");
+  // $vcdpluson(0, gen_prop_2_tb); 
 end
 
 localparam INP_WIDTH = 4;

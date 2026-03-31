@@ -1,8 +1,8 @@
 module  ucode_rom_tb;
 
 initial begin
-  $vcdplusfile("ucode_rom_tb.dump.vpd");
-  $vcdpluson(0, ucode_rom_tb); 
+  // $vcdplusfile("ucode_rom_tb.dump.vpd");
+  // $vcdpluson(0, ucode_rom_tb); 
 end
 integer FAILURES  = 0;
 integer SUCCESSES = 0;

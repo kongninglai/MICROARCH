@@ -1,8 +1,8 @@
 module  big_neq_tb;
 
 initial begin
-  $vcdplusfile("big_neq_tb.dump.vpd");
-  $vcdpluson(0, big_neq_tb); 
+  // $vcdplusfile("big_neq_tb.dump.vpd");
+  // $vcdpluson(0, big_neq_tb); 
 end
 
 localparam WIDTH = 32;

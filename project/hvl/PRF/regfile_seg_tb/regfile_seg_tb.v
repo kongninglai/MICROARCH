@@ -1,7 +1,7 @@
 module regfile_seg_tb;
     initial begin
-        $vcdplusfile("regfile_seg_tb.dump.vpd");
-        $vcdpluson(0, regfile_seg_tb); 
+        // $vcdplusfile("regfile_seg_tb.dump.vpd");
+        // $vcdpluson(0, regfile_seg_tb); 
     end
 
     integer FAILURES  = 0;

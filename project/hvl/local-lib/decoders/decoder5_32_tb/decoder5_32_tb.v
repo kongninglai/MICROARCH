@@ -1,8 +1,8 @@
 module  decoder5_32_tb;
 
 initial begin
-  $vcdplusfile("decoder5_32_tb.dump.vpd");
-  $vcdpluson(0, decoder5_32_tb); 
+  // $vcdplusfile("decoder5_32_tb.dump.vpd");
+  // $vcdpluson(0, decoder5_32_tb); 
 end
 
 localparam INP_WIDTH = 5;

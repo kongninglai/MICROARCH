@@ -1,8 +1,8 @@
 module  FA_16b_tb;
 
 initial begin
-  $vcdplusfile("FA_16b_tb.dump.vpd");
-  $vcdpluson(0, FA_16b_tb); 
+  // $vcdplusfile("FA_16b_tb.dump.vpd");
+  // $vcdpluson(0, FA_16b_tb); 
 end
 
 localparam WIDTH = 16;

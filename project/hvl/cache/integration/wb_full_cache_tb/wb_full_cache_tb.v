@@ -1,10 +1,10 @@
 module wb_full_cache_tb;
 
 initial begin
-  $vcdplusfile("wb_full_cache_tb.dump.vpd");
-  $vcdpluson(0, wb_full_cache_tb);
-  $vcdpluson(0, wb_full_cache_tb.DUT);
-  $vcdpluson(0, wb_full_cache_tb.DUT.store_queue_full_cache_inst.full_cache_inst.dcache_data_store.data_store_generation[0].data_position_generation[0].ram8b8w$_data_store_one_bus.mem);
+  // $vcdplusfile("wb_full_cache_tb.dump.vpd");
+  // $vcdpluson(0, wb_full_cache_tb);
+  // $vcdpluson(0, wb_full_cache_tb.DUT);
+  // $vcdpluson(0, wb_full_cache_tb.DUT.store_queue_full_cache_inst.full_cache_inst.dcache_data_store.data_store_generation[0].data_position_generation[0].ram8b8w$_data_store_one_bus.mem);
 end
 
 localparam MEM_BYTE_CAPACITY    = 32768;

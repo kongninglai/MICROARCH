@@ -1,8 +1,8 @@
 module  FA_8b_tb;
 
 initial begin
-  $vcdplusfile("FA_8b_tb.dump.vpd");
-  $vcdpluson(0, FA_8b_tb); 
+  // $vcdplusfile("FA_8b_tb.dump.vpd");
+  // $vcdpluson(0, FA_8b_tb); 
 end
 
 localparam WIDTH = 8;

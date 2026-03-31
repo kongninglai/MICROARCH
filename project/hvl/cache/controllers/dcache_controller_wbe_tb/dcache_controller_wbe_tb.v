@@ -1,9 +1,9 @@
 module dcache_controller_wbe_tb;
 
 initial begin
-    $vcdplusfile("dcache_controller_wbe_tb.dump.vpd");
-    $vcdpluson(0, dcache_controller_wbe_tb);
-    $vcdpluson(0, dcache_controller_wbe_tb.DUT);
+    // $vcdplusfile("dcache_controller_wbe_tb.dump.vpd");
+    // $vcdpluson(0, dcache_controller_wbe_tb);
+    // $vcdpluson(0, dcache_controller_wbe_tb.DUT);
 end
 
 localparam RANK_BIT_WIDTH               = 128;

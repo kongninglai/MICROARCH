@@ -3,8 +3,8 @@
 module ex_alu_tb;
 
 initial begin
-  $vcdplusfile("ex_alu_tb.dump.vpd");
-  $vcdpluson(0, ex_alu_tb); 
+  // $vcdplusfile("ex_alu_tb.dump.vpd");
+  // $vcdpluson(0, ex_alu_tb); 
 end
     reg  [2:0]  alu_op;
     reg  [1:0]  ds;

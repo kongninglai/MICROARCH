@@ -1,8 +1,8 @@
 module io_addr_logic_block_tb;
 
 initial begin
-  $vcdplusfile("io_addr_logic_block_tb.dump.vpd");
-  $vcdpluson(0, io_addr_logic_block_tb);
+  // $vcdplusfile("io_addr_logic_block_tb.dump.vpd");
+  // $vcdpluson(0, io_addr_logic_block_tb);
 end
 
 reg  [8:0] in_long;

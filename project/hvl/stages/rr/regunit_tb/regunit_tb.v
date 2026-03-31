@@ -1,7 +1,7 @@
 module regunit_tb;
     initial begin
-        $vcdplusfile("regunit_tb.dump.vpd");
-        $vcdpluson(0, regunit_tb); 
+        // $vcdplusfile("regunit_tb.dump.vpd");
+        // $vcdpluson(0, regunit_tb); 
     end
 
     integer FAILURES  = 0;

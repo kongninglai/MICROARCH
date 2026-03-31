@@ -1,8 +1,8 @@
 module  lshf_var_32b_tb;
 
 initial begin
-  $vcdplusfile("lshf_var_32b_tb.dump.vpd");
-  $vcdpluson(0, lshf_var_32b_tb); 
+  // $vcdplusfile("lshf_var_32b_tb.dump.vpd");
+  // $vcdpluson(0, lshf_var_32b_tb); 
 end
 
 localparam WIDTH = 32;

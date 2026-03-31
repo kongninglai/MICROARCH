@@ -1,8 +1,8 @@
 module backend_top_tb;
 
     initial begin
-        $vcdplusfile("backend_top_tb.dump.vpd");
-        $vcdpluson(0, backend_top_tb); 
+        // $vcdplusfile("backend_top_tb.dump.vpd");
+        // $vcdpluson(0, backend_top_tb); 
     end
 
     integer i;

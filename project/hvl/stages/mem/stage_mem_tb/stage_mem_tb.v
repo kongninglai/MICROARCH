@@ -1,9 +1,9 @@
 module stage_mem_tb;
 
 initial begin
-  $vcdplusfile("stage_mem_tb.dump.vpd");
-  $vcdpluson(0, stage_mem_tb);
-  $vcdpluson(0, stage_mem_tb.DUT);
+  // $vcdplusfile("stage_mem_tb.dump.vpd");
+  // $vcdpluson(0, stage_mem_tb);
+  // $vcdpluson(0, stage_mem_tb.DUT);
 end
 
 localparam MEM_BYTE_CAPACITY    = 32768;
@@ -111,7 +111,7 @@ wire [BUS_BIT_WIDTH-1:0] DATA_BUS;
 wire [CHIPS_PER_RANK-1:0] WR_mask;
 
 wire from_mem_valid_store_inst;
-wire [55:0] from_mem_control_sigs;
+wire [54:0] from_mem_control_sigs;
 wire [2:0] from_mem_dstidA;
 wire [2:0] from_mem_dstidB;
 wire [31:0] from_mem_srcregA;
@@ -131,9 +131,6 @@ wire [CHIPS_PER_RANK-1:0] from_mem_store_mask_line_1;
 wire from_mem_store_queue_alloc_line_0;
 wire from_mem_store_queue_alloc_line_1;
 wire [TWO_LINES_SHF_AMT_BIT_WIDTH-1:0] from_mem_store_data_shf_amt;
-
-wire EX_FLUSH;
-wire WB_FLUSH;
 
 reg [31:0] from_rr_code_segment_limit;
 reg from_ex_flush;
@@ -200,9 +197,6 @@ stage_mem DUT (
 
   .MEM_PAGE_OFFSET(MEM_PAGE_OFFSET),
   .MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST),
-
-  .EX_FLUSH(EX_FLUSH),
-  .WB_FLUSH(WB_FLUSH),
 
   .from_mem_stall(from_mem_stall),
   .from_mem_valid_store_inst(from_mem_valid_store_inst),
@@ -290,8 +284,8 @@ full_cache #(
   .TEST_CASE_NEW_READY(1'b0),
   .TEST_CASE_NEW_READY_WR(1'b0),
 
-  .WB_FLUSH(WB_FLUSH),
-  .EX_FLUSH(EX_FLUSH)
+  .WB_FLUSH(from_wb_flush),
+  .EX_FLUSH(from_ex_flush)
 );
 
 tlb_wrapper tlb_inst (

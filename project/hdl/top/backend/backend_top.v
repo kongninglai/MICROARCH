@@ -1,4 +1,7 @@
-module backend_top(
+module backend_top #(
+  parameter CYCLE_TIME_X10=98,
+  parameter TRUE_LRU=1
+) (
     input clk,
     input rst_n,
 
@@ -25,10 +28,54 @@ module backend_top(
     output from_ex_br_valid,
     output [31:0] from_ex_eip_target,
 
-    output from_wb_flush
+    output from_wb_flush,
 
-    /*** TO FULL CACHE ***/
-    // TODO: FIX ME
+    /*** TO/FROM TLB AND FULL CACHE ***/
+    /* D$ Control */
+    input           DCACHE_STALL,
+    input   [127:0] DCACHE_HIT_DATA,
+    input           DCACHE_HIT,
+    input           WBE_BUSY,
+
+    /* DMA Interrupt */
+    input           DMA_INT,
+
+    /* Outputs to D$ to help with lookup */
+    output  [11:0]  MEM_PAGE_OFFSET,
+    output          MEM_VALID_LOAD_INST,
+
+    /* Outputs for I/O stores which bypass cache */
+    output  [14:4]  WB_PR_ST_ADDR_L0,
+    output  [15:0]  WB_PR_ST_MASK_L0,
+    output  [127:0] WB_SHF_ST_DATA_L0,
+    output          WB_VALID_IO_STORE_INST,
+
+    /* Outputs to D$ to help with stores */
+    output          STOREQ_STORING,
+    output          STOREQ_LAST_ENTRY,
+    output  [127:0] STOREQ_DATA,
+    output  [15:0]  STOREQ_DATA_WR_MASK,
+    output  [14:4]  STOREQ_PHYS_ADDR,
+
+    /* I/Os to TLB for load address translations */
+    output  [19:0]  D_RD_TLB_VPN,
+    input   [2:0]   D_RD_TLB_PFN_OUT,
+    input           D_RD_TLB_CACHE_ENABLE_OUT,
+    input           D_RD_TLB_PAGE_FAULT_OUT,
+
+    /*  I/Os to TLB for store address translations
+        stores can cross cache lines */
+    output  [19:0]  D_WR0_TLB_VPN,
+    input   [2:0]   D_WR0_TLB_PFN_OUT,
+    input           D_WR0_TLB_WRITE_DISABLE_OUT,
+    input           D_WR0_TLB_CACHE_ENABLE_OUT,
+    input           D_WR0_TLB_PAGE_FAULT_OUT,
+
+    output  [19:0]  D_WR1_TLB_VPN,
+    input   [2:0]   D_WR1_TLB_PFN_OUT,
+    input           D_WR1_TLB_WRITE_DISABLE_OUT,
+    input           D_WR1_TLB_CACHE_ENABLE_OUT,
+    input           D_WR1_TLB_PAGE_FAULT_OUT
 ); 
     /*** RR OUTPUT ***/
     wire [7:0]      to_regunit_opcode;
@@ -164,6 +211,7 @@ module backend_top(
     wire [1:0]      from_ag_exception;
     wire            from_ag_valid;
     wire            from_ag_stall;
+    wire            from_ag_we_pipe_reg;
 
     /*** AG TO MEM  ***/
     wire [56:0]     to_mem_control_sigs;
@@ -201,8 +249,7 @@ module backend_top(
     
 
     /*** MEM OUTPUTS ***/
-    // TODO: FIX ME
-    wire [54:0]     from_mem_control_sigs;
+    wire [55:0]     from_mem_control_sigs;
     wire [2:0]      from_mem_dstidA;
     wire [2:0]      from_mem_dstidB;
     wire [31:0]     from_mem_srcregA;
@@ -607,13 +654,14 @@ module backend_top(
         .from_ag_exception(from_ag_exception),
         .from_ag_valid(from_ag_valid),
 
-        .from_ag_stall(from_ag_stall)
+        .from_ag_stall(from_ag_stall),
+        .from_ag_we_pipe_reg(from_ag_we_pipe_reg)
     );
 
     ag_to_mem inst_ag_to_mem (
         .clk(clk),
         .rst_n(rst_n),
-        .we(1'b1),
+        .we(from_ag_we_pipe_reg),
         .from_ag_control_sigs(from_ag_control_sigs),
         .from_ag_dstidA(from_ag_dstidA),
         .from_ag_dstidB(from_ag_dstidB),
@@ -668,67 +716,95 @@ module backend_top(
         .to_mem_valid(to_mem_valid)
     );
 
-    // TODO: FIX ME
-    dummy_mem inst_dummy_mem(
-        .clk(clk),
-        .rst_n(rst_n),
-        .we(1'b1),
-        .to_mem_control_sigs(to_mem_control_sigs),
-        .to_mem_dstidA(to_mem_dstidA),
-        .to_mem_dstidB(to_mem_dstidB),
-        .to_mem_srcregA(to_mem_srcregA),
-        .to_mem_srcregB(to_mem_srcregB),
-        .to_mem_srcregC(to_mem_srcregC),
-        .to_mem_srcSREG(to_mem_srcSREG),
-        .to_mem_MMA(to_mem_MMA),
-        .to_mem_MMB(to_mem_MMB),
-        .to_mem_target_cs(to_mem_target_cs),
-        .to_mem_ld_addr(to_mem_ld_addr),
-        .to_mem_ld_offset(to_mem_ld_offset),
-        .to_mem_ld_slim(to_mem_ld_slim),
-        .to_mem_st_addr(to_mem_st_addr),
-        .to_mem_st_offset(to_mem_st_offset),
-        .to_mem_st_slim(to_mem_st_slim),
-        .to_mem_inc_esp(to_mem_inc_esp),
-        .to_mem_dec_esp(to_mem_dec_esp),
-        .to_mem_imm(to_mem_imm),
-        .to_mem_rel_eip(to_mem_rel_eip),
-        .to_mem_cs(to_mem_cs),
-        .to_mem_oeip(to_mem_oeip),
-        .to_mem_ieip(to_mem_ieip),
-        .to_mem_pred_eip(to_mem_pred_eip),
-        .to_mem_exception(to_mem_exception),
-        .to_mem_valid(to_mem_valid),
-        .from_mem_control_sigs(from_mem_control_sigs),
-        .from_mem_dstidA(from_mem_dstidA),
-        .from_mem_dstidB(from_mem_dstidB),
-        .from_mem_srcregA(from_mem_srcregA),
-        .from_mem_srcregB(from_mem_srcregB),
-        .from_mem_srcregC(from_mem_srcregC),
-        .from_mem_srcSREG(from_mem_srcSREG),
-        .from_mem_MMA(from_mem_MMA),
-        .from_mem_MMB(from_mem_MMB),
-        .from_mem_target_cs(from_mem_target_cs),
-        .from_mem_load_result(from_mem_load_result),
-        .from_mem_inc_esp(from_mem_inc_esp),
-        .from_mem_dec_esp(from_mem_dec_esp),
-        .from_mem_imm(from_mem_imm),
-        .from_mem_store_is_io_line_0(from_mem_store_is_io_line_0),
-        .from_mem_store_addr_line_0(from_mem_store_addr_line_0),
-        .from_mem_store_mask_line_0(from_mem_store_mask_line_0),
-        .from_mem_store_queue_alloc_line_0(from_mem_store_queue_alloc_line_0),
-        .from_mem_store_addr_line_1(from_mem_store_addr_line_1),
-        .from_mem_store_mask_line_1(from_mem_store_mask_line_1),
-        .from_mem_store_queue_alloc_line_1(from_mem_store_queue_alloc_line_1),
-        .from_mem_store_data_shf_amt(from_mem_store_data_shf_amt),
-        .from_mem_rel_eip(from_mem_rel_eip),
-        .from_mem_cs(from_mem_cs),
-        .from_mem_oeip(from_mem_oeip),
-        .from_mem_ieip(from_mem_ieip),
-        .from_mem_pred_eip(from_mem_pred_eip),
-        .from_mem_exception(from_mem_exception),
-        .from_mem_valid(from_mem_valid),
-        .from_mem_stall(from_mem_stall)
+    stage_mem DUT (
+      .clk(clk),
+      .rst_n(rst_n),
+
+      .to_mem_control_sigs(to_mem_control_sigs),
+      .to_mem_dstidA(to_mem_dstidA),
+      .to_mem_dstidB(to_mem_dstidB),
+      .to_mem_srcregA(to_mem_srcregA),
+      .to_mem_srcregB(to_mem_srcregB),
+      .to_mem_srcregC(to_mem_srcregC),
+      .to_mem_srcSREG(to_mem_srcSREG),
+      .to_mem_MMA(to_mem_MMA),
+      .to_mem_MMB(to_mem_MMB),
+      .to_mem_target_cs(to_mem_target_cs),
+      .to_mem_ld_addr(to_mem_ld_addr),
+      .to_mem_ld_offset(to_mem_ld_offset),
+      .to_mem_ld_slim(to_mem_ld_slim),
+      .to_mem_st_addr(to_mem_st_addr),
+      .to_mem_st_offset(to_mem_st_offset),
+      .to_mem_st_slim(to_mem_st_slim),
+      .to_mem_inc_esp(to_mem_inc_esp),
+      .to_mem_dec_esp(to_mem_dec_esp),
+      .to_mem_imm(to_mem_imm),
+      .to_mem_rel_eip(to_mem_rel_eip),
+      .to_mem_cs(to_mem_cs),
+      .to_mem_oeip(to_mem_oeip),
+      .to_mem_ieip(to_mem_ieip),
+      .to_mem_pred_eip(to_mem_pred_eip),
+      .to_mem_exception(to_mem_exception),
+      .to_mem_valid(to_mem_valid),
+
+      .from_mem_control_sigs(from_mem_control_sigs),
+      .from_mem_dstidA(from_mem_dstidA),
+      .from_mem_dstidB(from_mem_dstidB),
+      .from_mem_srcregA(from_mem_srcregA),
+      .from_mem_srcregB(from_mem_srcregB),
+      .from_mem_srcregC(from_mem_srcregC),
+      .from_mem_srcSREG(from_mem_srcSREG),
+      .from_mem_MMA(from_mem_MMA),
+      .from_mem_MMB(from_mem_MMB),
+      .from_mem_target_cs(from_mem_target_cs),
+      .from_mem_load_result(from_mem_load_result),
+      .from_mem_store_is_io_line_0(from_mem_store_is_io_line_0),
+      .from_mem_store_addr_line_0(from_mem_store_addr_line_0),
+      .from_mem_store_mask_line_0(from_mem_store_mask_line_0),
+      .from_mem_store_queue_alloc_line_0(from_mem_store_queue_alloc_line_0),
+      .from_mem_store_addr_line_1(from_mem_store_addr_line_1),
+      .from_mem_store_mask_line_1(from_mem_store_mask_line_1),
+      .from_mem_store_queue_alloc_line_1(from_mem_store_queue_alloc_line_1),
+      .from_mem_store_data_shf_amt(from_mem_store_data_shf_amt),
+      .from_mem_inc_esp(from_mem_inc_esp),
+      .from_mem_dec_esp(from_mem_dec_esp),
+      .from_mem_imm(from_mem_imm),
+      .from_mem_rel_eip(from_mem_rel_eip),
+      .from_mem_cs(from_mem_cs),
+      .from_mem_oeip(from_mem_oeip),
+      .from_mem_ieip(from_mem_ieip),
+      .from_mem_pred_eip(from_mem_pred_eip),
+      .from_mem_exception(from_mem_exception),
+      .from_mem_valid(from_mem_valid),
+      .from_mem_stall(from_mem_stall),
+      .from_mem_valid_store_inst(from_mem_valid_store_inst),
+
+      .DCACHE_STALL(DCACHE_STALL),
+      .DCACHE_HIT_DATA(DCACHE_HIT_DATA),
+
+      .from_rr_code_segment_limit(from_regunit_cs_limit),
+      .from_wb_flush(from_wb_flush),
+      .from_ex_flush(from_ex_flush),
+
+      .D_RD_TLB_VPN(D_RD_TLB_VPN),
+      .D_RD_TLB_PFN_OUT(D_RD_TLB_PFN_OUT),
+      .D_RD_TLB_CACHE_ENABLE_OUT(D_RD_TLB_CACHE_ENABLE_OUT),
+      .D_RD_TLB_PAGE_FAULT_OUT(D_RD_TLB_PAGE_FAULT_OUT),
+
+      .D_WR0_TLB_VPN(D_WR0_TLB_VPN),
+      .D_WR0_TLB_PFN_OUT(D_WR0_TLB_PFN_OUT),
+      .D_WR0_TLB_WRITE_DISABLE_OUT(D_WR0_TLB_WRITE_DISABLE_OUT),
+      .D_WR0_TLB_CACHE_ENABLE_OUT(D_WR0_TLB_CACHE_ENABLE_OUT),
+      .D_WR0_TLB_PAGE_FAULT_OUT(D_WR0_TLB_PAGE_FAULT_OUT),
+
+      .D_WR1_TLB_VPN(D_WR1_TLB_VPN),
+      .D_WR1_TLB_PFN_OUT(D_WR1_TLB_PFN_OUT),
+      .D_WR1_TLB_WRITE_DISABLE_OUT(D_WR1_TLB_WRITE_DISABLE_OUT),
+      .D_WR1_TLB_CACHE_ENABLE_OUT(D_WR1_TLB_CACHE_ENABLE_OUT),
+      .D_WR1_TLB_PAGE_FAULT_OUT(D_WR1_TLB_PAGE_FAULT_OUT),
+
+      .MEM_PAGE_OFFSET(MEM_PAGE_OFFSET),
+      .MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST)
     );
 
     mem_to_ex inst_mem_to_ex (
@@ -956,23 +1032,23 @@ module backend_top(
         .to_wb_exception(to_wb_exception),
         .to_wb_valid(to_wb_valid),
 
-        .WBE_BUSY(),
-        .DCACHE_HIT(),
-        .DCACHE_STALL(),
+        .WBE_BUSY(WBE_BUSY),
+        .DCACHE_HIT(DCACHE_HIT),
+        .DCACHE_STALL(DCACHE_STALL),
 
-        .STOREQ_STORING(),
-        .STOREQ_LAST_ENTRY(),
-        .STOREQ_DATA(),
-        .STOREQ_DATA_WR_MASK(),
-        .STOREQ_PHYS_ADDR(),
+        .STOREQ_STORING(STOREQ_STORING),
+        .STOREQ_LAST_ENTRY(STOREQ_LAST_ENTRY),
+        .STOREQ_DATA(STOREQ_DATA),
+        .STOREQ_DATA_WR_MASK(STOREQ_DATA_WR_MASK),
+        .STOREQ_PHYS_ADDR(STOREQ_PHYS_ADDR),
 
-        .WB_PR_ST_ADDR_L0(),
-        .WB_PR_ST_MASK_L0(),
-        .WB_SHF_ST_DATA_L0(),
-        .WB_VALID_IO_STORE_INST(),
+        .WB_PR_ST_ADDR_L0(WB_PR_ST_ADDR_L0),
+        .WB_PR_ST_MASK_L0(WB_PR_ST_MASK_L0),
+        .WB_SHF_ST_DATA_L0(WB_SHF_ST_DATA_L0),
+        .WB_VALID_IO_STORE_INST(WB_VALID_IO_STORE_INST),
 
-        .from_wb_stall_if_mem_en(),
-        .from_wb_valid_store_inst(),
+        .from_wb_stall_if_mem_en(from_wb_stall_if_mem_en),
+        .from_wb_valid_store_inst(from_wb_valid_store_inst),
         .from_wb_flush(from_wb_flush)
     );
 

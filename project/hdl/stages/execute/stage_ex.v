@@ -196,8 +196,8 @@ module stage_ex(
 
     // CMP
     wire [31:0] cmp_in0, cmp_in1;
-    mux2_32 mux2_cmp_in0(cmp_in0, regA_rm, to_ex_CMPS0, sig_cmps);
-    mux2_32 mux2_cmp_in1(cmp_in1, to_ex_srcregC, to_ex_CMPS1, sig_cmps);
+    mux2_32 mux2_cmp_in0(cmp_in0, to_ex_srcregC, to_ex_CMPS0, sig_cmps);
+    mux2_32 mux2_cmp_in1(cmp_in1, regA_rm, to_ex_CMPS1, sig_cmps);
 
     ex_cmp cmp (
         .ds(sig_ds),

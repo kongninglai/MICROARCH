@@ -1,8 +1,8 @@
 module  rshfa_const_tb;
 
 initial begin
-  $vcdplusfile("rshfa_const_tb.dump.vpd");
-  $vcdpluson(0, rshfa_const_tb); 
+  // $vcdplusfile("rshfa_const_tb.dump.vpd");
+  // $vcdpluson(0, rshfa_const_tb); 
 end
 
 localparam WIDTH = 32;

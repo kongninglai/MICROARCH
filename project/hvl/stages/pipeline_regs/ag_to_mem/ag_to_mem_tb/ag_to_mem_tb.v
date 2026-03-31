@@ -1,8 +1,8 @@
 module ag_to_mem_tb;
 
     initial begin
-        $vcdplusfile("ag_to_mem_tb.dump.vpd");
-        $vcdpluson(0, ag_to_mem_tb); 
+        // $vcdplusfile("ag_to_mem_tb.dump.vpd");
+        // $vcdpluson(0, ag_to_mem_tb); 
     end
 
     integer i;

@@ -1,8 +1,8 @@
 module  cmp_gt_32b_tb;
 
 initial begin
-  $vcdplusfile("cmp_gt_32b_tb.dump.vpd");
-  $vcdpluson(0, cmp_gt_32b_tb); 
+  // $vcdplusfile("cmp_gt_32b_tb.dump.vpd");
+  // $vcdpluson(0, cmp_gt_32b_tb); 
 end
 
 localparam WIDTH = 32;

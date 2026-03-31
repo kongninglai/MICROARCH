@@ -26,11 +26,11 @@ module stage_ag(
     input [1:0]     to_ag_exception,
     input           to_ag_valid,
 
-    input from_mem_stall,
-    input from_mem_valid_store_inst,
-    input from_ex_valid_store_inst,
-    input from_wb_stall_if_mem_en,
-    input from_wb_valid_store_inst,
+    input           from_mem_stall,
+    input           from_mem_valid_store_inst,
+    input           from_ex_valid_store_inst,
+    input           from_wb_stall_if_mem_en,
+    input           from_wb_valid_store_inst,
 
     output [56:0]    from_ag_control_sigs,
     output [2:0]     from_ag_dstidA,
@@ -61,7 +61,8 @@ module stage_ag(
     output [1:0]     from_ag_exception,
     output           from_ag_valid,
 
-    output           from_ag_stall
+    output           from_ag_stall,
+    output           from_ag_we_pipe_reg
 );
 
     wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size;
@@ -95,9 +96,20 @@ module stage_ag(
     assign from_ag_ieip = to_ag_ieip;
     assign from_ag_pred_eip = to_ag_pred_eip;
     assign from_ag_exception = to_ag_exception;
-    assign from_ag_valid = to_ag_valid;
+    /* NOTE: moved from_ag_valid logic below. -VR, 3/31/2026 */
 
-    big_or #(.WIDTH(5)) or_from_ag_stall(from_ag_stall, {from_mem_stall, from_mem_valid_store_inst, from_ex_valid_store_inst, from_wb_stall_if_mem_en, from_wb_valid_store_inst});
+    wire is_mem_inst, stall_if_mem_inst, mem_inst_needs_stall;
+    or2$    or2$_is_mem_inst(is_mem_inst, rw[1], rw[0]);
+    or4$    or4$_stall_if_mem_inst(stall_if_mem_inst, from_mem_valid_store_inst, from_ex_valid_store_inst, from_wb_stall_if_mem_en, from_wb_valid_store_inst);
+    and2$   and2$_mem_inst_needs_stall(mem_inst_needs_stall, is_mem_inst, stall_if_mem_inst);
+    or2$    or2$_from_ag_stall(from_ag_stall, from_mem_stall, mem_inst_needs_stall);
+
+    /* Insert bubbles if mem_inst_needs_stall and NOT from_mem_stall */
+    wire from_ag_valid_gate, from_mem_stall_bar;
+    inv1$   inv1$_from_mem_stall_bar(from_mem_stall_bar, from_mem_stall);
+    nand2$  nand2$_from_ag_valid_gate(from_ag_valid_gate, from_mem_stall_bar, mem_inst_needs_stall);
+    and2$   and2$_from_ag_valid(from_ag_valid, to_ag_valid, from_ag_valid_gate);
+
     // TODO: Add control signals into the ag_sig module
     ag_sig dut_sig (
         .ucode_sig(to_ag_control_sigs),

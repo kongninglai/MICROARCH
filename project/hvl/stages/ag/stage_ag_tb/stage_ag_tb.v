@@ -1,8 +1,8 @@
 module stage_ag_tb;
 
     initial begin
-        $vcdplusfile("stage_ag_tb.dump.vpd");
-        $vcdpluson(0, stage_ag_tb); 
+        // $vcdplusfile("stage_ag_tb.dump.vpd");
+        // $vcdpluson(0, stage_ag_tb); 
     end
 
     integer i;
@@ -27,6 +27,7 @@ module stage_ag_tb;
     reg to_rr_valid;
 
     wire from_ag_stall;
+    wire from_ag_we_pipe_reg;
 
     wire [7:0] to_regunit_opcode;
     wire [5:0] to_regunit_modrm;
@@ -509,7 +510,8 @@ module stage_ag_tb;
         .from_ag_exception(from_ag_exception),
         .from_ag_valid(from_ag_valid),
 
-        .from_ag_stall(from_ag_stall)
+        .from_ag_stall(from_ag_stall),
+        .from_ag_we_pipe_reg(from_ag_we_pipe_reg)
     );
 
 

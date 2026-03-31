@@ -1,8 +1,8 @@
 module stream_buffer_tb;
 
 initial begin
-  $vcdplusfile("stream_buffer_tb.dump.vpd");
-  $vcdpluson(0, stream_buffer_tb);
+  // $vcdplusfile("stream_buffer_tb.dump.vpd");
+  // $vcdpluson(0, stream_buffer_tb);
 end
 
 localparam RANK_BIT_WIDTH  = 128;

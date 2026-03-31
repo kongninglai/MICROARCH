@@ -122,15 +122,12 @@ module stage_mem #(
   output  [PAGE_BIT_WIDTH-1:0]                MEM_PAGE_OFFSET,
   output                                      MEM_VALID_LOAD_INST,
 
-  output                                      EX_FLUSH,
-  output                                      WB_FLUSH,
-
   /*** Outputs to other stages in the pipeline ***/
   output                                      from_mem_stall,
   output                                      from_mem_valid_store_inst,
 
   /*** Outputs to pipeline registers ***/
-  output  [MEM_CONTROL_SIGS_BIT_WIDTH-1-1:0]  from_mem_control_sigs,
+  output  [MEM_CONTROL_SIGS_BIT_WIDTH-1-2:0]  from_mem_control_sigs,
   output  [GPR_ID_BIT_WIDTH-1:0]              from_mem_dstidA,
   output  [GPR_ID_BIT_WIDTH-1:0]              from_mem_dstidB,
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_srcregA,
@@ -541,9 +538,6 @@ assign from_mem_rel_eip     = to_mem_rel_eip ;
 assign from_mem_cs          = to_mem_cs      ; 
 assign from_mem_oeip        = to_mem_oeip    ;   
 assign from_mem_ieip        = to_mem_ieip    ;   
-assign from_mem_pred_eip    = to_mem_pred_eip;       
-
-assign EX_FLUSH = from_ex_flush;
-assign WB_FLUSH = from_wb_flush;
+assign from_mem_pred_eip    = to_mem_pred_eip;
 
 endmodule
