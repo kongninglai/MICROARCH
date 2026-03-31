@@ -14,7 +14,7 @@ module fetch_buffer(
     input wire from_ex_flush,
     input wire from_de_stall,
     input wire from_f_cl_pf, //the cache line loaded had a page fault
-    input wire [127:0] from_f_cache_line,
+    input wire [127:0] from_f_cache_line, //big endian
     input wire from_de_eip_redirection, //br taken in decode
     input wire shft_reg_we,
     output wire [4:0] tail_ptr,
@@ -22,6 +22,15 @@ module fetch_buffer(
     output wire [15:0] to_de_pf_expn_bytes_out, 
     output ready
 );  
+
+    //Endianness Swap (big -> little)
+    wire [127:0] le_cache_line;
+    genvar b;
+    generate
+        for (b = 0; b < 16; b = b + 1) begin : BYTE_REVERSAL
+            assign le_cache_line[(b*8) + 7 : b*8] = from_f_cache_line[((15-b)*8) + 7 : (15-b)*8];
+        end
+    endgenerate
 
     //Correct Instruction Length
     wire [3:0] gated_instr_len;
@@ -106,7 +115,7 @@ module fetch_buffer(
     logic_cl_shifter LOGIC_CL_SHIFTER(
         .incr_amt(gated_instr_len),
         .eip_redirection(flush),
-        .cl(from_f_cache_line),
+        .cl(le_cache_line),
         .tail_ptr(tail_ptr),
         .cl_aligned(cl_aligned),
         .wr_cl_byte_cnt(wr_cl_byte_cnt)

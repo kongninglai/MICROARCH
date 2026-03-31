@@ -4,6 +4,9 @@
  * Updated: Reference model now correctly accounts for the 1-cycle latency 
  * of the latched cache line request (fb_req_cl_stable) and mirrors the 
  * de_valid instruction length gating logic.
+ *
+ * BIG ENDIAN UPDATE: 
+ * cache_line [127:120] is Byte 0, [119:112] is Byte 1, ... [7:0] is Byte 15
  */
 
 `timescale 1ns / 1ps
@@ -27,7 +30,7 @@ initial begin clk = 0; forever #5 clk = ~clk; end
 reg         rst_bar;
 reg  [3:0]  from_de_instr_len;
 reg         from_de_valid;
-reg         from_f_icache_valid; // <--- ADDED missing port
+reg         from_f_icache_valid; 
 reg         from_wb_flush;
 reg         from_ex_flush;
 reg         from_de_stall;
@@ -44,7 +47,7 @@ wire         ready;
 fetch_buffer dut(
     .clk(clk), .rst_bar(rst_bar),
     .from_de_instr_len(from_de_instr_len),
-    .from_f_icache_valid(from_f_icache_valid), // <--- Connected to DUT
+    .from_f_icache_valid(from_f_icache_valid), 
     .from_de_valid(from_de_valid),
     .from_wb_flush(from_wb_flush),
     .from_ex_flush(from_ex_flush),
@@ -106,6 +109,7 @@ always @(*) begin
 end
 
 // Correct 248-bit inbytes calculation based on gated len
+// MODIFIED FOR BIG ENDIAN INPUT: Byte N is at index (15 - N)
 reg [247:0] ref_inbytes;
 always @(*) begin
     ref_inbytes = 248'b0;
@@ -113,12 +117,12 @@ always @(*) begin
         // Redirect: right-shift cache line by instr_len bytes
         for (ri_inb = 0; ri_inb < 16; ri_inb = ri_inb + 1)
             if (ri_inb + ref_gated_ilen < 16)
-                ref_inbytes[ri_inb*8 +: 8] = from_f_cache_line[(ri_inb + ref_gated_ilen)*8 +: 8];
+                ref_inbytes[ri_inb*8 +: 8] = from_f_cache_line[(15 - (ri_inb + ref_gated_ilen))*8 +: 8];
     end else begin
         // Normal: place CL at tail_ptr offset
         for (ri_inb = 0; ri_inb < 16; ri_inb = ri_inb + 1)
             if (ref_tp[3:0] + ri_inb < 31)
-                ref_inbytes[(ref_tp[3:0] + ri_inb)*8 +: 8] = from_f_cache_line[ri_inb*8 +: 8];
+                ref_inbytes[(ref_tp[3:0] + ri_inb)*8 +: 8] = from_f_cache_line[(15 - ri_inb)*8 +: 8];
     end
 end
 
@@ -246,13 +250,14 @@ begin
 end
 endtask
 
+// MODIFIED FOR BIG ENDIAN: Byte k goes into [ (15-k)*8 +: 8 ]
 function [127:0] make_cl;
     input [7:0] base;
     integer k;
 begin
     make_cl = 128'b0;
     for (k = 0; k < 16; k = k + 1)
-        make_cl[k*8 +: 8] = base + k[7:0];
+        make_cl[(15-k)*8 +: 8] = base + k[7:0];
 end
 endfunction
 
@@ -260,7 +265,7 @@ task drive_cycle;
     input [255:0] tag;
     input         i_valid;
     input [3:0]   i_ilen;
-    input         i_icache_valid; // <--- NEW ARGUMENT
+    input         i_icache_valid; 
     input         i_stall;
     input         i_wb_flush;
     input         i_ex_flush;
@@ -271,7 +276,7 @@ begin
     @(negedge clk); 
     from_de_valid           = i_valid;
     from_de_instr_len       = i_ilen;
-    from_f_icache_valid     = i_icache_valid; // Apply Handshake
+    from_f_icache_valid     = i_icache_valid; 
     from_de_stall           = i_stall;
     from_wb_flush           = i_wb_flush;
     from_ex_flush           = i_ex_flush;

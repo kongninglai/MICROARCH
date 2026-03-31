@@ -97,7 +97,9 @@ module fetch_buffer_simple_tb;
         // 3. LOAD FIRST CACHE LINE (2-Cycle Turnaround)
         @(negedge clk);
         f_icache_valid = 1; 
-        cache_line = 128'h0807060504030201; 
+        // ORIGINAL LE: 128'h0807060504030201 (implicitly padded with 0s at the top)
+        // BIG ENDIAN: Byte 0 (01) is at the MSB [127:120], Byte 1 (02) at [119:112], etc.
+        cache_line = 128'h0102030405060708_0000000000000000; 
 
         // Cycle 1: Request registers (fb_req_cl_stable goes 1)
         @(posedge clk); 
@@ -118,7 +120,9 @@ module fetch_buffer_simple_tb;
         // 5. TOP-UP (Load while buffer has 13 bytes)
         // Note: Stable Req is already high because 13 < 16
         @(negedge clk);
-        cache_line = 128'h0B0A000000000000; 
+        // ORIGINAL LE: 128'h0B0A000000000000
+        // BIG ENDIAN: Bytes 0-5 are 00. Byte 6 (0A) at [79:72], Byte 7 (0B) at [71:64].
+        cache_line = 128'h0000000000000A0B_0000000000000000; 
         
         @(posedge clk); 
         #2 verify("Buffer Topped Up", 5'd29, 128'h0000000807060504);
