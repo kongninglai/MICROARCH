@@ -9,73 +9,149 @@ localparam WIDTH = 684;
 localparam CYCLE_TIME = 10.0;
 
 reg clk, rst_n, we;
-reg [WIDTH-1:0] din;
-wire [WIDTH-1:0] q_out;
+// Inputs (regs)
+reg [54:0] from_mem_control_sigs;
+reg [2:0]  from_mem_dstidA;
+reg [2:0]  from_mem_dstidB;
+reg [31:0] from_mem_srcregA;
+reg [31:0] from_mem_srcregB;
+reg [31:0] from_mem_srcregC;
+reg [15:0] from_mem_srcSREG;
+reg [63:0] from_mem_MMA;
+reg [63:0] from_mem_MMB;
+
+reg [15:0] from_mem_target_cs;
+reg [63:0] from_mem_load_result;
+reg [31:0] from_mem_inc_esp;
+reg [31:0] from_mem_dec_esp;
+reg [31:0] from_mem_imm;
+reg [31:0] from_mem_rel_eip;
+
+reg        from_mem_store_is_io_line_0;
+reg [14:4] from_mem_store_addr_line_0;
+reg [15:0] from_mem_store_mask_line_0;
+reg        from_mem_store_queue_alloc_line_0;
+reg [14:4] from_mem_store_addr_line_1;
+reg [15:0] from_mem_store_mask_line_1;
+reg        from_mem_store_queue_alloc_line_1;
+reg [4:0]  from_mem_store_data_shf_amt;
+
+reg [15:0] from_mem_cs;
+reg [31:0] from_mem_oeip;
+reg [31:0] from_mem_ieip;
+reg [31:0] from_mem_pred_eip;
+reg [1:0]  from_mem_exception;
+reg        from_mem_valid;
+
+
+// Outputs (wires)
+wire [54:0] to_ex_control_sigs;
+wire [2:0]  to_ex_dstidA;
+wire [2:0]  to_ex_dstidB;
+wire [31:0] to_ex_srcregA;
+wire [31:0] to_ex_srcregB;
+wire [31:0] to_ex_srcregC;
+wire [15:0] to_ex_srcSREG;
+wire [63:0] to_ex_MMA;
+wire [63:0] to_ex_MMB;
+
+wire [15:0] to_ex_target_cs;
+wire [63:0] to_ex_load_result;
+wire [31:0] to_ex_inc_esp;
+wire [31:0] to_ex_dec_esp;
+wire [31:0] to_ex_imm;
+wire [31:0] to_ex_rel_eip;
+
+wire        to_ex_store_is_io_line_0;
+wire [14:4] to_ex_store_addr_line_0;
+wire [15:0] to_ex_store_mask_line_0;
+wire        to_ex_store_queue_alloc_line_0;
+wire [14:4] to_ex_store_addr_line_1;
+wire [15:0] to_ex_store_mask_line_1;
+wire        to_ex_store_queue_alloc_line_1;
+wire [4:0]  to_ex_store_data_shf_amt;
+
+wire [15:0] to_ex_cs;
+wire [31:0] to_ex_oeip;
+wire [31:0] to_ex_ieip;
+wire [31:0] to_ex_pred_eip;
+wire [1:0]  to_ex_exception;
+wire        to_ex_valid;
+
 reg [WIDTH-1:0] out_exp;
 
 always #(CYCLE_TIME/2.0) clk = ~clk;
 
 mem_to_ex DUT (
-    .clk(clk), .rst_n(rst_n), .we(we),
-    .from_mem_control_sigs(din[683:631]),
-    .from_mem_dstidA(din[630:628]),
-    .from_mem_dstidB(din[627:625]),
-    .from_mem_srcregA(din[624:593]),
-    .from_mem_srcregB(din[592:561]),
-    .from_mem_srcregC(din[560:529]),
-    .from_mem_srcSREG(din[528:513]),
-    .from_mem_MMA(din[512:449]),
-    .from_mem_MMB(din[448:385]),
-    .from_mem_target_cs(din[384:369]),
-    .from_mem_load_result(din[368:305]),
-    .from_mem_inc_esp(din[304:273]),
-    .from_mem_dec_esp(din[272:241]),
-    .from_mem_imm(din[240:209]),
-    .from_mem_rel_eip(din[208:177]),
-    .from_mem_store_is_io_line_0(din[176]),
-    .from_mem_store_addr_line_0(din[175:165]),
-    .from_mem_store_mask_line_0(din[164:149]),
-    .from_mem_store_queue_alloc_line_0(din[148]),
-    .from_mem_store_addr_line_1(din[147:137]),
-    .from_mem_store_mask_line_1(din[136:121]),
-    .from_mem_store_queue_alloc_line_1(din[120]),
-    .from_mem_store_data_shf_amt(din[119:115]),
-    .from_mem_cs(din[114:99]),
-    .from_mem_oeip(din[98:67]),
-    .from_mem_ieip(din[66:35]),
-    .from_mem_pred_eip(din[34:3]),
-    .from_mem_exception(din[2:1]),
-    .from_mem_valid(din[0]),
+  .clk(clk),
+  .rst_n(rst_n),
+  .we(we),
 
-    .to_ex_control_sigs(q_out[683:631]),
-    .to_ex_dstidA(q_out[630:628]),
-    .to_ex_dstidB(q_out[627:625]),
-    .to_ex_srcregA(q_out[624:593]),
-    .to_ex_srcregB(q_out[592:561]),
-    .to_ex_srcregC(q_out[560:529]),
-    .to_ex_srcSREG(q_out[528:513]),
-    .to_ex_MMA(q_out[512:449]),
-    .to_ex_MMB(q_out[448:385]),
-    .to_ex_target_cs(q_out[384:369]),
-    .to_ex_load_result(q_out[368:305]),
-    .to_ex_inc_esp(q_out[304:273]),
-    .to_ex_dec_esp(q_out[272:241]),
-    .to_ex_imm(q_out[240:209]),
-    .to_ex_rel_eip(q_out[208:177]),
-    .to_ex_store_is_io_line_0(q_out[176]),
-    .to_ex_store_addr_line_0(q_out[175:165]),
-    .to_ex_store_mask_line_0(q_out[164:149]),
-    .to_ex_store_queue_alloc_line_0(q_out[148]),
-    .to_ex_store_addr_line_1(q_out[147:137]),
-    .to_ex_store_mask_line_1(q_out[136:121]),
-    .to_ex_store_queue_alloc_line_1(q_out[120]),
-    .to_ex_store_data_shf_amt(q_out[119:115]),
-    .to_ex_cs(q_out[114:99]),
-    .to_ex_oeip(q_out[98:67]),
-    .to_ex_ieip(q_out[66:35]),
-    .to_ex_pred_eip(q_out[34:3]),
-    .to_ex_exception(q_out[2:1]),
-    .to_ex_valid(q_out[0])
+  .from_mem_control_sigs(from_mem_control_sigs),
+  .from_mem_dstidA(from_mem_dstidA),
+  .from_mem_dstidB(from_mem_dstidB),
+  .from_mem_srcregA(from_mem_srcregA),
+  .from_mem_srcregB(from_mem_srcregB),
+  .from_mem_srcregC(from_mem_srcregC),
+  .from_mem_srcSREG(from_mem_srcSREG),
+  .from_mem_MMA(from_mem_MMA),
+  .from_mem_MMB(from_mem_MMB),
+
+  .from_mem_target_cs(from_mem_target_cs),
+  .from_mem_load_result(from_mem_load_result),
+  .from_mem_inc_esp(from_mem_inc_esp),
+  .from_mem_dec_esp(from_mem_dec_esp),
+  .from_mem_imm(from_mem_imm),
+  .from_mem_rel_eip(from_mem_rel_eip),
+
+  .from_mem_store_is_io_line_0(from_mem_store_is_io_line_0),
+  .from_mem_store_addr_line_0(from_mem_store_addr_line_0),
+  .from_mem_store_mask_line_0(from_mem_store_mask_line_0),
+  .from_mem_store_queue_alloc_line_0(from_mem_store_queue_alloc_line_0),
+  .from_mem_store_addr_line_1(from_mem_store_addr_line_1),
+  .from_mem_store_mask_line_1(from_mem_store_mask_line_1),
+  .from_mem_store_queue_alloc_line_1(from_mem_store_queue_alloc_line_1),
+  .from_mem_store_data_shf_amt(from_mem_store_data_shf_amt),
+
+  .from_mem_cs(from_mem_cs),
+  .from_mem_oeip(from_mem_oeip),
+  .from_mem_ieip(from_mem_ieip),
+  .from_mem_pred_eip(from_mem_pred_eip),
+  .from_mem_exception(from_mem_exception),
+  .from_mem_valid(from_mem_valid),
+
+  .to_ex_control_sigs(to_ex_control_sigs),
+  .to_ex_dstidA(to_ex_dstidA),
+  .to_ex_dstidB(to_ex_dstidB),
+  .to_ex_srcregA(to_ex_srcregA),
+  .to_ex_srcregB(to_ex_srcregB),
+  .to_ex_srcregC(to_ex_srcregC),
+  .to_ex_srcSREG(to_ex_srcSREG),
+  .to_ex_MMA(to_ex_MMA),
+  .to_ex_MMB(to_ex_MMB),
+
+  .to_ex_target_cs(to_ex_target_cs),
+  .to_ex_load_result(to_ex_load_result),
+  .to_ex_inc_esp(to_ex_inc_esp),
+  .to_ex_dec_esp(to_ex_dec_esp),
+  .to_ex_imm(to_ex_imm),
+  .to_ex_rel_eip(to_ex_rel_eip),
+
+  .to_ex_store_is_io_line_0(to_ex_store_is_io_line_0),
+  .to_ex_store_addr_line_0(to_ex_store_addr_line_0),
+  .to_ex_store_mask_line_0(to_ex_store_mask_line_0),
+  .to_ex_store_queue_alloc_line_0(to_ex_store_queue_alloc_line_0),
+  .to_ex_store_addr_line_1(to_ex_store_addr_line_1),
+  .to_ex_store_mask_line_1(to_ex_store_mask_line_1),
+  .to_ex_store_queue_alloc_line_1(to_ex_store_queue_alloc_line_1),
+  .to_ex_store_data_shf_amt(to_ex_store_data_shf_amt),
+
+  .to_ex_cs(to_ex_cs),
+  .to_ex_oeip(to_ex_oeip),
+  .to_ex_ieip(to_ex_ieip),
+  .to_ex_pred_eip(to_ex_pred_eip),
+  .to_ex_exception(to_ex_exception),
+  .to_ex_valid(to_ex_valid)
 );
 
 integer FAILURES  = 0;
@@ -93,19 +169,116 @@ task check;
 endtask
 
 initial begin
-  clk = 0; rst_n = 0; we = 1; din = 0; out_exp = 0;
+  clk = 0; rst_n = 0; we = 1; out_exp = 0;
+
   #(CYCLE_TIME);
   rst_n = 1;
   
   repeat (1 << 12) begin
-    din = { {$random}, {$random}, {$random}, {$random}, {$random}, 
-            {$random}, {$random}, {$random}, {$random}, {$random}, 
-            {$random}, {$random}, {$random}, {$random}, {$random}, 
-            {$random}, {$random}, {$random}, {$random}, {$random}, 
-            {$random}, {$random} };
-    out_exp = din;
+    // Drive inputs with random values
+    {
+      from_mem_control_sigs,
+      from_mem_dstidA,
+      from_mem_dstidB,
+      from_mem_srcregA,
+      from_mem_srcregB,
+      from_mem_srcregC,
+      from_mem_srcSREG,
+      from_mem_MMA,
+      from_mem_MMB,
+      from_mem_target_cs,
+      from_mem_load_result,
+      from_mem_inc_esp,
+      from_mem_dec_esp,
+      from_mem_imm,
+      from_mem_rel_eip,
+      from_mem_store_is_io_line_0,
+      from_mem_store_addr_line_0,
+      from_mem_store_mask_line_0,
+      from_mem_store_queue_alloc_line_0,
+      from_mem_store_addr_line_1,
+      from_mem_store_mask_line_1,
+      from_mem_store_queue_alloc_line_1,
+      from_mem_store_data_shf_amt,
+      from_mem_cs,
+      from_mem_oeip,
+      from_mem_ieip,
+      from_mem_pred_eip,
+      from_mem_exception,
+      from_mem_valid
+    } = {
+      {$random}, {$random}, {$random}, {$random}, {$random}, 
+      {$random}, {$random}, {$random}, {$random}, {$random}, 
+      {$random}, {$random}, {$random}, {$random}, {$random}, 
+      {$random}, {$random}, {$random}, {$random}, {$random}, 
+      {$random}, {$random}
+    };
+
+    out_exp = {
+      from_mem_control_sigs,
+      from_mem_dstidA,
+      from_mem_dstidB,
+      from_mem_srcregA,
+      from_mem_srcregB,
+      from_mem_srcregC,
+      from_mem_srcSREG,
+      from_mem_MMA,
+      from_mem_MMB,
+      from_mem_target_cs,
+      from_mem_load_result,
+      from_mem_inc_esp,
+      from_mem_dec_esp,
+      from_mem_imm,
+      from_mem_rel_eip,
+      from_mem_store_is_io_line_0,
+      from_mem_store_addr_line_0,
+      from_mem_store_mask_line_0,
+      from_mem_store_queue_alloc_line_0,
+      from_mem_store_addr_line_1,
+      from_mem_store_mask_line_1,
+      from_mem_store_queue_alloc_line_1,
+      from_mem_store_data_shf_amt,
+      from_mem_cs,
+      from_mem_oeip,
+      from_mem_ieip,
+      from_mem_pred_eip,
+      from_mem_exception,
+      from_mem_valid
+    };
+
     #(CYCLE_TIME);
-    check(q_out, out_exp);
+
+    check({
+      to_ex_control_sigs,
+      to_ex_dstidA,
+      to_ex_dstidB,
+      to_ex_srcregA,
+      to_ex_srcregB,
+      to_ex_srcregC,
+      to_ex_srcSREG,
+      to_ex_MMA,
+      to_ex_MMB,
+      to_ex_target_cs,
+      to_ex_load_result,
+      to_ex_inc_esp,
+      to_ex_dec_esp,
+      to_ex_imm,
+      to_ex_rel_eip,
+      to_ex_store_is_io_line_0,
+      to_ex_store_addr_line_0,
+      to_ex_store_mask_line_0,
+      to_ex_store_queue_alloc_line_0,
+      to_ex_store_addr_line_1,
+      to_ex_store_mask_line_1,
+      to_ex_store_queue_alloc_line_1,
+      to_ex_store_data_shf_amt,
+      to_ex_cs,
+      to_ex_oeip,
+      to_ex_ieip,
+      to_ex_pred_eip,
+      to_ex_exception,
+      to_ex_valid
+    }, out_exp);
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);

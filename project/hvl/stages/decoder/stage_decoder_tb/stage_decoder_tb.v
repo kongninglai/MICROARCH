@@ -48,7 +48,7 @@ module tb_stage_decode();
     // 3. Instantiate UUT (o_eip removed)
     // --------------------------------------------------------
     stage_decode uut (
-        .cache_line(cache_line), .tail_ptr(tail_ptr), .cs_limit_reg(cs_limit_reg),
+        .cache_line(cache_line), .o_eip(), .tail_ptr(tail_ptr), .cs_limit_reg(cs_limit_reg),
         .eip_target_ex(eip_target_ex), 
         .flush_ex(mispredict_src_ex),       
         .v_excptn_src_wb(v_excptn_src_wb), 

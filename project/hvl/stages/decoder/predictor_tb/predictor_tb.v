@@ -6,8 +6,8 @@ module tb_predictor();
     reg clk;
     reg rst_bar;
     reg br_t_nt_in;
-    reg ext_pht_idx; 
-    reg b_pht_idx;   
+    reg [3:0] ext_pht_idx; 
+    reg [3:0] b_pht_idx;   
     reg b_valid;     // NEW INPUT: From decode stage
 
     // 2. Outputs

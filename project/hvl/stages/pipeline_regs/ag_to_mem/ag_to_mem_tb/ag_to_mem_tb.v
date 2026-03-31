@@ -27,6 +27,7 @@ module ag_to_mem_tb;
     reg to_rr_valid;
 
     wire from_ag_stall;
+    wire from_ag_we_pipe_reg;
 
     wire [7:0] to_regunit_opcode;
     wire [5:0] to_regunit_modrm;
@@ -509,7 +510,8 @@ module ag_to_mem_tb;
         .from_ag_exception(from_ag_exception),
         .from_ag_valid(from_ag_valid),
 
-        .from_ag_stall(from_ag_stall)
+        .from_ag_stall(from_ag_stall),
+        .from_ag_we_pipe_reg(from_ag_we_pipe_reg)
     );
 
     wire [1:0]      from_ag_ldAB;

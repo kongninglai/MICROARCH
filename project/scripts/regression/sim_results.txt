@@ -1,7 +1,7 @@
 address_adder_tb               FAILURES=0      SUCCESSES=256   
 ag_to_mem_tb                   FAILURES=0      SUCCESSES=0     
 arbiter_tb                     FAILURES=0      SUCCESSES=16    
-backend_top_tb                 FAILURES=0      SUCCESSES=0     
+backend_top_tb                 FAILURES=0      SUCCESSES=0      WARNINGS=3     
 big_and_tb                     FAILURES=0      SUCCESSES=4096  
 big_decrement_tb               FAILURES=0      SUCCESSES=4097  
 big_eq_tb                      FAILURES=0      SUCCESSES=267   
@@ -129,7 +129,6 @@ predictor_tb                   FAILURES=0      SUCCESSES=4
 prefix_modrm_sib_adder_tb      FAILURES=0      SUCCESSES=20    
 rank_tb                        FAILURES=0      SUCCESSES=2048  
 regfile_2r1w_tb                FAILURES=0      SUCCESSES=520   
-regfile_3r2w_tb                FAILURES=0      SUCCESSES=114   
 regfile_gp_tb                  FAILURES=0      SUCCESSES=1043  
 regfile_mmx_tb                 FAILURES=0      SUCCESSES=520   
 regfile_seg_tb                 FAILURES=0      SUCCESSES=19    

@@ -39,6 +39,11 @@ run_one_sim() {
       exit 0
     fi
 
+    warnings=$(grep -c "Warning" build.log || true)
+    if (( warnings < 0 )); then
+      warnings=0
+    fi
+
     if ! ./simv > sim.log 2>&1; then
       printf "%-30s SIM_ERROR\n" "$tb_name" > "$out"
       echo "Simulation failed in $tb_name"
@@ -62,8 +67,13 @@ run_one_sim() {
         failures=$((failures + 1))
     fi
 
-    printf "%-30s FAILURES=%-6s SUCCESSES=%-6s\n" \
-      "$tb_name" "$failures" "$successes" > "$out"
+    if (( warnings > 0 )); then
+      printf "%-30s FAILURES=%-6s SUCCESSES=%-6s WARNINGS=%-6s\n" \
+        "$tb_name" "$failures" "$successes" "$warnings" > "$out"
+    else
+      printf "%-30s FAILURES=%-6s SUCCESSES=%-6s\n" \
+        "$tb_name" "$failures" "$successes" > "$out"
+    fi
 
     echo "Done"
   ) 2>&1 | sed "s/^/[$tb_name] /"

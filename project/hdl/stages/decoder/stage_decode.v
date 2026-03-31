@@ -89,6 +89,7 @@ assign exptn_prot = 1'b0;
 
     wire hit;
     wire [31:0] bp_eip_target;
+    wire cur_instr_prediction;
     choose_eip EIP_LOGIC(
         .clk(clk),
         .rst_bar(rst_bar),
@@ -112,7 +113,6 @@ assign exptn_prot = 1'b0;
 
 
 
-    wire cur_instr_prediction;
     bp BP(
         .clk(clk),
         .rst_bar(rst_bar),

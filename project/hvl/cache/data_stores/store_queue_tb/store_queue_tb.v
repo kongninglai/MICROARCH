@@ -97,7 +97,7 @@ begin
 end
 endtask
 
-integer i, j;
+integer j;
 integer rd_ctr = 0;
 
 task read_entry;

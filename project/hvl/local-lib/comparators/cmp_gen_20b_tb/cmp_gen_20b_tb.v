@@ -33,7 +33,7 @@ initial begin
   in0 = 0; in1 = 1; #40; check(out, out_exp);
   in0 = 1; in1 = 1; #40; check(out, out_exp);
   in0 = 2; in1 = 1; #40; check(out, out_exp);
-  in0 = 20'hFFFFFFFE; in1 = 20'hFFFFF; #40; check(out, out_exp);
+  in0 = 20'hFFFFE; in1 = 20'hFFFFF; #40; check(out, out_exp);
   in0 = 20'hFFFFF; in1 = 20'hFFFFF; #40; check(out, out_exp);
   in0 = 0; in1 = 20'hFFFFF; #40; check(out, out_exp);
   in0 = 20'hFFFFF; in1 = 20'hFFFFF; #40; check(out, out_exp);

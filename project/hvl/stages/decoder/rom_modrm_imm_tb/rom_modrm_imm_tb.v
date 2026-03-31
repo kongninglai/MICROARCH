@@ -30,7 +30,8 @@ module tb_logic_modrm_imm();
         .is_modrm(is_modrm), 
         .imm_size_inbytes(imm_size_inbytes),
         .sum_modrm_imm(sum_modrm_imm), 
-        .is_far_br(is_far_br)
+        .is_far_br(is_far_br),
+        .imm_size()
     );
 
     //Error Tracking
