@@ -5,11 +5,11 @@
         "module",
         1
     ],
-    "tb_intgr_fshifter_decode": [
-        "tb_intgr_fshifter_decode",
-        "PCQtr",
+    "tb_intgr_fshifter_decode_rigorous": [
+        "tb_intgr_fshifter_decode_rigorous",
+        "hvgr5",
         "module",
-        2
+        62
     ],
     "stage_decode": [
         "stage_decode",
