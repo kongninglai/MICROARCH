@@ -8,7 +8,6 @@ module fetch_buffer(
     input wire clk, 
     input wire rst_bar,
     input wire [3:0] from_de_instr_len,
-    input wire from_f_icache_valid,
     input wire from_de_valid,
     input wire from_wb_flush,
     input wire from_ex_flush,
@@ -60,7 +59,7 @@ module fetch_buffer(
     inv1$ inv_flush_bar(flush_bar, flush);
 
     //Cache Line Load Sign Generation
-    and3$ and_v_cl_ld(v_cl_ld, fb_req_cl_stable, rst_bar, from_f_icache_valid); 
+    and3$ and_v_cl_ld(v_cl_ld, fb_req_cl_stable, rst_bar, ICACHE_VALID); 
     inv1$ inv_load(v_cl_ld_bar, v_cl_ld);
     
     //Tail Pointer Logic
@@ -72,8 +71,8 @@ module fetch_buffer(
         .flush(flush),
         .stall(from_de_stall),
         .fb_req_cl(v_cl_ld), //input, fetch buffer request cache line signal (if there is space in the fetch buffer)
-        .we_cl_byte_cnt(wr_cl_byte_cnt),
-        .tail_ptr(tail_ptr)
+        .tail_ptr(tail_ptr),
+        .eip_redirection(flush)
     );
 
     mag_comp8$ CL_comp( //tail_ptr < 16
@@ -132,8 +131,7 @@ module fetch_buffer(
         .eip_redirection(flush),
         .cl(le_cache_line),
         .tail_ptr(tail_ptr),
-        .cl_aligned(cl_aligned),
-        .wr_cl_byte_cnt(wr_cl_byte_cnt)
+        .cl_aligned(cl_aligned)
     );
 
     //Fetch Buffer

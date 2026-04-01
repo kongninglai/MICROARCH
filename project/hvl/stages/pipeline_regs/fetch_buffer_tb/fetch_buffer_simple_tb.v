@@ -5,7 +5,7 @@ module fetch_buffer_simple_tb;
     // ---------------------------------------------------------
     // DUT I/O
     // ---------------------------------------------------------
-    reg clk, rst_bar, de_valid, flush_wb, flush_ex, redir, stall, cl_pf, shft_reg_we;
+    reg clk, rst_bar, de_valid, flush_wb, flush_ex, redir, stall, cl_pf;
     reg f_icache_valid; 
     reg [3:0] instr_len;
     reg [127:0] cache_line;
@@ -14,6 +14,7 @@ module fetch_buffer_simple_tb;
     wire [127:0] outbytes;
     wire [15:0]  pf_out;
     wire ready;
+    wire shft_reg_we; 
 
     integer total_tests = 0;
     integer FAILURES = 0;
@@ -23,11 +24,12 @@ module fetch_buffer_simple_tb;
     fetch_buffer uut (
         .clk(clk), .rst_bar(rst_bar),
         .from_de_instr_len(instr_len), .from_de_valid(de_valid),
-        .from_f_icache_valid(f_icache_valid),
+        .ICACHE_VALID(f_icache_valid),
         .from_wb_flush(flush_wb), .from_ex_flush(flush_ex),
         .from_de_stall(stall), .from_f_cl_pf(cl_pf),
         .from_f_cache_line(cache_line), 
-        .from_de_eip_redirection(redir), .shft_reg_we(shft_reg_we),
+        .from_de_eip_redirection(redir), 
+        .shft_reg_we(shft_reg_we), 
         .tail_ptr(tail_ptr), .to_de_outbytes(outbytes),
         .to_de_pf_expn_bytes_out(pf_out), .ready(ready)
     );
@@ -83,32 +85,28 @@ module fetch_buffer_simple_tb;
     // Stimulus
     // ---------------------------------------------------------
     initial begin
-        // 1. ALL REGS INITIALIZED TO ZERO (Prevents 'X' propagation)
+        // 1. ALL REGS INITIALIZED TO ZERO 
         clk = 0; rst_bar = 0; de_valid = 0; instr_len = 0; stall = 0;
         f_icache_valid = 0; flush_wb = 0; flush_ex = 0; redir = 0; 
-        cl_pf = 0; shft_reg_we = 1; cache_line = 0;
+        cl_pf = 0; cache_line = 0;
 
         // 2. STABLE RESET
-        // Hold reset for several cycles to clear structural registers
         repeat (5) @(posedge clk);
         #1 rst_bar = 1; 
         #1 verify("Reset State", 5'd0, 128'h0);
 
-        // 3. LOAD FIRST CACHE LINE (2-Cycle Turnaround)
+        // 3. LOAD FIRST CACHE LINE 
         @(negedge clk);
         f_icache_valid = 1; 
-        // ORIGINAL LE: 128'h0807060504030201 (implicitly padded with 0s at the top)
-        // BIG ENDIAN: Byte 0 (01) is at the MSB [127:120], Byte 1 (02) at [119:112], etc.
         cache_line = 128'h0102030405060708_0000000000000000; 
 
-        // Cycle 1: Request registers (fb_req_cl_stable goes 1)
         @(posedge clk); 
-        // Cycle 2: Data latches into buffer
         @(posedge clk); 
         #2 verify("First CL Loaded", 5'd16, 128'h0807060504030201);
 
         // 4. CONSUME 3 BYTES
         @(negedge clk);
+        f_icache_valid = 0; 
         de_valid = 1; instr_len = 3;
         
         @(posedge clk); 
@@ -117,11 +115,9 @@ module fetch_buffer_simple_tb;
         @(negedge clk);
         de_valid = 0;
 
-        // 5. TOP-UP (Load while buffer has 13 bytes)
-        // Note: Stable Req is already high because 13 < 16
+        // 5. TOP-UP 
         @(negedge clk);
-        // ORIGINAL LE: 128'h0B0A000000000000
-        // BIG ENDIAN: Bytes 0-5 are 00. Byte 6 (0A) at [79:72], Byte 7 (0B) at [71:64].
+        f_icache_valid = 1;
         cache_line = 128'h0000000000000A0B_0000000000000000; 
         
         @(posedge clk); 
@@ -129,6 +125,7 @@ module fetch_buffer_simple_tb;
 
         // 6. FLUSH TEST
         @(negedge clk);
+        f_icache_valid = 0;
         flush_wb = 1;
         
         @(posedge clk); 
@@ -136,111 +133,102 @@ module fetch_buffer_simple_tb;
         flush_wb = 0;
 
         // =========================================================
-        // EXTRA TESTS: shft_reg_we = 0 Behavior (BIG ENDIAN INPUT)
+        // EXTRA TESTS (BIG ENDIAN INPUT)
         // =========================================================
-        $display("\n=== STARTING shft_reg_we = 0 COMPREHENSIVE TESTS ===");
+        $display("\n=== STARTING COMPREHENSIVE TESTS ===");
 
         // --- Setup Baseline ---
-        // Reset and load a fresh cache line so the buffer has 16 bytes.
         @(negedge clk);
         rst_bar = 0; 
         @(negedge clk);
         rst_bar = 1;
         f_icache_valid = 1;
-        shft_reg_we = 1; // Briefly enable to load the baseline
         
-        // BIG ENDIAN: Byte 0 is '01' at [127:120], Byte 15 is '10' at [7:0]
         cache_line = 128'h0102030405060708_090A0B0C0D0E0F10; 
         @(posedge clk); @(posedge clk);
         f_icache_valid = 0;
         
         // ---------------------------------------------------------
-        // INDIVIDUAL SIGNAL TESTS (shft_reg_we = 0)
+        // INDIVIDUAL SIGNAL TESTS 
         // ---------------------------------------------------------
         
         // 1. de_valid = 1, instr_len = 7
         @(negedge clk);
-        shft_reg_we = 1; // LOCK THE GATE
         de_valid = 1; instr_len = 7; stall = 0;
         @(posedge clk); #2;
-        // CORRECT BEHAVIOR: Buffer shifts out 7 bytes (Bytes 0-6: 01 through 07).
-        // Remaining Bytes 7-15 (08 through 10) shift down to [71:0].
-        // Byte 7 ('08') is now at [7:0].
-        verify("Indiv: shft_we=0, consume 7", 5'd9, 128'h0000000000000010_0F0E0D0C0B0A0908);
+        verify("Indiv: consume 7", 5'd9, 128'h0000000000000010_0F0E0D0C0B0A0908);
         
-        // 2. de_valid = 1, instr_len = 8 (to drain the rest minus 1 byte)
+        // 2. de_valid = 1, instr_len = 8 
         @(negedge clk);
-        shft_reg_we = 0; // LOCK THE GATE
         de_valid = 1; instr_len = 8; stall = 0;
         @(posedge clk); #2;
-        // CORRECT BEHAVIOR: Buffer shifts out 8 more bytes. Tail pointer goes 9 -> 1.
-        // Only Byte 15 ('10') is left at [7:0].
-        verify("Indiv: shft_we=0, consume 8", 5'd1, 128'h0000000000000000_0000000000000010);
+        verify("Indiv: consume 8", 5'd1, 128'h0000000000000000_0000000000000010);
 
-        // 3. f_icache_valid = 1 (Attempting to top-up when we=0)
+        // 3. f_icache_valid = 1 
         @(negedge clk);
         de_valid = 0; instr_len = 0;
-        f_icache_valid = 1; // Try to load
-        // Byte 0 is 'FF', the rest are '00'
+        f_icache_valid = 1; 
         cache_line = 128'hFF00000000000000_0000000000000000;
         @(posedge clk); @(posedge clk); #2;
-        // CORRECT BEHAVIOR: Since it had 1 byte, it loads 15 new bytes. 
-        // The old byte ('10') stays at index 0 [7:0]. 
-        // The new Byte 0 ('FF') goes to index 1 [15:8].
-        verify("Indiv: shft_we=0, f_icache_valid=1", 5'd16, 128'h0000000000000000_000000000000FF10); 
+        // FIXED BUG: Expected TP is 17 (1 byte + 16 bytes). 
+        verify("Indiv: Top-up f_icache_valid=1", 5'd17, 128'h0000000000000000_000000000000FF10); 
 
         // 4. flush_wb = 1
         @(negedge clk);
         f_icache_valid = 0;
         flush_wb = 1;
         @(posedge clk); #2;
-        // CORRECT BEHAVIOR: Buffer flushes instantly regardless of shft_reg_we
-        verify("Indiv: shft_we=0, flush_wb=1", 5'd0, 128'h0);
+        verify("Indiv: flush_wb=1", 5'd0, 128'h0);
         flush_wb = 0;
 
         // ---------------------------------------------------------
-        // COMBINATIONAL TESTS (shft_reg_we = 0)
+        // COMBINATIONAL TESTS 
         // ---------------------------------------------------------
 
         // Setup Baseline again
         @(negedge clk);
         rst_bar = 0; @(negedge clk); rst_bar = 1;
-        f_icache_valid = 1; shft_reg_we = 1;
-        // Byte 0 = 11, Byte 1 = 22, ... Byte 15 = 00
+        f_icache_valid = 1;
         cache_line = 128'h1122334455667788_99AABBCCDDEEFF00; 
         @(posedge clk); @(posedge clk); f_icache_valid = 0;
 
         // 5. Consume (de_valid=1, len=4) + Stall = 1
         @(negedge clk);
-        shft_reg_we = 0; // LOCK THE GATE
         de_valid = 1; instr_len = 4; stall = 1;
         @(posedge clk); #2;
-        // CORRECT BEHAVIOR: Stall overrides valid. Buffer does NOT shift. 
-        verify("Combo: shft_we=0, consume 4, stall=1", 5'd16, 128'h00FFEEDDCCBBAA99_8877665544332211);
+        verify("Combo: consume 4, stall=1", 5'd16, 128'h00FFEEDDCCBBAA99_8877665544332211);
 
-        // 6. Consume (de_valid=1, len=4) + Load (f_icache_valid=1)
+        // 6. Drop TP to 12 (Forces fb_req_cl_stable to activate)
         @(negedge clk);
-        stall = 0; 
-        de_valid = 1; instr_len = 4; // Will consume Bytes 0-3 (11, 22, 33, 44)
+        stall = 0; de_valid = 1; instr_len = 4; f_icache_valid = 0;
+        @(posedge clk); #2;
+        verify("Combo: Drop TP to 12", 5'd12, 128'h0000000000FFEEDD_CCBBAA9988776655);
+
+        // Wait 1 cycle for fb_req_cl_stable flip flop to latch the 1
+        @(negedge clk);
+        de_valid = 0; instr_len = 0;
+        @(posedge clk); #2;
+
+        // 7. Consume (de_valid=1, len=4) + Load (f_icache_valid=1)
+        @(negedge clk);
+        de_valid = 1; instr_len = 4; 
         f_icache_valid = 1; 
-        // New Byte 0,1,2,3 = FF. Rest = 00.
         cache_line = 128'hFFFFFFFF00000000_0000000000000000;
-        @(posedge clk); @(posedge clk); #2;
-        // CORRECT BEHAVIOR: Shifts out 4 bytes (indices 0-3). Old bytes 4-15 shift down to indices 0-11.
-        // The 4 new 'FF' bytes drop into the newly opened indices 12-15 [127:96].
-        verify("Combo: shft_we=0, consume 4 + load", 5'd28, 128'hFFFFFFFF00FFEEDD_CCBBAA9988776655);
+        @(posedge clk); #2;
+        // CORRECT BEHAVIOR: TP goes 12 - 4 + 16 = 24.
+        // Old data shifts down 4 bytes. New 'FF' bytes map precisely to indices 12-15.
+        verify("Combo: consume 4 + load", 5'd24, 128'hFFFFFFFF00000000_00FFEEDDCCBBAA99);
 
-        // 7. Consume (de_valid=1, len=7) + Redir/Flush (redir=1)
+        // 8. Consume (de_valid=1, len=7) + Redir/Flush (redir=1)
         @(negedge clk);
-        de_valid = 1; instr_len = 7;
+        de_valid = 1; instr_len = 7; f_icache_valid = 0;
         redir = 1; // Decode branch taken
         @(posedge clk); #2;
-        // CORRECT BEHAVIOR: Redir acts as a flush for the fetch buffer. It should clear.
-        verify("Combo: shft_we=0, consume 7 + redir=1", 5'd0, 128'h0);
+        verify("Combo: consume 7 + redir=1", 5'd0, 128'h0);
 
         // Cleanup
         @(negedge clk);
-        de_valid = 0; instr_len = 0; redir = 0; f_icache_valid = 0; shft_reg_we = 1;
+        de_valid = 0; instr_len = 0; redir = 0; f_icache_valid = 0;
 
         $display("\n========================================");
         if (FAILURES == 0) $display("  ✅ SUCCESS: All Tests Passed");
