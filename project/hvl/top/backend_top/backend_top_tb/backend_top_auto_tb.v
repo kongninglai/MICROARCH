@@ -248,7 +248,7 @@ wire [3:0] from_de_instr_len;
 assign to_rr_prefix = {prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext};
 assign to_rr_imm_size = 3'd0;
 
-localparam NUM_TESTS_MEM = 27;
+localparam NUM_TESTS_MEM = 14;
 reg [127:0] mem_in [0:NUM_TESTS_MEM-1];
 
 block_decoder block_decoder_inst (
@@ -302,7 +302,7 @@ always @(posedge clk) begin
       $fdisplay(file_handle_cmp,"Read  0x%02x from va = 0x%08x and pa = 0x%04x",
          (dut.inst_stage_mem.from_mem_load_result >> (8 * k)) & 8'hFF,
          dut.inst_stage_mem.to_mem_ld_addr[31:0] + k,
-         {D_RD_TLB_PFN_OUT[2:0], MEM_PAGE_OFFSET[11:4], dut.inst_stage_mem.to_mem_ld_addr[3:0] + k}
+         {D_RD_TLB_PFN_OUT[2:0], dut.inst_stage_mem.to_mem_ld_addr[11:4], dut.inst_stage_mem.to_mem_ld_addr[3:0]} + k
       );
     end
   end
