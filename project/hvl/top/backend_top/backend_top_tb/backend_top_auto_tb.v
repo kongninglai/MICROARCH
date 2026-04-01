@@ -279,7 +279,7 @@ begin
   to_rr_exception = 2'd0;
   to_rr_valid = 1'b0;
   to_de_outbytes = {128{1'bz}};
-  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hvl/top/backend_top/backend_top_tb/testcases.mem", mem_in);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/verification/gen_testcases.mem", mem_in);
 end
 endtask
 
@@ -421,7 +421,7 @@ integer file_handle_cmp;
 initial begin 
   clk = 1'b0;
   rst_n = 1'b0;
-  file_handle_cmp = $fopen("results_cmp.txt", "w");
+  file_handle_cmp = $fopen("/home/ecelrc/students/var2427/MICROARCH/project/hvl/top/backend_top/backend_top_tb/results_cmp.txt", "w");
   if (file_handle_cmp == 0) begin
     $display("Error: Failed to open results_cmp.txt!");
   end
