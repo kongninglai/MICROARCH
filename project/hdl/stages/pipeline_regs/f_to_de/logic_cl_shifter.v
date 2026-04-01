@@ -4,8 +4,7 @@ module logic_cl_shifter(
     input wire [127:0] cl,
     input wire [4:0] tail_ptr, 
 
-    output wire [247:0] cl_aligned,
-    output wire [4:0] wr_cl_byte_cnt //only account for number of bytes of cache line we are writing
+    output wire [247:0] cl_aligned
 );
 
     //Jump to Middle of Cache Line (Shift CL right - little endian)
