@@ -129,7 +129,7 @@ end
 // Shift control
 wire ref_stall_cl  = ref_v_cl_ld & from_de_stall;
 wire ref_shift_sig = from_de_valid | ref_v_cl_ld | ref_flush;
-wire ref_shift_en  = ref_shift_sig & shft_reg_we;
+wire ref_shift_en  = ref_shift_sig;
 wire ref_clr       = ~rst_bar | ref_flush;
 wire ref_tp_en     = from_de_valid | ref_flush | from_de_stall | ref_v_cl_ld;
 

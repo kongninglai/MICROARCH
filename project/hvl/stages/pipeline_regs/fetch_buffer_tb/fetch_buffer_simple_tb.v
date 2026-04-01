@@ -46,7 +46,7 @@ module fetch_buffer_simple_tb;
             $display("INTERNAL REQ (comp): %b | STABLE REQ (dff): %b | V_CL_LD: %b", 
                      uut.from_de_cache_line_load_signal, uut.fb_req_cl_stable, uut.v_cl_ld);
             $display("TAIL POINTER: %d", tail_ptr);
-            $display("MASTER EN (shift_reg_en): %b | WE MASK (gated): %b", uut.shift_reg_en, uut.wr_en);
+            $display("MASTER EN (shft_reg_we): %b | WE MASK (gated): %b", shft_reg_we, uut.wr_en);
             $display("------------------------------------------------------------");
         end
     endtask
@@ -134,6 +134,113 @@ module fetch_buffer_simple_tb;
         @(posedge clk); 
         #2 verify("Flush Logic", 5'd0, 128'h0);
         flush_wb = 0;
+
+        // =========================================================
+        // EXTRA TESTS: shft_reg_we = 0 Behavior (BIG ENDIAN INPUT)
+        // =========================================================
+        $display("\n=== STARTING shft_reg_we = 0 COMPREHENSIVE TESTS ===");
+
+        // --- Setup Baseline ---
+        // Reset and load a fresh cache line so the buffer has 16 bytes.
+        @(negedge clk);
+        rst_bar = 0; 
+        @(negedge clk);
+        rst_bar = 1;
+        f_icache_valid = 1;
+        shft_reg_we = 1; // Briefly enable to load the baseline
+        
+        // BIG ENDIAN: Byte 0 is '01' at [127:120], Byte 15 is '10' at [7:0]
+        cache_line = 128'h0102030405060708_090A0B0C0D0E0F10; 
+        @(posedge clk); @(posedge clk);
+        f_icache_valid = 0;
+        
+        // ---------------------------------------------------------
+        // INDIVIDUAL SIGNAL TESTS (shft_reg_we = 0)
+        // ---------------------------------------------------------
+        
+        // 1. de_valid = 1, instr_len = 7
+        @(negedge clk);
+        shft_reg_we = 1; // LOCK THE GATE
+        de_valid = 1; instr_len = 7; stall = 0;
+        @(posedge clk); #2;
+        // CORRECT BEHAVIOR: Buffer shifts out 7 bytes (Bytes 0-6: 01 through 07).
+        // Remaining Bytes 7-15 (08 through 10) shift down to [71:0].
+        // Byte 7 ('08') is now at [7:0].
+        verify("Indiv: shft_we=0, consume 7", 5'd9, 128'h0000000000000010_0F0E0D0C0B0A0908);
+        
+        // 2. de_valid = 1, instr_len = 8 (to drain the rest minus 1 byte)
+        @(negedge clk);
+        shft_reg_we = 0; // LOCK THE GATE
+        de_valid = 1; instr_len = 8; stall = 0;
+        @(posedge clk); #2;
+        // CORRECT BEHAVIOR: Buffer shifts out 8 more bytes. Tail pointer goes 9 -> 1.
+        // Only Byte 15 ('10') is left at [7:0].
+        verify("Indiv: shft_we=0, consume 8", 5'd1, 128'h0000000000000000_0000000000000010);
+
+        // 3. f_icache_valid = 1 (Attempting to top-up when we=0)
+        @(negedge clk);
+        de_valid = 0; instr_len = 0;
+        f_icache_valid = 1; // Try to load
+        // Byte 0 is 'FF', the rest are '00'
+        cache_line = 128'hFF00000000000000_0000000000000000;
+        @(posedge clk); @(posedge clk); #2;
+        // CORRECT BEHAVIOR: Since it had 1 byte, it loads 15 new bytes. 
+        // The old byte ('10') stays at index 0 [7:0]. 
+        // The new Byte 0 ('FF') goes to index 1 [15:8].
+        verify("Indiv: shft_we=0, f_icache_valid=1", 5'd16, 128'h0000000000000000_000000000000FF10); 
+
+        // 4. flush_wb = 1
+        @(negedge clk);
+        f_icache_valid = 0;
+        flush_wb = 1;
+        @(posedge clk); #2;
+        // CORRECT BEHAVIOR: Buffer flushes instantly regardless of shft_reg_we
+        verify("Indiv: shft_we=0, flush_wb=1", 5'd0, 128'h0);
+        flush_wb = 0;
+
+        // ---------------------------------------------------------
+        // COMBINATIONAL TESTS (shft_reg_we = 0)
+        // ---------------------------------------------------------
+
+        // Setup Baseline again
+        @(negedge clk);
+        rst_bar = 0; @(negedge clk); rst_bar = 1;
+        f_icache_valid = 1; shft_reg_we = 1;
+        // Byte 0 = 11, Byte 1 = 22, ... Byte 15 = 00
+        cache_line = 128'h1122334455667788_99AABBCCDDEEFF00; 
+        @(posedge clk); @(posedge clk); f_icache_valid = 0;
+
+        // 5. Consume (de_valid=1, len=4) + Stall = 1
+        @(negedge clk);
+        shft_reg_we = 0; // LOCK THE GATE
+        de_valid = 1; instr_len = 4; stall = 1;
+        @(posedge clk); #2;
+        // CORRECT BEHAVIOR: Stall overrides valid. Buffer does NOT shift. 
+        verify("Combo: shft_we=0, consume 4, stall=1", 5'd16, 128'h00FFEEDDCCBBAA99_8877665544332211);
+
+        // 6. Consume (de_valid=1, len=4) + Load (f_icache_valid=1)
+        @(negedge clk);
+        stall = 0; 
+        de_valid = 1; instr_len = 4; // Will consume Bytes 0-3 (11, 22, 33, 44)
+        f_icache_valid = 1; 
+        // New Byte 0,1,2,3 = FF. Rest = 00.
+        cache_line = 128'hFFFFFFFF00000000_0000000000000000;
+        @(posedge clk); @(posedge clk); #2;
+        // CORRECT BEHAVIOR: Shifts out 4 bytes (indices 0-3). Old bytes 4-15 shift down to indices 0-11.
+        // The 4 new 'FF' bytes drop into the newly opened indices 12-15 [127:96].
+        verify("Combo: shft_we=0, consume 4 + load", 5'd28, 128'hFFFFFFFF00FFEEDD_CCBBAA9988776655);
+
+        // 7. Consume (de_valid=1, len=7) + Redir/Flush (redir=1)
+        @(negedge clk);
+        de_valid = 1; instr_len = 7;
+        redir = 1; // Decode branch taken
+        @(posedge clk); #2;
+        // CORRECT BEHAVIOR: Redir acts as a flush for the fetch buffer. It should clear.
+        verify("Combo: shft_we=0, consume 7 + redir=1", 5'd0, 128'h0);
+
+        // Cleanup
+        @(negedge clk);
+        de_valid = 0; instr_len = 0; redir = 0; f_icache_valid = 0; shft_reg_we = 1;
 
         $display("\n========================================");
         if (FAILURES == 0) $display("  ✅ SUCCESS: All Tests Passed");
