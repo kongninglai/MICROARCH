@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module tb_intgr_fshifter_decode_comprehensive();
+module intgr_fshifter_decode_tb2();
 
     // ---------------------------------------------------------
     // 0. Parameters 
@@ -90,7 +90,9 @@ module tb_intgr_fshifter_decode_comprehensive();
         input integer byte_idx;
         input [7:0] byte_val;
         begin
-            from_f_cache_line[(byte_idx*8) +: 8] = byte_val;
+            // MODIFIED FOR BIG ENDIAN:
+            // Byte 0 goes to [127:120], Byte 1 goes to [119:112], etc.
+            from_f_cache_line[((15 - byte_idx)*8) +: 8] = byte_val;
         end
     endtask
 
@@ -118,7 +120,7 @@ module tb_intgr_fshifter_decode_comprehensive();
     // ---------------------------------------------------------
     initial begin
         $vcdplusfile("intgr_comprehensive.vpd");
-        $vcdpluson(0, tb_intgr_fshifter_decode_comprehensive);
+        $vcdpluson(0, intgr_fshifter_decode_tb2);
 
         $display("=================================================");
         $display("   COMPREHENSIVE FRONT-END INTEGRATION TEST      ");

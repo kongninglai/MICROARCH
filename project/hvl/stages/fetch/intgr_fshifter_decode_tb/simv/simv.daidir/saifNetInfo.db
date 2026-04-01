@@ -1,4 +1,4 @@
-842
+843
 FA_8b
 Gi_i
 All
@@ -587,6 +587,9 @@ All
 fetch_buffer
 gated_load_request
 Scal
+fetch_buffer
+le_cache_line
+All
 fetch_buffer
 pf_expn_bits_in
 All

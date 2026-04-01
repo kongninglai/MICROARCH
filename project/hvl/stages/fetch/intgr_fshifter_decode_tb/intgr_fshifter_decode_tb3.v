@@ -89,7 +89,8 @@ module tb_intgr_fshifter_decode_rigorous();
         integer b;
         begin
             for (b = 0; b < 16; b = b + 1) begin
-                from_f_cache_line[b*8 +: 8] = 8'h90;
+                // MODIFIED FOR BIG ENDIAN
+                from_f_cache_line[((15 - b)*8) +: 8] = 8'h90;
             end
         end
     endtask
@@ -99,7 +100,9 @@ module tb_intgr_fshifter_decode_rigorous();
         input integer byte_idx;
         input [7:0] byte_val;
         begin
-            from_f_cache_line[byte_idx*8 +: 8] = byte_val;
+            // MODIFIED FOR BIG ENDIAN
+            // Byte 0 -> [127:120], Byte 1 -> [119:112], etc.
+            from_f_cache_line[((15 - byte_idx)*8) +: 8] = byte_val;
         end
     endtask
 
@@ -180,9 +183,9 @@ module tb_intgr_fshifter_decode_rigorous();
         // =========================================================
         // Cache line layout (byte 0 = first instruction byte):
         //   Bytes 0-12: NOP (0x90)  -- 13 single-byte NOPs
-        //   Byte 13:    0x05       -- ADD EAX, imm32 opcode
-        //   Byte 14:    0xAA       -- imm32 byte 0
-        //   Byte 15:    0xBB       -- imm32 byte 1  (incomplete: needs 5 bytes, has 3)
+        //   Byte 13:    0x05        -- ADD EAX, imm32 opcode
+        //   Byte 14:    0xAA        -- imm32 byte 0
+        //   Byte 15:    0xBB        -- imm32 byte 1  (incomplete: needs 5 bytes, has 3)
         // =========================================================
         $display("\n--- SCENARIO 1: Incomplete Instruction at Boundary ---");
 
@@ -194,7 +197,8 @@ module tb_intgr_fshifter_decode_rigorous();
 
         $write("DEBUG -> LOADING CACHE LINE: ");
         for (i = 0; i < 16; i = i + 1) begin
-            $write("%h ", from_f_cache_line[i*8 +: 8]);
+            // MODIFIED to print the logical byte order for Big Endian
+            $write("%h ", from_f_cache_line[((15-i)*8) +: 8]);
         end
         $display("");
 
@@ -245,11 +249,11 @@ module tb_intgr_fshifter_decode_rigorous();
         //   Byte 1: 0xDD  -- imm32 byte 3 (ADD complete!)
         //   Byte 2: 0xEB  -- JMP rel8
         //   Byte 3: 0x05  -- JMP displacement (+5)
-        //   Byte 4: 0x74  -- JE rel8
-        //   Byte 5: 0x02  -- JE displacement (+2)
+        //   Byte 4: 0x75  -- JNE rel8  <-- FIXED HERE
+        //   Byte 5: 0x02  -- JNE displacement (+2) <-- FIXED HERE
         //   Bytes 6-15: NOP
         //
-        // After merge, shift_reg = {05, AA, BB, CC, DD, EB, 05, 74, 02, 90...}
+        // After merge, shift_reg = {05, AA, BB, CC, DD, EB, 05, 75, 02, 90...}
         // =========================================================
         $display("\n--- SCENARIO 2: Line Merge & Jump Gauntlet ---");
 
@@ -259,8 +263,8 @@ module tb_intgr_fshifter_decode_rigorous();
         load_cache_byte(1, 8'hDD); // imm byte 3 (ADD complete!)
         load_cache_byte(2, 8'hEB); // JMP rel8
         load_cache_byte(3, 8'h05); // JMP displacement
-        load_cache_byte(4, 8'h74); // JE rel8
-        load_cache_byte(5, 8'h02); // JE displacement
+        load_cache_byte(4, 8'h75); // JNE rel8 <-- FIXED HERE
+        load_cache_byte(5, 8'h02); // JNE displacement <-- FIXED HERE
 
         from_f_icache_valid <= 1;
         // shft_reg_we already 1
@@ -272,7 +276,7 @@ module tb_intgr_fshifter_decode_rigorous();
 
         $display("---------------------------------------------------------");
         print_shifter_bytes(8);
-        $display("       -> EXPECTING first 8: 05 aa bb cc dd eb 05 74");
+        $display("       -> EXPECTING first 8: 05 aa bb cc dd eb 05 75");
         $display("---------------------------------------------------------");
 
         check_rr_stage("Completed ADD EAX", 1'b1, 8'h05, 8'h00);
@@ -281,7 +285,7 @@ module tb_intgr_fshifter_decode_rigorous();
         check_rr_stage("Decoded JMP", 1'b1, 8'hEB, 8'h00);
 
         @(negedge clk);
-        check_rr_stage("Decoded JE", 1'b1, 8'h74, 8'h00);
+        check_rr_stage("Decoded JNE", 1'b1, 8'h75, 8'h00); // FIXED HERE
 
 
         // =========================================================
@@ -343,9 +347,9 @@ module tb_intgr_fshifter_decode_rigorous();
         @(negedge clk);
         check_rr_stage("Flush Overrode Stall", 1'b0, 8'h00, 8'h00);
 
-        // Reload with JE at byte 0
+        // Reload with JNE at byte 0
         clear_cache_line();
-        load_cache_byte(0, 8'h74); // JE rel8
+        load_cache_byte(0, 8'h75); // JNE rel8 <-- FIXED HERE
         load_cache_byte(1, 8'h02); // displacement
 
         from_f_icache_valid <= 1;
@@ -354,7 +358,7 @@ module tb_intgr_fshifter_decode_rigorous();
         from_f_icache_valid <= 0;
 
         @(negedge clk); // Pipeline propagate
-        check_rr_stage("Recovered to JE", 1'b1, 8'h74, 8'h00);
+        check_rr_stage("Recovered to JNE", 1'b1, 8'h75, 8'h00); // FIXED HERE
 
 
         // =========================================================
