@@ -1,8 +1,8 @@
-module backend_top_tb;
+module backend_top_auto_tb;
 
 initial begin
-  // $vcdplusfile("backend_top_tb.dump.vpd");
-  // $vcdpluson(0, backend_top_tb); 
+  // $vcdplusfile("backend_top_auto_tb.dump.vpd");
+  // $vcdpluson(0, backend_top_auto_tb); 
 end
 
 integer i;
@@ -10,26 +10,27 @@ integer NUM_TESTS = 0;
 integer FAILURES  = 0;
 integer SUCCESSES = 0;
 
-localparam CYCLE_TIME_X10 = 98;
+localparam CYCLE_TIME_X10 = 97;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
 reg clk;
 reg rst_n;
-reg [5:0]  to_rr_prefix;
-reg [7:0]  to_rr_opcode;
-reg [7:0]  to_rr_modrm;
-reg [7:0]  to_rr_sib;
-reg [31:0] to_rr_disp;
-reg [1:0]  to_rr_dispsize;
-reg [47:0] to_rr_imm;
-reg [2:0]  to_rr_imm_size;
-reg [1:0]  to_rr_addr_mode;
-reg [31:0] to_rr_oeip;
-reg [31:0] to_rr_ieip;
-reg [31:0] to_rr_pred_eip;
-reg [1:0]  to_rr_exception;
-reg        to_rr_valid;
+wire [5:0]  to_rr_prefix;
+wire [7:0]  to_rr_opcode;
+wire [7:0]  to_rr_modrm;
+wire [7:0]  to_rr_sib;
+wire [31:0] to_rr_disp;
+wire [1:0]  to_rr_dispsize;
+wire [47:0] to_rr_imm;
+wire [2:0]  to_rr_imm_size;
+wire [1:0]  to_rr_addr_mode;
+
+reg  [31:0] to_rr_oeip;
+reg  [31:0] to_rr_ieip;
+reg  [31:0] to_rr_pred_eip;
+reg  [1:0]  to_rr_exception;
+reg         to_rr_valid;
 
 /*** CACHE / TLB INTERNAL WIRES ***/
 wire [11:0] MEM_PAGE_OFFSET;
@@ -238,255 +239,205 @@ tlb_wrapper tlb_inst (
   .KB_PFN(KB_PFN)
 );
 
+reg [127:0] to_de_outbytes;
+
+wire prefix_rep, prefix_op_size, prefix_ext;
+wire [2:0] prefix_seg_ov_id;
+wire [3:0] from_de_instr_len;
+
+assign to_rr_prefix = {prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext};
+assign to_rr_imm_size = 3'd0;
+
+localparam NUM_TESTS_MEM = 27;
+reg [127:0] mem_in [0:NUM_TESTS_MEM-1];
+
+block_decoder block_decoder_inst (
+  .cache_line(to_de_outbytes),
+  .prefix_rep(prefix_rep),
+  .prefix_op_size(prefix_op_size),
+  .prefix_seg_ov_id(prefix_seg_ov_id),
+  .prefix_ext(prefix_ext),
+  .opcode(to_rr_opcode),
+  .modrm_v(),
+  .modrm(to_rr_modrm),
+  .sib(to_rr_sib),
+  .disp_size_mux(to_rr_dispsize),
+  .disp(to_rr_disp),
+  .imm_size(),
+  .imm(to_rr_imm),
+  .addressing_mode(to_rr_addr_mode),
+  .instr_length(from_de_instr_len)
+);
+
 always #(CYCLE_TIME / 2.0) clk = ~clk;
 
 task clear_inputs;
 begin
-  to_rr_prefix = 6'd0;
-  to_rr_opcode = 8'd0;
-  to_rr_modrm = 8'd0;
-  to_rr_sib = 8'd0;
-  to_rr_disp = 32'd0;
-  to_rr_dispsize = 2'd0;
-  to_rr_imm = 48'd0;
-  to_rr_imm_size = 3'd0;
-  to_rr_addr_mode = 2'd0;
   to_rr_oeip = 32'd0;
   to_rr_ieip = 32'd0;
   to_rr_pred_eip = 32'd0;
   to_rr_exception = 2'd0;
   to_rr_valid = 1'b0;
+  to_de_outbytes = {128{1'bz}};
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hvl/top/backend_top/backend_top_tb/testcases.mem", mem_in);
 end
 endtask
 
-task apply_inputs;
-  input [5:0] prefix;
-  input [7:0] opcode;
-  input [7:0] modrm;
-  input [7:0] sib;
-  input [31:0] disp;
-  input [1:0] dispsize;
-  input [47:0] imm;
-  input [2:0] imm_size;
-  input [1:0] addr_mode;
-  input [31:0] oeip;
-  input [31:0] ieip;
-  input [31:0] pred_eip;
-  input [1:0] exception;
-  input valid;
-begin 
-  to_rr_prefix      = prefix;          
-  to_rr_opcode      = opcode;    
-  to_rr_modrm       = modrm;     
-  to_rr_sib         = sib;       
-  to_rr_disp        = disp;      
-  to_rr_dispsize    = dispsize;  
-  to_rr_imm         = imm;       
-  to_rr_imm_size    = imm_size;  
-  to_rr_addr_mode   = addr_mode; 
-  to_rr_oeip        = oeip;      
-  to_rr_ieip        = ieip;  
-  to_rr_pred_eip    = pred_eip;
-  to_rr_exception   = exception;    
-  to_rr_valid       = valid;     
+reg [31:0] saved_st_addr;
+reg [255:0] combined_data;
+reg [31:0] combined_mask;
+integer load_iters, k, m, n;
+always @(posedge clk) begin
+  if (dut.inst_stage_mem.rw_buf16[0] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
+    saved_st_addr = dut.inst_stage_mem.to_mem_st_addr;
+  end
+  if (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
+    case (dut.inst_stage_mem.mem_ds)
+      2'b00: load_iters=1;
+      2'b01: load_iters=2;
+      2'b10: load_iters=4;
+      2'b11: load_iters=8;
+    endcase
+    for (k = 0; k < load_iters; k = k + 1) begin
+      $fdisplay(file_handle_cmp,"Read  0x%02x from va = 0x%08x and pa = 0x%04x",
+         (dut.inst_stage_mem.from_mem_load_result >> (8 * k)) & 8'hFF,
+         dut.inst_stage_mem.to_mem_ld_addr[31:0] + k,
+         {D_RD_TLB_PFN_OUT[2:0], MEM_PAGE_OFFSET[11:4], dut.inst_stage_mem.to_mem_ld_addr[3:0] + k}
+      );
+    end
+  end
+  if (dut.inst_stage_wb.to_wb_store_is_io_line_0 === 1'b1 && dut.inst_stage_wb.no_exception === 1'b1 && dut.inst_stage_wb.to_wb_valid_buf16 === 1'b1) begin
+    for (m = 0; m < 16; m = m + 1) begin
+      if (WB_PR_ST_MASK_L0[m] === 1'b0) begin
+        $fdisplay(file_handle_cmp,"Wrote 0x%02x to   va = 0x%08x and pa = 0x%04x",
+          (WB_SHF_ST_DATA_L0 >> (8*m)) & 8'hFF,
+          saved_st_addr[31:0] + m,
+          {WB_PR_ST_ADDR_L0[14:4], saved_st_addr[3:0]} + m
+        );
+      end
+    end
+  end
+  if ((dut.inst_stage_wb.to_wb_store_queue_alloc_line_0 === 1'b1 || dut.inst_stage_wb.to_wb_store_queue_alloc_line_1 === 1'b1) && dut.inst_stage_wb.no_exception === 1'b1 && dut.inst_stage_wb.to_wb_valid_buf16 === 1'b1) begin
+    combined_data = {dut.inst_stage_wb.store_data_line_1, dut.inst_stage_wb.store_data_line_0};
+    combined_mask = {dut.inst_stage_wb.to_wb_store_mask_line_1, dut.inst_stage_wb.to_wb_store_mask_line_0};
+    for (n = 0; n < 32; n = n + 1) begin
+      if (combined_mask[n] === 1'b0) begin
+        $fdisplay(file_handle_cmp,"Wrote 0x%02x to   va = 0x%08x and pa = 0x%04x",
+          (combined_data >> (8*n)) & 8'hFF,
+          {saved_st_addr[31:4], 4'd0} + n,
+          {dut.inst_stage_wb.to_wb_store_addr_line_0[14:4], 4'd0} + n
+        );
+      end
+    end
+  end
 end
-endtask
 
 task print_arch_status;
-begin 
-  $display("======================================");
-  $display("General Purpose RegFile");
-  $display("======================================");
-  for(i = 0; i < 8; i = i + 1) begin
-      $display("reg[%0d] = %h", i, dut.inst_regunit.gprf.q[i]);
-  end
+begin
+  $fdisplay(file_handle_cmp,"Architectural State %0d", NUM_TESTS);
 
-  $display("======================================");
-  $display("Segment RegFile");
-  $display("======================================");
-  for(i = 0; i < 8; i = i + 1) begin
-      if(i==1) begin 
-          $display("reg[%0d](CS) = %h", i, dut.inst_regunit.segrf.cs_q);
-      end else begin 
-          $display("reg[%0d] = %h", i, dut.inst_regunit.segrf.seg_rf.q[i]);
-      end
-  end
+  // ---------------- GPR ----------------
+  $fdisplay(file_handle_cmp,"EAX: 0x%08X    ECX: 0x%08X    EDX: 0x%08X    EBX: 0x%08X",
+           dut.inst_regunit.gprf.q[0],
+           dut.inst_regunit.gprf.q[1],
+           dut.inst_regunit.gprf.q[2],
+           dut.inst_regunit.gprf.q[3]);
 
-  $display("======================================");
-  $display("MMX RegFile");
-  $display("======================================");
-  for(i = 0; i < 8; i = i + 1) begin
-      $display("reg[%0d] = %h", i, dut.inst_regunit.mmxrf.mmx_regs.q[i]);
-  end
-  $display("\n");
+  $fdisplay(file_handle_cmp,"ESP: 0x%08X    EBP: 0x%08X    ESI: 0x%08X    EDI: 0x%08X",
+           dut.inst_regunit.gprf.q[4],
+           dut.inst_regunit.gprf.q[5],
+           dut.inst_regunit.gprf.q[6],
+           dut.inst_regunit.gprf.q[7]);
 
-  $display("eflags=%08h", dut.inst_stage_ex.eflags_out);
-  $display("\n");
+  // ---------------- MMX ----------------
+  $fdisplay(file_handle_cmp,"MM0: 0x%016X               MM1: 0x%016X          ",
+           dut.inst_regunit.mmxrf.mmx_regs.q[0],
+           dut.inst_regunit.mmxrf.mmx_regs.q[1]);
+
+  $fdisplay(file_handle_cmp,"MM2: 0x%016X               MM3: 0x%016X          ",
+           dut.inst_regunit.mmxrf.mmx_regs.q[2],
+           dut.inst_regunit.mmxrf.mmx_regs.q[3]);
+
+  $fdisplay(file_handle_cmp,"MM4: 0x%016X               MM5: 0x%016X          ",
+           dut.inst_regunit.mmxrf.mmx_regs.q[4],
+           dut.inst_regunit.mmxrf.mmx_regs.q[5]);
+
+  $fdisplay(file_handle_cmp,"MM6: 0x%016X               MM7: 0x%016X          ",
+           dut.inst_regunit.mmxrf.mmx_regs.q[6],
+           dut.inst_regunit.mmxrf.mmx_regs.q[7]);
+
+  // ---------------- Segment Registers ----------------
+  $fdisplay(file_handle_cmp," ES: 0x%04X CS: 0x%04X SS: 0x%04X DS: 0x%04X FS: 0x%04X GS: 0x%04X",
+           dut.inst_regunit.segrf.seg_rf.q[0], // ES
+           dut.inst_regunit.segrf.cs_q,        // CS
+           dut.inst_regunit.segrf.seg_rf.q[2], // SS
+           dut.inst_regunit.segrf.seg_rf.q[3], // DS
+           dut.inst_regunit.segrf.seg_rf.q[4], // FS
+           dut.inst_regunit.segrf.seg_rf.q[5]  // GS
+  );
+
+  // ---------------- EFLAGS ----------------
+  $fdisplay(file_handle_cmp," CF: %0d      PF: %0d      AF: %0d      ZF: %0d      SF: %0d      OF: %0d      DF: %0d",
+           dut.inst_stage_ex.eflags_out[0],   // CF
+           dut.inst_stage_ex.eflags_out[2],   // PF
+           dut.inst_stage_ex.eflags_out[4],   // AF
+           dut.inst_stage_ex.eflags_out[6],   // ZF
+           dut.inst_stage_ex.eflags_out[7],   // SF
+           dut.inst_stage_ex.eflags_out[11],  // OF
+           dut.inst_stage_ex.eflags_out[10]   // DF
+  );
+
+  // ---------------- EIP ----------------
+  $fdisplay(file_handle_cmp,"EIP: 0x%08X", to_rr_oeip);
+
+  $fdisplay(file_handle_cmp,"----------------------------------------");
 end
-endtask
-
-task insert_nop; 
-  apply_inputs(6'b000110, 8'h01, 8'hc0, 8'bx, 32'bx, 2'b00,
-                  48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'h0, 2'b0, 1'b0);
 endtask
 
 task test_with_nops;
-  input [5:0] prefix;
-  input [7:0] opcode;
-  input [7:0] modrm;
-  input [7:0] sib;
-  input [31:0] disp;
-  input [1:0] dispsize;
-  input [47:0] imm;
-  input [2:0] imm_size;
-  input [1:0] addr_mode;
-  input [31:0] oeip;
-  input [31:0] ieip;
-  input [31:0] pred_eip;
-  input [1:0] exception;
-  input valid;
+  input integer test_num;
 begin 
   @(posedge clk);
-  apply_inputs(prefix, opcode, modrm, sib, disp, dispsize, imm, imm_size, addr_mode, oeip, ieip, pred_eip, exception, valid);
-  @(posedge clk); // updated rr_to_ag
-  insert_nop();
+  to_de_outbytes = mem_in[test_num];
+  to_rr_valid = 1'b1;
+  // @(posedge clk); // updated rr_to_ag
+  #(CYCLE_TIME-2);
+  to_rr_ieip = to_rr_oeip + from_de_instr_len;
+  to_rr_pred_eip = to_rr_ieip;
   @(posedge clk); // updated ag_to_mem
-  insert_nop();
-  @(posedge clk); // updated mem_to_ex
-  insert_nop();
-  @(posedge clk); // updated ex_to_wb
-  insert_nop();
-  @(posedge clk); // updated register files
-  insert_nop();
-  repeat (30) begin
-    @(posedge clk);
-    insert_nop();
-  end
+  to_rr_valid = 1'b0;
+  to_de_outbytes = {128{1'bz}};
+  #(30 * CYCLE_TIME);
+  to_rr_oeip = to_rr_ieip;
   print_arch_status();
-  $display("\n");
   NUM_TESTS = NUM_TESTS + 1;
+  #(CYCLE_TIME);
 end
 endtask
+
+integer j;
+integer file_handle_cmp;
 
 initial begin 
   clk = 1'b0;
   rst_n = 1'b0;
+  file_handle_cmp = $fopen("results_cmp.txt", "w");
+  if (file_handle_cmp == 0) begin
+    $display("Error: Failed to open results_cmp.txt!");
+  end
   clear_inputs();
   @(posedge clk);
   @(posedge clk);
   rst_n = 1'b1;
   
-  print_arch_status();
+  // print_arch_status();
 
-  $display("======================================");
-  $display("[ALU] TEST CASE%0d: ADD BH, 0x8", NUM_TESTS);
-  $display("======================================");
-  // 80 c7 08
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'h80, 8'hc7, 8'bx, 32'bx, 2'b00,
-                  48'h8, 3'b001, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
+  // Iterate through all tests
+  for (j = 0; j < NUM_TESTS_MEM; j = j + 1) begin
+      test_with_nops(j);
+  end
 
-  $display("======================================");
-  $display("[ALU] TEST CASE%0d: ADD EAX, 0x12345678", NUM_TESTS);
-  $display("======================================");
-  // 05 78 56 34 12
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'h05, 8'bx, 8'bx, 32'bx, 2'b00,
-                  48'h12345678, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
-  
-  $display("======================================");
-  $display("[ALU] TEST CASE%0d: ADD AX, BX", NUM_TESTS);
-  $display("======================================");
-  // 66 01 D8
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b010110, 8'h01, 8'hD8, 8'bx, 32'bx, 2'b00,
-                  48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
-
-
-  $display("======================================");
-  $display("[CMPXCHG] TEST CASE%0d: MOV EAX, 0x5", NUM_TESTS);
-  $display("======================================");
-  // b8 05 00 00 00
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'hb8, 8'bx, 8'bx, 32'bx, 2'b00,
-                  48'h5, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
-  
-  $display("======================================");
-  $display("[CMPXCHG] TEST CASE%0d: MOV EBX, 0x5", NUM_TESTS);
-  $display("======================================");
-  // bb 05 00 00 00
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'hbb, 8'bx, 8'bx, 32'bx, 2'b00,
-                  48'h5, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
-
-  $display("======================================");
-  $display("[CMPXCHG] TEST CASE%0d: MOV ECX, 0x9", NUM_TESTS);
-  $display("======================================");
-  // b9 09 00 00 00
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'hb9, 8'bx, 8'bx, 32'bx, 2'b00,
-                  48'h9, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
-
-  $display("======================================");
-  $display("[CMPXCHG] TEST CASE%0d: CMPXCHG EBX, ECX", NUM_TESTS);
-  $display("======================================");
-  // 0f b1 cb
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000111, 8'hb1, 8'hcb, 8'bx, 32'bx, 2'b00,
-                  48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
-  
-  $display("======================================");
-  $display("[CMPXCHG] TEST CASE%0d: CMPXCHG EBX, ECX", NUM_TESTS);
-  $display("======================================");
-  // 0f b1 cb
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000111, 8'hb1, 8'hcb, 8'bx, 32'bx, 2'b00,
-                  48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
-  
-  $display("======================================");
-  $display("[MMX] TEST CASE%0d: MOVQ MM0, [EBX]", NUM_TESTS);
-  $display("======================================");
-  // 0f 6f 03
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000111, 8'h6f, 8'h03, 8'bx, 32'bx, 2'b00,
-                  48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
-  
-  $display("======================================");
-  $display("[MMX] TEST CASE%0d: PAVGB MM2, MM0", NUM_TESTS);
-  $display("======================================");
-  // 0f e0 d0
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000111, 8'he0, 8'hd0, 8'bx, 32'bx, 2'b00,
-                  48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
-  
-  $display("======================================");
-  $display("[STACK] TEST CASE%0d: MOV ESP 0x1234", NUM_TESTS);
-  $display("======================================");
-  // bc 34 12 00 00
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'hbc, 8'bx, 8'bx, 32'bx, 2'b00,
-                  48'h1234, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
-
-  $display("======================================");
-  $display("[STACK] TEST CASE%0d: POP DS", NUM_TESTS);
-  $display("======================================");
-  // 1f
-  // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
-  // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'h1f, 8'bx, 8'bx, 32'bx, 2'b00,
-                  48'bx, 3'b000, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
-
+  #(30 * CYCLE_TIME);
                   
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);

@@ -103,6 +103,7 @@ module stage_ag(
     or4$    or4$_stall_if_mem_inst(stall_if_mem_inst, from_mem_valid_store_inst, from_ex_valid_store_inst, from_wb_stall_if_mem_en, from_wb_valid_store_inst);
     and2$   and2$_mem_inst_needs_stall(mem_inst_needs_stall, is_mem_inst, stall_if_mem_inst);
     or2$    or2$_from_ag_stall(from_ag_stall, from_mem_stall, mem_inst_needs_stall);
+    inv1$   inv1$_from_ag_we_pipe_reg(from_ag_we_pipe_reg, from_mem_stall);
 
     /* Insert bubbles if mem_inst_needs_stall and NOT from_mem_stall */
     wire from_ag_valid_gate, from_mem_stall_bar;

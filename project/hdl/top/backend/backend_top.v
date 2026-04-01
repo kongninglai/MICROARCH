@@ -249,7 +249,7 @@ module backend_top #(
     
 
     /*** MEM OUTPUTS ***/
-    wire [55:0]     from_mem_control_sigs;
+    wire [54:0]     from_mem_control_sigs;
     wire [2:0]      from_mem_dstidA;
     wire [2:0]      from_mem_dstidB;
     wire [31:0]     from_mem_srcregA;
@@ -716,7 +716,7 @@ module backend_top #(
         .to_mem_valid(to_mem_valid)
     );
 
-    stage_mem DUT (
+    stage_mem inst_stage_mem (
       .clk(clk),
       .rst_n(rst_n),
 
