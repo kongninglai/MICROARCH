@@ -407,7 +407,7 @@ or4$    or4$_from_mem_exception[1:0](from_mem_exception, LOAD_EXCEPTION_MASK, ST
 wire  no_mem_exception, no_mem_exception_buf16;
 nor2$   nor2$_no_mem_exception(no_mem_exception, from_mem_exception[0], from_mem_exception[1]);
 bufferH16$    bufferH16$_no_mem_exception_buf16(no_mem_exception_buf16, no_mem_exception);
-and3$   and3$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], no_mem_exception_buf16, to_mem_valid_buf16);
+and2$   and2$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], to_mem_valid_buf16);
 
 
 /*** STORE PIPELINE REGISTERS ***/
