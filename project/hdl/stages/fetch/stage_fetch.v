@@ -2,6 +2,7 @@ module stage_fetch(
     input wire clk,
     input wire rst_bar, 
 
+    input wire from_de_valid, //TODO ADD TO TB
     input wire from_de_take_branch,
     input wire from_ex_flush,
     input wire from_ex_ld_cs,
@@ -17,14 +18,10 @@ module stage_fetch(
     inout wire [2:0] ITLB_PFN_OUT,
     inout wire ITLB_PAGE_FAULT_OUT,
     inout wire [11:0] F_PAGE_OFFSET,
+    input wire shft_reg_we,
 
     output wire [31:0] ic_addr
 );
-
-//Shift Enable Register Logic
-//WE = ~IF_FULL && ICACHE_VALID
-wire shft_reg_we;
-and2$ shft_reg_we_gate(.in0(ICACHE_VALID), .in1(from_f_cl_ld), .out(shft_reg_we));
 
 //Fetch Pointer Logic
 fetch_pointer FETCH_POINTER(

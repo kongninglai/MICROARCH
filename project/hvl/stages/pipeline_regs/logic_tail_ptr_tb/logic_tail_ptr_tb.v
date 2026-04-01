@@ -6,11 +6,11 @@ module logic_tail_ptr_tb;
     reg clk;
     reg rst_bar;
     reg [3:0] incr_amt;
-    reg shft_reg_we; // <-- NEW: Replaced de_valid
+    reg shft_reg_we; 
     reg flush;
     reg stall;
     reg fb_req_cl;
-    reg [4:0] we_cl_byte_cnt;
+    reg eip_redirection; // <-- NEW: Replaced we_cl_byte_cnt
 
     // Output from Design
     wire [4:0] tail_ptr;
@@ -27,11 +27,11 @@ module logic_tail_ptr_tb;
         .clk(clk),
         .rst_bar(rst_bar),
         .incr_amt(incr_amt),
-        .shft_reg_we(shft_reg_we), // <-- NEW: Updated instantiation
+        .shft_reg_we(shft_reg_we), 
         .flush(flush),
         .stall(stall),
         .fb_req_cl(fb_req_cl),
-        .we_cl_byte_cnt(we_cl_byte_cnt), 
+        .eip_redirection(eip_redirection), // <-- NEW: Wired Redirection
         .tail_ptr(tail_ptr)
     );
 
@@ -47,8 +47,9 @@ module logic_tail_ptr_tb;
                 $display("[PASS] %0s | Expected: %d, Got: %d", test_name, target, tail_ptr);
                 SUCCESSES = SUCCESSES + 1;
             end else begin
-                $display("[FAIL] %0s | Expected: %d (%b), Got: %d (%b) | Stall=%b Req=%b Flush=%b Decr=%d Incr=%d WE=%b", 
-                          test_name, target, target, tail_ptr, tail_ptr, stall, fb_req_cl, flush, incr_amt, we_cl_byte_cnt, shft_reg_we);
+                // Reading the internal we_cl_byte_cnt_temp to verify internal logic
+                $display("[FAIL] %0s | Expected: %d (%b), Got: %d (%b) | Stall=%b Req=%b Flush=%b Decr=%d EIP_Redir=%b WE_Bytes=%d", 
+                          test_name, target, target, tail_ptr, tail_ptr, stall, fb_req_cl, flush, incr_amt, eip_redirection, dut.we_cl_byte_cnt_temp[4:0]);
                 
                 $display("       Internal Wires: cl_incr_only=%d, out=%d, cl_incr=%d, decr=%d", 
                           dut.tail_ptr_cl_incr_only_w, dut.tail_ptr_out, 
@@ -63,7 +64,7 @@ module logic_tail_ptr_tb;
     initial begin
         // --- Initialization ---
         clk = 0; rst_bar = 0; flush = 0; stall = 0; fb_req_cl = 0; 
-        incr_amt = 0; shft_reg_we = 0; expected_ptr = 0; we_cl_byte_cnt = 0;
+        incr_amt = 0; shft_reg_we = 0; expected_ptr = 0; eip_redirection = 0;
 
         $display("\n--- INITIALIZING TAIL POINTER TESTBENCH ---");
         #15 rst_bar = 1; // Release reset
@@ -72,90 +73,104 @@ module logic_tail_ptr_tb;
         test_name = "Initial Reset Check";
         verify(5'd0);
 
-        // TEST 2: Fill Only (Variable amount)
+        // TEST 2: Fill Only (Add 16)
         test_name = "Fill Only (Empty -> Add 16)";
-        // Note: shft_reg_we MUST be 1 here to latch the new fill value
-        stall = 1; fb_req_cl = 1; shft_reg_we = 1; we_cl_byte_cnt = 16;
+        stall = 1; fb_req_cl = 1; shft_reg_we = 1; eip_redirection = 0;
         expected_ptr = 16;
         verify(expected_ptr);
 
-        // TEST 3: Decode + Fill (Variable amount)
-        test_name = "Decode + Fill (16 - 3 + 11 = 24)";
-        stall = 0; fb_req_cl = 1; shft_reg_we = 1; 
+        // TEST 3: Decode + Fill 
+        test_name = "Decode + Fill (16 - 3 + 16 = 29)";
+        stall = 0; fb_req_cl = 1; shft_reg_we = 1; eip_redirection = 0;
         incr_amt = 3;       // Consume 3 bytes
-        we_cl_byte_cnt = 11; // Write 11 bytes (e.g. branch offset was 5)
-        expected_ptr = 24;
+        expected_ptr = 29;
         verify(expected_ptr);
 
         // TEST 4: Normal Decrement
-        test_name = "Normal Decrement (24 - 5 = 19)";
-        stall = 0; fb_req_cl = 0; shft_reg_we = 1; 
+        test_name = "Normal Decrement (29 - 5 = 24)";
+        stall = 0; fb_req_cl = 0; shft_reg_we = 1; eip_redirection = 0;
         incr_amt = 5; 
-        we_cl_byte_cnt = 0; // No fetch this cycle
-        expected_ptr = 19;
+        expected_ptr = 24;
         verify(expected_ptr);
 
         // TEST 5: Stall (Hold Value via Mux IN2)
-        test_name = "Stall/Hold Value (Stay at 19)";
+        test_name = "Stall/Hold Value (Stay at 24)";
         stall = 1; fb_req_cl = 0; shft_reg_we = 1; 
-        incr_amt = 5;       // Simulator might have data here, but stall should ignore it
-        expected_ptr = 19;
+        incr_amt = 5;       
+        expected_ptr = 24;
         verify(expected_ptr);
 
         // TEST 6: Stall + Fill 
-        test_name = "Stall + Fill (19 + 10 = 29)";
-        stall = 1; fb_req_cl = 1; shft_reg_we = 1; 
-        we_cl_byte_cnt = 10;
-        expected_ptr = 29; 
+        test_name = "Stall + Fill (24 + 16 = 40 -> 8)";
+        stall = 1; fb_req_cl = 1; shft_reg_we = 1; eip_redirection = 0;
+        expected_ptr = 8; // 40 wraps around to 8 in 5-bit
         verify(expected_ptr);
 
         // TEST 7: Flush Priority
         test_name = "Flush Priority Check (Return to 0)";
-        flush = 1; shft_reg_we = 1; we_cl_byte_cnt = 15; incr_amt = 5; // Add noise to ensure flush overrides
+        flush = 1; shft_reg_we = 1; eip_redirection = 1; incr_amt = 5; 
         expected_ptr = 0;
         verify(expected_ptr);
-        flush = 0; // Restore
+        flush = 0; 
 
-        // TEST 8: Fill Only (Variable amount)
-        test_name = "Fill Only (Empty -> Add 10)";
-        stall = 1; fb_req_cl = 1; shft_reg_we = 1; we_cl_byte_cnt = 10;
+        // TEST 8: Fill Only with Redirection (Add 10)
+        // Offset is 6, so we_cl_byte_cnt should evaluate to 16 - 6 = 10
+        test_name = "Redirection Fill (Empty -> Add 10)";
+        stall = 1; fb_req_cl = 1; shft_reg_we = 1; eip_redirection = 1; incr_amt = 6;
         expected_ptr = 10;
         verify(expected_ptr);
 
-        // TEST 9: Fill Only (Variable amount)
-        test_name = "Fill Only (Empty -> Add 15)";
-        stall = 1; fb_req_cl = 1; shft_reg_we = 1; we_cl_byte_cnt = 15;
+        // TEST 9: Fill Only with Redirection (Add 15)
+        // Offset is 1, so we_cl_byte_cnt should evaluate to 16 - 1 = 15
+        test_name = "Redirection Fill (10 + 15 = 25)";
+        stall = 1; fb_req_cl = 1; shft_reg_we = 1; eip_redirection = 1; incr_amt = 1;
         expected_ptr = 25;
         verify(expected_ptr);
 
         // TEST 10: Cross Cache Line Boundary (Wrap Around)
-        // Scenario: Pointer is at 25. Consume 1 bytes, write 14 new bytes.
-        // Math: 25 - 1 + 14 = 38. In 5-bit binary, 38 is 00110 (which is 6).
-        test_name = "Cross Boundary Wrap (25 - 1 + 14 = 38 -> 6)";
-        stall = 0; 
-        fb_req_cl = 1; 
-        shft_reg_we = 1; 
-        incr_amt = 1; 
-        we_cl_byte_cnt = 14;
-        expected_ptr = 6; 
+        // Normal fetch adds 16. Consume 5.
+        // Math: 25 - 5 + 16 = 36. In 5-bit binary, 36 is 00100 (which is 4).
+        test_name = "Cross Boundary Wrap (25 - 5 + 16 = 36 -> 4)";
+        stall = 0; fb_req_cl = 1; shft_reg_we = 1; eip_redirection = 0; incr_amt = 5; 
+        expected_ptr = 4; 
         verify(expected_ptr);
 
-        // --- NEW EDGE CASES ---
-
         // TEST 11: Write Enable Low (Hold Value)
-        // Ensure that if shft_reg_we = 0, the pointer doesn't change even if there is activity
-        test_name = "EDGE CASE: WE Low/Hold Value (Stay at 6)";
-        stall = 0; fb_req_cl = 1; shft_reg_we = 0; // WE is 0
-        incr_amt = 3; we_cl_byte_cnt = 10;         // Math says it should be 13, but WE is 0
-        expected_ptr = 6; 
+        test_name = "EDGE CASE: WE Low/Hold Value (Stay at 4)";
+        stall = 0; fb_req_cl = 1; shft_reg_we = 0; 
+        incr_amt = 3; eip_redirection = 0;
+        expected_ptr = 4; 
         verify(expected_ptr);
 
         // TEST 12: Zero Decrement
-        // Stall is low, but the instruction consumed 0 bytes (edge case for your subtractor)
-        test_name = "EDGE CASE: Zero Decrement (6 - 0 = 6)";
+        test_name = "EDGE CASE: Zero Decrement (4 - 0 = 4)";
         stall = 0; fb_req_cl = 0; shft_reg_we = 1; 
-        incr_amt = 0; we_cl_byte_cnt = 0;
-        expected_ptr = 6; 
+        incr_amt = 0; 
+        expected_ptr = 4; 
+        verify(expected_ptr);
+
+        // --- NEW TESTS FOR CACHE LINE BYTE COUNT LOGIC ---
+
+        // TEST 13: Redirection Max Offset
+        test_name = "NEW: Redir Max Offset (Empty -> Add 1)";
+        // 1. Explicitly flush using the verify task to keep clock synced
+        flush = 1; stall = 0; fb_req_cl = 0; shft_reg_we = 1; eip_redirection = 0; incr_amt = 0;
+        verify(5'd0); 
+        
+        // 2. Setup the actual test
+        flush = 0; stall = 1; fb_req_cl = 1; shft_reg_we = 1; eip_redirection = 1; incr_amt = 15;
+        expected_ptr = 1; 
+        verify(expected_ptr);
+
+        // TEST 14: Redirection Zero Offset 
+        test_name = "NEW: Redir Zero Offset (Empty -> Add 16)";
+        // 1. Explicitly flush
+        flush = 1; stall = 0; fb_req_cl = 0; shft_reg_we = 1; eip_redirection = 0; incr_amt = 0;
+        verify(5'd0); 
+
+        // 2. Setup the actual test
+        flush = 0; stall = 1; fb_req_cl = 1; shft_reg_we = 1; eip_redirection = 1; incr_amt = 0;
+        expected_ptr = 16; 
         verify(expected_ptr);
 
         // --- FINAL REPORTING ---

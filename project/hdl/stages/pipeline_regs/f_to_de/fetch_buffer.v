@@ -16,7 +16,9 @@ module fetch_buffer(
     input wire from_f_cl_pf, //the cache line loaded had a page fault
     input wire [127:0] from_f_cache_line, //big endian
     input wire from_de_eip_redirection, //br taken in decode
-    input wire shft_reg_we,
+    input wire ICACHE_VALID, 
+
+    output wire shft_reg_we, //from_de_valid, v_cl_ld, flush
     output wire [4:0] tail_ptr,
     output [127:0] to_de_outbytes,
     output wire [15:0] to_de_pf_expn_bytes_out, 
@@ -31,29 +33,42 @@ module fetch_buffer(
             assign le_cache_line[(b*8) + 7 : b*8] = from_f_cache_line[((15-b)*8) + 7 : (15-b)*8];
         end
     endgenerate
+    
+    //Shift Enable Register Logic (WE = ~IF_FULL && ICACHE_VALID)
+    wire cl_write_shft_we;
+    and2$ shft_reg_we_gate(.in0(ICACHE_VALID), .in1(v_cl_ld), .out(cl_write_shft_we));
+    or3$ or_shft_reg_we(shft_reg_we, cl_write_shft_we, from_de_valid, from_ex_flush); //also shift when consuming instructions (branch taken or flush in execute)
 
-    //Correct Instruction Length
+    //True Consume Logic
     wire [3:0] gated_instr_len;
-    and2$ gate_len0(gated_instr_len[0], from_de_instr_len[0], from_de_valid);
-    and2$ gate_len1(gated_instr_len[1], from_de_instr_len[1], from_de_valid);
-    and2$ gate_len2(gated_instr_len[2], from_de_instr_len[2], from_de_valid);
-    and2$ gate_len3(gated_instr_len[3], from_de_instr_len[3], from_de_valid);
+    wire true_consume, stall_bar; 
+    inv1$ inv_stall_bar(stall_bar, from_de_stall);
+    and2$ and_true_consume(true_consume, from_de_valid, stall_bar); //only consume instruction (decr tail ptr) if de is valid and not stalled
+    
+    //Correct Instruction Length
+    and2$ gate_len0(gated_instr_len[0], from_de_instr_len[0], true_consume);
+    and2$ gate_len1(gated_instr_len[1], from_de_instr_len[1], true_consume);
+    and2$ gate_len2(gated_instr_len[2], from_de_instr_len[2], true_consume);
+    and2$ gate_len3(gated_instr_len[3], from_de_instr_len[3], true_consume);
 
-    //Tail Pointer Logic
+    //Flush Signal Generation 
     wire v_cl_ld, v_cl_ld_bar, from_de_cache_line_load_signal, from_de_eip_redirection_valid, fb_req_cl_stable;
     wire [4:0] wr_cl_byte_cnt;
     wire flush, flush_bar;
     and2$ and_eip_redir_valid(from_de_eip_redirection_valid, from_de_eip_redirection, from_de_valid);
     or3$ or_flush(flush, from_wb_flush, from_ex_flush, from_de_eip_redirection_valid); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid data
     inv1$ inv_flush_bar(flush_bar, flush);
+
+    //Cache Line Load Sign Generation
     and3$ and_v_cl_ld(v_cl_ld, fb_req_cl_stable, rst_bar, from_f_icache_valid); 
     inv1$ inv_load(v_cl_ld_bar, v_cl_ld);
     
+    //Tail Pointer Logic
     logic_tail_ptr LOGIC_TAIL_PTR(
         .clk(clk),
         .rst_bar(rst_bar),
         .incr_amt(gated_instr_len),
-        .de_valid(from_de_valid),
+        .shft_reg_we(shft_reg_we),
         .flush(flush),
         .stall(from_de_stall),
         .fb_req_cl(v_cl_ld), //input, fetch buffer request cache line signal (if there is space in the fetch buffer)
@@ -121,15 +136,12 @@ module fetch_buffer(
         .wr_cl_byte_cnt(wr_cl_byte_cnt)
     );
 
-    //Shift Buffer
-    wire shift_signal, shift_reg_we, shift_reg_en;
-    or3$ or_shift_signal(shift_signal, from_de_valid, v_cl_ld, flush); 
-    and2$ and_shft_reg_en(shift_reg_en, shift_signal, shft_reg_we);
+    //Fetch Buffer
     wire shft_reg_clr_bar, ready_fb;
     and2$ and_shft_reg_clr_bar(shft_reg_clr_bar, rst_bar, flush_bar); 
     shift_reg FETCH_BUFFER(
         .clk(clk), .rst_n(shft_reg_clr_bar), 
-        .shift(shift_reg_en), .instr_len(gated_instr_len), 
+        .shift(shft_reg_we), .instr_len(gated_instr_len), 
         .inbytes(cl_aligned), .wr_en(wr_en), 
         .outbytes(to_de_outbytes[127:0]), .ready(ready_fb)
     ); 
@@ -147,7 +159,7 @@ module fetch_buffer(
     endgenerate
 
     wire ready_pfb;
-    shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(shft_reg_clr_bar), .shift(shift_reg_en), .instr_len(gated_instr_len), .inbytes(pf_expn_bits_in), 
+    shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(shft_reg_clr_bar), .shift(shft_reg_we), .instr_len(gated_instr_len), .inbytes(pf_expn_bits_in), 
         .wr_en(wr_en), .outbytes(pf_expn_bits_out), .ready(ready_pfb)
     ); 
 

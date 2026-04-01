@@ -3,7 +3,6 @@ module intgr_fshifter_decode(
     input wire rst_bar,
 
     //fetch buffer inputs
-    input wire shft_reg_we, //from first half of fetch
     input wire [127:0] from_f_cache_line, //from first half of fetch
     input wire from_f_icache_valid, //from first half of fetch
     input wire from_wb_flush,
@@ -53,7 +52,7 @@ module intgr_fshifter_decode(
         .from_f_cl_pf(from_f_cl_pf), 
         .from_f_cache_line(from_f_cache_line),
         .from_de_eip_redirection(from_de_eip_redirection), 
-        .shft_reg_we(shft_reg_we),
+        .shft_reg_we(shft_reg_we), //output to first half of fetch
         .tail_ptr(tail_ptr),
         .to_de_outbytes(to_de_outbytes),
         .to_de_pf_expn_bytes_out(to_de_pf_expn_bytes_out), 
