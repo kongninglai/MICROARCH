@@ -47,10 +47,15 @@ module tb_intgr_fshifter_decode_rigorous();
     intgr_fshifter_decode uut (
         .clk(clk),
         .rst_bar(rst_bar),
-        .shft_reg_we(shft_reg_we),
+
+        // --- Fetch Buffer Inputs ---
         .from_f_cache_line(from_f_cache_line),
-        .from_f_icache_valid(from_f_icache_valid),
+        .ICACHE_VALID(from_f_icache_valid), // <--- FIXED PORT NAME
         .from_wb_flush(from_wb_flush),
+        
+        // Note: .shft_reg_we(...) is REMOVED!
+
+        // --- Decode Inputs ---
         .from_ex_eip_target(from_ex_eip_target),
         .from_rr_stall(from_rr_stall),
         .from_ex_br_t_nt(from_ex_br_t_nt),
@@ -59,6 +64,7 @@ module tb_intgr_fshifter_decode_rigorous();
         .from_ex_pht_idx(from_ex_pht_idx),
         .from_f_cl_pf(from_f_cl_pf),
 
+        // --- Outputs ---
         .to_rr_exception_flags(to_rr_exception_flags),
         .to_rr_i_eip(to_rr_i_eip),
         .to_rr_o_eip(to_rr_o_eip),
@@ -68,6 +74,8 @@ module tb_intgr_fshifter_decode_rigorous();
         .to_rr_opcode(to_rr_opcode),
         .to_rr_modrm(to_rr_modrm),
         .to_rr_sib(to_rr_sib),
+
+        // Make sure you include these bottom outputs to get rid of the "Too few connections" warning!
         .to_rr_disp_size_mux(to_rr_disp_size_mux),
         .to_rr_disp(to_rr_disp),
         .to_rr_imm_size(to_rr_imm_size),
@@ -75,7 +83,7 @@ module tb_intgr_fshifter_decode_rigorous();
         .to_rr_addressing_mode(to_rr_addressing_mode),
         .to_rr_instr_length(to_rr_instr_length)
     );
-
+    
     // ---------------------------------------------------------
     // 2. Clock & Tasks
     // ---------------------------------------------------------

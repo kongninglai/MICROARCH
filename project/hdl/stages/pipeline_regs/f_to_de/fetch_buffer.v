@@ -32,11 +32,19 @@ module fetch_buffer(
             assign le_cache_line[(b*8) + 7 : b*8] = from_f_cache_line[((15-b)*8) + 7 : (15-b)*8];
         end
     endgenerate
+
+    //Flush Signal Generation 
+    wire v_cl_ld, v_cl_ld_bar, from_de_cache_line_load_signal, from_de_eip_redirection_valid, fb_req_cl_stable;
+    wire [4:0] wr_cl_byte_cnt;
+    wire flush, flush_bar;
+    and2$ and_eip_redir_valid(from_de_eip_redirection_valid, from_de_eip_redirection, from_de_valid);
+    or3$ or_flush(flush, from_wb_flush, from_ex_flush, from_de_eip_redirection_valid); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid data
+    inv1$ inv_flush_bar(flush_bar, flush);
     
     //Shift Enable Register Logic (WE = ~IF_FULL && ICACHE_VALID)
     wire cl_write_shft_we;
     and2$ shft_reg_we_gate(.in0(ICACHE_VALID), .in1(v_cl_ld), .out(cl_write_shft_we));
-    or3$ or_shft_reg_we(shft_reg_we, cl_write_shft_we, from_de_valid, from_ex_flush); //also shift when consuming instructions (branch taken or flush in execute)
+    or3$ or_shft_reg_we(shft_reg_we, cl_write_shft_we, from_de_valid, flush); //also shift when consuming instructions (branch taken or flush in execute)
 
     //True Consume Logic
     wire [3:0] gated_instr_len;
@@ -49,14 +57,6 @@ module fetch_buffer(
     and2$ gate_len1(gated_instr_len[1], from_de_instr_len[1], true_consume);
     and2$ gate_len2(gated_instr_len[2], from_de_instr_len[2], true_consume);
     and2$ gate_len3(gated_instr_len[3], from_de_instr_len[3], true_consume);
-
-    //Flush Signal Generation 
-    wire v_cl_ld, v_cl_ld_bar, from_de_cache_line_load_signal, from_de_eip_redirection_valid, fb_req_cl_stable;
-    wire [4:0] wr_cl_byte_cnt;
-    wire flush, flush_bar;
-    and2$ and_eip_redir_valid(from_de_eip_redirection_valid, from_de_eip_redirection, from_de_valid);
-    or3$ or_flush(flush, from_wb_flush, from_ex_flush, from_de_eip_redirection_valid); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid data
-    inv1$ inv_flush_bar(flush_bar, flush);
 
     //Cache Line Load Sign Generation
     and3$ and_v_cl_ld(v_cl_ld, fb_req_cl_stable, rst_bar, ICACHE_VALID); 
@@ -82,8 +82,9 @@ module fetch_buffer(
         .BGA() 
     );
 
-    wire gated_load_request;
-    and2$ gate_req(gated_load_request, from_de_cache_line_load_signal, v_cl_ld_bar);
+    wire gated_load_request, gated_load_request_w;
+    and2$ gate_req(gated_load_request_w, from_de_cache_line_load_signal, v_cl_ld_bar);
+    or2$ or_req(gated_load_request, gated_load_request_w, flush); //also consider flush as a load request to prevent accepting new instructions during a flush
     dff$ CL_REQ_HOLD(
         .clk(clk), .r(rst_bar), .s(1'b1),
         .d(gated_load_request),

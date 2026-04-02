@@ -9,7 +9,7 @@
         "tb_intgr_fshifter_decode_rigorous",
         "hvgr5",
         "module",
-        2
+        62
     ],
     "stage_decode": [
         "stage_decode",
@@ -101,11 +101,11 @@
         "module",
         17
     ],
-    "logic_tail_ptr_0000": [
-        "logic_tail_ptr_0000",
-        "zELMf",
+    "logic_tail_ptr": [
+        "logic_tail_ptr",
+        "ujTEt",
         "module",
-        18
+        63
     ],
     "nand2$": [
         "nand20x24",

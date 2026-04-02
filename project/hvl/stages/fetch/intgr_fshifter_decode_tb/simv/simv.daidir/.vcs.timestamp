@@ -32,11 +32,11 @@
 ../master_intgr_fshifter_decode_tb
 70
 which_declare=declare -f
-XDG_SESSION_ID=12276
+XDG_SESSION_ID=12761
 XDG_RUNTIME_DIR=/run/user/30132
 XDG_DATA_DIRS=/home/ecelrc/students/aak3265//.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share
 VSCODE_PYTHON_AUTOACTIVATE_GUARD=1
-VSCODE_IPC_HOOK_CLI=/run/user/30132/vscode-ipc-e74c3223-03a9-43cc-a3a9-e50af5213ddb.sock
+VSCODE_IPC_HOOK_CLI=/run/user/30132/vscode-ipc-c5b343e6-768e-4ad1-b222-879db24546e8.sock
 VSCODE_GIT_IPC_HANDLE=/run/user/30132/vscode-git-93dd3041c4.sock
 VSCODE_GIT_ASKPASS_NODE=/home/ecelrc/students/aak3265/.vscode-server/cli/servers/Stable-61b3d0ab13be7dda2389f1d3e60a119c7f660cc3/server/node
 VSCODE_GIT_ASKPASS_MAIN=/home/ecelrc/students/aak3265/.vscode-server/cli/servers/Stable-61b3d0ab13be7dda2389f1d3e60a119c7f660cc3/server/extensions/git/dist/askpass-main.js
@@ -61,8 +61,8 @@ S_COLORS=auto
 SYNOPSYS_SYN_ROOT=/usr/local/packages/synopsys_2022/syn
 SYNOPSYS_LC_ROOT=/usr/local/packages/synopsys_2022/lc/T-2022.03-SP5
 STROOT=/usr/local/packages/synopsys_2022/sentaurus/T-2022.03-SP1
-SSH_CONNECTION=172.29.203.197 64212 10.157.72.74 22
-SSH_CLIENT=172.29.203.197 64212 22
+SSH_CONNECTION=172.29.203.197 52371 10.157.72.74 22
+SSH_CLIENT=172.29.203.197 52371 22
 SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass
 SNPS_VCS_CLANG_PATH=/usr/local/packages/synopsys_2022/vcs/T-2022.06//linux64/clang
 SNPS_INTERNAL_VCS_LINUX_OS=linux
@@ -95,7 +95,7 @@ GIT_ASKPASS=/home/ecelrc/students/aak3265/.vscode-server/cli/servers/Stable-61b3
 DVE_HOME=/usr/local/packages/synopsys_2022/vcs/T-2022.06/
 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/30132/bus
 COLORTERM=truecolor
-CLAUDE_CODE_SSE_PORT=30734
+CLAUDE_CODE_SSE_PORT=11331
 BASH_FUNC_which%%=() {  ( alias;_ eval ${which_declare} ) | /usr/bin/which --tty-only --read-alias --read-functions --show-tilde --show-dot $@_}
 BASH_FUNC_switchml%%=() {  typeset swfound=1;_ if [ "${MODULES_USE_COMPAT_VERSION:-0}" = '1' ]; then_ typeset swname='main';_ if [ -e /usr/share/Modules/libexec/modulecmd.tcl ]; then_ typeset swfound=0;_ unset MODULES_USE_COMPAT_VERSION;_ fi;_ else_ typeset swname='compatibility';_ if [ -e /usr/share/Modules/libexec/modulecmd-compat ]; then_ typeset swfound=0;_ MODULES_USE_COMPAT_VERSION=1;_ export MODULES_USE_COMPAT_VERSION;_ fi;_ fi;_ if [ $swfound -eq 0 ]; then_ echo "Switching to Modules $swname version";_ source /usr/share/Modules/init/bash;_ else_ echo "Cannot switch to Modules $swname version, command not found";_ return 1;_ fi_}
 BASH_FUNC_scl%%=() {  if [ "$1" = "load" -o "$1" = "unload" ]; then_ eval "module $@";_ else_ /usr/bin/scl "$@";_ fi_}
@@ -171,8 +171,8 @@ BASH_FUNC_ml%%=() {  module ml "$@"_}
 1773960096 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/adders/PA_8b.v
 1773430662 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/adders/FA_8b.v
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
-1774568272 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/logic_tail_ptr.v
-1774905276 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/logic_cl_shifter.v
+1775079125 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/logic_tail_ptr.v
+1775079775 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/logic_cl_shifter.v
 1774771518 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr/reg_de_to_rr.v
 1774753189 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder/pf_expn.v
 1774733623 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder/logic_stall_flush.v
@@ -183,13 +183,13 @@ BASH_FUNC_ml%%=() {  module ml "$@"_}
 1774775816 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shift_reg/shift_reg.v
 1774034831 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/muxes/mux16_32.v
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
-1774994752 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/fetch_buffer.v
+1775090904 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/fetch_buffer.v
 1774759666 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr/de_to_rr.v
 1774771839 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder/stage_decode.v
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
-1774769743 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/fetch/intgr_fshifter_decode.v
+1775091093 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/fetch/intgr_fshifter_decode.v
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
-1775014173 /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/intgr_fshifter_decode_tb3.v
+1775091536 /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/intgr_fshifter_decode_tb3.v
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib6
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib5
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
@@ -197,12 +197,12 @@ BASH_FUNC_ml%%=() {  module ml "$@"_}
 1649711265 /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/time
-1775013746 ../master_intgr_fshifter_decode_tb
+1775091526 ../master_intgr_fshifter_decode_tb
 1654052745 /usr/local/packages/synopsys_2022/vcs/T-2022.06/linux64/lib/vcsdp.tab
 4
 1654054205 /usr/local/packages/synopsys_2022/vcs/T-2022.06/linux64/lib/libvirsim.so
 1654053585 /usr/local/packages/synopsys_2022/vcs/T-2022.06/linux64/lib/liberrorinf.so
 1654053489 /usr/local/packages/synopsys_2022/vcs/T-2022.06/linux64/lib/libsnpsmalloc.so
 1654053565 /usr/local/packages/synopsys_2022/vcs/T-2022.06/linux64/lib/libvfs.so
-1775014179 simv.daidir
+1775091544 simv.daidir
 -1 partitionlib

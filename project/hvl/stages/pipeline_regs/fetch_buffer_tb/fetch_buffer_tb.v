@@ -1,12 +1,5 @@
 /*
  * fetch_buffer_tb.v — Exhaustive self-checking testbench for fetch_buffer
- *
- * Updated: Reference model now correctly accounts for the 1-cycle latency 
- * of the latched cache line request (fb_req_cl_stable) and mirrors the 
- * de_valid instruction length gating logic.
- *
- * BIG ENDIAN UPDATE: 
- * cache_line [127:120] is Byte 0, [119:112] is Byte 1, ... [7:0] is Byte 15
  */
 
 `timescale 1ns / 1ps
@@ -30,24 +23,24 @@ initial begin clk = 0; forever #5 clk = ~clk; end
 reg         rst_bar;
 reg  [3:0]  from_de_instr_len;
 reg         from_de_valid;
-reg         from_f_icache_valid; 
+reg         ICACHE_VALID; // Fixed: Matches your exact port name
 reg         from_wb_flush;
 reg         from_ex_flush;
 reg         from_de_stall;
 reg         from_f_cl_pf;
 reg  [127:0] from_f_cache_line;
 reg         from_de_eip_redirection;
-reg         shft_reg_we;
 
 wire [4:0]   tail_ptr;
 wire [127:0] to_de_outbytes;
 wire [15:0]  to_de_pf_expn_bytes_out;
 wire         ready;
+wire         shft_reg_we; 
 
 fetch_buffer dut(
-    .clk(clk), .rst_bar(rst_bar),
+    .clk(clk), 
+    .rst_bar(rst_bar),
     .from_de_instr_len(from_de_instr_len),
-    .from_f_icache_valid(from_f_icache_valid), 
     .from_de_valid(from_de_valid),
     .from_wb_flush(from_wb_flush),
     .from_ex_flush(from_ex_flush),
@@ -55,6 +48,7 @@ fetch_buffer dut(
     .from_f_cl_pf(from_f_cl_pf),
     .from_f_cache_line(from_f_cache_line),
     .from_de_eip_redirection(from_de_eip_redirection),
+    .ICACHE_VALID(ICACHE_VALID), // Fixed: Maps correctly now
     .shft_reg_we(shft_reg_we),
     .tail_ptr(tail_ptr),
     .to_de_outbytes(to_de_outbytes),
@@ -72,32 +66,30 @@ reg [4:0]  ref_tp;
 
 integer ri_we, ri_inb, ri_buf;
 
-// ─── Combinational derived signals ───────────────────────────
-
-// Account for gated length (Fixes shift/write corruption on invalid cycles)
-wire [3:0] ref_gated_ilen = from_de_valid ? from_de_instr_len : 4'd0;
+wire ref_true_consume = from_de_valid & ~from_de_stall;
+wire [3:0] ref_gated_ilen = ref_true_consume ? from_de_instr_len : 4'd0;
 
 wire ref_eip_redir_valid = from_de_eip_redirection & from_de_valid;
 wire ref_flush = from_wb_flush | from_ex_flush | ref_eip_redir_valid;
 wire ref_cl_space = (ref_tp < 5'd16);
 
-// Mimic the exact 1-cycle latch behavior of CL_REQ_HOLD (fb_req_cl_stable)
 reg ref_req_stable;
 wire ref_v_cl_ld;
 wire ref_gated_req = ref_cl_space & ~ref_v_cl_ld;
 
 always @(posedge clk or negedge rst_bar) begin
     if (!rst_bar) ref_req_stable <= 1'b0;
-    else          ref_req_stable <= ref_gated_req;
+    else          ref_req_stable <= ref_gated_req | ref_flush; // flush forces req
 end
 
-// The final actual write-enable signal equivalent to v_cl_ld
-assign ref_v_cl_ld = ref_req_stable & rst_bar & from_f_icache_valid;
+assign ref_v_cl_ld = ref_req_stable & rst_bar & ICACHE_VALID;
 
-// Bytes written from cache line: normal=16, redirect=16-instr_len
+// --- Outputs Model ---
+wire ref_shft_reg_we = (ICACHE_VALID & ref_v_cl_ld) | from_de_valid | ref_flush;
+wire ref_ready = 1'b1; 
+
 wire [4:0] ref_wr_cnt = ref_flush ? (5'd16 - {1'b0, ref_gated_ilen}) : 5'd16;
 
-// Write-enable mask: ONLY when a cache line is actually being loaded
 reg [30:0] ref_wr_en;
 always @(*) begin
     ref_wr_en = 31'b0;
@@ -108,32 +100,23 @@ always @(*) begin
     end
 end
 
-// Correct 248-bit inbytes calculation based on gated len
-// MODIFIED FOR BIG ENDIAN INPUT: Byte N is at index (15 - N)
 reg [247:0] ref_inbytes;
 always @(*) begin
     ref_inbytes = 248'b0;
     if (ref_flush) begin
-        // Redirect: right-shift cache line by instr_len bytes
         for (ri_inb = 0; ri_inb < 16; ri_inb = ri_inb + 1)
             if (ri_inb + ref_gated_ilen < 16)
                 ref_inbytes[ri_inb*8 +: 8] = from_f_cache_line[(15 - (ri_inb + ref_gated_ilen))*8 +: 8];
     end else begin
-        // Normal: place CL at tail_ptr offset
         for (ri_inb = 0; ri_inb < 16; ri_inb = ri_inb + 1)
             if (ref_tp[3:0] + ri_inb < 31)
                 ref_inbytes[(ref_tp[3:0] + ri_inb)*8 +: 8] = from_f_cache_line[(15 - ri_inb)*8 +: 8];
     end
 end
 
-// Shift control
-wire ref_stall_cl  = ref_v_cl_ld & from_de_stall;
 wire ref_shift_sig = from_de_valid | ref_v_cl_ld | ref_flush;
-wire ref_shift_en  = ref_shift_sig;
 wire ref_clr       = ~rst_bar | ref_flush;
 wire ref_tp_en     = from_de_valid | ref_flush | from_de_stall | ref_v_cl_ld;
-
-// ─── Buffer update (async clear from flush/reset) ────────────
 
 always @(posedge clk or posedge ref_clr) begin
     if (ref_clr) begin
@@ -143,7 +126,7 @@ always @(posedge clk or posedge ref_clr) begin
         end
     end else begin
         for (ri_buf = 0; ri_buf < 31; ri_buf = ri_buf + 1) begin
-            if (ref_shift_en) begin
+            if (ref_shift_sig) begin
                 if (ref_gated_ilen <= (30 - ri_buf)) begin
                     if (ref_wr_en[ri_buf + ref_gated_ilen]) begin
                         ref_buf[ri_buf] <= ref_inbytes[(ri_buf + ref_gated_ilen)*8 +: 8];
@@ -161,8 +144,6 @@ always @(posedge clk or posedge ref_clr) begin
     end
 end
 
-// ─── Tail pointer update (sync, async reset from rst_bar) ────
-
 always @(posedge clk or negedge rst_bar) begin
     if (!rst_bar) begin
         ref_tp <= 5'd0;
@@ -172,13 +153,11 @@ always @(posedge clk or negedge rst_bar) begin
         case ({from_de_stall, ref_v_cl_ld})
             2'b00: ref_tp <= ref_tp - {1'b0, ref_gated_ilen};
             2'b01: ref_tp <= ref_tp - {1'b0, ref_gated_ilen} + ref_wr_cnt;
-            2'b10: ref_tp <= ref_tp; // hold
+            2'b10: ref_tp <= ref_tp; 
             2'b11: ref_tp <= ref_tp + ref_wr_cnt;
         endcase
     end
 end
-
-// ─── Reference outputs ──────────────────────────────────────
 
 wire [127:0] ref_outbytes = {
     ref_buf[15], ref_buf[14], ref_buf[13], ref_buf[12],
@@ -201,20 +180,20 @@ endgenerate
 
 integer num_tests, FAILURES, SUCCESSES;
 integer fail_flag;
+integer seed;
 
 task apply_reset;
 begin
     rst_bar                 = 1'b0;
     from_de_instr_len       = 4'd0;
     from_de_valid           = 1'b0;
-    from_f_icache_valid     = 1'b0; // Default cache to invalid on reset
+    ICACHE_VALID            = 1'b0;
     from_wb_flush           = 1'b0;
     from_ex_flush           = 1'b0;
     from_de_stall           = 1'b0;
     from_f_cl_pf            = 1'b0;
     from_f_cache_line       = 128'b0;
     from_de_eip_redirection = 1'b0;
-    shft_reg_we             = 1'b1;
     repeat (3) @(posedge clk);
     #1;
     rst_bar = 1'b1;
@@ -232,25 +211,27 @@ begin
     end
     if (to_de_outbytes !== ref_outbytes) begin
         fail_flag = 1;
-        $display("FAIL %0s  outbytes: DUT=%h  REF=%h  (t=%0t)",
-                 tag, to_de_outbytes, ref_outbytes, $time);
+        $display("FAIL %0s  outbytes: DUT=%h  REF=%h  (t=%0t)", tag, to_de_outbytes, ref_outbytes, $time);
     end
     if (to_de_pf_expn_bytes_out !== ref_pf_out) begin
         fail_flag = 1;
-        $display("FAIL %0s  pf_out: DUT=%h  REF=%h  (t=%0t)",
-                 tag, to_de_pf_expn_bytes_out, ref_pf_out, $time);
+        $display("FAIL %0s  pf_out: DUT=%h  REF=%h  (t=%0t)", tag, to_de_pf_expn_bytes_out, ref_pf_out, $time);
     end
-    if(fail_flag == 1) begin
-        FAILURES = FAILURES + 1;
-        fail_flag = 0;
-    end 
-    else begin
-        SUCCESSES = SUCCESSES + 1;
+    if (shft_reg_we !== ref_shft_reg_we) begin
+        fail_flag = 1;
+        $display("FAIL %0s  shft_reg_we: DUT=%b  REF=%b  (t=%0t)", tag, shft_reg_we, ref_shft_reg_we, $time);
     end
+    if (ready !== ref_ready) begin
+        fail_flag = 1;
+        $display("FAIL %0s  ready: DUT=%b  REF=%b  (t=%0t)", tag, ready, ref_ready, $time);
+    end
+
+    if(fail_flag == 1) FAILURES = FAILURES + 1;
+    else SUCCESSES = SUCCESSES + 1;
+    fail_flag = 0;
 end
 endtask
 
-// MODIFIED FOR BIG ENDIAN: Byte k goes into [ (15-k)*8 +: 8 ]
 function [127:0] make_cl;
     input [7:0] base;
     integer k;
@@ -276,7 +257,7 @@ begin
     @(negedge clk); 
     from_de_valid           = i_valid;
     from_de_instr_len       = i_ilen;
-    from_f_icache_valid     = i_icache_valid; 
+    ICACHE_VALID            = i_icache_valid; 
     from_de_stall           = i_stall;
     from_wb_flush           = i_wb_flush;
     from_ex_flush           = i_ex_flush;
@@ -285,7 +266,7 @@ begin
     from_f_cache_line       = i_cl;
     
     @(posedge clk);
-    #5; // Wait for flip-flops to update state
+    #5;
     check(tag);
     
     from_de_valid           = 1'b0;
@@ -293,6 +274,9 @@ begin
     from_wb_flush           = 1'b0;
     from_ex_flush           = 1'b0;
     from_de_eip_redirection = 1'b0;
+    from_de_stall           = 1'b0;
+    from_f_cl_pf            = 1'b0;
+    from_f_cache_line       = 128'b0;
 end
 endtask
 
@@ -300,32 +284,28 @@ endtask
 // Test Sequences
 // ═══════════════════════════════════════════════════════════════
 
-integer t_ctrl, t_ilen, t_rep, t_tp;
+integer t_ctrl, t_ilen, t_rep, i;
 reg [127:0] cl_a, cl_b;
 
 initial begin
     num_tests = 0;
     FAILURES = 0;
     SUCCESSES = 0;
+    seed = 382;
 
-    // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 1: Reset ===");
     apply_reset();
     #1; check("P1_RESET");
 
-    // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 2: Basic load/consume ===");
     apply_reset();
-
     cl_a = make_cl(8'hA0);
     drive_cycle("P2_IDLE_LOAD", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
     drive_cycle("P2_SETTLE",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-
     drive_cycle("P2_CONSUME3",  1'b1, 4'd3, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
     drive_cycle("P2_CONSUME5",  1'b1, 4'd5, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
     drive_cycle("P2_CONSUME1",  1'b1, 4'd1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
-    // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 3: All instruction lengths ===");
     for (t_ilen = 1; t_ilen <= 15; t_ilen = t_ilen + 1) begin
         apply_reset();
@@ -343,7 +323,6 @@ initial begin
         drive_cycle("P3_CONSUME2", 1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
     end
 
-    // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 4: Control signal sweep (64 combos) ===");
     for (t_ctrl = 0; t_ctrl < 64; t_ctrl = t_ctrl + 1) begin
         apply_reset();
@@ -368,7 +347,6 @@ initial begin
         drive_cycle("P4_AFTER", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
     end
 
-    // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 5: Stall + load combinations ===");
     for (t_ilen = 1; t_ilen <= 15; t_ilen = t_ilen + 1) begin
         apply_reset();
@@ -384,9 +362,7 @@ initial begin
         drive_cycle("P5_RELEASE",  1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
     end
 
-    // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 6: Flush + recovery ===");
-
     apply_reset();
     cl_a = make_cl(8'h10);
     drive_cycle("P6_LOAD1",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
@@ -409,12 +385,11 @@ initial begin
         drive_cycle("P6_LOAD3",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
         drive_cycle("P6_SETTLE3", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
         
-        drive_cycle("P6_REDIR",   1'b0, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b1, 1'b0, make_cl(8'h60));
+        drive_cycle("P6_REDIR",   1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b1, 1'b0, make_cl(8'h60));
         drive_cycle("P6_REC3",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h70));
         drive_cycle("P6_SET3",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h70));
     end
 
-    // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 7: Exhaustive tail_ptr x instr_len ===");
     for (t_ilen = 1; t_ilen <= 15; t_ilen = t_ilen + 1) begin
         apply_reset();
@@ -431,10 +406,8 @@ initial begin
         end
     end
 
-    // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 8: Page fault tracking ===");
     apply_reset();
-
     drive_cycle("P8_PF_LOAD",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b1, make_cl(8'h80));
     drive_cycle("P8_PF_SET",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b1, make_cl(8'h80));
     drive_cycle("P8_PF_SHIFT",  1'b1, 4'd5, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h80));
@@ -446,7 +419,6 @@ initial begin
     drive_cycle("P8_FLUSH",     1'b0, 4'd0, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0, 1'b0, 128'b0);
     drive_cycle("P8_AFTER_FL",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'hA0));
 
-    // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 9: Simultaneous shift+write ===");
     for (t_ilen = 1; t_ilen <= 15; t_ilen = t_ilen + 1) begin
         apply_reset();
@@ -461,26 +433,70 @@ initial begin
         drive_cycle("P9_VERIFY",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
     end
 
-    // ══════════════════════════════════════════════════════════
     $display("\n=== Phase 10: shft_reg_we gating ===");
     apply_reset();
     cl_a = make_cl(8'h11);
     drive_cycle("P10_LOAD",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
     drive_cycle("P10_SETTLE",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-
-    shft_reg_we = 1'b0;
     drive_cycle("P10_NOWE",    1'b1, 4'd5, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    shft_reg_we = 1'b1;
-
     drive_cycle("P10_YEWE",    1'b1, 4'd5, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
-    // ══════════════════════════════════════════════════════════
+    $display("\n=== Phase 11: Buffer near-full & load ===");
+    apply_reset();
+    cl_a = make_cl(8'h11);
+    drive_cycle("P11_LOAD1",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P11_SETTLE", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P11_STALL",  1'b0, 4'd0, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P11_LOAD2",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h22));
+    drive_cycle("P11_DRAIN",  1'b1, 4'd8, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+
+    $display("\n=== Phase 12: Stall + flush simultaneously ===");
+    apply_reset();
+    cl_a = make_cl(8'hAA);
+    drive_cycle("P12_LOAD",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P12_SETTLE", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P12_ST_FL",  1'b1, 4'd4, 1'b1, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, cl_a); // wb_flush=1, stall=1
+    drive_cycle("P12_REC",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'hBB));
+
+    $display("\n=== Phase 13: Consecutive flushes ===");
+    apply_reset();
+    drive_cycle("P13_FL_1",   1'b0, 4'd0, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0, 1'b0, 128'b0);
+    drive_cycle("P13_FL_2",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0, 128'b0);
+    drive_cycle("P13_REC",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'hCC));
+
+    $display("\n=== Phase 14: instr_len=0 with valid=1 ===");
+    apply_reset();
+    cl_a = make_cl(8'hDD);
+    drive_cycle("P14_LOAD",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P14_SETTLE", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P14_ZERO",   1'b1, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+
+    $display("\n=== Phase 15: Buffer overflow (tail_ptr stress) ===");
+    apply_reset();
+    drive_cycle("P15_LD1",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h11));
+    drive_cycle("P15_SETTLE", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 128'b0);
+    drive_cycle("P15_LD2",    1'b1, 4'd1, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h22)); // stall, load 2nd
+    drive_cycle("P15_SETTLE2",1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 128'b0); 
+
+    $display("\n=== Phase 16: Randomized sequence ===");
+    apply_reset();
+    for (i = 0; i < 200; i = i + 1) begin
+        drive_cycle("P16_RND",
+            $random(seed) & 1'b1,          // valid
+            $random(seed) & 4'hF,          // ilen
+            1'b1,                          // icache_valid
+            ($random(seed) % 10) == 0,     // stall (10% chance)
+            ($random(seed) % 20) == 0,     // wb_flush
+            ($random(seed) % 20) == 0,     // ex_flush
+            ($random(seed) % 20) == 0,     // eip_redir
+            $random(seed) & 1'b1,          // pf
+            make_cl($random(seed) & 8'hFF) // rand cl
+        );
+    end
+
     $display("\n========================================");
-    
-    $display("========================================\n");
     $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
     $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
-
     $finish;
 end
 

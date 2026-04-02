@@ -4,7 +4,7 @@ module intgr_fshifter_decode(
 
     //fetch buffer inputs
     input wire [127:0] from_f_cache_line, //from first half of fetch
-    input wire from_f_icache_valid, //from first half of fetch
+    input wire ICACHE_VALID, //from first half of fetch
     input wire from_wb_flush,
 
     //decode inputs
@@ -31,7 +31,6 @@ module intgr_fshifter_decode(
     output wire [47:0] to_rr_imm,
     output wire [1:0] to_rr_addressing_mode,
     output wire [3:0] to_rr_instr_length
-
 );  
 
     wire [4:0]  tail_ptr;
@@ -40,11 +39,13 @@ module intgr_fshifter_decode(
 
     wire [127:0] to_de_outbytes;
     wire [15:0] to_de_pf_expn_bytes_out;
+
+
     fetch_buffer FETCH_BUFF(
         .clk(clk), 
         .rst_bar(rst_bar),
         .from_de_instr_len(to_pr_instr_length),
-        .from_f_icache_valid(from_f_icache_valid),
+        .ICACHE_VALID(ICACHE_VALID),
         .from_de_valid(to_pr_pr_valid),
         .from_wb_flush(from_wb_flush),
         .from_ex_flush(from_ex_flush),
@@ -52,6 +53,7 @@ module intgr_fshifter_decode(
         .from_f_cl_pf(from_f_cl_pf), 
         .from_f_cache_line(from_f_cache_line),
         .from_de_eip_redirection(from_de_eip_redirection), 
+        .ICACHE_VALID(ICACHE_VALID),
         .shft_reg_we(shft_reg_we), //output to first half of fetch
         .tail_ptr(tail_ptr),
         .to_de_outbytes(to_de_outbytes),
