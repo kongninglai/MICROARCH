@@ -248,7 +248,7 @@ wire [3:0] from_de_instr_len;
 assign to_rr_prefix = {prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext};
 assign to_rr_imm_size = 3'd0;
 
-localparam NUM_TESTS_MEM = 14;
+localparam NUM_TESTS_MEM = 103;
 reg [127:0] mem_in [0:NUM_TESTS_MEM-1];
 
 block_decoder block_decoder_inst (
@@ -404,10 +404,21 @@ begin
   #(CYCLE_TIME-2);
   to_rr_ieip = to_rr_oeip + from_de_instr_len;
   to_rr_pred_eip = to_rr_ieip;
+  if (to_rr_opcode === 8'hF4) begin
+    @(posedge clk); // updated ag_to_mem
+    to_rr_valid = 1'b0;
+    to_de_outbytes = {128{1'bz}};
+    #(60 * CYCLE_TIME);      
+    to_rr_oeip = to_rr_ieip;
+    print_arch_status();
+    $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+    $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+    $finish;
+  end
   @(posedge clk); // updated ag_to_mem
   to_rr_valid = 1'b0;
   to_de_outbytes = {128{1'bz}};
-  #(30 * CYCLE_TIME);
+  #(60 * CYCLE_TIME);
   to_rr_oeip = to_rr_ieip;
   print_arch_status();
   NUM_TESTS = NUM_TESTS + 1;
