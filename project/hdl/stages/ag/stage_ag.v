@@ -61,7 +61,13 @@ module stage_ag(
     output [1:0]     from_ag_exception,
     output           from_ag_valid,
 
-    output           from_ag_stall
+    output           from_ag_stall,
+
+    /* TO DEP UNIT */
+    output [1:0]     from_ag_dstA_size,
+    output [1:0]     from_ag_dstB_size,
+    output [1:0]     from_ag_ldAB,
+    output [2:0]     from_ag_ldREGS
 );
 
     wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size;
@@ -155,5 +161,8 @@ module stage_ag(
     mux2_32 mux_st_offset(from_ag_st_offset, offset1, offset2, store_addr_mux);
     mux2_32 mux_st_slim(from_ag_st_slim, to_ag_slim1, to_ag_slim2, store_addr_mux);
     
-    
+    assign from_ag_dstA_size = dstA_size;
+    assign from_ag_dstB_size = dstB_size;
+    assign from_ag_ldAB = ldAB;
+    assign from_ag_ldREGS = ldREGS;
 endmodule

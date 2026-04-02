@@ -57,6 +57,7 @@ module dummy_mem(
     output [15:0]     from_mem_store_mask_line_1,
     output            from_mem_store_queue_alloc_line_1,
     output [4:0]      from_mem_store_data_shf_amt,
+    output            from_mem_valid_store_inst,
 
     output [31:0]     from_mem_rel_eip,
     output [15:0]     from_mem_cs,
@@ -66,7 +67,13 @@ module dummy_mem(
     output [1:0]      from_mem_exception,
     output            from_mem_valid,
 
-    output            from_mem_stall
+    output            from_mem_stall,
+
+    /* TO DEP UNIT */
+    output  [1:0]     from_mem_dstA_size,
+    output  [1:0]     from_mem_dstB_size,
+    output  [1:0]     from_mem_ldAB,
+    output  [2:0]     from_mem_ldREGS
 );
 
     wire [1:0]      ldAB;
@@ -167,4 +174,11 @@ module dummy_mem(
     assign  from_mem_valid = to_mem_valid;
     assign  from_mem_stall = 1'b0;
 
+    /* TO DEP UNIT */
+    assign from_mem_dstA_size   = dstA_size;
+    assign from_mem_dstB_size   = dstB_size;
+    assign from_mem_ldAB        = ldAB;
+    assign from_mem_ldREGS      = ldREGS;
+
+    assign from_mem_valid_store_inst = rw[0] & to_mem_valid;
 endmodule

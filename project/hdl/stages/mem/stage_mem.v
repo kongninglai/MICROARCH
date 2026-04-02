@@ -160,7 +160,13 @@ module stage_mem #(
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_ieip,
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_pred_eip,
   output  [1:0]                               from_mem_exception,
-  output                                      from_mem_valid
+  output                                      from_mem_valid,
+
+  /* TO DEP UNIT */
+  output  [1:0]                               from_mem_dstA_size,
+  output  [1:0]                               from_mem_dstB_size,
+  output  [1:0]                               from_mem_ldAB,
+  output  [2:0]                               from_mem_ldREGS
 
 );
 
@@ -546,4 +552,9 @@ assign from_mem_pred_eip    = to_mem_pred_eip;
 assign EX_FLUSH = from_ex_flush;
 assign WB_FLUSH = from_wb_flush;
 
+/* TO DEP UNIT */
+assign from_mem_dstA_size   = dstA_size;
+assign from_mem_dstB_size   = dstB_size;
+assign from_mem_ldAB        = ldAB;
+assign from_mem_ldREGS      = ldREGS;
 endmodule

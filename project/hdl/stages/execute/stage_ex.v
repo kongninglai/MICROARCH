@@ -74,7 +74,15 @@ module stage_ex(
     output [31:0]       from_ex_oeip,
     output              from_ex_valid_store_inst,
     output              from_ex_valid,
-    output [1:0]        from_ex_exception
+    output [1:0]        from_ex_exception,
+
+    /* TO DEP UNIT */
+    input  [1:0]        from_ex_dstA_size,
+    input  [1:0]        from_ex_dstB_size,
+    input               from_ex_ld_gp0,
+    input               from_ex_ld_gp1,
+    input               from_ex_ld_seg,
+    input               from_ex_ld_mmx
 ); 
     wire valid_instruction;
 
@@ -359,4 +367,11 @@ module stage_ex(
     };
 
     and2$ and2_valid_store_inst(from_ex_valid_store_inst, valid_instruction, sig_rw[0]);
+
+    assign from_ex_dstA_size = sig_dstA_size;
+    assign from_ex_dstB_size = sig_dstB_size;
+    assign from_ex_ld_gp0 = gpwr0_en;
+    assign from_ex_ld_gp1 = gpwr1_en;
+    assign from_ex_ld_seg = segwr_en;
+    assign from_ex_ld_mmx = mmxwr_en;
 endmodule
