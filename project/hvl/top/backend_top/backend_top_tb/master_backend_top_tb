@@ -47,7 +47,7 @@
 ~/MICROARCH/project/hvl/stages/execute/stage_ex_tb/dummy_mem.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/mem_to_ex/reg_mem_to_ex.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/mem_to_ex/mem_to_ex.v
-/home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_32b.v
+/home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_32b.v
 ~/MICROARCH/project/hdl/local-lib/comparators/gt9_4b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_32.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_64.v
