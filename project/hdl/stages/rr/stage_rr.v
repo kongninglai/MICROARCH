@@ -16,6 +16,7 @@ module stage_rr(
 
     input from_ag_stall,
     input from_dep_unit_data_dep,
+    output from_rr_we_pipe_reg,
 
     output [7:0]  to_regunit_opcode,
     output [5:0]  to_regunit_modrm,
@@ -281,5 +282,5 @@ module stage_rr(
     or2$ or_from_rr_stall(from_rr_stall, from_ag_stall, from_dep_unit_data_dep);
 
     assign to_dep_needREGS = {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]};
-    
+    inv1$  inv1$_from_rr_we_pipe_reg(from_rr_we_pipe_reg, from_ag_stall);
 endmodule

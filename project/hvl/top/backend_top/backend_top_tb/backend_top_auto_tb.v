@@ -529,9 +529,6 @@ begin
   for (drain_cycles = 0; drain_cycles < 30; drain_cycles = drain_cycles + 1)
     @(posedge clk);
 
-  NUM_TESTS  = accepted_cnt;
-  print_arch_status();
-
   $display("accepted_cnt = %0d", accepted_cnt);
   $display("stalled_cnt  = %0d", stalled_cnt);
 end
@@ -586,7 +583,7 @@ initial begin
   // end
 
   run_test_stream();
-  // #(30 * CYCLE_TIME);
+  #(30 * CYCLE_TIME);
                   
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);

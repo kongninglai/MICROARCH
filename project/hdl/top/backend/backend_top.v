@@ -120,6 +120,7 @@ module backend_top #(
     wire [31:0]     from_rr_pred_eip;
     wire [1:0]      from_rr_exception;
     wire            from_rr_valid;
+    wire            from_rr_we_pipe_reg;
     // wire            from_rr_stall;
 
     wire [10:0]     to_dep_needREGS;
@@ -541,13 +542,14 @@ module backend_top #(
         .from_rr_valid(from_rr_valid),
         .from_rr_stall(from_rr_stall),
         .to_dep_needREGS(to_dep_needREGS),
-        .from_dep_unit_data_dep(from_dep_unit_data_dep)
+        .from_dep_unit_data_dep(from_dep_unit_data_dep),
+        .from_rr_we_pipe_reg(from_rr_we_pipe_reg)
     );
 
     rr_to_ag inst_rr_to_ag (
         .clk(clk),
         .rst_n(rst_n),
-        .we(from_ag_we_pipe_reg),
+        .we(from_rr_we_pipe_reg),
         .from_rr_control_sigs(from_rr_control_sigs),
         .from_rr_dstidA(from_rr_dstidA),
         .from_rr_dstidB(from_rr_dstidB),
