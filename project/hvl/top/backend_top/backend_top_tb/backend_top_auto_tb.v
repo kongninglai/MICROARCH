@@ -1,9 +1,9 @@
 module backend_top_auto_tb;
 
-// initial begin
-//   $vcdplusfile("backend_top_auto_tb.dump.vpd");
-//   $vcdpluson(0, backend_top_auto_tb); 
-// end
+initial begin
+  // $vcdplusfile("backend_top_auto_tb.dump.vpd");
+  // $vcdpluson(0, backend_top_auto_tb); 
+end
 
 integer i;
 integer NUM_TESTS = 0;
@@ -105,7 +105,7 @@ wire from_ex_br_valid;
 wire [31:0] from_ex_eip_target;
 wire from_wb_flush;
 
-reg [31:0] wb_oeip;
+reg [31:0] wb_ieip;
 reg [31:0] wb_eflags;
 
 /*** DUT ***/
@@ -262,10 +262,8 @@ tlb_wrapper tlb_inst (
 reg [127:0] to_de_outbytes;
 reg         to_de_valid;
 
-localparam NUM_TESTS_MEM = 103;
+localparam NUM_TESTS_MEM = 4096;
 reg [127:0] mem_in [0:NUM_TESTS_MEM-1];
-
-
 
 always #(CYCLE_TIME / 2.0) clk = ~clk;
 
@@ -280,8 +278,13 @@ endtask
 reg [31:0] saved_st_addr;
 reg [255:0] combined_data;
 reg [31:0] combined_mask;
+reg [31:0] saved_ieip, halt_ieip;
 integer load_iters, k, m, n;
 always @(posedge clk) begin
+  saved_ieip <= dut.to_ex_ieip;
+  if (to_rr_opcode === 8'hF4 && dut.to_rr_valid) begin
+    halt_ieip <= to_rr_ieip;
+  end
   if (dut.inst_stage_mem.rw_buf16[0] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
     saved_st_addr = dut.inst_stage_mem.to_mem_st_addr;
   end
@@ -382,9 +385,15 @@ begin
   );
 
   // ---------------- EIP ----------------
-  $fdisplay(file_handle_cmp,"EIP: 0x%08X", wb_oeip);
+  $fdisplay(file_handle_cmp,"EIP: 0x%08X", wb_ieip);
 
   $fdisplay(file_handle_cmp,"----------------------------------------");
+
+  if (wb_ieip === halt_ieip) begin
+    $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+    $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+    $finish;
+  end
 end
 endtask
 
@@ -539,7 +548,7 @@ reg print_pending;
 always @(posedge clk) begin
   if (!rst_n) begin
     print_pending  <= 1'b0;
-    wb_oeip        <= 32'b0;
+    wb_ieip        <= 32'b0;
     wb_eflags      <= 32'b0;
   end else begin
     if (print_pending) begin
@@ -553,7 +562,7 @@ always @(posedge clk) begin
     if (dut.inst_stage_wb.to_wb_valid_buf16) begin
       if (dut.inst_stage_wb.no_exception) begin
         print_pending <= 1'b1;
-        wb_oeip       <= dut.inst_stage_wb.to_wb_oeip;
+        wb_ieip       <= saved_ieip;
         wb_eflags     <= dut.inst_stage_ex.eflags_out;
       end
     end
