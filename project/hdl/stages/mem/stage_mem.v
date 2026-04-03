@@ -480,7 +480,7 @@ reg64e$ reg64e$_SAVED_LINE_0_LOAD_DATA(
   .QBAR(), 
   .CLR(rst_n), 
   .PRE(1'b1),
-  .en(DOING_LINE_1_LOAD_BAR)
+  .en(LINE_0_LOAD_DONE)
 );
 
 wire  [3:0]   to_mem_ld_addr_line_offset_adjusted;

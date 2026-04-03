@@ -7,7 +7,7 @@ ROOT="$HOME/MICROARCH/project/hvl/"
 RESULTS="$HOME/MICROARCH/project/scripts/regression/sim_results.txt"
 TMP_RESULTS="$(mktemp -d)"
 
-MAX_JOBS=100
+MAX_JOBS=200
 
 : > "$RESULTS"
 ./clean_sim.sh

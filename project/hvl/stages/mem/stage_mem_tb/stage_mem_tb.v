@@ -736,6 +736,7 @@ initial begin
   end
 
   // /*** TEST TWO-CACHE-LINE ACCESSES WITH PAGE CROSSING, Change LINE 4 to Re-map 0a001 instead of 0b000: 000010100000000000011001101 ***/
+  // /* ALSO CHANGE 600 to 2048 in the first loop, and swap the "IF" condition for the PFN */
   // to_mem_ld_slim = 20'hFFFFF;
   // to_mem_ld_addr = 32'h0A000FFC;
   // to_mem_ld_offset = to_mem_ld_addr + 7;

@@ -262,7 +262,7 @@ tlb_wrapper tlb_inst (
 reg [127:0] to_de_outbytes;
 reg         to_de_valid;
 
-localparam NUM_TESTS_MEM = 14;
+localparam NUM_TESTS_MEM = 103;
 reg [127:0] mem_in [0:NUM_TESTS_MEM-1];
 
 
