@@ -124,7 +124,10 @@ module regunit_tb;
         .from_ex_cs_wr_en(from_ex_cs_wr_en),
         .from_wb_mmxwr_idx(from_wb_mmxwr_idx),
         .from_wb_mmxwr_data(from_wb_mmxwr_data),
-        .from_wb_mmxwr_en(from_wb_mmxwr_en)
+        .from_wb_mmxwr_en(from_wb_mmxwr_en),
+        .to_dep_srcA_size(),
+        .to_dep_srcB_size(),
+        .to_dep_srcC_size()
     );
 
     always #5 clk = ~clk;

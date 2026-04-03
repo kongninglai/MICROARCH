@@ -230,7 +230,11 @@ stage_mem DUT (
   .from_mem_ieip(),
   .from_mem_pred_eip(),
   .from_mem_exception(from_mem_exception),
-  .from_mem_valid(from_mem_valid)
+  .from_mem_valid(from_mem_valid),
+  .from_mem_dstA_size(),
+  .from_mem_dstB_size(),
+  .from_mem_ldAB(),
+  .from_mem_ldREGS()
 );
 
 full_cache #(

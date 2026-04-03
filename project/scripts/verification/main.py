@@ -40,7 +40,7 @@ def main():
         1, state.idtr_base + (8 * 14), 0x0000000000000900, check_lim=0, populating=True
     )  # PF
 
-    test_prog = parse_program_file("/home/ecelrc/students/kl38888/MICROARCH/project/scripts/readmemh/program.txt")
+    test_prog = parse_program_file("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/program.txt")
 
     #    test_prog = [
     #       (0x0, [0xba, 0x00, 0x0a, 0x00, 0x00]),

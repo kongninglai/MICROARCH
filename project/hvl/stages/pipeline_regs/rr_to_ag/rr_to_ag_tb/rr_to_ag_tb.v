@@ -216,7 +216,9 @@ module rr_to_ag_tb;
         .from_rr_exception(from_rr_exception),
         .from_rr_valid(from_rr_valid),
         .from_rr_stall(from_rr_stall),
-        .to_dep_needREGS(to_dep_needREGS)
+        .to_dep_needREGS(to_dep_needREGS),
+        .from_dep_unit_data_dep(),
+        .from_rr_we_pipe_reg()
     );
 
     rr_to_ag dut_rr_to_ag (
@@ -334,7 +336,10 @@ module rr_to_ag_tb;
         .from_ex_cs_wr_en(from_ex_cs_wr_en),
         .from_wb_mmxwr_idx(from_wb_mmxwr_idx),
         .from_wb_mmxwr_data(from_wb_mmxwr_data),
-        .from_wb_mmxwr_en(from_wb_mmxwr_en)
+        .from_wb_mmxwr_en(from_wb_mmxwr_en),
+        .to_dep_srcA_size(),
+        .to_dep_srcB_size(),
+        .to_dep_srcC_size()
     );  
 
     wire [1:0] ldAB;

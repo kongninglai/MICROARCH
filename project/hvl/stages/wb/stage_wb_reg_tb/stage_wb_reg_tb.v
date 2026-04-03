@@ -218,7 +218,9 @@ module stage_wb_reg_tb;
         .from_rr_exception(from_rr_exception),
         .from_rr_valid(from_rr_valid),
         .from_rr_stall(from_rr_stall),
-        .to_dep_needREGS(to_dep_needREGS)
+        .to_dep_needREGS(to_dep_needREGS),
+        .from_dep_unit_data_dep(),
+        .from_rr_we_pipe_reg()
     );
 
     rr_to_ag dut_rr_to_ag (
@@ -336,7 +338,10 @@ module stage_wb_reg_tb;
         .from_ex_cs_wr_en(from_ex_ld_cs),
         .from_wb_mmxwr_idx(from_wb_mmxwr_idx),
         .from_wb_mmxwr_data(from_wb_mmxwr_data),
-        .from_wb_mmxwr_en(from_wb_mmxwr_en)
+        .from_wb_mmxwr_en(from_wb_mmxwr_en),
+        .to_dep_srcA_size(),
+        .to_dep_srcB_size(),
+        .to_dep_srcC_size()
     );  
 
     wire [1:0] ldAB;
@@ -512,7 +517,11 @@ module stage_wb_reg_tb;
         .from_ag_valid(from_ag_valid),
 
         .from_ag_stall(from_ag_stall),
-        .from_ag_we_pipe_reg(from_ag_we_pipe_reg)
+        .from_ag_we_pipe_reg(from_ag_we_pipe_reg),
+        .from_ag_dstA_size(),
+        .from_ag_dstB_size(),
+        .from_ag_ldAB(),
+        .from_ag_ldREGS()
     );
 
     wire [1:0]      from_ag_ldAB;
@@ -1005,7 +1014,13 @@ module stage_wb_reg_tb;
         .from_ex_oeip(from_ex_oeip),
         .from_ex_valid_store_inst(from_ex_valid_store_inst),
         .from_ex_valid(from_ex_valid),
-        .from_ex_exception(from_ex_exception)
+        .from_ex_exception(from_ex_exception),
+        .from_ex_dstA_size(),
+        .from_ex_dstB_size(),
+        .from_ex_ld_gp0(),
+        .from_ex_ld_gp1(),
+        .from_ex_ld_seg(),
+        .from_ex_ld_mmx()
     );
     
     wire from_ex_gpwr0_en, from_ex_gpwr1_en, from_ex_segwr_en, from_ex_mmxwr_en;
