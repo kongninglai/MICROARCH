@@ -1,8 +1,8 @@
 module backend_top_auto_tb;
 
 initial begin
-  // $vcdplusfile("backend_top_auto_tb.dump.vpd");
-  // $vcdpluson(0, backend_top_auto_tb); 
+  $vcdplusfile("backend_top_auto_tb.dump.vpd");
+  $vcdpluson(0, backend_top_auto_tb); 
 end
 
 integer i;
@@ -16,6 +16,23 @@ localparam TRUE_LRU = 1;
 
 reg clk;
 reg rst_n;
+
+wire [5:0]  from_de_prefix;
+wire [7:0]  from_de_opcode;
+wire [7:0]  from_de_modrm;
+wire [7:0]  from_de_sib;
+wire [31:0] from_de_disp;
+wire [1:0]  from_de_dispsize;
+wire [47:0] from_de_imm;
+wire [2:0]  from_de_imm_size;
+wire [1:0]  from_de_addr_mode;
+
+wire  [31:0] from_de_oeip;
+wire  [31:0] from_de_ieip;
+wire  [31:0] from_de_pred_eip;
+wire  [1:0]  from_de_exception;
+wire         from_de_valid;
+
 wire [5:0]  to_rr_prefix;
 wire [7:0]  to_rr_opcode;
 wire [7:0]  to_rr_modrm;
@@ -26,11 +43,11 @@ wire [47:0] to_rr_imm;
 wire [2:0]  to_rr_imm_size;
 wire [1:0]  to_rr_addr_mode;
 
-reg  [31:0] to_rr_oeip;
-reg  [31:0] to_rr_ieip;
-reg  [31:0] to_rr_pred_eip;
-reg  [1:0]  to_rr_exception;
-reg         to_rr_valid;
+wire  [31:0] to_rr_oeip;
+wire  [31:0] to_rr_ieip;
+wire  [31:0] to_rr_pred_eip;
+wire  [1:0]  to_rr_exception;
+wire         to_rr_valid;
 
 /*** CACHE / TLB INTERNAL WIRES ***/
 wire [11:0] MEM_PAGE_OFFSET;
@@ -87,6 +104,9 @@ wire from_ex_br_t_nt;
 wire from_ex_br_valid;
 wire [31:0] from_ex_eip_target;
 wire from_wb_flush;
+
+reg [31:0] wb_oeip;
+reg [31:0] wb_eflags;
 
 /*** DUT ***/
 backend_top dut (
@@ -240,45 +260,19 @@ tlb_wrapper tlb_inst (
 );
 
 reg [127:0] to_de_outbytes;
-
-wire prefix_rep, prefix_op_size, prefix_ext;
-wire [2:0] prefix_seg_ov_id;
-wire [3:0] from_de_instr_len;
-
-assign to_rr_prefix = {prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext};
-assign to_rr_imm_size = 3'd0;
+reg         to_de_valid;
 
 localparam NUM_TESTS_MEM = 14;
 reg [127:0] mem_in [0:NUM_TESTS_MEM-1];
 
-block_decoder block_decoder_inst (
-  .cache_line(to_de_outbytes),
-  .prefix_rep(prefix_rep),
-  .prefix_op_size(prefix_op_size),
-  .prefix_seg_ov_id(prefix_seg_ov_id),
-  .prefix_ext(prefix_ext),
-  .opcode(to_rr_opcode),
-  .modrm_v(),
-  .modrm(to_rr_modrm),
-  .sib(to_rr_sib),
-  .disp_size_mux(to_rr_dispsize),
-  .disp(to_rr_disp),
-  .imm_size(),
-  .imm(to_rr_imm),
-  .addressing_mode(to_rr_addr_mode),
-  .instr_length(from_de_instr_len)
-);
+
 
 always #(CYCLE_TIME / 2.0) clk = ~clk;
 
 task clear_inputs;
 begin
-  to_rr_oeip = 32'd0;
-  to_rr_ieip = 32'd0;
-  to_rr_pred_eip = 32'd0;
-  to_rr_exception = 2'd0;
-  to_rr_valid = 1'b0;
-  to_de_outbytes = {128{1'bz}};
+  to_de_outbytes = {128{1'b0}};
+  to_de_valid = 1'b0;
   $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/scripts/verification/gen_testcases.mem", mem_in);
 end
 endtask
@@ -378,71 +372,117 @@ begin
 
   // ---------------- EFLAGS ----------------
   $fdisplay(file_handle_cmp," CF: %0d      PF: %0d      AF: %0d      ZF: %0d      SF: %0d      OF: %0d      DF: %0d",
-           dut.inst_stage_ex.eflags_out[0],   // CF
-           dut.inst_stage_ex.eflags_out[2],   // PF
-           dut.inst_stage_ex.eflags_out[4],   // AF
-           dut.inst_stage_ex.eflags_out[6],   // ZF
-           dut.inst_stage_ex.eflags_out[7],   // SF
-           dut.inst_stage_ex.eflags_out[11],  // OF
-           dut.inst_stage_ex.eflags_out[10]   // DF
+           wb_eflags[0],   // CF
+           wb_eflags[2],   // PF
+           wb_eflags[4],   // AF
+           wb_eflags[6],   // ZF
+           wb_eflags[7],   // SF
+           wb_eflags[11],  // OF
+           wb_eflags[10]   // DF
   );
 
   // ---------------- EIP ----------------
-  $fdisplay(file_handle_cmp,"EIP: 0x%08X", to_rr_oeip);
+  $fdisplay(file_handle_cmp,"EIP: 0x%08X", wb_oeip);
 
   $fdisplay(file_handle_cmp,"----------------------------------------");
 end
 endtask
 
-task test_with_nops;
-  input integer test_num;
-begin 
-  @(posedge clk);
-  to_de_outbytes = mem_in[test_num];
-  to_rr_valid = 1'b1;
-  // @(posedge clk); // updated rr_to_ag
-  #(CYCLE_TIME-2);
-  to_rr_ieip = to_rr_oeip + from_de_instr_len;
-  to_rr_pred_eip = to_rr_ieip;
-  @(posedge clk); // updated ag_to_mem
-  to_rr_valid = 1'b0;
-  to_de_outbytes = {128{1'bz}};
-  #(30 * CYCLE_TIME);
-  to_rr_oeip = to_rr_ieip;
-  print_arch_status();
-  NUM_TESTS = NUM_TESTS + 1;
-  #(CYCLE_TIME);
-end
-endtask
+// task test_with_nops;
+//   input integer test_num;
+// begin 
+//   @(posedge clk);
+//   to_de_outbytes = mem_in[test_num];
+//   to_rr_valid = 1'b1;
+//   // @(posedge clk); // updated rr_to_ag
+//   #(CYCLE_TIME-2);
+//   to_rr_ieip = to_rr_oeip + from_de_instr_len;
+//   to_rr_pred_eip = to_rr_ieip;
+//   @(posedge clk); // updated ag_to_mem
+//   to_rr_valid = 1'b0;
+//   to_de_outbytes = {128{1'bz}};
+//   #(30 * CYCLE_TIME);
+//   to_rr_oeip = to_rr_ieip;
+//   print_arch_status();
+//   NUM_TESTS = NUM_TESTS + 1;
+//   #(CYCLE_TIME);
+// end
+// endtask
 
 integer cur_test;
-reg [31:0] cur_oeip;
-reg [31:0] next_ieip;
 reg        stream_done;
 reg [31:0] accepted_cnt;
 reg [31:0] stalled_cnt;
+
+dummy_fe dut_fe(
+  .clk(clk),
+  .rst_n(rst_n),
+  .from_rr_stall(from_rr_stall),
+  .to_de_outbytes(to_de_outbytes),
+  .to_de_valid(to_de_valid),
+  .from_de_prefix(from_de_prefix),
+  .from_de_opcode(from_de_opcode),
+  .from_de_modrm(from_de_modrm),
+  .from_de_sib(from_de_sib),
+  .from_de_disp(from_de_disp),
+  .from_de_dispsize(from_de_dispsize),
+  .from_de_imm(from_de_imm),
+  .from_de_imm_size(from_de_imm_size),
+  .from_de_addr_mode(from_de_addr_mode),
+  .from_de_oeip(from_de_oeip),
+  .from_de_ieip(from_de_ieip),
+  .from_de_pred_eip(from_de_pred_eip),
+  .from_de_exception(from_de_exception),
+  .from_de_valid(from_de_valid)
+);
+
+dummy_fe_to_be dut_fe_to_be(
+  .clk(clk),
+  .rst_n(rst_n),
+  .from_rr_stall(from_rr_stall),
+  .from_de_prefix(from_de_prefix),
+  .from_de_opcode(from_de_opcode),
+  .from_de_modrm(from_de_modrm),
+  .from_de_sib(from_de_sib),
+  .from_de_disp(from_de_disp),
+  .from_de_dispsize(from_de_dispsize),
+  .from_de_imm(from_de_imm),
+  .from_de_imm_size(from_de_imm_size),
+  .from_de_addr_mode(from_de_addr_mode),
+  .from_de_oeip(from_de_oeip),
+  .from_de_ieip(from_de_ieip),
+  .from_de_pred_eip(from_de_pred_eip),
+  .from_de_exception(from_de_exception),
+  .from_de_valid(from_de_valid),
+
+  .to_rr_prefix(to_rr_prefix),
+  .to_rr_opcode(to_rr_opcode),
+  .to_rr_modrm(to_rr_modrm),
+  .to_rr_sib(to_rr_sib),
+  .to_rr_disp(to_rr_disp),
+  .to_rr_dispsize(to_rr_dispsize),
+  .to_rr_imm(to_rr_imm),
+  .to_rr_imm_size(to_rr_imm_size),
+  .to_rr_addr_mode(to_rr_addr_mode),
+  .to_rr_oeip(to_rr_oeip),
+  .to_rr_ieip(to_rr_ieip),
+  .to_rr_pred_eip(to_rr_pred_eip),
+  .to_rr_exception(to_rr_exception),
+  .to_rr_valid(to_rr_valid)
+);
 
 task drive_testcase;
   input integer idx;
 begin
   to_de_outbytes   = mem_in[idx];
-  to_rr_valid      = 1'b1;
-  to_rr_oeip       = cur_oeip;
-  
-  // default value
-  to_rr_ieip       = cur_oeip + from_de_instr_len;
-  to_rr_pred_eip   = cur_oeip + from_de_instr_len;
-  to_rr_exception  = 2'b0;
+  to_de_valid      = 1'b1;
 end
 endtask
 
 task drive_idle;
 begin
-  to_rr_valid      = 1'b0;
   to_de_outbytes   = {128{1'bz}};
-  to_rr_ieip       = to_rr_oeip;
-  to_rr_pred_eip   = to_rr_oeip;
-  to_rr_exception  = 2'b0;
+  to_de_valid      = 1'b0;
 end
 endtask
 
@@ -450,12 +490,11 @@ task run_test_stream;
   integer drain_cycles;
 begin
   cur_test     = 0;
-  cur_oeip     = 32'h0;
   accepted_cnt = 0;
   stalled_cnt  = 0;
   stream_done  = 1'b0;
 
-  @(negedge clk);
+  @(posedge clk);
   if (cur_test < NUM_TESTS_MEM)
     drive_testcase(cur_test);
   else
@@ -464,28 +503,23 @@ begin
   while (!stream_done) begin
     @(posedge clk);
 
-    if (to_rr_valid && !from_rr_stall) begin
+    if (!from_rr_stall) begin
       accepted_cnt = accepted_cnt + 1;
-      next_ieip = cur_oeip + from_de_instr_len;
 
       $display("[ACCEPT] test=%0d oeip=%08x len=%0d ieip=%08x time=%0t",
-               cur_test, cur_oeip, from_de_instr_len, next_ieip, $time);
-      
-      // print_arch_status();
-
-      cur_oeip = next_ieip;
+               cur_test, from_de_oeip, dut_fe.instr_len, from_de_ieip, $time);
+  
       cur_test = cur_test + 1;
 
       if (cur_test >= NUM_TESTS_MEM)
         stream_done = 1'b1;
     end
+
     else if (to_rr_valid && from_rr_stall) begin
       stalled_cnt = stalled_cnt + 1;
       $display("[STALL ] holding test=%0d oeip=%08x time=%0t",
-               cur_test, cur_oeip, $time);
+               cur_test, from_de_oeip, $time);
     end
-
-    @(negedge clk);
     if (!stream_done)
       drive_testcase(cur_test);
     else
@@ -495,7 +529,6 @@ begin
   for (drain_cycles = 0; drain_cycles < 30; drain_cycles = drain_cycles + 1)
     @(posedge clk);
 
-  to_rr_oeip = cur_oeip;
   NUM_TESTS  = accepted_cnt;
   print_arch_status();
 
@@ -504,19 +537,27 @@ begin
 end
 endtask
 
-reg wb_valid_d;
+reg print_pending;
 
 always @(posedge clk) begin
   if (!rst_n) begin
-    wb_valid_d <= 1'b0;
+    print_pending  <= 1'b0;
+    wb_oeip        <= 32'b0;
+    wb_eflags      <= 32'b0;
   end else begin
-    wb_valid_d <= dut.inst_stage_wb.to_wb_valid_buf16;
-    if (dut.inst_stage_wb.to_wb_valid_buf16 && !wb_valid_d) begin
+    if (print_pending) begin
+      $display("[WB COMMIT+1] time=%0t", $time);
+      print_arch_status();
+      NUM_TESTS <= NUM_TESTS + 1;
+    end
+    
+    print_pending <= 1'b0;
+
+    if (dut.inst_stage_wb.to_wb_valid_buf16) begin
       if (dut.inst_stage_wb.no_exception) begin
-        $display("======================================");
-        $display("[WB COMMIT] time=%0t", $time);
-        print_arch_status();
-        NUM_TESTS = NUM_TESTS + 1;
+        print_pending <= 1'b1;
+        wb_oeip       <= dut.inst_stage_wb.to_wb_oeip;
+        wb_eflags     <= dut.inst_stage_ex.eflags_out;
       end
     end
   end
@@ -540,19 +581,17 @@ initial begin
   // print_arch_status();
 
   // Iterate through all tests
-  for (j = 0; j < NUM_TESTS_MEM; j = j + 1) begin
-      test_with_nops(j);
-  end
+  // for (j = 0; j < NUM_TESTS_MEM; j = j + 1) begin
+  //     test_with_nops(j);
+  // end
 
-  // run_test_stream();
+  run_test_stream();
   // #(30 * CYCLE_TIME);
                   
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
   $finish;
 end
-
-
 
 // Auto-generated memory initialization (Verilog-2005)
 

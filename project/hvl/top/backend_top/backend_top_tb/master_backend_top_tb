@@ -159,6 +159,11 @@
 ~/MICROARCH/project/hdl/stages/decoder/logic_sib_disp.v
 ~/MICROARCH/project/hdl/stages/decoder/logic_incr_amt.v
 ~/MICROARCH/project/hdl/stages/decoder/block_decoder.v
+~/MICROARCH/project/hdl/stages/rr/dep_unit/check_dep.v
+~/MICROARCH/project/hdl/stages/rr/dep_unit/gp_dep.v
+~/MICROARCH/project/hdl/stages/rr/dep_unit/single_stage_dep.v
+~/MICROARCH/project/hdl/stages/rr/dep_unit/dep_unit.v
 ~/MICROARCH/project/hdl/top/backend/backend_top.v
+~/MICROARCH/project/hvl/top/backend_top/backend_top_tb/dummy_fe.v
 // ~/MICROARCH/project/hvl/top/backend_top/backend_top_tb/backend_top_tb.v
 ~/MICROARCH/project/hvl/top/backend_top/backend_top_tb/backend_top_auto_tb.v

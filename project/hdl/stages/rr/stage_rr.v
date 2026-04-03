@@ -15,6 +15,7 @@ module stage_rr(
     input to_rr_valid,
 
     input from_ag_stall,
+    input from_dep_unit_data_dep,
 
     output [7:0]  to_regunit_opcode,
     output [5:0]  to_regunit_modrm,
@@ -266,12 +267,18 @@ module stage_rr(
     assign from_rr_oeip=to_rr_oeip;
     assign from_rr_ieip=to_rr_ieip;
     assign from_rr_cs = from_regunit_CS;
-    assign from_rr_valid=to_rr_valid; // TODO: bubble unit
+    
     assign from_rr_pred_eip = to_rr_pred_eip;
     assign from_rr_exception = to_rr_exception;
 
+    // if data_dep: bubble -> valid = 0
+    // from_rr_valid = to_rr_valid & ~data_dep
+    wire no_dep;
+    inv1$ inv_dep(no_dep, from_dep_unit_data_dep);
+    and2$ and_valid(from_rr_valid, no_dep, to_rr_valid);
+
     /* TODO: ADD STALL LOGIC */
-    assign from_rr_stall = from_ag_stall;
+    or2$ or_from_rr_stall(from_rr_stall, from_ag_stall, from_dep_unit_data_dep);
 
     assign to_dep_needREGS = {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]};
     

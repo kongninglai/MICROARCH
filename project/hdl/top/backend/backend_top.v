@@ -153,6 +153,10 @@ module backend_top #(
     wire [2:0]      to_dep_MMA_idx;
     wire [2:0]      to_dep_MMB_idx;
 
+    wire [1:0]      to_dep_srcA_size;
+    wire [1:0]      to_dep_srcB_size;
+    wire [1:0]      to_dep_srcC_size;
+
     /*** RR TO AG ***/
     wire [64:0]     to_ag_control_sigs;
     wire [2:0]      to_ag_dstidA;
@@ -212,6 +216,12 @@ module backend_top #(
     wire            from_ag_valid;
     wire            from_ag_stall;
     wire            from_ag_we_pipe_reg;
+
+    /* AG TO DEP */
+    wire [1:0]     from_ag_dstA_size;
+    wire [1:0]     from_ag_dstB_size;
+    wire [1:0]     from_ag_ldAB;
+    wire [2:0]     from_ag_ldREGS;
 
     /*** AG TO MEM  ***/
     wire [56:0]     to_mem_control_sigs;
@@ -281,6 +291,12 @@ module backend_top #(
     wire            from_mem_stall;
     wire            from_mem_valid_store_inst;
 
+    /* MEM TO DEP */
+    wire [1:0]      from_mem_dstA_size;
+    wire [1:0]      from_mem_dstB_size;
+    wire [1:0]      from_mem_ldAB;
+    wire [2:0]      from_mem_ldREGS;
+
     /*** MEM TO EX ***/
     wire [54:0]     to_ex_control_sigs;
     wire [2:0]      to_ex_dstidA;
@@ -339,6 +355,15 @@ module backend_top #(
     wire [1:0]      from_ex_exception;
 
     wire            from_ex_valid_store_inst;
+
+    /* EX TO DEP */
+    wire  [1:0]     from_ex_dstA_size;
+    wire  [1:0]     from_ex_dstB_size;
+    wire            from_ex_ld_gp0;
+    wire            from_ex_ld_gp1;
+    wire            from_ex_ld_seg;
+    wire            from_ex_ld_mmx;
+
     /*** EX TO WB ***/
     wire [11:0]     to_wb_control_sigs;
     wire [2:0]      to_wb_dstidA;
@@ -398,6 +423,52 @@ module backend_top #(
     wire [31:0] to_ex_tempEIP;
     wire [15:0] to_ex_tempCS;
 
+    /*** DEP UNIT ***/
+    wire from_dep_unit_data_dep;
+
+    dep_unit dut (
+        .from_ag_dstidA(from_ag_dstidA),
+        .from_ag_dstidB(from_ag_dstidB),
+        .from_ag_dstA_size(from_ag_dstA_size),
+        .from_ag_dstB_size(from_ag_dstB_size),
+        .from_ag_ldAB(from_ag_ldAB),
+        .from_ag_ldREGS(from_ag_ldREGS),
+        .from_ag_valid(from_ag_valid),
+        .from_mem_dstidA(from_mem_dstidA),
+        .from_mem_dstidB(from_mem_dstidB),
+        .from_mem_dstA_size(from_mem_dstA_size),
+        .from_mem_dstB_size(from_mem_dstB_size),
+        .from_mem_ldAB(from_mem_ldAB),
+        .from_mem_ldREGS(from_mem_ldREGS),
+        .from_mem_valid(from_mem_valid),
+        .from_ex_dstidA(from_ex_dstidA),
+        .from_ex_dstidB(from_ex_dstidB),
+        .from_ex_dstA_size(from_ex_dstA_size),
+        .from_ex_dstB_size(from_ex_dstB_size),
+        .from_ex_ld_gp0(from_ex_ld_gp0),
+        .from_ex_ld_gp1(from_ex_ld_gp1),
+        .from_ex_ld_seg(from_ex_ld_seg),
+        .from_ex_ld_mmx(from_ex_ld_mmx),
+        .from_ex_valid(from_ex_valid),
+        .from_regunit_srcA_id(to_dep_srcregA_idx),
+        .from_regunit_srcA_size(to_dep_srcA_size),
+        .from_regunit_srcB_id(to_dep_srcregB_idx),
+        .from_regunit_srcB_size(to_dep_srcB_size),
+        .from_regunit_srcC_id(to_dep_srcregC_idx),
+        .from_regunit_srcC_size(to_dep_srcC_size),
+        .from_regunit_srcBS1_id(to_dep_basereg1_idx),
+        .from_regunit_srcBS2_id(to_dep_basereg2_idx),
+        .from_regunit_srcIDX_id(to_dep_indexreg1_idx),
+        .from_regunit_srcSREG_id(to_dep_srcSREG_idx),
+        .from_regunit_srcSR1_id(to_dep_SREG1_idx),
+        .from_regunit_srcSR2_id(to_dep_SREG2_idx),
+        .from_regunit_srcMMA_id(to_dep_MMA_idx),
+        .from_regunit_srcMMB_id(to_dep_MMB_idx),
+        .from_rr_src_needREGS(to_dep_needREGS),
+        .rr_valid(to_rr_valid),
+        .data_dep(from_dep_unit_data_dep)
+    );
+    
     stage_rr inst_rr (
         .to_rr_prefix(to_rr_prefix),
         .to_rr_opcode(to_rr_opcode),
@@ -469,13 +540,14 @@ module backend_top #(
         .from_rr_exception(from_rr_exception),
         .from_rr_valid(from_rr_valid),
         .from_rr_stall(from_rr_stall),
-        .to_dep_needREGS(to_dep_needREGS)
+        .to_dep_needREGS(to_dep_needREGS),
+        .from_dep_unit_data_dep(from_dep_unit_data_dep)
     );
 
     rr_to_ag inst_rr_to_ag (
         .clk(clk),
         .rst_n(rst_n),
-        .we(1'b1),
+        .we(from_ag_we_pipe_reg),
         .from_rr_control_sigs(from_rr_control_sigs),
         .from_rr_dstidA(from_rr_dstidA),
         .from_rr_dstidB(from_rr_dstidB),
@@ -550,8 +622,11 @@ module backend_top #(
         .to_rr_indexreg1(from_regunit_indexreg1),
         .to_rr_basereg2(from_regunit_basereg2),
         .to_dep_srcregA_idx(to_dep_srcregA_idx),
+        .to_dep_srcA_size(to_dep_srcA_size),
         .to_dep_srcregB_idx(to_dep_srcregB_idx),
+        .to_dep_srcB_size(to_dep_srcB_size),
         .to_dep_srcregC_idx(to_dep_srcregC_idx),
+        .to_dep_srcC_size(to_dep_srcC_size),
         .to_dep_basereg1_idx(to_dep_basereg1_idx),
         .to_dep_indexreg1_idx(to_dep_indexreg1_idx),
         .to_dep_basereg2_idx(to_dep_basereg2_idx),
@@ -655,7 +730,12 @@ module backend_top #(
         .from_ag_valid(from_ag_valid),
 
         .from_ag_stall(from_ag_stall),
-        .from_ag_we_pipe_reg(from_ag_we_pipe_reg)
+        .from_ag_we_pipe_reg(from_ag_we_pipe_reg),
+
+        .from_ag_dstA_size(from_ag_dstA_size),
+        .from_ag_dstB_size(from_ag_dstB_size),
+        .from_ag_ldAB(from_ag_ldAB),
+        .from_ag_ldREGS(from_ag_ldREGS)
     );
 
     ag_to_mem inst_ag_to_mem (
@@ -778,6 +858,10 @@ module backend_top #(
       .from_mem_valid(from_mem_valid),
       .from_mem_stall(from_mem_stall),
       .from_mem_valid_store_inst(from_mem_valid_store_inst),
+      .from_mem_dstA_size(from_mem_dstA_size),
+      .from_mem_dstB_size(from_mem_dstB_size),
+      .from_mem_ldAB(from_mem_ldAB),
+      .from_mem_ldREGS(from_mem_ldREGS),
 
       .DCACHE_STALL(DCACHE_STALL),
       .DCACHE_HIT_DATA(DCACHE_HIT_DATA),
@@ -934,7 +1018,13 @@ module backend_top #(
         .from_ex_oeip(from_ex_oeip),
         .from_ex_valid_store_inst(from_ex_valid_store_inst),
         .from_ex_valid(from_ex_valid),
-        .from_ex_exception(from_ex_exception)
+        .from_ex_exception(from_ex_exception),
+        .from_ex_dstA_size(from_ex_dstA_size),
+        .from_ex_dstB_size(from_ex_dstB_size),
+        .from_ex_ld_gp0(from_ex_ld_gp0),
+        .from_ex_ld_gp1(from_ex_ld_gp1),
+        .from_ex_ld_seg(from_ex_ld_seg),
+        .from_ex_ld_mmx(from_ex_ld_mmx)
     );
 
     ex_to_wb inst_ex_to_wb (
