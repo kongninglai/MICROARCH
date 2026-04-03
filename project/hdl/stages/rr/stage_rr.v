@@ -274,12 +274,29 @@ module stage_rr(
 
     // if data_dep: bubble -> valid = 0
     // from_rr_valid = to_rr_valid & ~data_dep
-    wire no_dep;
+    wire no_dep, is_hlt, is_hlt_valid, is_not_hlt;
     inv1$ inv_dep(no_dep, from_dep_unit_data_dep);
-    and2$ and_valid(from_rr_valid, no_dep, to_rr_valid);
+
+    big_eq #(
+      .WIDTH(8)
+    ) big_eq_is_hlt (
+      .in0(to_rr_opcode), .in1(8'hF4),
+      .eq(is_hlt)
+    );
+
+    and2$ and2$_is_hlt_valid(is_hlt_valid, is_hlt, to_rr_valid);
+
+    big_neq #(
+      .WIDTH(8)
+    ) big_neq_is_not_hlt (
+      .in0(to_rr_opcode), .in1(8'hF4),
+      .neq(is_not_hlt)
+    );
+
+    and3$ and_valid(from_rr_valid, no_dep, to_rr_valid, is_not_hlt);
 
     /* TODO: ADD STALL LOGIC */
-    or2$ or_from_rr_stall(from_rr_stall, from_ag_stall, from_dep_unit_data_dep);
+    or3$ or_from_rr_stall(from_rr_stall, from_ag_stall, from_dep_unit_data_dep, is_hlt_valid);
 
     assign to_dep_needREGS = {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]};
     inv1$  inv1$_from_rr_we_pipe_reg(from_rr_we_pipe_reg, from_ag_stall);

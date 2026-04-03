@@ -275,61 +275,15 @@ begin
 end
 endtask
 
+
+
 reg [31:0] saved_st_addr;
 reg [255:0] combined_data;
 reg [31:0] combined_mask;
 reg [31:0] saved_ieip, halt_ieip;
-integer load_iters, k, m, n;
-always @(posedge clk) begin
-  saved_ieip <= dut.to_ex_ieip;
-  if (to_rr_opcode === 8'hF4 && dut.to_rr_valid) begin
-    halt_ieip <= to_rr_ieip;
-  end
-  if (dut.inst_stage_mem.rw_buf16[0] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
-    saved_st_addr = dut.inst_stage_mem.to_mem_st_addr;
-  end
-  if (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
-    case (dut.inst_stage_mem.mem_ds)
-      2'b00: load_iters=1;
-      2'b01: load_iters=2;
-      2'b10: load_iters=4;
-      2'b11: load_iters=8;
-    endcase
-    for (k = 0; k < load_iters; k = k + 1) begin
-      $fdisplay(file_handle_cmp,"Read  0x%02x from va = 0x%08x and pa = 0x%04x",
-         (dut.inst_stage_mem.from_mem_load_result >> (8 * k)) & 8'hFF,
-         dut.inst_stage_mem.to_mem_ld_addr[31:0] + k,
-         {D_RD_TLB_PFN_OUT[2:0], dut.inst_stage_mem.to_mem_ld_addr[11:4], dut.inst_stage_mem.to_mem_ld_addr[3:0]} + k
-      );
-    end
-  end
-  if (dut.inst_stage_wb.to_wb_store_is_io_line_0 === 1'b1 && dut.inst_stage_wb.no_exception === 1'b1 && dut.inst_stage_wb.to_wb_valid_buf16 === 1'b1) begin
-    for (m = 0; m < 16; m = m + 1) begin
-      if (WB_PR_ST_MASK_L0[m] === 1'b0) begin
-        $fdisplay(file_handle_cmp,"Wrote 0x%02x to   va = 0x%08x and pa = 0x%04x",
-          (WB_SHF_ST_DATA_L0 >> (8*m)) & 8'hFF,
-          saved_st_addr[31:0] + m,
-          {WB_PR_ST_ADDR_L0[14:4], saved_st_addr[3:0]} + m
-        );
-      end
-    end
-  end
-  if ((dut.inst_stage_wb.to_wb_store_queue_alloc_line_0 === 1'b1 || dut.inst_stage_wb.to_wb_store_queue_alloc_line_1 === 1'b1) && dut.inst_stage_wb.no_exception === 1'b1 && dut.inst_stage_wb.to_wb_valid_buf16 === 1'b1) begin
-    combined_data = {dut.inst_stage_wb.store_data_line_1, dut.inst_stage_wb.store_data_line_0};
-    combined_mask = {dut.inst_stage_wb.to_wb_store_mask_line_1, dut.inst_stage_wb.to_wb_store_mask_line_0};
-    for (n = 0; n < 32; n = n + 1) begin
-      if (combined_mask[n] === 1'b0) begin
-        $fdisplay(file_handle_cmp,"Wrote 0x%02x to   va = 0x%08x and pa = 0x%04x",
-          (combined_data >> (8*n)) & 8'hFF,
-          {saved_st_addr[31:4], 4'd0} + n,
-          {dut.inst_stage_wb.to_wb_store_addr_line_0[14:4], 4'd0} + n
-        );
-      end
-    end
-  end
-end
 
 task print_arch_status;
+  input integer is_hlt_status;
 begin
   $fdisplay(file_handle_cmp,"Architectural State %0d", NUM_TESTS);
 
@@ -385,17 +339,69 @@ begin
   );
 
   // ---------------- EIP ----------------
-  $fdisplay(file_handle_cmp,"EIP: 0x%08X", wb_ieip);
+  $fdisplay(file_handle_cmp,"EIP: 0x%08X", (is_hlt_status === 1'b1 ? dut.to_rr_ieip : wb_ieip));
 
   $fdisplay(file_handle_cmp,"----------------------------------------");
+end
+endtask
 
-  if (wb_ieip === halt_ieip) begin
+integer load_iters, k, m, n;
+
+always @(posedge clk) begin
+  saved_ieip <= dut.to_ex_ieip;
+  if (dut.inst_rr.is_hlt_valid && dut.to_ag_valid === 1'b0 && dut.to_mem_valid === 1'b0 &&
+      dut.to_ex_valid === 1'b0 && dut.to_wb_valid === 1'b0) begin
+    #(10 * CYCLE_TIME);
+    print_arch_status(1);
+    #(CYCLE_TIME);
     $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
     $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
     $finish;
+
+  end
+  if (dut.inst_stage_mem.rw_buf16[0] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
+    saved_st_addr = dut.inst_stage_mem.to_mem_st_addr;
+  end
+  if (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
+    case (dut.inst_stage_mem.mem_ds)
+      2'b00: load_iters=1;
+      2'b01: load_iters=2;
+      2'b10: load_iters=4;
+      2'b11: load_iters=8;
+    endcase
+    for (k = 0; k < load_iters; k = k + 1) begin
+      $fdisplay(file_handle_cmp,"Read  0x%02x from va = 0x%08x and pa = 0x%04x",
+         (dut.inst_stage_mem.from_mem_load_result >> (8 * k)) & 8'hFF,
+         dut.inst_stage_mem.to_mem_ld_addr[31:0] + k,
+         {D_RD_TLB_PFN_OUT[2:0], dut.inst_stage_mem.to_mem_ld_addr[11:4], dut.inst_stage_mem.to_mem_ld_addr[3:0]} + k
+      );
+    end
+  end
+  if (dut.inst_stage_wb.to_wb_store_is_io_line_0 === 1'b1 && dut.inst_stage_wb.no_exception === 1'b1 && dut.inst_stage_wb.to_wb_valid_buf16 === 1'b1) begin
+    for (m = 0; m < 16; m = m + 1) begin
+      if (WB_PR_ST_MASK_L0[m] === 1'b0) begin
+        $fdisplay(file_handle_cmp,"Wrote 0x%02x to   va = 0x%08x and pa = 0x%04x",
+          (WB_SHF_ST_DATA_L0 >> (8*m)) & 8'hFF,
+          saved_st_addr[31:0] + m,
+          {WB_PR_ST_ADDR_L0[14:4], saved_st_addr[3:0]} + m
+        );
+      end
+    end
+  end
+  if ((dut.inst_stage_wb.to_wb_store_queue_alloc_line_0 === 1'b1 || dut.inst_stage_wb.to_wb_store_queue_alloc_line_1 === 1'b1) && dut.inst_stage_wb.no_exception === 1'b1 && dut.inst_stage_wb.to_wb_valid_buf16 === 1'b1) begin
+    combined_data = {dut.inst_stage_wb.store_data_line_1, dut.inst_stage_wb.store_data_line_0};
+    combined_mask = {dut.inst_stage_wb.to_wb_store_mask_line_1, dut.inst_stage_wb.to_wb_store_mask_line_0};
+    for (n = 0; n < 32; n = n + 1) begin
+      if (combined_mask[n] === 1'b0) begin
+        $fdisplay(file_handle_cmp,"Wrote 0x%02x to   va = 0x%08x and pa = 0x%04x",
+          (combined_data >> (8*n)) & 8'hFF,
+          {saved_st_addr[31:4], 4'd0} + n,
+          {dut.inst_stage_wb.to_wb_store_addr_line_0[14:4], 4'd0} + n
+        );
+      end
+    end
   end
 end
-endtask
 
 // task test_with_nops;
 //   input integer test_num;
@@ -515,8 +521,8 @@ begin
     if (!from_rr_stall) begin
       accepted_cnt = accepted_cnt + 1;
 
-      $display("[ACCEPT] test=%0d oeip=%08x len=%0d ieip=%08x time=%0t",
-               cur_test, from_de_oeip, dut_fe.instr_len, from_de_ieip, $time);
+      // $display("[ACCEPT] test=%0d oeip=%08x len=%0d ieip=%08x time=%0t",
+      //          cur_test, from_de_oeip, dut_fe.instr_len, from_de_ieip, $time);
   
       cur_test = cur_test + 1;
 
@@ -526,8 +532,8 @@ begin
 
     else if (to_rr_valid && from_rr_stall) begin
       stalled_cnt = stalled_cnt + 1;
-      $display("[STALL ] holding test=%0d oeip=%08x time=%0t",
-               cur_test, from_de_oeip, $time);
+      // $display("[STALL ] holding test=%0d oeip=%08x time=%0t",
+      //          cur_test, from_de_oeip, $time);
     end
     if (!stream_done)
       drive_testcase(cur_test);
@@ -552,8 +558,8 @@ always @(posedge clk) begin
     wb_eflags      <= 32'b0;
   end else begin
     if (print_pending) begin
-      $display("[WB COMMIT+1] time=%0t", $time);
-      print_arch_status();
+      // $display("[WB COMMIT+1] time=%0t", $time);
+      print_arch_status(0);
       NUM_TESTS <= NUM_TESTS + 1;
     end
     
