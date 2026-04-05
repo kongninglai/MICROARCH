@@ -59,7 +59,7 @@ module stage_wb_reg_tb;
     wire [15:0] from_regunit_CS;
     wire [63:0] from_regunit_MMA;
     wire [63:0] from_regunit_MMB;
-    wire [64:0] from_rr_control_sigs;
+    wire [65:0] from_rr_control_sigs;
     wire [2:0] from_rr_dstidA;
     wire [2:0] from_rr_dstidB;
     wire [31:0] from_rr_srcregA;
@@ -121,7 +121,7 @@ module stage_wb_reg_tb;
     wire [2:0] to_dep_MMA_idx;
     wire [2:0] to_dep_MMB_idx;
 
-    wire [64:0]     to_ag_control_sigs;
+    wire [65:0]     to_ag_control_sigs;
     wire [2:0]      to_ag_dstidA;
     wire [2:0]      to_ag_dstidB;
     wire [31:0]     to_ag_srcregA;
@@ -379,7 +379,7 @@ module stage_wb_reg_tb;
     wire stack_push;
     wire intex;
     wire ret_with_imm;
-    wire rm, op_ovr, palu_size;
+    wire rm, op_ovr, palu_size, sbb_dir;
 
     ag_sig dut_sig (
         .ucode_sig(from_rr_control_sigs),
@@ -417,7 +417,8 @@ module stage_wb_reg_tb;
         .ret_with_imm(ret_with_imm),
         .rm(rm),
         .op_ovr(op_ovr),
-        .palu_size(palu_size)
+        .palu_size(palu_size),
+        .sbb_dir(sbb_dir)
     );
 
     wire from_mem_stall;
@@ -426,7 +427,7 @@ module stage_wb_reg_tb;
     reg from_wb_stall_if_mem_en;
     reg from_wb_valid_store_inst;
 
-    wire [56:0]    from_ag_control_sigs;
+    wire [57:0]    from_ag_control_sigs;
     wire [2:0]     from_ag_dstidA;
     wire [2:0]     from_ag_dstidB;
     wire [31:0]    from_ag_srcregA;
@@ -554,7 +555,7 @@ module stage_wb_reg_tb;
     wire [1:0]      from_ag_rw;
     wire [1:0]      from_ag_ds;
     wire [1:0]      from_ag_mem_ds;
-    wire            from_ag_rm, from_ag_op_ovr, from_ag_palu_size;
+    wire            from_ag_rm, from_ag_op_ovr, from_ag_palu_size, from_ag_sbb_dir;
     mem_sig dut_from_ag_sig (
         .ucode_sig(from_ag_control_sigs),
         .ldAB(from_ag_ldAB),
@@ -586,10 +587,11 @@ module stage_wb_reg_tb;
         .mem_ds(from_ag_mem_ds),
         .rm(from_ag_rm),
         .op_ovr(from_ag_op_ovr),
-        .palu_size(from_ag_palu_size)
+        .palu_size(from_ag_palu_size),
+        .sbb_dir(from_ag_sbb_dir)
     );
 
-    wire [56:0]    to_mem_control_sigs;
+    wire [57:0]    to_mem_control_sigs;
     wire [2:0]     to_mem_dstidA;
     wire [2:0]     to_mem_dstidB;
     wire [31:0]    to_mem_srcregA;
@@ -676,7 +678,7 @@ module stage_wb_reg_tb;
         .to_mem_valid(to_mem_valid)
     );
 
-    wire [54:0] from_mem_control_sigs;
+    wire [55:0] from_mem_control_sigs;
     wire [2:0] from_mem_dstidA;
     wire [2:0] from_mem_dstidB;
     wire [31:0] from_mem_srcregA;
@@ -794,7 +796,7 @@ module stage_wb_reg_tb;
     wire [3:0]      from_mem_store_data_mux;
     wire [1:0]      from_mem_rw;
     wire [1:0]      from_mem_ds;
-    wire            from_mem_rm, from_mem_op_ovr, from_mem_palu_size;
+    wire            from_mem_rm, from_mem_op_ovr, from_mem_palu_size, from_mem_sbb_dir;
 
     ex_sig dut_from_mem_sig (
         .ucode_sig(from_mem_control_sigs),
@@ -826,10 +828,11 @@ module stage_wb_reg_tb;
         .ds(from_mem_ds),
         .rm(from_mem_rm),
         .op_ovr(from_mem_op_ovr),
-        .palu_size(from_mem_palu_size)
+        .palu_size(from_mem_palu_size),
+        .sbb_dir(from_mem_sbb_dir)
     );
 
-    wire [54:0] to_ex_control_sigs;
+    wire [55:0] to_ex_control_sigs;
     wire [2:0] to_ex_dstidA;
     wire [2:0] to_ex_dstidB;
     wire [31:0] to_ex_srcregA;

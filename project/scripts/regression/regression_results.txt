@@ -1,4 +1,4 @@
-Regression run: Sun Apr  5 14:41:38 CDT 2026
+Regression run: Sun Apr  5 15:13:58 CDT 2026
 ========================================
 PASS: AAA/aaa0.txt
 PASS: AAA/aaa1.txt
@@ -23,8 +23,9 @@ PASS: PAVG/PAVG_tests_proc.txt
 PASS: PUSH_POP/PUSH_POP_tests_proc.txt
 PASS: SAL/SAL_tests_proc.txt
 PASS: SAR/SAR_tests_proc.txt
+PASS: SBB/SBB_tests_proc.txt
 PASS: STD/STD_tests_proc.txt
 PASS: touch_all_regs.txt
 PASS: XCHG/XCHG_tests_proc.txt
 ========================================
-Total: 26  PASSED: 26  FAILED: 0
+Total: 27  PASSED: 27  FAILED: 0

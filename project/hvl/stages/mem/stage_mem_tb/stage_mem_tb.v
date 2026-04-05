@@ -33,7 +33,7 @@ localparam VPN_BIT_WIDTH        = 32 - PAGE_BIT_WIDTH;
 localparam STORE_DATA_BIT_WIDTH = 64;
 localparam TWO_LINES_SHF_AMT_BIT_WIDTH = $clog2((2*RANK_BIT_WIDTH)/8);
 
-localparam MEM_CONTROL_SIGS_BIT_WIDTH = 57;
+localparam MEM_CONTROL_SIGS_BIT_WIDTH = 58;
 
 localparam CYCLE_TIME_X10 = 98;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
@@ -111,7 +111,7 @@ wire [BUS_BIT_WIDTH-1:0] DATA_BUS;
 wire [CHIPS_PER_RANK-1:0] WR_mask;
 
 wire from_mem_valid_store_inst;
-wire [54:0] from_mem_control_sigs;
+wire [55:0] from_mem_control_sigs;
 wire [2:0] from_mem_dstidA;
 wire [2:0] from_mem_dstidB;
 wire [31:0] from_mem_srcregA;
@@ -469,8 +469,8 @@ initial begin
   to_mem_ld_offset = 0;
   to_mem_st_addr = {MAPPED_VPN,12'h000};
   to_mem_st_offset = 0;
-  to_mem_control_sigs = {23'd0, 2'b00, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
-  // to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b00, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
+  // to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
 
   WB_PR_ST_ADDR_L0        = 11'd0;
   WB_PR_ST_MASK_L0        = 16'd0;
@@ -509,7 +509,7 @@ initial begin
   to_mem_st_addr = {MAPPED_VPN,12'h000};
   to_mem_st_offset = to_mem_st_addr;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
@@ -540,7 +540,7 @@ initial begin
   to_mem_st_addr = {MAPPED_VPN,12'h00C};
   to_mem_st_offset = to_mem_st_addr + 7;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b01, 2'b11, 2'b00, 2'b11, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b01, 2'b11, 2'b00, 2'b11, 15'd0, 12'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
@@ -575,7 +575,7 @@ initial begin
   to_mem_ld_addr = {MAPPED_VPN,12'h000};
   to_mem_ld_offset = to_mem_ld_addr;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
@@ -608,7 +608,7 @@ initial begin
   to_mem_ld_addr = {MAPPED_VPN,12'h00C};
   to_mem_ld_offset = to_mem_ld_addr + 7;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b10, 2'b11, 2'b00, 2'b11, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b10, 2'b11, 2'b00, 2'b11, 15'd0, 12'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
@@ -644,7 +644,7 @@ initial begin
   to_mem_ld_addr = {MAPPED_VPN,12'h000};
   to_mem_ld_offset = to_mem_ld_addr + 3;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b10, 2'b10, 2'b00, 2'b10, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b10, 2'b10, 2'b00, 2'b10, 15'd0, 12'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
@@ -675,7 +675,7 @@ initial begin
     to_mem_st_addr = {20'h08000,12'h000};
     to_mem_st_offset = to_mem_st_addr;
     to_mem_valid = 1'b1;
-    to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+    to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
     #(CYCLE_TIME);
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
@@ -691,7 +691,7 @@ initial begin
     to_mem_st_addr = {20'h06000,12'h010};
     to_mem_st_offset = to_mem_st_addr;
     to_mem_valid = 1'b1;
-    to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+    to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
     #(CYCLE_TIME);
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
@@ -708,7 +708,7 @@ initial begin
     to_mem_ld_addr = {20'h08000,12'h000};
     to_mem_ld_offset = to_mem_ld_addr;
     to_mem_valid = 1'b1;
-    to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+    to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
     #(CYCLE_TIME);
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
@@ -724,7 +724,7 @@ initial begin
     to_mem_ld_addr = {20'h06000,12'h010};
     to_mem_ld_offset = to_mem_ld_addr;
     to_mem_valid = 1'b1;
-    to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+    to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
     #(CYCLE_TIME);
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
@@ -741,7 +741,7 @@ initial begin
   // to_mem_ld_addr = 32'h0A000FFC;
   // to_mem_ld_offset = to_mem_ld_addr + 7;
   // to_mem_valid = 1'b1;
-  // to_mem_control_sigs = {23'd0, 2'b10, 2'b11, 2'b00, 2'b11, 15'd0, 11'd0};
+  // to_mem_control_sigs = {23'd0, 2'b10, 2'b11, 2'b00, 2'b11, 15'd0, 12'd0};
   // #(CYCLE_TIME);
   // while (from_mem_stall === 1'b1) begin
   //   #(CYCLE_TIME);

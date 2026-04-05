@@ -58,7 +58,7 @@ module stage_rr_tb;
     wire [15:0] from_regunit_CS;
     wire [63:0] from_regunit_MMA;
     wire [63:0] from_regunit_MMB;
-    wire [64:0] from_rr_control_sigs;
+    wire [65:0] from_rr_control_sigs;
     wire [2:0] from_rr_dstidA;
     wire [2:0] from_rr_dstidB;
     wire [31:0] from_rr_srcregA;
@@ -294,7 +294,7 @@ module stage_rr_tb;
     wire stack_push;
     wire intex;
     wire ret_with_imm;
-    wire rm, op_ovr, palu_size;
+    wire rm, op_ovr, palu_size, sbb_dir;
 
     ag_sig dut_sig (
         .ucode_sig(from_rr_control_sigs),
@@ -332,7 +332,8 @@ module stage_rr_tb;
         .ret_with_imm(ret_with_imm),
         .rm(rm),
         .op_ovr(op_ovr),
-        .palu_size(palu_size)
+        .palu_size(palu_size),
+        .sbb_dir(sbb_dir)
     );
 
     always #3 clk = ~clk;
