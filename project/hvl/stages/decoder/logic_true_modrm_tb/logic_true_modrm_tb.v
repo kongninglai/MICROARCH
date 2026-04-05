@@ -111,14 +111,14 @@ module tb_logic_true_modrm_golden();
 
     initial begin
         // Load all 8 ROM files
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_std_lo.data", g_std_lo);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_std_hi.data", g_std_hi);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_oso_lo.data", g_oso_lo);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_oso_hi.data", g_oso_hi);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_lo.data", g_ext_lo);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_hi.data", g_ext_hi);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_oso_lo.data", g_exo_lo);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_oso_hi.data", g_exo_hi);
+        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_std_lo.data", g_std_lo);
+        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_std_hi.data", g_std_hi);
+        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_oso_lo.data", g_oso_lo);
+        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_oso_hi.data", g_oso_hi);
+        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_lo.data", g_ext_lo);
+        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_hi.data", g_ext_hi);
+        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_oso_lo.data", g_exo_lo);
+        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_oso_hi.data", g_exo_hi);
 
         #10;
         $display("STARTING ROM-INDEXED SCENARIO TESTS");
