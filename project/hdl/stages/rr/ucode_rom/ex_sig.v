@@ -1,5 +1,5 @@
 module ex_sig(
-    input [54:0] ucode_sig,
+    input [55:0] ucode_sig,
     output [1:0] ldAB,
     output [1:0] dstA_size,
     output [1:0] dstB_size,
