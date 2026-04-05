@@ -1,8 +1,8 @@
 module  se_tb;
 
 initial begin
-  $vcdplusfile("se_tb.dump.vpd");
-  $vcdpluson(0, se_tb); 
+  // $vcdplusfile("se_tb.dump.vpd");
+  // $vcdpluson(0, se_tb); 
 end
 
 localparam INP_WIDTH = 16;

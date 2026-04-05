@@ -1,8 +1,8 @@
 module  rshfa_var_32b_tb;
 
 initial begin
-  $vcdplusfile("rshfa_var_32b_tb.dump.vpd");
-  $vcdpluson(0, rshfa_var_32b_tb); 
+  // $vcdplusfile("rshfa_var_32b_tb.dump.vpd");
+  // $vcdpluson(0, rshfa_var_32b_tb); 
 end
 
 localparam WIDTH = 32;

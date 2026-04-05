@@ -1,5 +1,5 @@
 module ex_sig(
-    input [54:0] ucode_sig,
+    input [55:0] ucode_sig,
     output [1:0] ldAB,
     output [1:0] dstA_size,
     output [1:0] dstB_size,
@@ -28,12 +28,13 @@ module ex_sig(
     output [1:0] ds,
     output rm, 
     output op_ovr,
-    output palu_size
+    output palu_size,
+    output sbb_dir
 );
     assign {
         ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size
+        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir
     } = ucode_sig;
 endmodule

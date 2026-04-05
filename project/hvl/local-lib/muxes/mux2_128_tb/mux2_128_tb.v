@@ -1,8 +1,8 @@
 module  mux2_128_tb;
 
 initial begin
-  $vcdplusfile("mux2_128_tb.dump.vpd");
-  $vcdpluson(0, mux2_128_tb); 
+  // $vcdplusfile("mux2_128_tb.dump.vpd");
+  // $vcdpluson(0, mux2_128_tb); 
 end
 
 

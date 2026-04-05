@@ -1,8 +1,8 @@
 module  regfile_2r1w_tb;
 
 initial begin
-  $vcdplusfile("regfile_2r1w_tb.dump.vpd");
-  $vcdpluson(0, regfile_2r1w_tb); 
+  // $vcdplusfile("regfile_2r1w_tb.dump.vpd");
+  // $vcdpluson(0, regfile_2r1w_tb); 
 end
 
 localparam WIDTH = 16;

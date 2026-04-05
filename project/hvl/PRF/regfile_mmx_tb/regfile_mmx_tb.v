@@ -1,8 +1,8 @@
 module  regfile_mmx_tb;
 
 initial begin
-  $vcdplusfile("regfile_mmx_tb.dump.vpd");
-  $vcdpluson(0, regfile_mmx_tb); 
+  // $vcdplusfile("regfile_mmx_tb.dump.vpd");
+  // $vcdpluson(0, regfile_mmx_tb); 
 end
 
 localparam WIDTH = 64;

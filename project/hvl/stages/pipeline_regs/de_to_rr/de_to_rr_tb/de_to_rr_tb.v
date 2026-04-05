@@ -4,8 +4,8 @@ module de_to_rr_tb;
     // 1. Setup & Printing Logic
     // ---------------------------------------------------------
     initial begin
-        $vcdplusfile("de_to_rr_tb.dump.vpd");
-        $vcdpluson(0, de_to_rr_tb); 
+        // $vcdplusfile("de_to_rr_tb.dump.vpd");
+        // $vcdpluson(0, de_to_rr_tb); 
     end
 
     integer FAILURES  = 0;
@@ -83,6 +83,7 @@ module de_to_rr_tb;
         .prefix_rep(prefix_rep), 
         .prefix_op_size(prefix_op_size),
         .prefix_seg_ov_id(prefix_seg_ov_id), 
+        .prefix_seg(), 
         .prefix_ext(prefix_ext),
         .opcode(opcode), 
         .modrm(modrm), 

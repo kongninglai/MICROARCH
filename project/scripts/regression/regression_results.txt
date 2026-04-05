@@ -1,0 +1,31 @@
+Regression run: Sun Apr  5 15:13:58 CDT 2026
+========================================
+PASS: AAA/aaa0.txt
+PASS: AAA/aaa1.txt
+PASS: ADC/adc.txt
+PASS: ADD/add.txt
+PASS: AND/and.txt
+PASS: BSF/BSF_tests_proc.txt
+PASS: CLD/CLD_tests_proc.txt
+PASS: CMOVC/CMOVC_tests_proc.txt
+PASS: CMPXCHG/CMPXCHG_tests_proc.txt
+PASS: cross_cache_line_2x_wb.txt
+PASS: dcache_test.txt
+PASS: HLT/HLT_tests_proc.txt
+PASS: MOV/MOV_tests_proc.txt
+PASS: MOVQ/MOVQ_tests_proc.txt
+PASS: MOVS/MOVS_tests_proc.txt
+PASS: NOT/NOT_tests_proc.txt
+PASS: OR/OR_tests_proc.txt
+PASS: PACKSS/PACKSS_tests_proc.txt
+PASS: PADD/PADD_tests_proc.txt
+PASS: PAVG/PAVG_tests_proc.txt
+PASS: PUSH_POP/PUSH_POP_tests_proc.txt
+PASS: SAL/SAL_tests_proc.txt
+PASS: SAR/SAR_tests_proc.txt
+PASS: SBB/SBB_tests_proc.txt
+PASS: STD/STD_tests_proc.txt
+PASS: touch_all_regs.txt
+PASS: XCHG/XCHG_tests_proc.txt
+========================================
+Total: 27  PASSED: 27  FAILED: 0

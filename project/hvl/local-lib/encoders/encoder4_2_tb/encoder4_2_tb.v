@@ -1,8 +1,8 @@
 module encoder4_2_tb;
 
 initial begin
-  $vcdplusfile("encoder4_2_tb.dump.vpd");
-  $vcdpluson(0, encoder4_2_tb); 
+  // $vcdplusfile("encoder4_2_tb.dump.vpd");
+  // $vcdpluson(0, encoder4_2_tb); 
 end
 
 localparam IN_WIDTH  = 4;

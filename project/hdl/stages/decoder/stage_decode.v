@@ -26,6 +26,7 @@ module stage_decode(
     output wire prefix_rep,
     output wire prefix_op_size, 
     output wire [2:0] prefix_seg_ov_id,
+    output wire prefix_seg,
     output wire prefix_ext,
     output wire [7:0] opcode,
     output wire [7:0] modrm,
@@ -47,6 +48,7 @@ assign exptn_prot = 1'b0;
         .prefix_rep(prefix_rep),
         .prefix_op_size(prefix_op_size),
         .prefix_seg_ov_id(prefix_seg_ov_id),
+        .prefix_seg(prefix_seg),
         .prefix_ext(prefix_ext),
         .opcode(opcode),
         .modrm(modrm),
@@ -89,6 +91,7 @@ assign exptn_prot = 1'b0;
 
     wire hit;
     wire [31:0] bp_eip_target;
+    wire cur_instr_prediction;
     choose_eip EIP_LOGIC(
         .clk(clk),
         .rst_bar(rst_bar),
@@ -112,7 +115,6 @@ assign exptn_prot = 1'b0;
 
 
 
-    wire cur_instr_prediction;
     bp BP(
         .clk(clk),
         .rst_bar(rst_bar),

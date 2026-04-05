@@ -30,7 +30,8 @@ module tb_logic_modrm_imm();
         .is_modrm(is_modrm), 
         .imm_size_inbytes(imm_size_inbytes),
         .sum_modrm_imm(sum_modrm_imm), 
-        .is_far_br(is_far_br)
+        .is_far_br(is_far_br),
+        .imm_size()
     );
 
     //Error Tracking
@@ -51,17 +52,17 @@ module tb_logic_modrm_imm();
         error_count = 0;
 
         // 5. Load All 8 Files
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_std_lo.data",     golden_std_lo);
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_std_hi.data",     golden_std_hi);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_std_lo.data",     golden_std_lo);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_std_hi.data",     golden_std_hi);
         
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_oso_lo.data",     golden_oso_lo);
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_oso_hi.data",     golden_oso_hi);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_oso_lo.data",     golden_oso_lo);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_oso_hi.data",     golden_oso_hi);
         
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_lo.data",     golden_ext_lo);
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_hi.data",     golden_ext_hi);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_lo.data",     golden_ext_lo);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_hi.data",     golden_ext_hi);
         
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_oso_lo.data", golden_ext_oso_lo);
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_oso_hi.data", golden_ext_oso_hi);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_oso_lo.data", golden_ext_oso_lo);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_oso_hi.data", golden_ext_oso_hi);
 
         #10; // Wait for load
         

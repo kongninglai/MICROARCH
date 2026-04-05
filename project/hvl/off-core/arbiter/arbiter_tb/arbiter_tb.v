@@ -1,8 +1,8 @@
 module  arbiter_tb;
 
 initial begin
-  $vcdplusfile("arbiter_tb.dump.vpd");
-  $vcdpluson(0, arbiter_tb); 
+  // $vcdplusfile("arbiter_tb.dump.vpd");
+  // $vcdpluson(0, arbiter_tb); 
 end
 
 reg   rst, clk, 

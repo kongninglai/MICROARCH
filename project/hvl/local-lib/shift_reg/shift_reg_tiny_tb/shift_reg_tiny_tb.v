@@ -1,9 +1,9 @@
 module shift_reg_tiny_tb;
 
 initial begin
-  $vcdplusfile("shift_reg_tiny_tb.dump.vpd");
-  $vcdpluson(0, shift_reg_tiny_tb);
-  $vcdpluson(0, shift_reg_tiny_tb.dut.q);
+  // $vcdplusfile("shift_reg_tiny_tb.dump.vpd");
+  // $vcdpluson(0, shift_reg_tiny_tb);
+  // $vcdpluson(0, shift_reg_tiny_tb.dut.q);
 end
 
 reg clk;

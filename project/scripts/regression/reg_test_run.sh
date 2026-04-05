@@ -7,7 +7,7 @@ ROOT="$HOME/MICROARCH/project/hvl/"
 RESULTS="$HOME/MICROARCH/project/scripts/regression/sim_results.txt"
 TMP_RESULTS="$(mktemp -d)"
 
-MAX_JOBS=100
+MAX_JOBS=200
 
 : > "$RESULTS"
 ./clean_sim.sh
@@ -33,10 +33,15 @@ run_one_sim() {
 
     find . -mindepth 1 -delete
 
-    if ! vcs -full64 -v2005 -debug_all -f ../master* > build.log 2>&1; then
+    if ! vcs -full64 -v2005 -f ../master* > build.log 2>&1; then
       printf "%-30s COMPILE_ERROR\n" "$tb_name" > "$out"
       echo "Compile failed in $tb_name"
       exit 0
+    fi
+
+    warnings=$(grep -c "Warning" build.log || true)
+    if (( warnings < 0 )); then
+      warnings=0
     fi
 
     if ! ./simv > sim.log 2>&1; then
@@ -62,8 +67,30 @@ run_one_sim() {
         failures=$((failures + 1))
     fi
 
-    printf "%-30s FAILURES=%-6s SUCCESSES=%-6s\n" \
-      "$tb_name" "$failures" "$successes" > "$out"
+    if (( warnings > 0 )); then
+      printf "%-30s FAILURES=%-6s SUCCESSES=%-6s WARNINGS=%-6s\n" \
+        "$tb_name" "$failures" "$successes" "$warnings" > "$out"
+    else
+      printf "%-30s FAILURES=%-6s SUCCESSES=%-6s\n" \
+        "$tb_name" "$failures" "$successes" > "$out"
+    fi
+
+    # After backend_top_tb passes compilation and simulation, run instruction regression
+    if [[ "$tb_name" == "backend_top_tb" ]]; then
+      TB_DIR="$leaf_dir"
+      instr_out="$TMP_RESULTS/${tb_name}_instructions.result"
+      echo "[$tb_name] Running instruction regression..."
+      if bash "$TB_DIR/test_all_instructions.sh" > "$TMP_RESULTS/${tb_name}_instr.log" 2>&1; then
+        instr_failures=$(grep -Eo 'FAILED: [0-9]+' "$TMP_RESULTS/${tb_name}_instr.log" | tail -1 | awk '{print $2}')
+        instr_successes=$(grep -Eo 'PASSED: [0-9]+' "$TMP_RESULTS/${tb_name}_instr.log" | tail -1 | awk '{print $2}')
+        instr_failures=${instr_failures:-999}
+        instr_successes=${instr_successes:-0}
+        printf "%-30s FAILURES=%-6s SUCCESSES=%-6s\n" \
+          "${tb_name}_instructions" "$instr_failures" "$instr_successes" > "$instr_out"
+      else
+        printf "%-30s SIM_ERROR\n" "${tb_name}_instructions" > "$instr_out"
+      fi
+    fi
 
     echo "Done"
   ) 2>&1 | sed "s/^/[$tb_name] /"

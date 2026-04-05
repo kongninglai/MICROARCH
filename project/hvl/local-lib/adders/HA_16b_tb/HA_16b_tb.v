@@ -1,8 +1,8 @@
 module  HA_16b_tb;
 
 initial begin
-  $vcdplusfile("HA_16b_tb.dump.vpd");
-  $vcdpluson(0, HA_16b_tb); 
+  // $vcdplusfile("HA_16b_tb.dump.vpd");
+  // $vcdpluson(0, HA_16b_tb); 
 end
 
 localparam WIDTH = 16;

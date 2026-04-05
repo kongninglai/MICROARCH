@@ -1,8 +1,8 @@
 module  mux4_64_tb;
 
 initial begin
-  $vcdplusfile("mux4_64_tb.dump.vpd");
-  $vcdpluson(0, mux4_64_tb); 
+  // $vcdplusfile("mux4_64_tb.dump.vpd");
+  // $vcdpluson(0, mux4_64_tb); 
 end
 
 

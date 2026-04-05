@@ -1,9 +1,9 @@
 module store_queue_tb;
 
 initial begin
-  $vcdplusfile("store_queue_tb.dump.vpd");
-  $vcdpluson(0, store_queue_tb);
-  $vcdpluson(0, store_queue_tb.DUT);
+  // $vcdplusfile("store_queue_tb.dump.vpd");
+  // $vcdpluson(0, store_queue_tb);
+  // $vcdpluson(0, store_queue_tb.DUT);
 end
 
 localparam MEM_BYTE_CAPACITY = 32768;
@@ -97,7 +97,7 @@ begin
 end
 endtask
 
-integer i, j;
+integer j;
 integer rd_ctr = 0;
 
 task read_entry;

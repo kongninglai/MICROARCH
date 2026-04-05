@@ -1,8 +1,8 @@
 module  big_eq_tb;
 
 initial begin
-  $vcdplusfile("big_eq_tb.dump.vpd");
-  $vcdpluson(0, big_eq_tb); 
+  // $vcdplusfile("big_eq_tb.dump.vpd");
+  // $vcdpluson(0, big_eq_tb); 
 end
 
 localparam WIDTH = 3;

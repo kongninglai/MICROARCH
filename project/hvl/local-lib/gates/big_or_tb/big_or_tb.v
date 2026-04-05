@@ -1,8 +1,8 @@
 module  big_or_tb;
 
 initial begin
-  $vcdplusfile("big_or_tb.dump.vpd");
-  $vcdpluson(0, big_or_tb); 
+  // $vcdplusfile("big_or_tb.dump.vpd");
+  // $vcdpluson(0, big_or_tb); 
 end
 
 localparam WIDTH = 32;

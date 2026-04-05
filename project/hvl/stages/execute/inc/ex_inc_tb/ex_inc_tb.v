@@ -1,8 +1,8 @@
 module  ex_inc_tb;
 
 initial begin
-  $vcdplusfile("ex_inc_tb.dump.vpd");
-  $vcdpluson(0, ex_inc_tb); 
+  // $vcdplusfile("ex_inc_tb.dump.vpd");
+  // $vcdpluson(0, ex_inc_tb); 
 end
 
 localparam WIDTH = 32;

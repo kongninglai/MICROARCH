@@ -217,7 +217,7 @@ and3$   and3$_WB_VALID_IO_STORE_INST(WB_VALID_IO_STORE_INST, to_wb_store_is_io_l
 
 wire    stalling_for_store_queue;
 and2$   and2$_stalling_for_store_queue(stalling_for_store_queue, DCACHE_STALL, STOREQ_STORING);
-or2$    or2$_from_wb_stall_if_mem_en(from_wb_stall_if_mem_en, WB_VALID_IO_STORE_INST, stalling_for_store_queue);
+or3$    or3$_from_wb_stall_if_mem_en(from_wb_stall_if_mem_en, WB_VALID_IO_STORE_INST, stalling_for_store_queue, WBE_BUSY);
 
 /*** BETWEEN STORE QUEUE & CACHE, for WRITES ***/
 wire    WBE_BUSY_BAR;

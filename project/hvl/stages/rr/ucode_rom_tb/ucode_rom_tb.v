@@ -1,8 +1,8 @@
 module  ucode_rom_tb;
 
 initial begin
-  $vcdplusfile("ucode_rom_tb.dump.vpd");
-  $vcdpluson(0, ucode_rom_tb); 
+  // $vcdplusfile("ucode_rom_tb.dump.vpd");
+  // $vcdpluson(0, ucode_rom_tb); 
 end
 integer FAILURES  = 0;
 integer SUCCESSES = 0;
@@ -20,8 +20,8 @@ ucode_controller dut(
     .has_modrm(has_modrm)
 );
 
-wire [1:0] ldAB, dstidB_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds, mem_ds, imm_mux, addr_mux;
-wire [2:0] dstidA_mux, gprd0_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
+wire [1:0] ldAB, dstidB_mux, gprd0_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds, mem_ds, imm_mux, addr_mux;
+wire [2:0] dstidA_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
 wire gprd1_mux, srcregA_mux, srcregB_mux, ldEFLAGS, alu_srcb_mux, ldEIP, ldCS, seg_dst_mux, srcsreg_mux, segrd0_mux, segrd1_mux, rm;
 wire [10:0] needREGS;
 wire [3:0] gp_dsta_mux, store_data_mux;

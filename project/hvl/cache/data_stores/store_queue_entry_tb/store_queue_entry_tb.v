@@ -1,8 +1,8 @@
 module store_queue_entry_tb;
 
 initial begin
-  $vcdplusfile("store_queue_entry_tb.dump.vpd");
-  $vcdpluson(0, store_queue_entry_tb);
+  // $vcdplusfile("store_queue_entry_tb.dump.vpd");
+  // $vcdpluson(0, store_queue_entry_tb);
 end
 
 localparam MEM_BYTE_CAPACITY    = 32768;

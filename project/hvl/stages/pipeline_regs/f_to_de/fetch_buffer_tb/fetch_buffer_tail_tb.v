@@ -1,9 +1,9 @@
 module fetch_buffer_tail_tb;
 
 initial begin
-  $vcdplusfile("fetch_buffer_tail_tb.dump.vpd");
-  $vcdpluson(0, fetch_buffer_tail_tb);
-  $vcdpluson(0, fetch_buffer_tail_tb.dut);
+  // $vcdplusfile("fetch_buffer_tail_tb.dump.vpd");
+  // $vcdpluson(0, fetch_buffer_tail_tb);
+  // $vcdpluson(0, fetch_buffer_tail_tb.dut);
 end
 
 reg clk;

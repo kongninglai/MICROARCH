@@ -1,8 +1,8 @@
 module  cmp_gen_20b_tb;
 
 initial begin
-  $vcdplusfile("cmp_gen_20b_tb.dump.vpd");
-  $vcdpluson(0, cmp_gen_20b_tb); 
+  // $vcdplusfile("cmp_gen_20b_tb.dump.vpd");
+  // $vcdpluson(0, cmp_gen_20b_tb); 
 end
 
 localparam WIDTH = 20;
@@ -33,7 +33,7 @@ initial begin
   in0 = 0; in1 = 1; #40; check(out, out_exp);
   in0 = 1; in1 = 1; #40; check(out, out_exp);
   in0 = 2; in1 = 1; #40; check(out, out_exp);
-  in0 = 20'hFFFFFFFE; in1 = 20'hFFFFF; #40; check(out, out_exp);
+  in0 = 20'hFFFFE; in1 = 20'hFFFFF; #40; check(out, out_exp);
   in0 = 20'hFFFFF; in1 = 20'hFFFFF; #40; check(out, out_exp);
   in0 = 0; in1 = 20'hFFFFF; #40; check(out, out_exp);
   in0 = 20'hFFFFF; in1 = 20'hFFFFF; #40; check(out, out_exp);

@@ -46,6 +46,7 @@ module tb_block_decoder_more();
         .prefix_rep(prefix_rep),
         .prefix_op_size(prefix_op_size),
         .prefix_seg_ov_id(prefix_seg_ov_id),
+        .prefix_seg(),
         .prefix_ext(prefix_ext),
         .opcode(opcode),
         .modrm_v(modrm_v),
@@ -72,15 +73,15 @@ module tb_block_decoder_more();
     // INITIAL BLOCK
     // --------------------------------------------------------------------
     initial begin
-        $vcdplusfile("block_decoder_more_tb.dump.vpd");
-        $vcdpluson(0, tb_block_decoder_more); 
-        $vcdpluson(0, tb_block_decoder_more.uut);
-        $vcdpluson(0, tb_block_decoder_more.mem_in);
-        $vcdpluson(0, tb_block_decoder_more.mem_exp);
+        // $vcdplusfile("block_decoder_more_tb.dump.vpd");
+        // $vcdpluson(0, tb_block_decoder_more); 
+        // $vcdpluson(0, tb_block_decoder_more.uut);
+        // $vcdpluson(0, tb_block_decoder_more.mem_in);
+        // $vcdpluson(0, tb_block_decoder_more.mem_exp);
 
         // Read input and expected output memories
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/testcases.mem", mem_in);
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/decoder_mem.mem", mem_exp);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/testcases.mem", mem_in);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/decoder_mem.mem", mem_exp);
 
         // Iterate through all tests
         for (i = 0; i < NUM_TESTS; i = i + 1) begin

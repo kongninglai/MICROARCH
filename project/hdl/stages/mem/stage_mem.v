@@ -53,7 +53,7 @@ module stage_mem #(
   parameter MMXR_DATA_BIT_WIDTH=64,
   parameter SLIM_BIT_WIDTH=32,
 
-  parameter MEM_CONTROL_SIGS_BIT_WIDTH=57
+  parameter MEM_CONTROL_SIGS_BIT_WIDTH=58
 
 ) (
   input                                       clk,
@@ -122,15 +122,12 @@ module stage_mem #(
   output  [PAGE_BIT_WIDTH-1:0]                MEM_PAGE_OFFSET,
   output                                      MEM_VALID_LOAD_INST,
 
-  output                                      EX_FLUSH,
-  output                                      WB_FLUSH,
-
   /*** Outputs to other stages in the pipeline ***/
   output                                      from_mem_stall,
   output                                      from_mem_valid_store_inst,
 
   /*** Outputs to pipeline registers ***/
-  output  [MEM_CONTROL_SIGS_BIT_WIDTH-1-1:0]  from_mem_control_sigs,
+  output  [MEM_CONTROL_SIGS_BIT_WIDTH-1-2:0]  from_mem_control_sigs,
   output  [GPR_ID_BIT_WIDTH-1:0]              from_mem_dstidA,
   output  [GPR_ID_BIT_WIDTH-1:0]              from_mem_dstidB,
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_srcregA,
@@ -160,7 +157,13 @@ module stage_mem #(
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_ieip,
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_pred_eip,
   output  [1:0]                               from_mem_exception,
-  output                                      from_mem_valid
+  output                                      from_mem_valid,
+
+  /* TO DEP UNIT */
+  output  [1:0]                               from_mem_dstA_size,
+  output  [1:0]                               from_mem_dstB_size,
+  output  [1:0]                               from_mem_ldAB,
+  output  [2:0]                               from_mem_ldREGS
 
 );
 
@@ -169,7 +172,7 @@ bufferH16$    bufferH16$_to_mem_valid_buf16(to_mem_valid_buf16, to_mem_valid);
 
 /*** CONTROL SIGNALS ***/
 
-wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux, rm, op_ovr, palu_size;
+wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux, rm, op_ovr, palu_size, sbb_dir;
 wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds;
 wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
 wire [3:0] gp_dsta_mux, store_data_mux;
@@ -184,7 +187,7 @@ mem_sig mem_sig_inst (
   .cmpxchg(cmpxchg), .cmovc(cmovc),
   .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
   .store_data_mux(store_data_mux), .rw(rw),
-  .ds(ds), .mem_ds(mem_ds), .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size)
+  .ds(ds), .mem_ds(mem_ds), .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir)
 );
 
 wire [1:0] rw_buf16;
@@ -194,7 +197,7 @@ assign from_mem_control_sigs = {
     ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
     ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw_buf16, ds, shf_srcb_mux,
     ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-    gp_dsta_mux, store_data_mux
+    gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir
 };
 
 /*** TWO-CYCLE ACCESSES ***/
@@ -410,7 +413,7 @@ or4$    or4$_from_mem_exception[1:0](from_mem_exception, LOAD_EXCEPTION_MASK, ST
 wire  no_mem_exception, no_mem_exception_buf16;
 nor2$   nor2$_no_mem_exception(no_mem_exception, from_mem_exception[0], from_mem_exception[1]);
 bufferH16$    bufferH16$_no_mem_exception_buf16(no_mem_exception_buf16, no_mem_exception);
-and3$   and3$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], no_mem_exception_buf16, to_mem_valid_buf16);
+and2$   and2$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], to_mem_valid_buf16);
 
 
 /*** STORE PIPELINE REGISTERS ***/
@@ -477,7 +480,7 @@ reg64e$ reg64e$_SAVED_LINE_0_LOAD_DATA(
   .QBAR(), 
   .CLR(rst_n), 
   .PRE(1'b1),
-  .en(DOING_LINE_1_LOAD_BAR)
+  .en(LINE_0_LOAD_DONE)
 );
 
 wire  [3:0]   to_mem_ld_addr_line_offset_adjusted;
@@ -541,9 +544,11 @@ assign from_mem_rel_eip     = to_mem_rel_eip ;
 assign from_mem_cs          = to_mem_cs      ; 
 assign from_mem_oeip        = to_mem_oeip    ;   
 assign from_mem_ieip        = to_mem_ieip    ;   
-assign from_mem_pred_eip    = to_mem_pred_eip;       
+assign from_mem_pred_eip    = to_mem_pred_eip;
 
-assign EX_FLUSH = from_ex_flush;
-assign WB_FLUSH = from_wb_flush;
+assign from_mem_dstA_size   = dstA_size;
+assign from_mem_dstB_size   = dstB_size;
+assign from_mem_ldAB        = ldAB;
+assign from_mem_ldREGS      = ldREGS;
 
 endmodule

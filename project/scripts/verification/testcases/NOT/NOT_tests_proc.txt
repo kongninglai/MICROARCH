@@ -1,0 +1,26 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  b8 00 00 00 00  // mov    eax,0x0
+0x29:  f7 d0  // not    eax
+0x2b:  b9 aa aa aa aa  // mov    ecx,0xaaaaaaaa
+0x30:  f7 d1  // not    ecx
+0x32:  c7 03 78 56 34 12  // mov    DWORD PTR [ebx],0x12345678
+0x38:  f7 13  // not    DWORD PTR [ebx]
+0x3a:  66 66 b8 00 00  // data16 mov ax,0x0
+0x3f:  66 f7 d0  // not    ax
+0x42:  66 66 b9 f0 f0  // data16 mov cx,0xf0f0
+0x47:  66 f7 d1  // not    cx
+0x4a:  b8 00 00 00 00  // mov    eax,0x0
+0x4f:  f6 d0  // not    al
+0x51:  b8 aa 00 00 00  // mov    eax,0xaa
+0x56:  f6 d0  // not    al
+0x58:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

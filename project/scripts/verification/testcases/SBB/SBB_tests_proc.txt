@@ -1,0 +1,56 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  b8 00 00 00 00  // mov    eax,0x0
+0x29:  05 00 00 00 00  // add    eax,0x0
+0x2e:  b8 05 00 00 00  // mov    eax,0x5
+0x33:  81 d8 03 00 00 00  // sbb    eax,0x3
+0x39:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0x3e:  05 01 00 00 00  // add    eax,0x1
+0x43:  b8 05 00 00 00  // mov    eax,0x5
+0x48:  81 d8 03 00 00 00  // sbb    eax,0x3
+0x4e:  b8 00 00 00 00  // mov    eax,0x0
+0x53:  05 00 00 00 00  // add    eax,0x0
+0x58:  b9 10 00 00 00  // mov    ecx,0x10
+0x5d:  83 d9 01  // sbb    ecx,0x1
+0x60:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0x65:  05 01 00 00 00  // add    eax,0x1
+0x6a:  b9 10 00 00 00  // mov    ecx,0x10
+0x6f:  83 d9 01  // sbb    ecx,0x1
+0x72:  b8 00 00 00 00  // mov    eax,0x0
+0x77:  05 00 00 00 00  // add    eax,0x0
+0x7c:  ba 10 00 00 00  // mov    edx,0x10
+0x81:  be 01 00 00 00  // mov    esi,0x1
+0x86:  19 f2  // sbb    edx,esi
+0x88:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0x8d:  05 01 00 00 00  // add    eax,0x1
+0x92:  ba 10 00 00 00  // mov    edx,0x10
+0x97:  be 01 00 00 00  // mov    esi,0x1
+0x9c:  19 f2  // sbb    edx,esi
+0x9e:  b8 00 00 00 00  // mov    eax,0x0
+0xa3:  05 00 00 00 00  // add    eax,0x0
+0xa8:  bf 20 00 00 00  // mov    edi,0x20
+0xad:  b9 05 00 00 00  // mov    ecx,0x5
+0xb2:  1b f9  // sbb    edi,ecx
+0xb4:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0xb9:  05 01 00 00 00  // add    eax,0x1
+0xbe:  bf 20 00 00 00  // mov    edi,0x20
+0xc3:  b9 05 00 00 00  // mov    ecx,0x5
+0xc8:  1b f9  // sbb    edi,ecx
+0xca:  c7 03 10 00 00 00  // mov    DWORD PTR [ebx],0x10
+0xd0:  b8 00 00 00 00  // mov    eax,0x0
+0xd5:  05 00 00 00 00  // add    eax,0x0
+0xda:  81 1b 01 00 00 00  // sbb    DWORD PTR [ebx],0x1
+0xe0:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0xe5:  05 01 00 00 00  // add    eax,0x1
+0xea:  b8 20 00 00 00  // mov    eax,0x20
+0xef:  1b 03  // sbb    eax,DWORD PTR [ebx]
+0xf1:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

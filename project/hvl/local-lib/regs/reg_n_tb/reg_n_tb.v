@@ -1,8 +1,8 @@
 module reg_n_tb;
 
 initial begin
-  $vcdplusfile("reg_n_tb.dump.vpd");
-  $vcdpluson(0, reg_n_tb); 
+  // $vcdplusfile("reg_n_tb.dump.vpd");
+  // $vcdpluson(0, reg_n_tb); 
 end
 
 localparam IN_WIDTH = 1 + 1 + 8 + 8;

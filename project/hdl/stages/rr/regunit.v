@@ -21,14 +21,18 @@ module regunit(
     output [31:0] to_rr_basereg2,
 
     output [2:0] to_dep_srcregA_idx,
+    output [1:0] to_dep_srcA_size,
     output [2:0] to_dep_srcregB_idx,
+    output [1:0] to_dep_srcB_size,
     output [2:0] to_dep_srcregC_idx,
+    output [1:0] to_dep_srcC_size,
     output [2:0] to_dep_basereg1_idx,
     output [2:0] to_dep_indexreg1_idx,
     output [2:0] to_dep_basereg2_idx,
 
     input  from_rr_sig_srcsreg_mux,
     input [2:0] from_rr_seg_prefix,
+    input from_rr_has_seg_prefix,
     input from_rr_sig_segrd0_mux,
     input from_rr_sig_segrd1_mux,
     output [15:0] to_rr_srcSREG,
@@ -98,15 +102,18 @@ module regunit(
     mux2_32 mux2_32_srcregA(.out(to_rr_srcregA), .in0(gprd0_data), .in1(gprd2_data), .s0(from_rr_sig_srcregA_mux));
     // mux2$ mux2_sregA_ds[1:0](srcregA_ds, gprd0_ds, gprd2_ds, from_rr_sig_srcregA_mux);
     mux2$ mux2_sregA_idx[2:0](to_dep_srcregA_idx, gprd0_idx, gprd2_idx, from_rr_sig_srcregA_mux);
+    mux2$ mux2_srcA_size[1:0](to_dep_srcA_size, gprd0_ds, gprd1_ds, from_rr_sig_srcregA_mux);
 
     mux2_32 mux2_32_srcregB(.out(to_rr_srcregB), .in0(gprd0_data), .in1(gprd1_data), .s0(from_rr_sig_srcregB_mux));
     // mux2$ mux2_sregB_ds[1:0](srcregB_ds, gprd0_ds, gprd1_ds, from_rr_sig_srcregB_mux);
     mux2$ mux2_sregB_idx[2:0](to_dep_srcregB_idx, gprd0_idx, gprd1_idx, from_rr_sig_srcregB_mux);
+    mux2$ mux2_srcB_size[1:0](to_dep_srcB_size, gprd0_ds, gprd1_ds, from_rr_sig_srcregB_mux);
 
     assign to_rr_srcregC = gprd0_data;
     // assign srcregC_ds = gprd0_ds;
     assign to_dep_srcregC_idx = gprd0_idx;
-
+    assign to_dep_srcC_size = gprd0_ds;
+    
     assign to_rr_basereg1 = gprd2_data;
     assign to_dep_basereg1_idx = gprd2_idx;
 
@@ -153,7 +160,7 @@ module regunit(
     // sregrd0_idx: According to srcsreg_mux: 0(based on base1_idx), 1(opcode[5:3])
     // sregrd1_idx: srcsreg_mux = 1 ? modrm[5:3] : (gprd0_mux==010? ES : SS), means if base1=edi, use es
     wire [2:0] base1_seg_idx;
-    get_segreg_idx get_base1_seg(.seg_idx(base1_seg_idx), .base_reg_idx(to_dep_basereg1_idx), .seg_override(from_rr_seg_prefix));
+    get_segreg_idx get_base1_seg(.seg_idx(base1_seg_idx), .base_reg_idx(to_dep_basereg1_idx), .seg_override(from_rr_seg_prefix), .has_seg_override(from_rr_has_seg_prefix));
     mux2$ mux2_sregrd0_idx[2:0](segrd0_idx, base1_seg_idx, from_rr_opcode[5:3], from_rr_sig_segrd0_mux);
 
     wire gprd0_mux_1_inv, gprd0_is_edi;

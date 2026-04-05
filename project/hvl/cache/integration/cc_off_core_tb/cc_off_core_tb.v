@@ -1,9 +1,9 @@
 module cc_off_core_tb;
 
 initial begin
-    $vcdplusfile("cc_off_core_tb.dump.vpd");
-    $vcdpluson(0, cc_off_core_tb);
-    $vcdpluson(0, cc_off_core_tb.DUT);
+    // $vcdplusfile("cc_off_core_tb.dump.vpd");
+    // $vcdpluson(0, cc_off_core_tb);
+    // $vcdpluson(0, cc_off_core_tb.DUT);
 end
 
 localparam MEM_BYTE_CAPACITY=32768;

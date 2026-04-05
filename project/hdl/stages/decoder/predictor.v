@@ -2,9 +2,9 @@ module predictor(
     input wire clk, 
     input wire rst_bar,
     input wire br_t_nt_in, //from execute
-    input wire ext_pht_idx, //from execute: branch counter TO UPDATE
+    input wire [3:0] ext_pht_idx, //from execute: branch counter TO UPDATE
 
-    input wire b_pht_idx, //from decode: branch counter TO READ
+    input wire [3:0] b_pht_idx, //from decode: branch counter TO READ
     input wire b_valid, //from decode: is current instruction a branch?
 
     output wire br_t_nt_out //to decode: predicted taken not taken signal

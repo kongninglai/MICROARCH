@@ -1,12 +1,12 @@
 module tlb_wrapper_tb;
 
 initial begin
-  $vcdplusfile("tlb_wrapper_tb.dump.vpd");
-  $vcdpluson(0, tlb_wrapper_tb);
-  $vcdpluson(0, tlb_wrapper_tb.REF.itlb.TLB_ENTRIES_BEHAV);
-  $vcdpluson(0, tlb_wrapper_tb.REF.drdtlb.TLB_ENTRIES_BEHAV);
-  $vcdpluson(0, tlb_wrapper_tb.REF.dwr0tlb.TLB_ENTRIES_BEHAV);
-  $vcdpluson(0, tlb_wrapper_tb.REF.dwr1tlb.TLB_ENTRIES_BEHAV);
+  // $vcdplusfile("tlb_wrapper_tb.dump.vpd");
+  // $vcdpluson(0, tlb_wrapper_tb);
+  // $vcdpluson(0, tlb_wrapper_tb.REF.itlb.TLB_ENTRIES_BEHAV);
+  // $vcdpluson(0, tlb_wrapper_tb.REF.drdtlb.TLB_ENTRIES_BEHAV);
+  // $vcdpluson(0, tlb_wrapper_tb.REF.dwr0tlb.TLB_ENTRIES_BEHAV);
+  // $vcdpluson(0, tlb_wrapper_tb.REF.dwr1tlb.TLB_ENTRIES_BEHAV);
 end
 
 localparam VA_BIT_WIDTH=32;

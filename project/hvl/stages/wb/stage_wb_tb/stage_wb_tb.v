@@ -1,9 +1,9 @@
 module stage_wb_tb;
 
 initial begin
-  $vcdplusfile("stage_wb_tb.dump.vpd");
-  $vcdpluson(0, stage_wb_tb);
-  $vcdpluson(0, stage_wb_tb.DUT);
+  // $vcdplusfile("stage_wb_tb.dump.vpd");
+  // $vcdpluson(0, stage_wb_tb);
+  // $vcdpluson(0, stage_wb_tb.DUT);
 end
 
 localparam MEM_BYTE_CAPACITY    = 32768;

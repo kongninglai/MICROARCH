@@ -1,5 +1,5 @@
 module stage_rr(
-    input [5:0] to_rr_prefix,
+    input [6:0] to_rr_prefix,
     input [7:0] to_rr_opcode,
     input [7:0] to_rr_modrm,
     input [7:0] to_rr_sib,
@@ -15,6 +15,8 @@ module stage_rr(
     input to_rr_valid,
 
     input from_ag_stall,
+    input from_dep_unit_data_dep,
+    output from_rr_we_pipe_reg,
 
     output [7:0]  to_regunit_opcode,
     output [5:0]  to_regunit_modrm,
@@ -38,6 +40,7 @@ module stage_rr(
     output  to_regunit_sig_segrd0_mux,
     output  to_regunit_sig_segrd1_mux,
     output [2:0] to_regunit_seg_prefix,
+    output  to_regunit_has_seg_prefix,
 
     input [15:0] from_regunit_srcSREG,
     input [15:0] from_regunit_SREG1,
@@ -51,7 +54,7 @@ module stage_rr(
 
     output [10:0] to_dep_needREGS,
 
-    output [64:0] from_rr_control_sigs,
+    output [65:0] from_rr_control_sigs,
     output [2:0] from_rr_dstidA,
     output [2:0] from_rr_dstidB,
     output [31:0] from_rr_srcregA,
@@ -145,7 +148,7 @@ module stage_rr(
     wire [1:0] dstA_size, dstB_size;
     wire [1:0] mmx_op, con_jmp;
     wire [2:0] alu_op;
-    wire shf_op, cmps, cmpxchg, cmovc, palu_size;
+    wire shf_op, cmps, cmpxchg, cmovc, palu_size, sbb_dir;
     
     // dstA_size = 32 if dstidA_mux=101/110(ESI/ECX) else ds
     // dstB_size = ds if dstidB_mux=01/10(regr/EAX) else 32
@@ -164,8 +167,9 @@ module stage_rr(
     wire ff_ldB, ff_from_rr_ldB;
     wire opcode_ff;
     big_and #(.WIDTH(8)) and_opcode_ff(opcode_ff, to_rr_opcode);
-    mux4$ mux4_store_data_mux[3:0](ff_store_data_mux, 4'bx, 4'b0001, 4'bx, 4'b1010, to_rr_modrm[4], to_rr_modrm[5]);
-    mux4$ mux4_rw[1:0](ff_from_rr_rw, 2'bx, 2'b11, 2'b10, 2'b11, to_rr_modrm[4], to_rr_modrm[5]);
+    mux4$ mux4_store_data_mux[3:0](ff_store_data_mux, 4'bx, 4'b0001, 4'bx, 4'b1100, to_rr_modrm[4], to_rr_modrm[5]);
+    mux4$ mux4_rw(ff_from_rr_rw[0], 1'bx, 1'b1, 1'b0, 1'b1, to_rr_modrm[4], to_rr_modrm[5]);
+    assign ff_from_rr_rw[1] = rm;
     mux4$ mux4_ff_ldB(ff_ldB, 1'bx, 1'b1, 1'b0, 1'b1, to_rr_modrm[4], to_rr_modrm[5]);
     mux4$ mux4_ldEIP(ff_from_rr_ldEIP, 1'bx, 1'b1, 1'b1, 1'b0, to_rr_modrm[4], to_rr_modrm[5]);
 
@@ -179,7 +183,7 @@ module stage_rr(
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
                      mmx_op, alu_op, shf_op, cmps, con_jmp, cmpxchg, cmovc,
                      gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, from_rr_store_data_mux, from_rr_rw, ds_with_override, 
-                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size};
+                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir};
 
     assign mmx_op = {to_rr_opcode[7], to_rr_opcode[2]};
     wire pack_size, padd_size, pavg_size;
@@ -189,6 +193,7 @@ module stage_rr(
     mux4$ mux4_palu_size(palu_size, pack_size, 1'bx, pavg_size, padd_size, mmx_op[0], mmx_op[1]);
     assign shf_op = to_rr_modrm[4];
     assign cmps = 1'b0; // TODO: FIX CMPS
+    big_eq #(.WIDTH(8)) eq_1b(.eq(sbb_dir), .in0(to_rr_opcode), .in1(8'h1B));
 
     mux2$ mux2_aluop[2:0](alu_op, to_rr_opcode[5:3], to_rr_modrm[5:3], to_rr_opcode[7]);
     wire opcode_77, opcode_87, opcode_75, opcode_85, opcode_jnbe, opcode_jne;
@@ -221,6 +226,7 @@ module stage_rr(
     assign from_rr_imm=to_rr_imm[31:0];
     assign from_rr_sreg1=from_regunit_SREG1;
     assign to_regunit_seg_prefix=to_rr_prefix[3:1];
+    assign to_regunit_has_seg_prefix=to_rr_prefix[6];
     // assign from_rr_slim1=from_regunit_SLIM1;
 
     wire mod_00, rm1_inv, rm_101, base_none;
@@ -266,13 +272,36 @@ module stage_rr(
     assign from_rr_oeip=to_rr_oeip;
     assign from_rr_ieip=to_rr_ieip;
     assign from_rr_cs = from_regunit_CS;
-    assign from_rr_valid=to_rr_valid; // TODO: bubble unit
+    
     assign from_rr_pred_eip = to_rr_pred_eip;
     assign from_rr_exception = to_rr_exception;
 
+    // if data_dep: bubble -> valid = 0
+    // from_rr_valid = to_rr_valid & ~data_dep
+    wire no_dep, is_hlt, is_hlt_valid, is_not_hlt;
+    inv1$ inv_dep(no_dep, from_dep_unit_data_dep);
+
+    big_eq #(
+      .WIDTH(8)
+    ) big_eq_is_hlt (
+      .in0(to_rr_opcode), .in1(8'hF4),
+      .eq(is_hlt)
+    );
+
+    and2$ and2$_is_hlt_valid(is_hlt_valid, is_hlt, to_rr_valid);
+
+    big_neq #(
+      .WIDTH(8)
+    ) big_neq_is_not_hlt (
+      .in0(to_rr_opcode), .in1(8'hF4),
+      .neq(is_not_hlt)
+    );
+
+    and3$ and_valid(from_rr_valid, no_dep, to_rr_valid, is_not_hlt);
+
     /* TODO: ADD STALL LOGIC */
-    assign from_rr_stall = from_ag_stall;
+    or3$ or_from_rr_stall(from_rr_stall, from_ag_stall, from_dep_unit_data_dep, is_hlt_valid);
 
     assign to_dep_needREGS = {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]};
-    
+    inv1$  inv1$_from_rr_we_pipe_reg(from_rr_we_pipe_reg, from_ag_stall);
 endmodule

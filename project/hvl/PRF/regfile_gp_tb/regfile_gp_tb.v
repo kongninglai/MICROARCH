@@ -1,8 +1,8 @@
 module regfile_gp_tb;
 
     initial begin
-    $vcdplusfile("regfile_gp_tb.dump.vpd");
-    $vcdpluson(0, regfile_gp_tb); 
+    // $vcdplusfile("regfile_gp_tb.dump.vpd");
+    // $vcdpluson(0, regfile_gp_tb); 
     end
 
     integer FAILURES  = 0;

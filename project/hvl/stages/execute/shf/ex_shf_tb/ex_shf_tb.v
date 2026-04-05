@@ -3,8 +3,8 @@
 module ex_shf_tb;
 
 initial begin
-  $vcdplusfile("ex_shf_tb.dump.vpd");
-  $vcdpluson(0, ex_shf_tb); 
+  // $vcdplusfile("ex_shf_tb.dump.vpd");
+  // $vcdpluson(0, ex_shf_tb); 
 end
 
     reg         shf_op;

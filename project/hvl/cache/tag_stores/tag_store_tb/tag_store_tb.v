@@ -1,8 +1,8 @@
 module tag_store_tb;
 
 initial begin
-  $vcdplusfile("tag_store_tb.dump.vpd");
-  $vcdpluson(0, tag_store_tb);
+  // $vcdplusfile("tag_store_tb.dump.vpd");
+  // $vcdpluson(0, tag_store_tb);
 end
 
 localparam NUM_SETS     = 8;

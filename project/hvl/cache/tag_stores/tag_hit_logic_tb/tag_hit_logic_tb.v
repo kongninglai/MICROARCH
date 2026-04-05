@@ -1,8 +1,8 @@
 module tag_hit_logic_tb;
 
 initial begin
-  $vcdplusfile("tag_hit_logic_tb.dump.vpd");
-  $vcdpluson(0, tag_hit_logic_tb);
+  // $vcdplusfile("tag_hit_logic_tb.dump.vpd");
+  // $vcdpluson(0, tag_hit_logic_tb);
 end
 
 localparam NUM_WAYS  = 4;

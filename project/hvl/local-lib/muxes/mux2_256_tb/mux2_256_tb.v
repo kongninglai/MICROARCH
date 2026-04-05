@@ -3,8 +3,8 @@
 module mux2_256_tb;
 
     initial begin
-      // $vcdplusfile("mux2_256_tb.dump.vpd");
-      // $vcdpluson(0, mux2_256_tb); 
+      // // $vcdplusfile("mux2_256_tb.dump.vpd");
+      // // $vcdpluson(0, mux2_256_tb); 
     end
 
     reg [255:0] in0, in1;

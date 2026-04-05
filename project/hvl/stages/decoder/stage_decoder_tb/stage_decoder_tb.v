@@ -48,7 +48,7 @@ module tb_stage_decode();
     // 3. Instantiate UUT (o_eip removed)
     // --------------------------------------------------------
     stage_decode uut (
-        .cache_line(cache_line), .tail_ptr(tail_ptr), .cs_limit_reg(cs_limit_reg),
+        .cache_line(cache_line), .o_eip(), .tail_ptr(tail_ptr), .cs_limit_reg(cs_limit_reg),
         .eip_target_ex(eip_target_ex), 
         .flush_ex(mispredict_src_ex),       
         .v_excptn_src_wb(v_excptn_src_wb), 
@@ -57,7 +57,7 @@ module tb_stage_decode();
         .br_valid_ex_d(br_valid_ex_d), .pht_idx_ex_d(pht_idx_ex_d),
         .exptn_prot(exptn_prot), .i_eip(i_eip), .pr_de_rr_valid(pr_de_rr_valid),
         .ld_eip(ld_eip), .eip_true(eip_true), .prefix_rep(prefix_rep), 
-        .prefix_op_size(prefix_op_size), .prefix_seg_ov_id(prefix_seg_ov_id), 
+        .prefix_op_size(prefix_op_size), .prefix_seg_ov_id(prefix_seg_ov_id), .prefix_seg(),
         .prefix_ext(prefix_ext), .opcode(opcode), .modrm(modrm), .sib(sib),
         .disp_size_mux(disp_size_mux), .disp(disp), .imm_size(imm_size), 
         .imm(imm), .addressing_mode(addressing_mode), .instr_length(instr_length)

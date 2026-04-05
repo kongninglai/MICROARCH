@@ -1,9 +1,9 @@
 module  off_core_top_tb;
 
 initial begin
-  $vcdplusfile("off_core_top_tb.dump.vpd");
-  $vcdpluson(0, off_core_top_tb); 
-  $vcdpluson(0, off_core_top_tb.DUT); 
+  // $vcdplusfile("off_core_top_tb.dump.vpd");
+  // $vcdpluson(0, off_core_top_tb); 
+  // $vcdpluson(0, off_core_top_tb.DUT); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;
