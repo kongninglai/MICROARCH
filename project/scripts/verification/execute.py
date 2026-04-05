@@ -817,10 +817,12 @@ class Executor:
                             temp = temp >> (size * 8 - 1)
                             self.state.eflags["CF"] = temp & 1
                             self.update_flags(res, size)  # Only sets PF, SF, ZF
-                            if count == 1:
-                                self.state.eflags["OF"] = self.state.eflags["CF"] ^ (
-                                    (res >> (size * 8 - 1)) & 1
-                                )
+                            if (count == 1):
+                              self.state.eflags["OF"] = self.state.eflags["CF"] ^ (
+                                  (res >> (size * 8 - 1)) & 1
+                              ) # Same behavior for count == 1 and otherwise
+                            else:
+                              self.state.eflags["OF"] = ((val >> (size * 8 - 1)) & 1) ^ ((val >> (size * 8 - 2)) & 1)
                             self.write_rm(seg, addr, res, size)
                         elif sub_op == 7:  # SAR
                             sign = (val >> (size * 8 - 1)) & 1
@@ -830,8 +832,7 @@ class Executor:
                                 res = (res >> 1) | (sign << (size * 8 - 1))
                             res &= mask
                             self.update_flags(res, size)
-                            if count == 1:
-                                self.state.eflags["OF"] = 0
+                            self.state.eflags["OF"] = 0 # Same behavior for count == 1 & otherwise...
                             self.write_rm(seg, addr, res, size)
                 elif op == 0xC2:  # RET imm16 (near, 16/32-bit pop)
                     imm = self.fetch16()
