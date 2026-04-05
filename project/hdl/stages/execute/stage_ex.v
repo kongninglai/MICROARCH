@@ -353,7 +353,7 @@ module stage_ex(
     and2$ and2_cmpxchg_m(cmpxchg_m, sig_cmpxchg, sig_rm);
     
     wire cmpxchg_store_is_io_line_0, cmpxchg_store_queue_alloc_line_0, cmpxchg_store_queue_alloc_line_1;
-    and2$ and2_cmpxchg_store_is_io_line_0(cmpxchg_store_is_io_line_0, to_ex_store_queue_alloc_line_0, cmp_eflags[6]);
+    and2$ and2_cmpxchg_store_is_io_line_0(cmpxchg_store_is_io_line_0, to_ex_store_is_io_line_0, cmp_eflags[6]);
     and2$ and2_cmpxchg_store_queue_alloc_line_0(cmpxchg_store_queue_alloc_line_0, to_ex_store_queue_alloc_line_0, cmp_eflags[6]);
     and2$ and2_cmpxchg_store_queue_alloc_line_1(cmpxchg_store_queue_alloc_line_1, to_ex_store_queue_alloc_line_1, cmp_eflags[6]);
 
@@ -361,7 +361,9 @@ module stage_ex(
     mux2$ mux2_store_queue_alloc_line_0(from_ex_store_queue_alloc_line_0, to_ex_store_queue_alloc_line_0, cmpxchg_store_queue_alloc_line_0, cmpxchg_m);
     mux2$ mux2_store_queue_alloc_line_1(from_ex_store_queue_alloc_line_1, to_ex_store_queue_alloc_line_1, cmpxchg_store_queue_alloc_line_1, cmpxchg_m);
 
-    mux2$ mux2_ldA_cmpxchg(ldA_cmpxchg, sig_ldAB[1], cmp_eflags[6], cmpxchg_r);
+    wire ldA_cmpxchg_r;
+    and2$ and2_ldA_cmpxchg_r(ldA_cmpxchg_r, sig_ldAB[1], cmp_eflags[6]);
+    mux2$ mux2_ldA_cmpxchg(ldA_cmpxchg, sig_ldAB[1], ldA_cmpxchg_r, cmpxchg_r);
     mux2$ mux2_ldA_cond(ldA_cond, ldA_cmpxchg, eflags_cf, sig_cmovc);
 
     inv1$ inv1_cmpxchg_ZF(cmpxchg_ZF_inv, cmp_eflags[6]);
