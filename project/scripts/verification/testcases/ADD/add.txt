@@ -1,0 +1,43 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  b8 01 00 00 00  // mov    eax,0x1
+0x29:  04 7f  // add    al,0x7f
+0x2b:  b8 00 00 00 10  // mov    eax,0x10000000
+0x30:  05 00 00 00 20  // add    eax,0x20000000
+0x35:  b9 01 00 00 00  // mov    ecx,0x1
+0x3a:  81 c1 fe ff ff ff  // add    ecx,0xfffffffe
+0x40:  ba 10 00 00 00  // mov    edx,0x10
+0x45:  83 c2 10  // add    edx,0x10
+0x48:  be aa aa aa aa  // mov    esi,0xaaaaaaaa
+0x4d:  bf 55 55 55 55  // mov    edi,0x55555555
+0x52:  01 fe  // add    esi,edi
+0x54:  b8 00 10 00 00  // mov    eax,0x1000
+0x59:  b9 00 20 00 00  // mov    ecx,0x2000
+0x5e:  03 c1  // add    eax,ecx
+0x60:  c7 03 01 00 00 00  // mov    DWORD PTR [ebx],0x1
+0x66:  81 03 02 00 00 00  // add    DWORD PTR [ebx],0x2
+0x6c:  c7 43 04 10 00 00 00  // mov    DWORD PTR [ebx+0x4],0x10
+0x73:  83 43 04 01  // add    DWORD PTR [ebx+0x4],0x1
+0x77:  b8 01 00 00 00  // mov    eax,0x1
+0x7c:  03 03  // add    eax,DWORD PTR [ebx]
+0x7e:  c7 43 08 00 00 00 00  // mov    DWORD PTR [ebx+0x8],0x0
+0x85:  b9 ef be ad de  // mov    ecx,0xdeadbeef
+0x8a:  01 4b 08  // add    DWORD PTR [ebx+0x8],ecx
+0x8d:  b8 00 00 00 00  // mov    eax,0x0
+0x92:  80 c0 42  // add    al,0x42
+0x95:  b8 01 00 00 00  // mov    eax,0x1
+0x9a:  b9 02 00 00 00  // mov    ecx,0x2
+0x9f:  00 c8  // add    al,cl
+0xa1:  b8 10 00 00 00  // mov    eax,0x10
+0xa6:  b9 20 00 00 00  // mov    ecx,0x20
+0xab:  02 c1  // add    al,cl
+0xad:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

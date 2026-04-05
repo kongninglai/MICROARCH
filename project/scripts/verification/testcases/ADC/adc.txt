@@ -1,0 +1,81 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  bb 00 00 00 00  // mov    ebx,0x0
+0x13:  bd 00 00 00 00  // mov    ebp,0x0
+0x18:  b8 01 00 00 10  // mov    eax,0x10000001
+0x1d:  83 c0 00  // add    eax,0x0
+0x20:  81 d0 02 00 00 20  // adc    eax,0x20000002
+0x26:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0x2b:  83 c0 01  // add    eax,0x1
+0x2e:  ba 00 00 00 00  // mov    edx,0x0
+0x33:  81 d2 78 56 34 12  // adc    edx,0x12345678
+0x39:  b9 10 00 00 00  // mov    ecx,0x10
+0x3e:  83 c1 00  // add    ecx,0x0
+0x41:  83 d1 7f  // adc    ecx,0x7f
+0x44:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0x49:  83 c0 01  // add    eax,0x1
+0x4c:  bf 00 02 00 00  // mov    edi,0x200
+0x51:  83 d7 80  // adc    edi,0xffffff80
+0x54:  be aa aa aa aa  // mov    esi,0xaaaaaaaa
+0x59:  bf 11 11 11 11  // mov    edi,0x11111111
+0x5e:  83 c6 00  // add    esi,0x0
+0x61:  11 fe  // adc    esi,edi
+0x63:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0x68:  83 c0 01  // add    eax,0x1
+0x6b:  b8 ff ff ff 7f  // mov    eax,0x7fffffff
+0x70:  b9 01 00 00 00  // mov    ecx,0x1
+0x75:  11 c8  // adc    eax,ecx
+0x77:  bf 00 10 00 00  // mov    edi,0x1000
+0x7c:  be 00 20 00 00  // mov    esi,0x2000
+0x81:  83 c7 00  // add    edi,0x0
+0x84:  13 fe  // adc    edi,esi
+0x86:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0x8b:  83 c0 01  // add    eax,0x1
+0x8e:  ba fe ff ff ff  // mov    edx,0xfffffffe
+0x93:  b9 01 00 00 00  // mov    ecx,0x1
+0x98:  13 d1  // adc    edx,ecx
+0x9a:  b8 ef be ad de  // mov    eax,0xdeadbeef
+0x9f:  89 03  // mov    DWORD PTR [ebx],eax
+0xa1:  83 c0 00  // add    eax,0x0
+0xa4:  81 13 11 00 00 00  // adc    DWORD PTR [ebx],0x11
+0xaa:  b8 01 00 00 00  // mov    eax,0x1
+0xaf:  89 43 04  // mov    DWORD PTR [ebx+0x4],eax
+0xb2:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0xb7:  83 c0 01  // add    eax,0x1
+0xba:  83 53 04 01  // adc    DWORD PTR [ebx+0x4],0x1
+0xbe:  b8 00 01 00 00  // mov    eax,0x100
+0xc3:  83 c0 00  // add    eax,0x0
+0xc6:  13 03  // adc    eax,DWORD PTR [ebx]
+0xc8:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0xcd:  83 c0 01  // add    eax,0x1
+0xd0:  bf fc ff ff ff  // mov    edi,0xfffffffc
+0xd5:  13 7b 04  // adc    edi,DWORD PTR [ebx+0x4]
+0xd8:  be be ba fe ca  // mov    esi,0xcafebabe
+0xdd:  89 73 08  // mov    DWORD PTR [ebx+0x8],esi
+0xe0:  b9 00 00 00 00  // mov    ecx,0x0
+0xe5:  83 c1 00  // add    ecx,0x0
+0xe8:  11 4b 08  // adc    DWORD PTR [ebx+0x8],ecx
+0xeb:  b8 0d f0 ad 0b  // mov    eax,0xbadf00d
+0xf0:  26 89 45 00  // mov    DWORD PTR es:[ebp+0x0],eax
+0xf4:  b8 01 00 00 00  // mov    eax,0x1
+0xf9:  83 c0 00  // add    eax,0x0
+0xfc:  26 13 45 00  // adc    eax,DWORD PTR es:[ebp+0x0]
+0x100:  bf 05 00 00 00  // mov    edi,0x5
+0x105:  be 03 00 00 00  // mov    esi,0x3
+0x10a:  83 c7 00  // add    edi,0x0
+0x10d:  3e 11 f7  // ds adc edi,esi
+0x110:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0x115:  83 c0 01  // add    eax,0x1
+0x118:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0x11d:  81 d0 fe ff ff ff  // adc    eax,0xfffffffe
+0x123:  ba fe ca ef be  // mov    edx,0xbeefcafe
+0x128:  b8 00 00 00 00  // mov    eax,0x0
+0x12d:  26 89 45 04  // mov    DWORD PTR es:[ebp+0x4],eax
+0x131:  83 c2 00  // add    edx,0x0
+0x134:  26 11 55 04  // adc    DWORD PTR es:[ebp+0x4],edx
+0x138:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5000: 00 00 00 00 00 00 00 00
