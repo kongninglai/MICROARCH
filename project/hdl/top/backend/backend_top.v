@@ -5,7 +5,7 @@ module backend_top #(
     input clk,
     input rst_n,
 
-    input [5:0] to_rr_prefix,
+    input [6:0] to_rr_prefix,
     input [7:0] to_rr_opcode,
     input [7:0] to_rr_modrm,
     input [7:0] to_rr_sib,
@@ -93,6 +93,7 @@ module backend_top #(
     wire            to_regunit_sig_segrd0_mux;
     wire            to_regunit_sig_segrd1_mux;
     wire [2:0]      to_regunit_seg_prefix;
+    wire            to_regunit_has_seg_prefix;
     
     wire [64:0]     from_rr_control_sigs;
     wire [2:0]      from_rr_dstidA;
@@ -506,6 +507,7 @@ module backend_top #(
         .to_regunit_sig_segrd0_mux(to_regunit_sig_segrd0_mux),
         .to_regunit_sig_segrd1_mux(to_regunit_sig_segrd1_mux),
         .to_regunit_seg_prefix(to_regunit_seg_prefix),
+        .to_regunit_has_seg_prefix(to_regunit_has_seg_prefix),
         .from_regunit_srcSREG(from_regunit_srcSREG),
         .from_regunit_SREG1(from_regunit_SREG1),
         .from_regunit_SREG2(from_regunit_SREG2),
@@ -636,6 +638,7 @@ module backend_top #(
         .from_rr_sig_segrd0_mux(to_regunit_sig_segrd0_mux),
         .from_rr_sig_segrd1_mux(to_regunit_sig_segrd1_mux),
         .from_rr_seg_prefix(to_regunit_seg_prefix),
+        .from_rr_has_seg_prefix(to_regunit_has_seg_prefix),
         .to_rr_srcSREG(from_regunit_srcSREG),
         .to_rr_SREG1(from_regunit_SREG1),
         .to_rr_SREG2(from_regunit_SREG2),

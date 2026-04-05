@@ -7,7 +7,7 @@ module dummy_fe(
 
     input         from_rr_stall,
 
-    output [5:0]  from_de_prefix,
+    output [6:0]  from_de_prefix,
     output [7:0]  from_de_opcode,
     output [7:0]  from_de_modrm,
     output [7:0]  from_de_sib,
@@ -22,7 +22,7 @@ module dummy_fe(
     output [1:0]  from_de_exception,
     output        from_de_valid
 ); 
-    wire prefix_rep, prefix_op_size, prefix_ext;
+    wire prefix_rep, prefix_op_size, prefix_seg, prefix_ext;
     wire [2:0] prefix_seg_ov_id;
     wire [3:0] instr_len;
 
@@ -31,6 +31,7 @@ module dummy_fe(
         .prefix_rep(prefix_rep),
         .prefix_op_size(prefix_op_size),
         .prefix_seg_ov_id(prefix_seg_ov_id),
+        .prefix_seg(prefix_seg),
         .prefix_ext(prefix_ext),
         .opcode(from_de_opcode),
         .modrm_v(),
@@ -44,7 +45,7 @@ module dummy_fe(
         .instr_length(instr_len)
     );
 
-    assign from_de_prefix = {prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext};
+    assign from_de_prefix = {prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext};
     assign from_de_imm_size = 3'd0;
 
     reg [31:0] EIP;
@@ -70,7 +71,7 @@ module dummy_fe_to_be(
 
     input from_rr_stall,
 
-    input [5:0]  from_de_prefix,
+    input [6:0]  from_de_prefix,
     input [7:0]  from_de_opcode,
     input [7:0]  from_de_modrm,
     input [7:0]  from_de_sib,
@@ -85,7 +86,7 @@ module dummy_fe_to_be(
     input [1:0]  from_de_exception,
     input        from_de_valid,
 
-    output reg [5:0]  to_rr_prefix,
+    output reg [6:0]  to_rr_prefix,
     output reg [7:0]  to_rr_opcode,
     output reg [7:0]  to_rr_modrm,
     output reg [7:0]  to_rr_sib,
@@ -103,7 +104,7 @@ module dummy_fe_to_be(
 
     always @(posedge clk) begin
         if (!rst_n) begin
-            to_rr_prefix    <= 6'b0;
+            to_rr_prefix    <= 7'b0;
             to_rr_opcode    <= 8'b0;
             to_rr_modrm     <= 8'b0;
             to_rr_sib       <= 8'b0;

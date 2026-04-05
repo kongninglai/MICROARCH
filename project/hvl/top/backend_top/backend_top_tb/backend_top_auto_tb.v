@@ -17,7 +17,7 @@ localparam TRUE_LRU = 1;
 reg clk;
 reg rst_n;
 
-wire [5:0]  from_de_prefix;
+wire [6:0]  from_de_prefix;
 wire [7:0]  from_de_opcode;
 wire [7:0]  from_de_modrm;
 wire [7:0]  from_de_sib;
@@ -33,7 +33,7 @@ wire  [31:0] from_de_pred_eip;
 wire  [1:0]  from_de_exception;
 wire         from_de_valid;
 
-wire [5:0]  to_rr_prefix;
+wire [6:0]  to_rr_prefix;
 wire [7:0]  to_rr_opcode;
 wire [7:0]  to_rr_modrm;
 wire [7:0]  to_rr_sib;
@@ -282,9 +282,59 @@ reg [255:0] combined_data;
 reg [31:0] combined_mask;
 reg [31:0] saved_ieip, halt_ieip;
 
+// Pending Read/Wrote buffer: each entry tagged with the ieip of the instruction
+localparam MAX_PENDING_MEM = 64;
+reg        pend_mem_is_wr [0:MAX_PENDING_MEM-1]; // 0=Read, 1=Wrote
+reg [7:0]  pend_mem_val   [0:MAX_PENDING_MEM-1];
+reg [31:0] pend_mem_va    [0:MAX_PENDING_MEM-1];
+reg [15:0] pend_mem_pa    [0:MAX_PENDING_MEM-1];
+reg [31:0] pend_mem_ieip  [0:MAX_PENDING_MEM-1]; // which instruction this belongs to
+integer    pend_mem_cnt;
+
+// Snapshot buffer: holds the Read/Wrote lines to print after the separator
+reg        snap_is_wr [0:MAX_PENDING_MEM-1];
+reg [7:0]  snap_val   [0:MAX_PENDING_MEM-1];
+reg [31:0] snap_va    [0:MAX_PENDING_MEM-1];
+reg [15:0] snap_pa    [0:MAX_PENDING_MEM-1];
+integer    snap_cnt;
+
+integer flush_i;
+// Print and remove all pending entries whose ieip matches the given ieip
+task flush_pending_for_ieip;
+  input [31:0] target_ieip;
+  integer fi, new_cnt;
+begin
+  // First pass: print matching entries
+  for (fi = 0; fi < pend_mem_cnt; fi = fi + 1) begin
+    if (pend_mem_ieip[fi] === target_ieip) begin
+      if (pend_mem_is_wr[fi] === 1'b0)
+        $fdisplay(file_handle_cmp,"Read  0x%02x from va = 0x%08x and pa = 0x%04x",
+          pend_mem_val[fi], pend_mem_va[fi], pend_mem_pa[fi]);
+      else
+        $fdisplay(file_handle_cmp,"Wrote 0x%02x to   va = 0x%08x and pa = 0x%04x",
+          pend_mem_val[fi], pend_mem_va[fi], pend_mem_pa[fi]);
+    end
+  end
+  // Second pass: compact out matched entries
+  new_cnt = 0;
+  for (fi = 0; fi < pend_mem_cnt; fi = fi + 1) begin
+    if (pend_mem_ieip[fi] !== target_ieip) begin
+      pend_mem_is_wr[new_cnt] = pend_mem_is_wr[fi];
+      pend_mem_val  [new_cnt] = pend_mem_val  [fi];
+      pend_mem_va   [new_cnt] = pend_mem_va   [fi];
+      pend_mem_pa   [new_cnt] = pend_mem_pa   [fi];
+      pend_mem_ieip [new_cnt] = pend_mem_ieip [fi];
+      new_cnt = new_cnt + 1;
+    end
+  end
+  pend_mem_cnt = new_cnt;
+end
+endtask
+
 task print_arch_status;
   input integer is_hlt_status;
 begin
+  flush_pending_for_ieip(wb_ieip);
   $fdisplay(file_handle_cmp,"Architectural State %0d", NUM_TESTS);
 
   // ---------------- GPR ----------------
@@ -370,21 +420,27 @@ always @(posedge clk) begin
       2'b11: load_iters=8;
     endcase
     for (k = 0; k < load_iters; k = k + 1) begin
-      $fdisplay(file_handle_cmp,"Read  0x%02x from va = 0x%08x and pa = 0x%04x",
-         (dut.inst_stage_mem.from_mem_load_result >> (8 * k)) & 8'hFF,
-         dut.inst_stage_mem.to_mem_ld_addr[31:0] + k,
-         {D_RD_TLB_PFN_OUT[2:0], dut.inst_stage_mem.to_mem_ld_addr[11:4], dut.inst_stage_mem.to_mem_ld_addr[3:0]} + k
-      );
+      if (pend_mem_cnt < MAX_PENDING_MEM) begin
+        pend_mem_is_wr[pend_mem_cnt] = 1'b0;
+        pend_mem_val  [pend_mem_cnt] = (dut.inst_stage_mem.from_mem_load_result >> (8 * k)) & 8'hFF;
+        pend_mem_va   [pend_mem_cnt] = dut.inst_stage_mem.to_mem_ld_addr[31:0] + k;
+        pend_mem_pa   [pend_mem_cnt] = {D_RD_TLB_PFN_OUT[2:0], dut.inst_stage_mem.to_mem_ld_addr[11:4], dut.inst_stage_mem.to_mem_ld_addr[3:0]} + k;
+        pend_mem_ieip [pend_mem_cnt] = dut.to_mem_ieip;
+        pend_mem_cnt = pend_mem_cnt + 1;
+      end
     end
   end
   if (dut.inst_stage_wb.to_wb_store_is_io_line_0 === 1'b1 && dut.inst_stage_wb.no_exception === 1'b1 && dut.inst_stage_wb.to_wb_valid_buf16 === 1'b1) begin
     for (m = 0; m < 16; m = m + 1) begin
       if (WB_PR_ST_MASK_L0[m] === 1'b0) begin
-        $fdisplay(file_handle_cmp,"Wrote 0x%02x to   va = 0x%08x and pa = 0x%04x",
-          (WB_SHF_ST_DATA_L0 >> (8*m)) & 8'hFF,
-          saved_st_addr[31:0] + m,
-          {WB_PR_ST_ADDR_L0[14:4], saved_st_addr[3:0]} + m
-        );
+        if (pend_mem_cnt < MAX_PENDING_MEM) begin
+          pend_mem_is_wr[pend_mem_cnt] = 1'b1;
+          pend_mem_val  [pend_mem_cnt] = (WB_SHF_ST_DATA_L0 >> (8*m)) & 8'hFF;
+          pend_mem_va   [pend_mem_cnt] = saved_st_addr[31:0] + m;
+          pend_mem_pa   [pend_mem_cnt] = {WB_PR_ST_ADDR_L0[14:4], saved_st_addr[3:0]} + m;
+          pend_mem_ieip [pend_mem_cnt] = saved_ieip;
+          pend_mem_cnt = pend_mem_cnt + 1;
+        end
       end
     end
   end
@@ -393,11 +449,14 @@ always @(posedge clk) begin
     combined_mask = {dut.inst_stage_wb.to_wb_store_mask_line_1, dut.inst_stage_wb.to_wb_store_mask_line_0};
     for (n = 0; n < 32; n = n + 1) begin
       if (combined_mask[n] === 1'b0) begin
-        $fdisplay(file_handle_cmp,"Wrote 0x%02x to   va = 0x%08x and pa = 0x%04x",
-          (combined_data >> (8*n)) & 8'hFF,
-          {saved_st_addr[31:4], 4'd0} + n,
-          {dut.inst_stage_wb.to_wb_store_addr_line_0[14:4], 4'd0} + n
-        );
+        if (pend_mem_cnt < MAX_PENDING_MEM) begin
+          pend_mem_is_wr[pend_mem_cnt] = 1'b1;
+          pend_mem_val  [pend_mem_cnt] = (combined_data >> (8*n)) & 8'hFF;
+          pend_mem_va   [pend_mem_cnt] = {saved_st_addr[31:4], 4'd0} + n;
+          pend_mem_pa   [pend_mem_cnt] = {dut.inst_stage_wb.to_wb_store_addr_line_0[14:4], 4'd0} + n;
+          pend_mem_ieip [pend_mem_cnt] = saved_ieip;
+          pend_mem_cnt = pend_mem_cnt + 1;
+        end
       end
     end
   end
@@ -556,6 +615,7 @@ always @(posedge clk) begin
     print_pending  <= 1'b0;
     wb_ieip        <= 32'b0;
     wb_eflags      <= 32'b0;
+    pend_mem_cnt    = 0;
   end else begin
     if (print_pending) begin
       $display("[WB COMMIT+1] time=%0t", $time);

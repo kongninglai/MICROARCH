@@ -32,6 +32,7 @@ module regunit(
 
     input  from_rr_sig_srcsreg_mux,
     input [2:0] from_rr_seg_prefix,
+    input from_rr_has_seg_prefix,
     input from_rr_sig_segrd0_mux,
     input from_rr_sig_segrd1_mux,
     output [15:0] to_rr_srcSREG,
@@ -159,7 +160,7 @@ module regunit(
     // sregrd0_idx: According to srcsreg_mux: 0(based on base1_idx), 1(opcode[5:3])
     // sregrd1_idx: srcsreg_mux = 1 ? modrm[5:3] : (gprd0_mux==010? ES : SS), means if base1=edi, use es
     wire [2:0] base1_seg_idx;
-    get_segreg_idx get_base1_seg(.seg_idx(base1_seg_idx), .base_reg_idx(to_dep_basereg1_idx), .seg_override(from_rr_seg_prefix));
+    get_segreg_idx get_base1_seg(.seg_idx(base1_seg_idx), .base_reg_idx(to_dep_basereg1_idx), .seg_override(from_rr_seg_prefix), .has_seg_override(from_rr_has_seg_prefix));
     mux2$ mux2_sregrd0_idx[2:0](segrd0_idx, base1_seg_idx, from_rr_opcode[5:3], from_rr_sig_segrd0_mux);
 
     wire gprd0_mux_1_inv, gprd0_is_edi;

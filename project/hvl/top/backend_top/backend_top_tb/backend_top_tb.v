@@ -16,7 +16,7 @@ localparam TRUE_LRU = 1;
 
 reg clk;
 reg rst_n;
-reg [5:0]  to_rr_prefix;
+reg [6:0]  to_rr_prefix;
 reg [7:0]  to_rr_opcode;
 reg [7:0]  to_rr_modrm;
 reg [7:0]  to_rr_sib;
@@ -242,7 +242,7 @@ always #(CYCLE_TIME / 2.0) clk = ~clk;
 
 task clear_inputs;
 begin
-  to_rr_prefix = 6'd0;
+  to_rr_prefix = 7'd0;
   to_rr_opcode = 8'd0;
   to_rr_modrm = 8'd0;
   to_rr_sib = 8'd0;
@@ -260,7 +260,7 @@ end
 endtask
 
 task apply_inputs;
-  input [5:0] prefix;
+  input [6:0] prefix;
   input [7:0] opcode;
   input [7:0] modrm;
   input [7:0] sib;
@@ -326,12 +326,12 @@ end
 endtask
 
 task insert_nop; 
-  apply_inputs(6'b000110, 8'h01, 8'hc0, 8'bx, 32'bx, 2'b00,
+  apply_inputs(7'b0000110, 8'h01, 8'hc0, 8'bx, 32'bx, 2'b00,
                   48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'h0, 2'b0, 1'b0);
 endtask
 
 task test_with_nops;
-  input [5:0] prefix;
+  input [6:0] prefix;
   input [7:0] opcode;
   input [7:0] modrm;
   input [7:0] sib;
@@ -384,7 +384,7 @@ initial begin
   // 80 c7 08
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'h80, 8'hc7, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000110, 8'h80, 8'hc7, 8'bx, 32'bx, 2'b00,
                   48'h8, 3'b001, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
 
   $display("======================================");
@@ -393,7 +393,7 @@ initial begin
   // 05 78 56 34 12
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'h05, 8'bx, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000110, 8'h05, 8'bx, 8'bx, 32'bx, 2'b00,
                   48'h12345678, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
   
   $display("======================================");
@@ -402,7 +402,7 @@ initial begin
   // 66 01 D8
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b010110, 8'h01, 8'hD8, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0010110, 8'h01, 8'hD8, 8'bx, 32'bx, 2'b00,
                   48'bx, 3'b000, 2'b01, 32'h0, 32'h2, 32'bx, 2'b0, 1'b1);
 
 
@@ -412,7 +412,7 @@ initial begin
   // b8 05 00 00 00
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'hb8, 8'bx, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000110, 8'hb8, 8'bx, 8'bx, 32'bx, 2'b00,
                   48'h5, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
   
   $display("======================================");
@@ -421,7 +421,7 @@ initial begin
   // bb 05 00 00 00
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'hbb, 8'bx, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000110, 8'hbb, 8'bx, 8'bx, 32'bx, 2'b00,
                   48'h5, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
 
   $display("======================================");
@@ -430,7 +430,7 @@ initial begin
   // b9 09 00 00 00
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'hb9, 8'bx, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000110, 8'hb9, 8'bx, 8'bx, 32'bx, 2'b00,
                   48'h9, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
 
   $display("======================================");
@@ -439,7 +439,7 @@ initial begin
   // 0f b1 cb
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000111, 8'hb1, 8'hcb, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000111, 8'hb1, 8'hcb, 8'bx, 32'bx, 2'b00,
                   48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
   
   $display("======================================");
@@ -448,7 +448,7 @@ initial begin
   // 0f b1 cb
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000111, 8'hb1, 8'hcb, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000111, 8'hb1, 8'hcb, 8'bx, 32'bx, 2'b00,
                   48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
   
   $display("======================================");
@@ -457,7 +457,7 @@ initial begin
   // 0f 6f 03
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000111, 8'h6f, 8'h03, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000111, 8'h6f, 8'h03, 8'bx, 32'bx, 2'b00,
                   48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
   
   $display("======================================");
@@ -466,7 +466,7 @@ initial begin
   // 0f e0 d0
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000111, 8'he0, 8'hd0, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000111, 8'he0, 8'hd0, 8'bx, 32'bx, 2'b00,
                   48'bx, 3'b000, 2'b01, 32'h0, 32'h3, 32'bx, 2'b0, 1'b1);
   
   $display("======================================");
@@ -475,7 +475,7 @@ initial begin
   // bc 34 12 00 00
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'hbc, 8'bx, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000110, 8'hbc, 8'bx, 8'bx, 32'bx, 2'b00,
                   48'h1234, 3'b100, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
 
   $display("======================================");
@@ -484,7 +484,7 @@ initial begin
   // 1f
   // prefix(6), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
   // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
-  test_with_nops(6'b000110, 8'h1f, 8'bx, 8'bx, 32'bx, 2'b00,
+  test_with_nops(7'b0000110, 8'h1f, 8'bx, 8'bx, 32'bx, 2'b00,
                   48'bx, 3'b000, 2'b00, 32'h0, 32'h5, 32'bx, 2'b0, 1'b1);
 
                   

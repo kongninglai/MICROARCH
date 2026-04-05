@@ -1,5 +1,4 @@
 address_adder_tb               FAILURES=0      SUCCESSES=256   
-ag_to_mem_tb                   FAILURES=0      SUCCESSES=0     
 arbiter_tb                     FAILURES=0      SUCCESSES=16    
 backend_top_tb                 FAILURES=0      SUCCESSES=0     
 big_and_tb                     FAILURES=0      SUCCESSES=4096  
@@ -27,7 +26,7 @@ data_store_tb                  FAILURES=0      SUCCESSES=1032
 dcache_controller_wbe_tb       FAILURES=0      SUCCESSES=10240 
 decoder4_16_tb                 FAILURES=0      SUCCESSES=16    
 decoder5_32_tb                 FAILURES=0      SUCCESSES=32    
-de_to_rr_tb                    FAILURES=0      SUCCESSES=3     
+de_to_rr_tb                    FAILURES=0      SUCCESSES=3      WARNINGS=1     
 dmac_tb                        FAILURES=0      SUCCESSES=1040  
 dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
 dmu_tb                         FAILURES=0      SUCCESSES=4     
@@ -135,7 +134,6 @@ regfile_seg_tb                 FAILURES=0      SUCCESSES=19
 reg_n_tb                       FAILURES=0      SUCCESSES=1000  
 regunit_tb                     FAILURES=0      SUCCESSES=0     
 rom_modrm_imm_tb               FAILURES=0      SUCCESSES=1024  
-rr_to_ag_tb                    FAILURES=0      SUCCESSES=0     
 rshfa_const_tb                 FAILURES=0      SUCCESSES=1024  
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
 rshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096  
@@ -145,13 +143,13 @@ seg_limit_cmp_tb               FAILURES=0      SUCCESSES=4103
 se_tb                          FAILURES=0      SUCCESSES=258   
 shift_reg_tb                   FAILURES=0      SUCCESSES=5456  
 shift_reg_tiny_tb              FAILURES=0      SUCCESSES=5388  
-stage_ag_tb                    FAILURES=0      SUCCESSES=0     
-stage_decoder_tb               FAILURES=0      SUCCESSES=13    
-stage_ex_tb                    FAILURES=0      SUCCESSES=0     
+stage_ag_tb                    FAILURES=0      SUCCESSES=0      WARNINGS=3     
+stage_decoder_tb               FAILURES=0      SUCCESSES=13     WARNINGS=1     
+stage_ex_tb                    FAILURES=0      SUCCESSES=0      WARNINGS=3     
 stage_fetch_tb                 FAILURES=0      SUCCESSES=586   
 stage_mem_tb                   FAILURES=0      SUCCESSES=4326  
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
-stage_wb_reg_tb                FAILURES=0      SUCCESSES=0     
+stage_wb_reg_tb                FAILURES=0      SUCCESSES=0      WARNINGS=3     
 stage_wb_tb                    FAILURES=0      SUCCESSES=1644  
 sticky_bit_fsm_tb              FAILURES=0      SUCCESSES=4112  
 sticky_bit_load_fsm_tb         FAILURES=0      SUCCESSES=8     

@@ -207,6 +207,7 @@ block_decoder block_decoder_inst (
   .prefix_rep(),
   .prefix_op_size(),
   .prefix_seg_ov_id(),
+  .prefix_seg(),
   .prefix_ext(),
   .opcode(),
   .modrm_v(),

@@ -1,5 +1,5 @@
 module stage_rr(
-    input [5:0] to_rr_prefix,
+    input [6:0] to_rr_prefix,
     input [7:0] to_rr_opcode,
     input [7:0] to_rr_modrm,
     input [7:0] to_rr_sib,
@@ -40,6 +40,7 @@ module stage_rr(
     output  to_regunit_sig_segrd0_mux,
     output  to_regunit_sig_segrd1_mux,
     output [2:0] to_regunit_seg_prefix,
+    output  to_regunit_has_seg_prefix,
 
     input [15:0] from_regunit_srcSREG,
     input [15:0] from_regunit_SREG1,
@@ -223,6 +224,7 @@ module stage_rr(
     assign from_rr_imm=to_rr_imm[31:0];
     assign from_rr_sreg1=from_regunit_SREG1;
     assign to_regunit_seg_prefix=to_rr_prefix[3:1];
+    assign to_regunit_has_seg_prefix=to_rr_prefix[6];
     // assign from_rr_slim1=from_regunit_SLIM1;
 
     wire mod_00, rm1_inv, rm_101, base_none;
