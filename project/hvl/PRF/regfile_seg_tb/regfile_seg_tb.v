@@ -18,6 +18,7 @@ module regfile_seg_tb;
     wire [19:0] segrd0_limit, segrd0_limit_bh;
     wire [19:0] segrd1_limit, segrd1_limit_bh;
     wire [15:0] cs, cs_bh;
+    wire [19:0] cs_limit, cs_limit_bh;
 
     reg  [2:0] segwr_idx;
     reg  [15:0] segwr_data;
@@ -36,6 +37,7 @@ module regfile_seg_tb;
         .segrd0_limit(segrd0_limit_bh),
         .segrd1_limit(segrd1_limit_bh),
         .cs(cs_bh),
+        .cs_limit(cs_limit),
         .segwr_idx(segwr_idx),
         .segwr_data(segwr_data),
         .segwr_en(segwr_en),
@@ -53,6 +55,7 @@ module regfile_seg_tb;
         .segrd0_limit(segrd0_limit),
         .segrd1_limit(segrd1_limit),
         .cs(cs),
+        .cs_limit(cs_limit_bh),
         .segwr_idx(segwr_idx),
         .segwr_data(segwr_data),
         .segwr_en(segwr_en),

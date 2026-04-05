@@ -48,12 +48,14 @@ module store_queue #(
 /*** WRITE POINTER LOGIC ***/
 
 wire    [NUM_ENTRIES-1:0]       wr_one_hot, wr_plus_1_one_hot, wr_one_hot_gated, wr_plus_1_one_hot_gated;
-wire    [PTR_WIDTH-1:0]         wr_ptr, wr_ptr_plus_1, wr_ptr_plus_2, wr_ptr_next;
+wire    [PTR_WIDTH-1:0]         wr_ptr, wr_ptr_buf64, wr_ptr_plus_1, wr_ptr_plus_2, wr_ptr_next;
+
+bufferH64$    bufferH64$_wr_ptr_buf64[PTR_WIDTH-1:0](wr_ptr_buf64, wr_ptr);
 
 big_increment #(
   .WIDTH(PTR_WIDTH)
 ) big_increment_wr_ptr_plus_1 (
-  .a(wr_ptr),
+  .a(wr_ptr_buf64),
   .s(wr_ptr_plus_1)
 );
 
@@ -78,12 +80,14 @@ reg_n #(
 /*** READ POINTER LOGIC ***/
 
 wire    [NUM_ENTRIES-1:0]       rd_one_hot, rd_one_hot_gated;
-wire    [PTR_WIDTH-1:0]         rd_ptr, rd_ptr_plus_1;
+wire    [PTR_WIDTH-1:0]         rd_ptr, rd_ptr_buf16, rd_ptr_plus_1;
+
+bufferH16$    bufferH16$_rd_ptr_buf16[PTR_WIDTH-1:0](rd_ptr_buf16, rd_ptr);
 
 big_increment #(
   .WIDTH(PTR_WIDTH)
 ) big_increment_rd_ptr_plus_1 (
-  .a(rd_ptr),
+  .a(rd_ptr_buf16),
   .s(rd_ptr_plus_1)
 );
 
@@ -98,12 +102,13 @@ reg_n #(
 
 /*** ENTRY COUNT LOGIC ***/
 
-wire    [COUNT_WIDTH-1:0]       entry_count_plus_1, entry_count_plus_2, entry_count_minus_1, entry_count_next;
+wire    [COUNT_WIDTH-1:0]       entry_count_buf16, entry_count_plus_1, entry_count_plus_2, entry_count_minus_1, entry_count_next;
+bufferH16$    bufferH16$_entry_count_buf16[COUNT_WIDTH-1:0](entry_count_buf16, entry_count);
 
 big_increment #(
   .WIDTH(COUNT_WIDTH)
 ) big_increment_entry_count_plus_1 (
-  .a(entry_count),
+  .a(entry_count_buf16),
   .s(entry_count_plus_1)
 );
 
@@ -117,7 +122,7 @@ big_increment #(
 big_decrement #(
   .WIDTH(COUNT_WIDTH)
 ) big_decrement_entry_count_plus_1 (
-  .a(entry_count),
+  .a(entry_count_buf16),
   .s(entry_count_minus_1)
 );
 
@@ -142,10 +147,10 @@ reg_n #(
 
 /*** ONE-HOT RD / WR LOGIC ***/
 
-decoder2_4$   decoder2_4$_wr_one_hot(.SEL(wr_ptr), .Y(wr_one_hot), .YBAR());
+decoder2_4$   decoder2_4$_wr_one_hot(.SEL(wr_ptr_buf64), .Y(wr_one_hot), .YBAR());
 decoder2_4$   decoder2_4$_wr_plus_1_one_hot(.SEL(wr_ptr_plus_1), .Y(wr_plus_1_one_hot), .YBAR());
 
-decoder2_4$   decoder2_4$_rd_one_hot(.SEL(rd_ptr), .Y(rd_one_hot), .YBAR());
+decoder2_4$   decoder2_4$_rd_one_hot(.SEL(rd_ptr_buf16), .Y(rd_one_hot), .YBAR());
 
 and2$         and2$_wr_one_hot_gated[NUM_ENTRIES-1:0](wr_one_hot_gated, wr_one_hot, wr[0]);
 and2$         and2$_wr_plus_1_one_hot_gated[NUM_ENTRIES-1:0](wr_plus_1_one_hot_gated, wr_plus_1_one_hot, wr[0]);
@@ -171,13 +176,13 @@ generate
     mux2_16$ mux2_16_data_in_evens (
       .IN0 (data_in0[i*16 +: 16]),
       .IN1 (data_in1[i*16 +: 16]),
-      .S0(wr_ptr[0]),
+      .S0(wr_ptr_buf64[0]),
       .Y(data_in_even_odd[0][i*16 +: 16])
     );
     mux2_16$ mux2_16_data_in_odds (
       .IN0 (data_in1[i*16 +: 16]),
       .IN1 (data_in0[i*16 +: 16]),
-      .S0(wr_ptr[0]),
+      .S0(wr_ptr_buf64[0]),
       .Y(data_in_even_odd[1][i*16 +: 16])
     );
   end
@@ -186,14 +191,14 @@ endgenerate
 mux2_16$ mux2_16_data_in_evens_last (
   .IN0 ({5'd0, data_in0[ENTRY_BIT_WIDTH-1:9*16]}),
   .IN1 ({5'd0, data_in1[ENTRY_BIT_WIDTH-1:9*16]}),
-  .S0(wr_ptr[0]),
+  .S0(wr_ptr_buf64[0]),
   .Y({data_in_even_odd_dummy[0], data_in_even_odd[0][ENTRY_BIT_WIDTH-1:9*16]})
 );
 
 mux2_16$ mux2_16_data_in_odds_last (
   .IN0 ({5'd0, data_in1[ENTRY_BIT_WIDTH-1:9*16]}),
   .IN1 ({5'd0, data_in0[ENTRY_BIT_WIDTH-1:9*16]}),
-  .S0(wr_ptr[0]),
+  .S0(wr_ptr_buf64[0]),
   .Y({data_in_even_odd_dummy[1], data_in_even_odd[1][ENTRY_BIT_WIDTH-1:9*16]})
 );
 
@@ -220,8 +225,8 @@ generate
       .IN1 (data_out_full[1][(DATA_BOT_BIT+i*16) +: 16]),
       .IN2 (data_out_full[2][(DATA_BOT_BIT+i*16) +: 16]),
       .IN3 (data_out_full[3][(DATA_BOT_BIT+i*16) +: 16]),
-      .S0(rd_ptr[0]),
-      .S1(rd_ptr[1]),
+      .S0(rd_ptr_buf16[0]),
+      .S1(rd_ptr_buf16[1]),
       .Y(STOREQ_DATA[i*16 +: 16])
     );
   end
@@ -234,8 +239,8 @@ mux4_16$ mux4_16_STOREQ_PHYS_ADDR (
   .IN1 ({5'd0, data_out_full[1][PHYS_ADDR_TOP_BIT:CHIPS_PER_RANK]}),
   .IN2 ({5'd0, data_out_full[2][PHYS_ADDR_TOP_BIT:CHIPS_PER_RANK]}),
   .IN3 ({5'd0, data_out_full[3][PHYS_ADDR_TOP_BIT:CHIPS_PER_RANK]}),
-  .S0(rd_ptr[0]),
-  .S1(rd_ptr[1]),
+  .S0(rd_ptr_buf16[0]),
+  .S1(rd_ptr_buf16[1]),
   .Y({STOREQ_PHYS_ADDR_DUMMY, STOREQ_PHYS_ADDR})
 );
 
@@ -244,8 +249,8 @@ mux4_16$ mux4_16_STOREQ_DATA_WR_MASK (
   .IN1 (data_out_full[1][CHIPS_PER_RANK-1:0]),
   .IN2 (data_out_full[2][CHIPS_PER_RANK-1:0]),
   .IN3 (data_out_full[3][CHIPS_PER_RANK-1:0]),
-  .S0(rd_ptr[0]),
-  .S1(rd_ptr[1]),
+  .S0(rd_ptr_buf16[0]),
+  .S1(rd_ptr_buf16[1]),
   .Y(STOREQ_DATA_WR_MASK)
 );
 
@@ -253,9 +258,9 @@ mux4_16$ mux4_16_STOREQ_DATA_WR_MASK (
 
 wire    three_entries;
 
-and2$   and2$_three_entries(three_entries, entry_count[0], entry_count[1]);
-or2$    or2$_full(full, three_entries, entry_count[2]);
+and2$   and2$_three_entries(three_entries, entry_count_buf16[0], entry_count_buf16[1]);
+or2$    or2$_full(full, three_entries, entry_count_buf16[2]);
 
-nor3$   nor3$_empty(empty, entry_count[0], entry_count[1], entry_count[2]);
+nor3$   nor3$_empty(empty, entry_count_buf16[0], entry_count_buf16[1], entry_count_buf16[2]);
 
 endmodule

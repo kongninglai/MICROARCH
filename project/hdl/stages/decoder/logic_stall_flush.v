@@ -32,10 +32,12 @@ module logic_stall_flush(
 );
 
     wire instr_invalid, instr_valid_w;
-    cmp_gen_20b INSTR_VALID( //Instruction is crossing cache line boundary if incr_amt > tail_ptr
-        .in0({16'b0, incr_amt}), .in1({15'b0, tail_ptr}),
-        .lt(), .eq(), .gt(instr_invalid)
-    );	
+    mag_comp8$ INSTR_VALID( 
+        .A({4'b0, incr_amt}), 
+        .B({3'b0, tail_ptr}),
+        .AGB(instr_invalid), 
+        .BGA() 
+    );
     inv1$ INV_INSTR_VALID(instr_valid_w, instr_invalid);
 
 

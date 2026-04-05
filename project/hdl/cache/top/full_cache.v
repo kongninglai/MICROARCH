@@ -87,6 +87,10 @@ module full_cache #(
   input                                                   WB_FLUSH, EX_FLUSH
 );
 
+wire [2:0] KB_PFN_buf16, DMA_PFN_buf16;
+bufferH16$    bufferH16$_KB_PFN_buf16[2:0](KB_PFN_buf16, KB_PFN);
+bufferH16$    bufferH16$_DMA_PFN_buf16[2:0](DMA_PFN_buf16, DMA_PFN);
+
 
 /************************************************************/
 /************************************************************/
@@ -414,7 +418,7 @@ or2$    or2$_FLUSH(FLUSH, EX_FLUSH, WB_FLUSH);
 nor2$   nor2$_FLUSH_BAR(FLUSH_BAR, EX_FLUSH, WB_FLUSH);
 
 /* Wire name is misnomer...should include AND_FILL_BUSY */
-and3$   and3$_IO_READ_AND_NOT_FLUSH(IO_READ_AND_NOT_FLUSH, IO_READ, FLUSH_BAR, DCC_FSM_FILL_BUSY);
+nor3$   nor3$_IO_READ_AND_NOT_FLUSH(IO_READ_AND_NOT_FLUSH, IO_READ_BAR, FLUSH, FILL_BUSY_BAR);
 
 wire    NEITHER_BUSY;
 nor2$   nor2$_NEITHER_BUSY(NEITHER_BUSY, DCC_FSM_FILL_BUSY, WBE_BUSY);
@@ -769,8 +773,8 @@ full_cc_off_core #(
 ) full_cc_off_core_inst (
   .rst                       (rst),
   .clk                       (clk),
-  .KB_PFN                    (KB_PFN),
-  .DMA_PFN                   (DMA_PFN),
+  .KB_PFN                    (KB_PFN_buf16),
+  .DMA_PFN                   (DMA_PFN_buf16),
   .DATA_BUS                  (DATA_BUS),
   .ADDR_BUS                  (ADDR_BUS),
   .WR_mask                   (WR_mask),

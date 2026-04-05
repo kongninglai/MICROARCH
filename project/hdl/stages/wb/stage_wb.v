@@ -45,6 +45,17 @@ module stage_wb #(
   input                                       clk,
   input                                       rst_n,
 
+  /*** Inputs from pipeline registers (execute-related) ***/
+  input   [11:0]                              to_wb_control_sigs,
+  input   [2:0]                               to_wb_dstidA, 
+  input   [2:0]                               to_wb_dstidB,
+  input   [31:0]                              to_wb_gp_wr_data_1,
+  input   [31:0]                              to_wb_gp_wr_data_2,
+  input   [15:0]                              to_wb_seg_wr_data,
+  input   [63:0]                              to_wb_mmx_wr_data,
+  input   [31:0]                              to_wb_oeip,
+  input   [15:0]                              to_wb_cs,
+
   /*** Inputs from pipeline registers (memory-related) ***/
   input   [STORE_DATA_BIT_WIDTH-1:0]          to_wb_store_data,
   input                                       to_wb_store_is_io_line_0,
@@ -55,7 +66,6 @@ module stage_wb #(
   input   [CHIPS_PER_RANK-1:0]                to_wb_store_mask_line_1,
   input                                       to_wb_store_queue_alloc_line_1,
   input   [TWO_LINES_SHF_AMT_BIT_WIDTH-1:0]   to_wb_store_data_shf_amt,
-
   /*** Valid / exception inputs from pipeline registers ***/
   input   [1:0]                               to_wb_exception,
   input                                       to_wb_valid,
@@ -64,6 +74,27 @@ module stage_wb #(
   input                                       WBE_BUSY,
   input                                       DCACHE_HIT,
   input                                       DCACHE_STALL,
+
+  /*** Outputs to regunit module (register-related) ***/
+  output  [2:0]                               from_wb_gpwr0_idx,
+  output  [31:0]                              from_wb_gpwr0_data,
+  output  [1:0]                               from_wb_gpwr0_size,
+  output                                      from_wb_gpwr0_en,
+  output  [2:0]                               from_wb_gpwr1_idx,
+  output  [31:0]                              from_wb_gpwr1_data,
+  output  [1:0]                               from_wb_gpwr1_size,
+  output                                      from_wb_gpwr1_en,
+  output  [2:0]                               from_wb_segwr_idx,
+  output  [15:0]                              from_wb_segwr_data,
+  output                                      from_wb_segwr_en,
+  output  [2:0]                               from_wb_mmxwr_idx,
+  output  [63:0]                              from_wb_mmxwr_data,
+  output                                      from_wb_mmxwr_en,
+
+  /*** Outputs to temp registers (exception-related) ***/
+  output  [15:0]                              from_wb_temp_cs,
+  output  [31:0]                              from_wb_temp_eip,
+  output  [1:0]                               from_wb_temp_exception,
 
   /*** Outputs to full_cache module (store-queue-related) ***/
   output                                      STOREQ_STORING,
@@ -84,10 +115,52 @@ module stage_wb #(
   output                                      from_wb_flush
 );
 
+assign from_wb_temp_cs = to_wb_cs;
+assign from_wb_temp_eip = to_wb_oeip;
+assign from_wb_temp_exception = to_wb_exception;
+
+/*** REGFILE UPDATE LOGIC ***/
+wire gpwr0_en, gp_wr1_en, segwr_en, mmxwr_en;
+wire [1:0] dstA_size, dstB_size, rw, ds;
+wb_sig dut_wb_sig(
+    .ucode_sig(to_wb_control_sigs),
+    .gpwr0_en(gpwr0_en),
+    .gpwr1_en(gpwr1_en),
+    .segwr_en(segwr_en),
+    .mmxwr_en(mmxwr_en),
+    .dstA_size(dstA_size),
+    .dstB_size(dstB_size),
+    .rw(rw),
+    .ds(ds)
+);
+
+assign from_wb_gpwr0_idx = to_wb_dstidA;
+assign from_wb_gpwr0_data = to_wb_gp_wr_data_1;
+assign from_wb_gpwr0_en = gpwr0_en;
+assign from_wb_gpwr0_size = dstA_size;
+
+assign from_wb_gpwr1_idx = to_wb_dstidB;
+assign from_wb_gpwr1_data = to_wb_gp_wr_data_2;
+assign from_wb_gpwr1_en = gpwr1_en;
+assign from_wb_gpwr1_size = dstB_size;
+
+assign from_wb_segwr_idx = to_wb_dstidA;
+assign from_wb_segwr_data = to_wb_seg_wr_data;
+assign from_wb_segwr_en = segwr_en;
+
+assign from_wb_mmxwr_idx = to_wb_dstidA;
+assign from_wb_mmxwr_data = to_wb_mmx_wr_data;
+assign from_wb_mmxwr_en = mmxwr_en;
+
+wire to_wb_valid_buf16;
+bufferH16$  bufferH16$_to_wb_valid_buf16(to_wb_valid_buf16, to_wb_valid);
+
 /*** STORE QUEUE "HOOKS" ***/
-wire    [MULTI_WRITE_AMT-1:0]               wr;
+wire    [MULTI_WRITE_AMT-1:0]               wr, wr_buf16;
 wire    [ENTRY_BIT_WIDTH-1:0]               data_in0;
 wire    [ENTRY_BIT_WIDTH-1:0]               data_in1;
+
+bufferH16$    bufferH16$_wr_buf16[MULTI_WRITE_AMT-1:0](wr_buf16, wr);
 
 /* Neither page fault exception nor general protection exception */
 wire    no_exception;
@@ -98,12 +171,12 @@ wire    wb_store_inst;
 or2$    or2$_wb_store_inst(wb_store_inst, to_wb_store_is_io_line_0, to_wb_store_queue_alloc_line_0);
 
 /* Qualify with valid signal & no_exception signal */
-and3$   and3$_from_wb_valid_store_inst(from_wb_valid_store_inst, to_wb_valid, no_exception, wb_store_inst);
+and3$   and3$_from_wb_valid_store_inst(from_wb_valid_store_inst, to_wb_valid_buf16, no_exception, wb_store_inst);
 
 /* Flush from WB if there's an exception for a valid instruction */
 wire    any_exception;
 or2$    or2$_any_exception(any_exception, to_wb_exception[0], to_wb_exception[1]);
-and2$   and2$_from_wb_flush(from_wb_flush, any_exception, to_wb_valid);
+and2$   and2$_from_wb_flush(from_wb_flush, any_exception, to_wb_valid_buf16);
 
 /* 
     This block aligns the 64-bit store data to cache line boundaries.
@@ -112,8 +185,11 @@ and2$   and2$_from_wb_flush(from_wb_flush, any_exception, to_wb_valid);
  */
 wire    [RANK_BIT_WIDTH-1:0]    store_data_line_0, store_data_line_1;
 
+wire    [TWO_LINES_BIT_WIDTH-1:0] shifter_input;
+bufferH64$    bufferH64$_shifter_input[TWO_LINES_BIT_WIDTH-1:0](shifter_input, {192'd0, to_wb_store_data});
+
 lshf_bytes_var_256b lshf_bytes_var_256b_store_data (
-  .in({192'd0, to_wb_store_data}),
+  .in(shifter_input),
   .shf_amt(to_wb_store_data_shf_amt),
   .out({store_data_line_1, store_data_line_0})
 );
@@ -130,14 +206,14 @@ assign    data_in1 = {store_data_line_1, to_wb_store_addr_line_1, to_wb_store_ma
 wire    to_wb_store_is_io_line_0_bar;
 inv1$   inv1$_to_wb_store_is_io_line_0_bar(to_wb_store_is_io_line_0_bar, to_wb_store_is_io_line_0);
 
-and4$   and4$_wr_0(wr[0], to_wb_store_is_io_line_0_bar, to_wb_store_queue_alloc_line_0, to_wb_valid, no_exception);
-and3$   and3$_wr_1(wr[1], to_wb_store_queue_alloc_line_1, to_wb_valid, no_exception);
+and4$   and4$_wr_0(wr[0], to_wb_store_is_io_line_0_bar, to_wb_store_queue_alloc_line_0, to_wb_valid_buf16, no_exception);
+and3$   and3$_wr_1(wr[1], to_wb_store_queue_alloc_line_1, to_wb_valid_buf16, no_exception);
 
 /*** Easy I/O Write Wires ***/
 assign WB_PR_ST_ADDR_L0 = to_wb_store_addr_line_0;
 assign WB_PR_ST_MASK_L0 = to_wb_store_mask_line_0;
 assign WB_SHF_ST_DATA_L0 = store_data_line_0;
-and3$   and3$_WB_VALID_IO_STORE_INST(WB_VALID_IO_STORE_INST, to_wb_store_is_io_line_0, to_wb_valid, no_exception);
+and3$   and3$_WB_VALID_IO_STORE_INST(WB_VALID_IO_STORE_INST, to_wb_store_is_io_line_0, to_wb_valid_buf16, no_exception);
 
 wire    stalling_for_store_queue;
 and2$   and2$_stalling_for_store_queue(stalling_for_store_queue, DCACHE_STALL, STOREQ_STORING);
@@ -145,7 +221,9 @@ or2$    or2$_from_wb_stall_if_mem_en(from_wb_stall_if_mem_en, WB_VALID_IO_STORE_
 
 /*** BETWEEN STORE QUEUE & CACHE, for WRITES ***/
 wire    WBE_BUSY_BAR;
-wire    empty, rd;
+wire    empty, rd, rd_buf16;
+
+bufferH16$    bufferH16$_rd_buf16(rd_buf16, rd);
 
 inv1$   inv1$_WBE_BUSY_BAR(WBE_BUSY_BAR, WBE_BUSY);
 
@@ -180,8 +258,8 @@ store_queue #(
 ) store_queue_inst (
   .clk(clk),
   .rst_n(rst_n),
-  .wr(wr),
-  .rd(rd),
+  .wr(wr_buf16),
+  .rd(rd_buf16),
   .data_in0(data_in0),
   .data_in1(data_in1),
   .empty(empty),

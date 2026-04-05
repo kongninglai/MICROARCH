@@ -1,5 +1,5 @@
 module ag_sig(
-    input [61:0] ucode_sig,
+    input [64:0] ucode_sig,
     output [1:0] ldAB,
     output [1:0] dstA_size,
     output [1:0] dstB_size,
@@ -31,11 +31,14 @@ module ag_sig(
     output [1:0] addr_mux,
     output stack_push,
     output intex,
-    output ret_with_imm
+    output ret_with_imm,
+    output rm, 
+    output op_ovr,
+    output palu_size
 ); 
     assign {ldAB, dstA_size, dstB_size, ldREGS, ldEFLAGS,
             ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
             mmx_op, alu_op, shf_op, cmps, con_jmp, cmpxchg, cmovc,
             gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, store_data_mux, rw, ds,
-            mem_ds, imm_mux, addr_mux, stack_push, intex, ret_with_imm} = ucode_sig;
+            mem_ds, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, op_ovr, palu_size} = ucode_sig;
 endmodule

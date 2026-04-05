@@ -35,17 +35,16 @@ module intgr_fshifter_decode(
 
     wire [4:0]  tail_ptr;
     wire [3:0] to_pr_instr_length;
-    wire from_de_eip_redirection, to_pr_pr_valid;
+    wire from_de_eip_redirection, to_pr_pr_valid, shft_reg_we;
 
     wire [127:0] to_de_outbytes;
     wire [15:0] to_de_pf_expn_bytes_out;
-
+    wire [31:0] to_pr_i_eip, to_pr_o_eip;
 
     fetch_buffer FETCH_BUFF(
         .clk(clk), 
         .rst_bar(rst_bar),
         .from_de_instr_len(to_pr_instr_length),
-        .ICACHE_VALID(ICACHE_VALID),
         .from_de_valid(to_pr_pr_valid),
         .from_wb_flush(from_wb_flush),
         .from_ex_flush(from_ex_flush),
@@ -54,6 +53,7 @@ module intgr_fshifter_decode(
         .from_f_cache_line(from_f_cache_line),
         .from_de_eip_redirection(from_de_eip_redirection), 
         .ICACHE_VALID(ICACHE_VALID),
+        .offset(to_pr_o_eip[3:0]), //lower bits of current eip
         .shft_reg_we(shft_reg_we), //output to first half of fetch
         .tail_ptr(tail_ptr),
         .to_de_outbytes(to_de_outbytes),
@@ -62,7 +62,7 @@ module intgr_fshifter_decode(
     );    
 
     wire to_pr_ld_pr_rr;
-    wire [31:0] to_pr_i_eip, to_pr_o_eip, to_pr_bp_target;
+    wire [31:0] to_pr_bp_target;
     wire to_f_ld_eip;
     wire to_pr_prefix_rep, to_pr_prefix_op_size, to_pr_prefix_ext;
     wire [2:0] to_pr_prefix_seg_ov_id, to_pr_imm_size;

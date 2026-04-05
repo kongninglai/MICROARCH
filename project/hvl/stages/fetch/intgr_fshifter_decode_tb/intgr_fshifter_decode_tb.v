@@ -5,7 +5,7 @@ module intgr_fshifter_decode_tb();
     // ---------------------------------------------------------
     // 0. Parameters 
     // ---------------------------------------------------------
-    localparam CYCLE_TIME = 100; 
+    localparam CYCLE_TIME = 200; 
 
     // ---------------------------------------------------------
     // 1. Inputs (Regs)
@@ -13,7 +13,6 @@ module intgr_fshifter_decode_tb();
     reg clk;
     reg rst_bar;
 
-    reg shft_reg_we; 
     reg [127:0] from_f_cache_line;
     reg from_f_icache_valid; 
     reg from_wb_flush;
@@ -52,10 +51,8 @@ module intgr_fshifter_decode_tb();
 
         // --- Fetch Buffer Inputs ---
         .from_f_cache_line(from_f_cache_line),
-        .ICACHE_VALID(from_f_icache_valid), // <--- FIXED PORT NAME
+        .ICACHE_VALID(from_f_icache_valid), 
         .from_wb_flush(from_wb_flush),
-        
-        // Note: .shft_reg_we(...) is REMOVED!
 
         // --- Decode Inputs ---
         .from_ex_eip_target(from_ex_eip_target),
@@ -76,8 +73,6 @@ module intgr_fshifter_decode_tb();
         .to_rr_opcode(to_rr_opcode),
         .to_rr_modrm(to_rr_modrm),
         .to_rr_sib(to_rr_sib),
-
-        // Make sure you include these bottom outputs to get rid of the "Too few connections" warning!
         .to_rr_disp_size_mux(to_rr_disp_size_mux),
         .to_rr_disp(to_rr_disp),
         .to_rr_imm_size(to_rr_imm_size),
@@ -98,24 +93,46 @@ module intgr_fshifter_decode_tb();
         input integer byte_idx;
         input [7:0] byte_val;
         begin
-            // MODIFIED FOR BIG ENDIAN:
-            // Byte 0 goes to [127:120], Byte 1 goes to [119:112], etc.
-            from_f_cache_line[((15 - byte_idx)*8) +: 8] <= byte_val; // Non-blocking!
+            from_f_cache_line[((15 - byte_idx)*8) +: 8] <= byte_val; 
         end
     endtask
 
+    // NEW TASK: Checks Combinational logic BEFORE the PR_DE_RR register
+    task check_pr_stage;
+        input [8*35:1] test_name;
+        input exp_valid;
+        input [7:0] exp_opcode;
+        input [7:0] exp_modrm;
+        begin
+            #1; // Tiny delay to let combinational logic settle
+            // We use `uut.to_pr_*` to peek at the internal wires inside the module
+            if (uut.to_pr_pr_valid === exp_valid && 
+               (exp_valid == 0 || (uut.to_pr_opcode === exp_opcode && uut.to_pr_modrm === exp_modrm))) begin
+                $display("  ✅ [PR COMB ] PASS | %0s", test_name);
+                SUCCESSES = SUCCESSES + 1;
+            end else begin
+                $display("  ❌ [PR COMB ] FAIL | %0s", test_name);
+                $display("     EXPECTED: Valid=%b | Opcode=%h | ModRM=%h", exp_valid, exp_opcode, exp_modrm);
+                $display("     ACTUAL  : Valid=%b | Opcode=%h | ModRM=%h", uut.to_pr_pr_valid, uut.to_pr_opcode, uut.to_pr_modrm);
+                FAILURES = FAILURES + 1;
+            end
+        end
+    endtask
+
+    // UPDATED TASK: Checks Latched logic AFTER the PR_DE_RR register
     task check_rr_stage;
         input [8*35:1] test_name;
         input exp_valid;
         input [7:0] exp_opcode;
         input [7:0] exp_modrm;
         begin
+            #1; // Tiny delay to align checking 
             if (to_rr_pr_valid === exp_valid && 
                (exp_valid == 0 || (to_rr_opcode === exp_opcode && to_rr_modrm === exp_modrm))) begin
-                $display("  ✅ PASS | %0s", test_name);
+                $display("  ✅ [RR LATCH] PASS | %0s", test_name);
                 SUCCESSES = SUCCESSES + 1;
             end else begin
-                $display("  ❌ FAIL | %0s", test_name);
+                $display("  ❌ [RR LATCH] FAIL | %0s", test_name);
                 $display("     EXPECTED: Valid=%b | Opcode=%h | ModRM=%h", exp_valid, exp_opcode, exp_modrm);
                 $display("     ACTUAL  : Valid=%b | Opcode=%h | ModRM=%h", to_rr_pr_valid, to_rr_opcode, to_rr_modrm);
                 FAILURES = FAILURES + 1;
@@ -134,38 +151,18 @@ module intgr_fshifter_decode_tb();
         $display("   FRONT-END INTEGRATION TEST (Fetch -> Decode)  ");
         $display("=================================================");
 
-        // Time 0 initialization remains blocking (=) to instantly set the wires
         rst_bar = 0;
-        shft_reg_we = 0; from_f_icache_valid = 0; from_wb_flush = 0; from_ex_flush = 0;
+        from_f_icache_valid = 0; from_wb_flush = 0; from_ex_flush = 0;
         from_rr_stall = 0; from_f_cl_pf = 0;
         from_ex_eip_target = 32'h0; from_ex_br_t_nt = 0; from_ex_br_valid = 0; from_ex_pht_idx = 0;
         from_f_cache_line = 128'h0;
+        
+        @(negedge clk);
+        rst_bar <= 1; // Release reset 
 
-        #(CYCLE_TIME/2); //at first posedge; let reset hold for a half a cycle to propgate (asynconous reset doesnt necessarily need a clock edge)
+        @(negedge clk); 
         // ==========================================
-        // DURING CYCLE 1 (Setup Cache Load)
-        // ==========================================
-
-        /*
-        1. rst_bar = 0 at 0ns and has a 0.35ns delay (asynchronous). This will go through starting from 1st low half 
-        because clock starts low. Then we wait half a cycle time for this reset to propogate and can start latching the 
-        first values at the first posedge. 
-        2. Latch first cl values at first posedge
-        _____ ------_______------_______------_______------
-        0ns  50ns  100ns  150ns 200ns  
-        */
-        rst_bar <= 1; // turn off reset during first cycle
-        #(CYCLE_TIME); //at 2nd posedge; wait full a cycle for rst_bar to propogate and align to posedge
-
-        // ---------------------------------------------------------
-        // THE FIX: Set the -2 offset right here!
-        // We are currently at T=150ns. We wait 98ns. 
-        // We are now at T=248ns, forever locked 2ns before every clock edge!
-        // ---------------------------------------------------------
-        #(CYCLE_TIME - 2); 
-
-        // ==========================================
-        // DURING CYCLE 2 (Setup Cache Load)
+        // CYCLE 2: Setup Cache Load
         // ==========================================
         load_cache_byte(0, 8'h01); // ADD
         load_cache_byte(1, 8'hC3); // EAX, EBX
@@ -173,50 +170,48 @@ module intgr_fshifter_decode_tb();
         load_cache_byte(3, 8'hC8); 
 
         from_f_icache_valid <= 1;
-        shft_reg_we <= 1;
     
-        #(CYCLE_TIME); // start of cycle 3 (Fetch loads cache line)
-
+        @(negedge clk); 
         // ==========================================
-        // DURING CYCLE 3 allow decode to run and latch values at end of cycle
+        // CYCLE 3: Fetch loads cache line
         // ==========================================
         from_f_icache_valid <= 0; 
         
-        // NO MORE WEIRD OFFSETS HERE! Just a normal cycle jump!
-        #(CYCLE_TIME); 
-
-        // ==========================================
-        // CYCLE 4 (Check ADD, Setup MOV)
-        // ==========================================
-        check_rr_stage("Fetch/Decode ADD EAX, EBX  ", 1'b1, 8'h01, 8'hC3); // check values right before cycle 4
-        // (No input changes needed, Fetch buffer shifts naturally)
+        check_pr_stage("Comb Decode ADD EAX, EBX   ", 1'b1, 8'h01, 8'hC3); 
         
-        #(CYCLE_TIME); // CLOCK STRIKES! (Pipeline Reg latches MOV)
-
+        @(negedge clk); 
         // ==========================================
-        // CYCLE 4 (Check MOV, Setup STALL)
+        // CYCLE 4: RR latches 'ADD'.
+        // Combinational decoder shifts to see 'MOV'.
         // ==========================================
-        check_rr_stage("Decode Next Inst (MOV)     ", 1'b1, 8'h89, 8'hC8);
-        from_rr_stall <= 1; // Set stall NOW, before the clock strikes again!
-        shft_reg_we <= 0; 
+        check_rr_stage("Latched RR ADD EAX, EBX    ", 1'b1, 8'h01, 8'hC3); 
+        check_pr_stage("Comb Decode MOV            ", 1'b1, 8'h89, 8'hC8);
         
-        #(CYCLE_TIME); // CLOCK STRIKES! (Pipeline Reg is Stalled, holds MOV)
-
+        // DO NOT STALL YET! Let MOV flow into the pipeline register naturally
+        
+        @(negedge clk); 
         // ==========================================
-        // CYCLE 5 (Check STALL, Setup FLUSH)
+        // CYCLE 5: RR latches 'MOV'. NOW we lock it down!
+        // ==========================================
+        check_rr_stage("Latched RR MOV             ", 1'b1, 8'h89, 8'hC8);
+        
+        from_rr_stall <= 1; // Assert stall so it freezes here!
+        
+        @(negedge clk); 
+        // ==========================================
+        // CYCLE 6: Check that RR successfully held 'MOV'
         // ==========================================
         check_rr_stage("Pipeline Stall (Hold MOV)  ", 1'b1, 8'h89, 8'hC8);
-        from_rr_stall <= 0; 
-        shft_reg_we <= 1;   
+        
+        from_rr_stall <= 0; // Release stall
         from_ex_flush <= 1; // Send Flush command!
         
-        #(CYCLE_TIME); // CLOCK STRIKES! (Pipeline Reg clears)
-
+        @(negedge clk); 
         // ==========================================
-        // CYCLE 6 (Check FLUSH)
+        // CYCLE 7: Check FLUSH
         // ==========================================
         check_rr_stage("Execute Flush (Invalidate) ", 1'b0, 8'h00, 8'h00);
-        from_ex_flush <= 0;
+        check_pr_stage("Comb Flush (Invalidate)    ", 1'b0, 8'h00, 8'h00);
 
         $display("=================================================");
         if (FAILURES == 0) begin

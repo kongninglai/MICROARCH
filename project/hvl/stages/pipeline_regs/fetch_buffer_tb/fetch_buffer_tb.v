@@ -22,8 +22,9 @@ initial begin clk = 0; forever #5 clk = ~clk; end
 // ═══════════════════════════════════════════════════════════════
 reg         rst_bar;
 reg  [3:0]  from_de_instr_len;
+reg  [3:0]  offset;        // <--- ADDED: New offset input
 reg         from_de_valid;
-reg         ICACHE_VALID; // Fixed: Matches your exact port name
+reg         ICACHE_VALID; 
 reg         from_wb_flush;
 reg         from_ex_flush;
 reg         from_de_stall;
@@ -48,7 +49,8 @@ fetch_buffer dut(
     .from_f_cl_pf(from_f_cl_pf),
     .from_f_cache_line(from_f_cache_line),
     .from_de_eip_redirection(from_de_eip_redirection),
-    .ICACHE_VALID(ICACHE_VALID), // Fixed: Maps correctly now
+    .ICACHE_VALID(ICACHE_VALID), 
+    .offset(offset),       // <--- ADDED: Mapped to hardware
     .shft_reg_we(shft_reg_we),
     .tail_ptr(tail_ptr),
     .to_de_outbytes(to_de_outbytes),
@@ -57,7 +59,7 @@ fetch_buffer dut(
 );
 
 // ═══════════════════════════════════════════════════════════════
-// Behavioral Reference Model
+// Behavioral Reference Model (UPDATED FOR OFFSET LOGIC)
 // ═══════════════════════════════════════════════════════════════
 
 reg [7:0]  ref_buf [30:0];
@@ -88,7 +90,9 @@ assign ref_v_cl_ld = ref_req_stable & rst_bar & ICACHE_VALID;
 wire ref_shft_reg_we = (ICACHE_VALID & ref_v_cl_ld) | from_de_valid | ref_flush;
 wire ref_ready = 1'b1; 
 
-wire [4:0] ref_wr_cnt = ref_flush ? (5'd16 - {1'b0, ref_gated_ilen}) : 5'd16;
+// FIXED: Write count now correctly models 16-offset exclusively on unaligned EIP redirection.
+wire ref_unaligned_redir = (ref_tp == 0) && (offset != 0);
+wire [4:0] ref_wr_cnt = ref_unaligned_redir ? (5'd16 - {1'b0, offset}) : 5'd16;
 
 reg [30:0] ref_wr_en;
 always @(*) begin
@@ -103,10 +107,11 @@ end
 reg [247:0] ref_inbytes;
 always @(*) begin
     ref_inbytes = 248'b0;
-    if (ref_flush) begin
+    // FIXED: Properly shifts data right by `offset` on flush rather than instruction length
+    if (ref_unaligned_redir) begin
         for (ri_inb = 0; ri_inb < 16; ri_inb = ri_inb + 1)
-            if (ri_inb + ref_gated_ilen < 16)
-                ref_inbytes[ri_inb*8 +: 8] = from_f_cache_line[(15 - (ri_inb + ref_gated_ilen))*8 +: 8];
+            if (ri_inb + offset < 16)
+                ref_inbytes[ri_inb*8 +: 8] = from_f_cache_line[(15 - (ri_inb + offset))*8 +: 8];
     end else begin
         for (ri_inb = 0; ri_inb < 16; ri_inb = ri_inb + 1)
             if (ref_tp[3:0] + ri_inb < 31)
@@ -186,6 +191,7 @@ task apply_reset;
 begin
     rst_bar                 = 1'b0;
     from_de_instr_len       = 4'd0;
+    offset                  = 4'd0;    // <--- ADDED 
     from_de_valid           = 1'b0;
     ICACHE_VALID            = 1'b0;
     from_wb_flush           = 1'b0;
@@ -246,6 +252,7 @@ task drive_cycle;
     input [255:0] tag;
     input         i_valid;
     input [3:0]   i_ilen;
+    input [3:0]   i_offset;      // <--- ADDED
     input         i_icache_valid; 
     input         i_stall;
     input         i_wb_flush;
@@ -257,6 +264,7 @@ begin
     @(negedge clk); 
     from_de_valid           = i_valid;
     from_de_instr_len       = i_ilen;
+    offset                  = i_offset; // <--- ADDED
     ICACHE_VALID            = i_icache_valid; 
     from_de_stall           = i_stall;
     from_wb_flush           = i_wb_flush;
@@ -281,7 +289,7 @@ end
 endtask
 
 // ═══════════════════════════════════════════════════════════════
-// Test Sequences
+// Test Sequences (EXACTLY IDENTICAL)
 // ═══════════════════════════════════════════════════════════════
 
 integer t_ctrl, t_ilen, t_rep, i;
@@ -300,27 +308,27 @@ initial begin
     $display("\n=== Phase 2: Basic load/consume ===");
     apply_reset();
     cl_a = make_cl(8'hA0);
-    drive_cycle("P2_IDLE_LOAD", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P2_SETTLE",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P2_CONSUME3",  1'b1, 4'd3, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P2_CONSUME5",  1'b1, 4'd5, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P2_CONSUME1",  1'b1, 4'd1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P2_IDLE_LOAD", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P2_SETTLE",    1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P2_CONSUME3",  1'b1, 4'd3, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P2_CONSUME5",  1'b1, 4'd5, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P2_CONSUME1",  1'b1, 4'd1, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
     $display("\n=== Phase 3: All instruction lengths ===");
     for (t_ilen = 1; t_ilen <= 15; t_ilen = t_ilen + 1) begin
         apply_reset();
         cl_a = make_cl(t_ilen[7:0] * 16);
 
-        drive_cycle("P3_LOAD",     1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-        drive_cycle("P3_SETTLE",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P3_LOAD",     1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P3_SETTLE",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
-        drive_cycle("P3_CONSUME",  1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P3_CONSUME",  1'b1, t_ilen[3:0], 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
         cl_b = make_cl(8'hB0 + t_ilen[7:0]);
-        drive_cycle("P3_RELOAD",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
-        drive_cycle("P3_SETTLE2",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
+        drive_cycle("P3_RELOAD",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
+        drive_cycle("P3_SETTLE2",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
 
-        drive_cycle("P3_CONSUME2", 1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
+        drive_cycle("P3_CONSUME2", 1'b1, t_ilen[3:0], 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
     end
 
     $display("\n=== Phase 4: Control signal sweep (64 combos) ===");
@@ -328,13 +336,14 @@ initial begin
         apply_reset();
 
         cl_a = make_cl(t_ctrl[7:0]);
-        drive_cycle("P4_PRELOAD", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-        drive_cycle("P4_SETTLE",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P4_PRELOAD", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P4_SETTLE",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
         cl_b = make_cl(8'hFF - t_ctrl[7:0]);
         drive_cycle("P4_CTRL",
             /* valid */     t_ctrl[3],
             /* instr_len */ 4'd4,
+            /* offset */    4'd0,     // <--- ADDED
             /* icache_val*/ 1'b1, 
             /* stall */     t_ctrl[2],
             /* wb_flush */  t_ctrl[5],
@@ -344,50 +353,50 @@ initial begin
             /* cl */        cl_b
         );
 
-        drive_cycle("P4_AFTER", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
+        drive_cycle("P4_AFTER", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
     end
 
     $display("\n=== Phase 5: Stall + load combinations ===");
     for (t_ilen = 1; t_ilen <= 15; t_ilen = t_ilen + 1) begin
         apply_reset();
         cl_a = make_cl(8'hC0);
-        drive_cycle("P5_LOAD",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-        drive_cycle("P5_SETTLE", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P5_LOAD",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P5_SETTLE", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
-        drive_cycle("P5_DRAIN", 1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P5_DRAIN", 1'b1, t_ilen[3:0], 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
         cl_b = make_cl(8'hD0);
-        drive_cycle("P5_STALL",    1'b0, 4'd0, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
-        drive_cycle("P5_STALL_CL", 1'b0, 4'd0, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
-        drive_cycle("P5_RELEASE",  1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
+        drive_cycle("P5_STALL",    1'b0, 4'd0, 4'd0, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
+        drive_cycle("P5_STALL_CL", 1'b0, 4'd0, 4'd0, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
+        drive_cycle("P5_RELEASE",  1'b1, t_ilen[3:0], 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
     end
 
     $display("\n=== Phase 6: Flush + recovery ===");
     apply_reset();
     cl_a = make_cl(8'h10);
-    drive_cycle("P6_LOAD1",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P6_SETTLE1", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P6_WB_FL",   1'b0, 4'd0, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0, 1'b0, 128'b0);
-    drive_cycle("P6_WB_REC",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h20));
-    drive_cycle("P6_WB_SET",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h20));
+    drive_cycle("P6_LOAD1",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P6_SETTLE1", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P6_WB_FL",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0, 1'b0, 128'b0);
+    drive_cycle("P6_WB_REC",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h20));
+    drive_cycle("P6_WB_SET",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h20));
 
     apply_reset();
     cl_a = make_cl(8'h30);
-    drive_cycle("P6_LOAD2",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P6_SETTLE2", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P6_EX_FL",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0, 128'b0);
-    drive_cycle("P6_EX_REC",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h40));
-    drive_cycle("P6_EX_SET",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h40));
+    drive_cycle("P6_LOAD2",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P6_SETTLE2", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P6_EX_FL",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0, 128'b0);
+    drive_cycle("P6_EX_REC",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h40));
+    drive_cycle("P6_EX_SET",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h40));
 
     for (t_ilen = 0; t_ilen <= 15; t_ilen = t_ilen + 1) begin
         apply_reset();
         cl_a = make_cl(8'h50);
-        drive_cycle("P6_LOAD3",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-        drive_cycle("P6_SETTLE3", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P6_LOAD3",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P6_SETTLE3", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
         
-        drive_cycle("P6_REDIR",   1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b1, 1'b0, make_cl(8'h60));
-        drive_cycle("P6_REC3",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h70));
-        drive_cycle("P6_SET3",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h70));
+        drive_cycle("P6_REDIR",   1'b1, t_ilen[3:0], 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b1, 1'b0, make_cl(8'h60));
+        drive_cycle("P6_REC3",    1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h70));
+        drive_cycle("P6_SET3",    1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h70));
     end
 
     $display("\n=== Phase 7: Exhaustive tail_ptr x instr_len ===");
@@ -395,88 +404,88 @@ initial begin
         apply_reset();
         cl_a = make_cl(t_ilen[7:0]);
 
-        drive_cycle("P7_LOAD", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-        drive_cycle("P7_SET",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P7_LOAD", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P7_SET",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
         t_rep = 0;
         while (t_rep < 16) begin
             cl_b = make_cl(8'h80 + t_rep[7:0]);
-            drive_cycle("P7_CONSUME", 1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
+            drive_cycle("P7_CONSUME", 1'b1, t_ilen[3:0], 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
             t_rep = t_rep + t_ilen;
         end
     end
 
     $display("\n=== Phase 8: Page fault tracking ===");
     apply_reset();
-    drive_cycle("P8_PF_LOAD",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b1, make_cl(8'h80));
-    drive_cycle("P8_PF_SET",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b1, make_cl(8'h80));
-    drive_cycle("P8_PF_SHIFT",  1'b1, 4'd5, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h80));
+    drive_cycle("P8_PF_LOAD",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b1, make_cl(8'h80));
+    drive_cycle("P8_PF_SET",    1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b1, make_cl(8'h80));
+    drive_cycle("P8_PF_SHIFT",  1'b1, 4'd5, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h80));
 
-    drive_cycle("P8_NOPF_LOAD", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h90));
-    drive_cycle("P8_NOPF_SET",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h90));
-    drive_cycle("P8_MIX",       1'b1, 4'd3, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h90));
+    drive_cycle("P8_NOPF_LOAD", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h90));
+    drive_cycle("P8_NOPF_SET",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h90));
+    drive_cycle("P8_MIX",       1'b1, 4'd3, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h90));
 
-    drive_cycle("P8_FLUSH",     1'b0, 4'd0, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0, 1'b0, 128'b0);
-    drive_cycle("P8_AFTER_FL",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'hA0));
+    drive_cycle("P8_FLUSH",     1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0, 1'b0, 128'b0);
+    drive_cycle("P8_AFTER_FL",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'hA0));
 
     $display("\n=== Phase 9: Simultaneous shift+write ===");
     for (t_ilen = 1; t_ilen <= 15; t_ilen = t_ilen + 1) begin
         apply_reset();
         cl_a = make_cl(8'hE0);
 
-        drive_cycle("P9_LOAD",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-        drive_cycle("P9_SETTLE",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-        drive_cycle("P9_DRAIN",   1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P9_LOAD",    1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P9_SETTLE",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+        drive_cycle("P9_DRAIN",   1'b1, t_ilen[3:0], 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
         cl_b = make_cl(8'hF0);
-        drive_cycle("P9_SHF_WR",  1'b1, t_ilen[3:0], 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
-        drive_cycle("P9_VERIFY",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
+        drive_cycle("P9_SHF_WR",  1'b1, t_ilen[3:0], 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
+        drive_cycle("P9_VERIFY",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_b);
     end
 
     $display("\n=== Phase 10: shft_reg_we gating ===");
     apply_reset();
     cl_a = make_cl(8'h11);
-    drive_cycle("P10_LOAD",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P10_SETTLE",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P10_NOWE",    1'b1, 4'd5, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P10_YEWE",    1'b1, 4'd5, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P10_LOAD",    1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P10_SETTLE",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P10_NOWE",    1'b1, 4'd5, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P10_YEWE",    1'b1, 4'd5, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
     $display("\n=== Phase 11: Buffer near-full & load ===");
     apply_reset();
     cl_a = make_cl(8'h11);
-    drive_cycle("P11_LOAD1",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P11_SETTLE", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P11_STALL",  1'b0, 4'd0, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P11_LOAD2",  1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h22));
-    drive_cycle("P11_DRAIN",  1'b1, 4'd8, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P11_LOAD1",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P11_SETTLE", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P11_STALL",  1'b0, 4'd0, 4'd0, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P11_LOAD2",  1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h22));
+    drive_cycle("P11_DRAIN",  1'b1, 4'd8, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
     $display("\n=== Phase 12: Stall + flush simultaneously ===");
     apply_reset();
     cl_a = make_cl(8'hAA);
-    drive_cycle("P12_LOAD",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P12_SETTLE", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P12_ST_FL",  1'b1, 4'd4, 1'b1, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, cl_a); // wb_flush=1, stall=1
-    drive_cycle("P12_REC",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'hBB));
+    drive_cycle("P12_LOAD",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P12_SETTLE", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P12_ST_FL",  1'b1, 4'd4, 4'd0, 1'b1, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, cl_a); // wb_flush=1, stall=1
+    drive_cycle("P12_REC",    1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'hBB));
 
     $display("\n=== Phase 13: Consecutive flushes ===");
     apply_reset();
-    drive_cycle("P13_FL_1",   1'b0, 4'd0, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0, 1'b0, 128'b0);
-    drive_cycle("P13_FL_2",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0, 128'b0);
-    drive_cycle("P13_REC",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'hCC));
+    drive_cycle("P13_FL_1",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0, 1'b0, 128'b0);
+    drive_cycle("P13_FL_2",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b1, 1'b0, 1'b0, 128'b0);
+    drive_cycle("P13_REC",    1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'hCC));
 
     $display("\n=== Phase 14: instr_len=0 with valid=1 ===");
     apply_reset();
     cl_a = make_cl(8'hDD);
-    drive_cycle("P14_LOAD",   1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P14_SETTLE", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
-    drive_cycle("P14_ZERO",   1'b1, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P14_LOAD",   1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P14_SETTLE", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
+    drive_cycle("P14_ZERO",   1'b1, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, cl_a);
 
     $display("\n=== Phase 15: Buffer overflow (tail_ptr stress) ===");
     apply_reset();
-    drive_cycle("P15_LD1",    1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h11));
-    drive_cycle("P15_SETTLE", 1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 128'b0);
-    drive_cycle("P15_LD2",    1'b1, 4'd1, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h22)); // stall, load 2nd
-    drive_cycle("P15_SETTLE2",1'b0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 128'b0); 
+    drive_cycle("P15_LD1",    1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h11));
+    drive_cycle("P15_SETTLE", 1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 128'b0);
+    drive_cycle("P15_LD2",    1'b1, 4'd1, 4'd0, 1'b1, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, make_cl(8'h22)); // stall, load 2nd
+    drive_cycle("P15_SETTLE2",1'b0, 4'd0, 4'd0, 1'b1, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 128'b0); 
 
     $display("\n=== Phase 16: Randomized sequence ===");
     apply_reset();
@@ -484,6 +493,7 @@ initial begin
         drive_cycle("P16_RND",
             $random(seed) & 1'b1,          // valid
             $random(seed) & 4'hF,          // ilen
+            4'd0,                          // offset
             1'b1,                          // icache_valid
             ($random(seed) % 10) == 0,     // stall (10% chance)
             ($random(seed) % 20) == 0,     // wb_flush

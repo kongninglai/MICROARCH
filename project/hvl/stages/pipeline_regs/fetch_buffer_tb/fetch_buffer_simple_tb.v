@@ -8,6 +8,7 @@ module fetch_buffer_simple_tb;
     reg clk, rst_bar, de_valid, flush_wb, flush_ex, redir, stall, cl_pf;
     reg f_icache_valid; 
     reg [3:0] instr_len;
+    reg [3:0] offset;        // ADDED: New offset input
     reg [127:0] cache_line;
 
     wire [4:0]  tail_ptr;
@@ -29,6 +30,7 @@ module fetch_buffer_simple_tb;
         .from_de_stall(stall), .from_f_cl_pf(cl_pf),
         .from_f_cache_line(cache_line), 
         .from_de_eip_redirection(redir), 
+        .offset(offset),     // ADDED: Wired to DUT
         .shft_reg_we(shft_reg_we), 
         .tail_ptr(tail_ptr), .to_de_outbytes(outbytes),
         .to_de_pf_expn_bytes_out(pf_out), .ready(ready)
@@ -86,7 +88,7 @@ module fetch_buffer_simple_tb;
     // ---------------------------------------------------------
     initial begin
         // 1. ALL REGS INITIALIZED TO ZERO 
-        clk = 0; rst_bar = 0; de_valid = 0; instr_len = 0; stall = 0;
+        clk = 0; rst_bar = 0; de_valid = 0; instr_len = 0; stall = 0; offset = 0; // Set offset to 0
         f_icache_valid = 0; flush_wb = 0; flush_ex = 0; redir = 0; 
         cl_pf = 0; cache_line = 0;
 
@@ -170,7 +172,6 @@ module fetch_buffer_simple_tb;
         f_icache_valid = 1; 
         cache_line = 128'hFF00000000000000_0000000000000000;
         @(posedge clk); @(posedge clk); #2;
-        // FIXED BUG: Expected TP is 17 (1 byte + 16 bytes). 
         verify("Indiv: Top-up f_icache_valid=1", 5'd17, 128'h0000000000000000_000000000000FF10); 
 
         // 4. flush_wb = 1
@@ -215,8 +216,6 @@ module fetch_buffer_simple_tb;
         f_icache_valid = 1; 
         cache_line = 128'hFFFFFFFF00000000_0000000000000000;
         @(posedge clk); #2;
-        // CORRECT BEHAVIOR: TP goes 12 - 4 + 16 = 24.
-        // Old data shifts down 4 bytes. New 'FF' bytes map precisely to indices 12-15.
         verify("Combo: consume 4 + load", 5'd24, 128'hFFFFFFFF00000000_00FFEEDDCCBBAA99);
 
         // 8. Consume (de_valid=1, len=7) + Redir/Flush (redir=1)

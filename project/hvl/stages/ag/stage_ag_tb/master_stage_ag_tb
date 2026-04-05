@@ -4,6 +4,7 @@
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib3
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
 ~/MICROARCH/project/hdl/local-lib/gates/big_and.v
+~/MICROARCH/project/hdl/local-lib/gates/big_or.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_16.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v

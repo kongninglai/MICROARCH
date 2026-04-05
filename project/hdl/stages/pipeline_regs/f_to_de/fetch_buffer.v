@@ -16,6 +16,7 @@ module fetch_buffer(
     input wire [127:0] from_f_cache_line, //big endian
     input wire from_de_eip_redirection, //br taken in decode
     input wire ICACHE_VALID, 
+    input wire [3:0] offset, //lower eip bits
 
     output wire shft_reg_we, //from_de_valid, v_cl_ld, flush
     output wire [4:0] tail_ptr,
@@ -63,16 +64,18 @@ module fetch_buffer(
     inv1$ inv_load(v_cl_ld_bar, v_cl_ld);
     
     //Tail Pointer Logic
+    wire unaligned_eip_redir; //assigned by cl shifter logic
     logic_tail_ptr LOGIC_TAIL_PTR(
         .clk(clk),
         .rst_bar(rst_bar),
         .incr_amt(gated_instr_len),
+        .offset(offset),
         .shft_reg_we(shft_reg_we),
         .flush(flush),
         .stall(from_de_stall),
         .fb_req_cl(v_cl_ld), //input, fetch buffer request cache line signal (if there is space in the fetch buffer)
-        .tail_ptr(tail_ptr),
-        .eip_redirection(flush)
+        .unaligned_eip_redir(unaligned_eip_redir),
+        .tail_ptr(tail_ptr)
     );
 
     mag_comp8$ CL_comp( //tail_ptr < 16
@@ -105,33 +108,34 @@ module fetch_buffer(
         end
     endgenerate
     mux16_32 we_mask_mux(
-        .Y(wr_en_w),
-        .IN0({{16{1'b0}}, {16{1'b1}}}), 
-        .IN1({{15{1'b0}}, {16{1'b1}}, {1{1'b0}}}), 
-        .IN2 ({{14{1'b0}}, {16{1'b1}}, {2{1'b0}}}),   // bits [17:2]
-        .IN3 ({{13{1'b0}}, {16{1'b1}}, {3{1'b0}}}),   // bits [18:3]
-        .IN4 ({{12{1'b0}}, {16{1'b1}}, {4{1'b0}}}),   // bits [19:4]
-        .IN5 ({{11{1'b0}}, {16{1'b1}}, {5{1'b0}}}),   // bits [20:5]
-        .IN6 ({{10{1'b0}},  {16{1'b1}}, {6{1'b0}}}),   // bits [21:6]
-        .IN7 ({{9{1'b0}},  {16{1'b1}}, {7{1'b0}}}),   // bits [22:7]
-        .IN8 ({{8{1'b0}},  {16{1'b1}}, {8{1'b0}}}),   // bits [23:8]
-        .IN9 ({{7{1'b0}},  {16{1'b1}}, {9{1'b0}}}),   // bits [24:9]
-        .IN10({{6{1'b0}},  {16{1'b1}}, {10{1'b0}}}),  // bits [25:10]
-        .IN11({{5{1'b0}},  {16{1'b1}}, {11{1'b0}}}),  // bits [26:11]
-        .IN12({{4{1'b0}},  {16{1'b1}}, {12{1'b0}}}),  // bits [27:12]
-        .IN13({{3{1'b0}},  {16{1'b1}}, {13{1'b0}}}),  // bits [28:13]
-        .IN14({{2{1'b0}},  {16{1'b1}}, {14{1'b0}}}),  // bits [29:14]
-        .IN15({1'b0, {16{1'b1}}, {15{1'b0}}}),               // bits [30:15]
-        .S0(tail_ptr[0]), .S1(tail_ptr[1]), .S2(tail_ptr[2]), .S3(tail_ptr[3])
+        .out(wr_en_w),
+        .in0({{16{1'b0}}, {16{1'b1}}}), 
+        .in1({{15{1'b0}}, {16{1'b1}}, {1{1'b0}}}), 
+        .in2 ({{14{1'b0}}, {16{1'b1}}, {2{1'b0}}}),   // bits [17:2]
+        .in3 ({{13{1'b0}}, {16{1'b1}}, {3{1'b0}}}),   // bits [18:3]
+        .in4 ({{12{1'b0}}, {16{1'b1}}, {4{1'b0}}}),   // bits [19:4]
+        .in5 ({{11{1'b0}}, {16{1'b1}}, {5{1'b0}}}),   // bits [20:5]
+        .in6 ({{10{1'b0}},  {16{1'b1}}, {6{1'b0}}}),   // bits [21:6]
+        .in7 ({{9{1'b0}},  {16{1'b1}}, {7{1'b0}}}),   // bits [22:7]
+        .in8 ({{8{1'b0}},  {16{1'b1}}, {8{1'b0}}}),   // bits [23:8]
+        .in9 ({{7{1'b0}},  {16{1'b1}}, {9{1'b0}}}),   // bits [24:9]
+        .in10({{6{1'b0}},  {16{1'b1}}, {10{1'b0}}}),  // bits [25:10]
+        .in11({{5{1'b0}},  {16{1'b1}}, {11{1'b0}}}),  // bits [26:11]
+        .in12({{4{1'b0}},  {16{1'b1}}, {12{1'b0}}}),  // bits [27:12]
+        .in13({{3{1'b0}},  {16{1'b1}}, {13{1'b0}}}),  // bits [28:13]
+        .in14({{2{1'b0}},  {16{1'b1}}, {14{1'b0}}}),  // bits [29:14]
+        .in15({1'b0, {16{1'b1}}, {15{1'b0}}}),               // bits [30:15]
+        .s0(tail_ptr[0]), .s1(tail_ptr[1]), .s2(tail_ptr[2]), .s3(tail_ptr[3])
     );
 
     //Shift Logic for Cache Line (before entering shift buffer)
     wire [247:0] cl_aligned;
     logic_cl_shifter LOGIC_CL_SHIFTER(
-        .incr_amt(gated_instr_len),
-        .eip_redirection(flush),
+        .offset(offset),
         .cl(le_cache_line),
         .tail_ptr(tail_ptr),
+
+        .unaligned_eip_redir(unaligned_eip_redir),
         .cl_aligned(cl_aligned)
     );
 

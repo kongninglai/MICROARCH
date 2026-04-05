@@ -44,7 +44,7 @@ module logic_branch(
     and3$ valid_ff(is_valid_ff_branch, v_modrm, ext_opcode_ff_v, call_jmp_r_mem);
 
     //Group
-    wire is_uncond_l, is_uncond_u, is_uncond_candidate, is_uncond; 
+    wire is_uncond_l, is_uncond_u, is_uncond_candidate, is_uncond, ext_opcode_bar;
     inv1$ EXT_OP_INV(ext_opcode_bar, ext_opcode);
     or3$ OR_UNCOND_lower(is_uncond_l, call_rel, jmp_rel, jmp_rel8);
     or3$ OR_UNCOND_upper(is_uncond_u, is_valid_ff_branch, ret_imm_near, ret_near);

@@ -6,23 +6,23 @@ gui_create_pref_key -category {schem_pin_hc} -key {textExtFont} -value_type {str
 
 # State setting overrides
 gui_state_default_create -off -ini
-gui_set_state_value -category Globals -key recent_databases -value {{gui_open_db -file intgr_fshifter_decode.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/intgr_fshifter_decode.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/pipeline_regs/de_to_rr_tb/sim/de_to_rr_tb.dump.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/stage_decoder_tb/sim/advanced_decode.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_tb/sim/block_decoder_tb.vpd -design V1}}
+gui_set_state_value -category Globals -key recent_databases -value {{gui_open_db -file intgr_fshifter_decode.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/intgr_fshifter_decode.vpd -design V2} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/intgr_fshifter_decode.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/pipeline_regs/de_to_rr_tb/sim/de_to_rr_tb.dump.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/stage_decoder_tb/sim/advanced_decode.vpd -design V1}}
 gui_set_state_value -category Globals -key recent_sessions -value {{gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl -ignore_errors} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_tb/sim/session.block_decoder_tb.vpd.vpd.tcl} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/Spring2026/pset1b/session.TOP.dump.vpd.tcl -ignore_errors} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/Spring2026/pset1b/session.TOP.dump.vpd.tcl}}
-gui_set_state_value -category Layout -key child_console_size_x -value 1427
-gui_set_state_value -category Layout -key child_console_size_y -value 143
+gui_set_state_value -category Layout -key child_console_size_x -value 1422
+gui_set_state_value -category Layout -key child_console_size_y -value 342
 gui_set_state_value -category Layout -key child_data_coltype -value 111
 gui_set_state_value -category Layout -key child_data_colvalue -value 135
 gui_set_state_value -category Layout -key child_data_colvariable -value 180
-gui_set_state_value -category Layout -key child_data_size_x -value 384
-gui_set_state_value -category Layout -key child_data_size_y -value 589
-gui_set_state_value -category Layout -key child_driver_size_x -value 1185
-gui_set_state_value -category Layout -key child_driver_size_y -value 174
+gui_set_state_value -category Layout -key child_data_size_x -value 378
+gui_set_state_value -category Layout -key child_data_size_y -value 385
+gui_set_state_value -category Layout -key child_driver_size_x -value 1150
+gui_set_state_value -category Layout -key child_driver_size_y -value 342
 gui_set_state_value -category Layout -key child_hier_col3 -value {-1}
 gui_set_state_value -category Layout -key child_hier_colhier -value 298
 gui_set_state_value -category Layout -key child_hier_colpd -value 0
 gui_set_state_value -category Layout -key child_hier_coltype -value 133
-gui_set_state_value -category Layout -key child_hier_size_x -value 424
-gui_set_state_value -category Layout -key child_hier_size_y -value 589
+gui_set_state_value -category Layout -key child_hier_size_x -value 418
+gui_set_state_value -category Layout -key child_hier_size_y -value 385
 gui_set_state_value -category Layout -key child_hier_sort_column -value 1
 gui_set_state_value -category Layout -key child_schematic_docknewline -value false
 gui_set_state_value -category Layout -key child_schematic_pos_x -value {-2}
@@ -32,62 +32,52 @@ gui_set_state_value -category Layout -key child_schematic_size_y -value 312
 gui_set_state_value -category Layout -key child_source_docknewline -value false
 gui_set_state_value -category Layout -key child_source_pos_x -value {-2}
 gui_set_state_value -category Layout -key child_source_pos_y -value {-15}
-gui_set_state_value -category Layout -key child_source_size_x -value 622
-gui_set_state_value -category Layout -key child_source_size_y -value 584
-gui_set_state_value -category Layout -key child_wave_colname -value 209
-gui_set_state_value -category Layout -key child_wave_colvalue -value 210
-gui_set_state_value -category Layout -key child_wave_left -value 423
-gui_set_state_value -category Layout -key child_wave_right -value 1031
+gui_set_state_value -category Layout -key child_source_size_x -value 629
+gui_set_state_value -category Layout -key child_source_size_y -value 380
+gui_set_state_value -category Layout -key child_wave_colname -value 307
+gui_set_state_value -category Layout -key child_wave_colvalue -value 134
+gui_set_state_value -category Layout -key child_wave_left -value 445
+gui_set_state_value -category Layout -key child_wave_right -value 1085
 gui_set_state_value -category Layout -key main_pos_x -value 8
 gui_set_state_value -category Layout -key main_pos_y -value 31
-gui_set_state_value -category Layout -key main_size_x -value 1435
-gui_set_state_value -category Layout -key main_size_y -value 862
+gui_set_state_value -category Layout -key main_size_x -value 1430
+gui_set_state_value -category Layout -key main_size_y -value 857
 gui_set_state_value -category Layout -key stand_wave_child_docknewline -value false
 gui_set_state_value -category Layout -key stand_wave_child_pos_x -value {-2}
 gui_set_state_value -category Layout -key stand_wave_child_pos_y -value {-15}
-gui_set_state_value -category Layout -key stand_wave_child_size_x -value 1464
-gui_set_state_value -category Layout -key stand_wave_child_size_y -value 759
-gui_set_state_value -category Layout -key stand_wave_top_pos_x -value 8
-gui_set_state_value -category Layout -key stand_wave_top_pos_y -value 31
-gui_set_state_value -category Layout -key stand_wave_top_size_x -value 1467
-gui_set_state_value -category Layout -key stand_wave_top_size_y -value 894
+gui_set_state_value -category Layout -key stand_wave_child_size_x -value 1540
+gui_set_state_value -category Layout -key stand_wave_child_size_y -value 784
+gui_set_state_value -category Layout -key stand_wave_top_pos_x -value 0
+gui_set_state_value -category Layout -key stand_wave_top_pos_y -value 23
+gui_set_state_value -category Layout -key stand_wave_top_size_x -value 1535
+gui_set_state_value -category Layout -key stand_wave_top_size_y -value 911
+gui_set_state_value -category Driver -key driver_add_to_wave -value true
 gui_create_state_key -category FindDialog -key m_pMatchCase -value_type bool -value false
 gui_create_state_key -category FindDialog -key m_pMatchWord -value_type bool -value false
 gui_create_state_key -category FindDialog -key m_pUseCombo -value_type string -value {}
 gui_create_state_key -category FindDialog -key m_pWrapAround -value_type bool -value true
-gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|BuildTab|m_rebuildBtnGroup|m_customCmdCombo} -value_type string -value {{vcs -debug_all -f master}}
-gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|BuildTab|m_rebuildBtnGroup|m_customDirCombo} -value_type string -value /home/ecelrc/students/aak3265/Spring2026/pset1b/
-gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_VPDCombo} -value_type string -value {TOP.dump.vpd inter.vpd}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|BuildTab|m_rebuildBtnGroup|m_customCmdCombo} -value_type string -value {{vcs -full64 -v2005 -debug_all -f ../master*; ./simv} {vcs -debug_all -f master}}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|BuildTab|m_rebuildBtnGroup|m_customDirCombo} -value_type string -value {/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/ /home/ecelrc/students/aak3265/Spring2026/pset1b/}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_VPDCombo} -value_type string -value {inter.vpd intgr_fshifter_decode.vpd TOP.dump.vpd}
 gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_argsCombo} -value_type string -value {{-ucligui  } {-ucligui }}
-gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_curDirCombo} -value_type string -value {/home/ecelrc/students/aak3265/Spring2026/pset1b /home/ecelrc/students/aak3265/vlsi1/lab3_temp/rtl /home/ecelrc/students/aak3265/vlsi1/lab3}
-gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_exeCombo} -value_type string -value {/home/ecelrc/students/aak3265/Spring2026/pset1b/simv simv /home/ecelrc/students/aak3265/vlsi1/lab3_temp/rtl/simv ./simv}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_curDirCombo} -value_type string -value {/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv /home/ecelrc/students/aak3265/Spring2026/pset1b /home/ecelrc/students/aak3265/vlsi1/lab3_temp/rtl /home/ecelrc/students/aak3265/vlsi1/lab3}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_exeCombo} -value_type string -value {simv /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/simv /home/ecelrc/students/aak3265/Spring2026/pset1b/simv /home/ecelrc/students/aak3265/vlsi1/lab3_temp/rtl/simv ./simv}
 gui_state_default_create -off
 
 # Begin command logging
-gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/intgr_fshifter_decode.vpd -design V1
 set DIALOGS::LOADFILEDIR [file dirname /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl]; gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl
-gui_wv_scroll_hslidermove -id  Wave.1 150
-gui_wv_scroll_hslidermove -id  Wave.1 300
-gui_wv_scroll_hslidermove -id  Wave.1 450
-gui_wv_scroll_hslidermove -id  Wave.1 600
-gui_wv_scroll_hslidermove -id  Wave.1 750
-gui_marker_move -id  Wave.1 C1 91.653
+gui_wv_zoom_timerange -id  Wave.1 0 964.16
+gui_wv_zoom_timerange -id  Wave.1 0 202.263
+gui_wv_zoom_timerange -id  Wave.1 0 415.049
+gui_marker_move -id  Wave.1 C1 100.937
 gui_zoom -window Wave.1 -factor 0.5
 gui_zoom -window Wave.1 -factor 0.5
-gui_zoom -window Wave.1 -factor 0.5
-gui_zoom -window Wave.1 -factor 0.5
-gui_zoom -window Wave.1 -factor 2
-gui_wv_scroll_hslidermove -id  Wave.1 0
-gui_marker_move -id  Wave.1 C1 100
-gui_list_move  -id  Wave.1    -sid  Wave.1   -after {tb_intgr_fshifter_decode.to_rr_opcode[7:0]} {{tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk}} 
-gui_list_select -id Wave.1 -selected  { {tb_intgr_fshifter_decode.to_rr_opcode[7:0]}   }
-gui_list_select -id Wave.1 -selected  { tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk   }
-gui_list_move  -id  Wave.1    -sid  Wave.1   -after Group1 {{tb_intgr_fshifter_decode.uut.FETCH_BUFF.clk}}
-gui_marker_move -id  Wave.1 C1 174.936
-gui_marker_move -id  Wave.1 C1 100
-gui_list_select -id Wave.1 -selected  { {tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}   }
-gui_list_move  -id  Wave.1    -sid  Wave.1   -after {tb_intgr_fshifter_decode.to_rr_exception_flags[1:0]} {{tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}} 
-gui_list_move  -id  Wave.1    -sid  Wave.1   -after {tb_intgr_fshifter_decode.from_f_cache_line[127:0]} {{tb_intgr_fshifter_decode.uut.FETCH_BUFF.to_de_outbytes[127:0]}} 
-gui_marker_move -id  Wave.1 C1 150
-gui_marker_move -id  Wave.1 C1 250
-gui_marker_move -id  Wave.1 C1 351.922
+gui_marker_move -id  Wave.1 C1 411.541
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_marker_move -id  Wave.1 C1 700.5
+gui_marker_move -id  Wave.1 C1 1226.828
+gui_marker_move -id  Wave.1 C1 609.517
+gui_marker_move -id  Wave.1 C1 212.006
+gui_close_window -window TopLevel.2
