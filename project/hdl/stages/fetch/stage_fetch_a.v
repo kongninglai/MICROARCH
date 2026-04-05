@@ -1,4 +1,4 @@
-module stage_fetch (
+module stage_fetch_a (
     input wire clk,
     input wire rst_bar,
 
@@ -13,26 +13,26 @@ module stage_fetch (
     output wire [11:0] F_PAGE_OFFSET,
 
     // Pipeline Inputs 
-    input wire from_fetch_buffer_write_enable,
+    input wire from_fetch_buffer_write_enable, //cache line request
     input wire [31:0] from_de_bp_target,
-    input wire from_de_eip_redirection,
+    input wire from_de_take_branch,
     input wire [15:0] from_rr_cs,
     input wire [31:0] from_ex_eip_target,
     input wire from_ex_flush,
-    input wire from_wb_flush
+    input wire from_wb_flush,
+    input wire from_ex_ld_cs,
+    output wire [31:0] ic_addr
 );
-
-    wire [31:0] ic_addr;
 
     // Fetch Pointer Logic
     fetch_pointer FETCH_POINTER(
         .clk(clk), 
-        .rst_bar(rst_n), 
+        .rst_bar(rst_bar), 
         .shft_reg_we(from_fetch_buffer_write_enable), 
-        .from_f_cl_ld(from_fetch_buffer_write_enable), 
-        .from_ex_ld_cs(1'b0), 
+        .from_f_cl_ld(ICACHE_VALID), 
+        .from_ex_ld_cs(from_ex_ld_cs), 
         .from_ex_cs_reg(from_rr_cs),
-        .from_de_take_branch(from_de_eip_redirection),
+        .from_de_take_branch(from_de_take_branch),
         .from_ex_flush(from_ex_flush), 
         .bp_eip_target(from_de_bp_target),
         .ex_eip_target(from_ex_eip_target),

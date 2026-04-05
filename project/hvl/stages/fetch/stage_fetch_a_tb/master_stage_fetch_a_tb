@@ -25,4 +25,4 @@
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/fetch
 
 // Testbench for Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/stage_fetch_tb/stage_fetch_a_tb.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/stage_fetch_a_tb/stage_fetch_a_tb.v
