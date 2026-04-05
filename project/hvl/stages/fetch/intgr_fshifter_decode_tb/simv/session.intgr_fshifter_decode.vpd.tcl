@@ -1,15 +1,16 @@
 # Begin_DVE_Session_Save_Info
 # DVE full session
-# Saved on Sun Apr 5 04:39:07 2026
+# Saved on Sun Apr 5 05:10:00 2026
 # Designs open: 1
 #   V1: intgr_fshifter_decode.vpd
 # Toplevel windows open: 2
 # 	TopLevel.1
 # 	TopLevel.2
 #   Source.1: intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.EIP_INCR_LOGIC.CHOOSE_INCR.mux4$_out0
-#   Wave.1: 37 signals
-#   Group count = 1
+#   Wave.1: 27 signals
+#   Group count = 2
 #   Group Group1 signal count = 37
+#   Group Group2 signal count = 27
 # End_DVE_Session_Save_Info
 
 # DVE version: T-2022.06_Full64
@@ -68,7 +69,7 @@ if {![gui_exist_window -window TopLevel.1]} {
 } else { 
     set TopLevel.1 TopLevel.1
 }
-gui_show_window -window ${TopLevel.1} -show_state normal -rect {{8 31} {1430 857}}
+gui_show_window -window ${TopLevel.1} -show_state normal -rect {{8 31} {1426 853}}
 
 # ToolBar settings
 gui_set_toolbar_attributes -toolbar {TimeOperations} -dock_state top
@@ -115,28 +116,28 @@ gui_show_toolbar -toolbar {Testbench}
 # End ToolBar settings
 
 # Docked window settings
-set HSPane.1 [gui_create_window -type HSPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 419]
+set HSPane.1 [gui_create_window -type HSPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 415]
 catch { set Hier.1 [gui_share_window -id ${HSPane.1} -type Hier] }
-gui_set_window_pref_key -window ${HSPane.1} -key dock_width -value_type integer -value 419
+gui_set_window_pref_key -window ${HSPane.1} -key dock_width -value_type integer -value 415
 gui_set_window_pref_key -window ${HSPane.1} -key dock_height -value_type integer -value -1
 gui_set_window_pref_key -window ${HSPane.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${HSPane.1} {{left 0} {top 0} {width 418} {height 385} {dock_state left} {dock_on_new_line true} {child_hier_colhier 298} {child_hier_coltype 133} {child_hier_colpd 0} {child_hier_col1 0} {child_hier_col2 1} {child_hier_col3 -1}}
-set DLPane.1 [gui_create_window -type DLPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 379]
+gui_update_layout -id ${HSPane.1} {{left 0} {top 0} {width 414} {height 385} {dock_state left} {dock_on_new_line true} {child_hier_colhier 298} {child_hier_coltype 133} {child_hier_colpd 0} {child_hier_col1 0} {child_hier_col2 1} {child_hier_col3 -1}}
+set DLPane.1 [gui_create_window -type DLPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 375]
 catch { set Data.1 [gui_share_window -id ${DLPane.1} -type Data] }
-gui_set_window_pref_key -window ${DLPane.1} -key dock_width -value_type integer -value 379
+gui_set_window_pref_key -window ${DLPane.1} -key dock_width -value_type integer -value 375
 gui_set_window_pref_key -window ${DLPane.1} -key dock_height -value_type integer -value 731
 gui_set_window_pref_key -window ${DLPane.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${DLPane.1} {{left 0} {top 0} {width 378} {height 385} {dock_state left} {dock_on_new_line true} {child_data_colvariable 180} {child_data_colvalue 135} {child_data_coltype 111} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
-set Console.1 [gui_create_window -type Console -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line true -dock_extent 343]
+gui_update_layout -id ${DLPane.1} {{left 0} {top 0} {width 374} {height 385} {dock_state left} {dock_on_new_line true} {child_data_colvariable 180} {child_data_colvalue 135} {child_data_coltype 111} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
+set Console.1 [gui_create_window -type Console -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line true -dock_extent 339]
 gui_set_window_pref_key -window ${Console.1} -key dock_width -value_type integer -value -1
-gui_set_window_pref_key -window ${Console.1} -key dock_height -value_type integer -value 343
+gui_set_window_pref_key -window ${Console.1} -key dock_height -value_type integer -value 339
 gui_set_window_pref_key -window ${Console.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${Console.1} {{left 0} {top 0} {width 271} {height 342} {dock_state bottom} {dock_on_new_line true}}
-set DriverLoad.1 [gui_create_window -type DriverLoad -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line false -dock_extent 343]
+gui_update_layout -id ${Console.1} {{left 0} {top 0} {width 271} {height 338} {dock_state bottom} {dock_on_new_line true}}
+set DriverLoad.1 [gui_create_window -type DriverLoad -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line false -dock_extent 339]
 gui_set_window_pref_key -window ${DriverLoad.1} -key dock_width -value_type integer -value 150
-gui_set_window_pref_key -window ${DriverLoad.1} -key dock_height -value_type integer -value 343
+gui_set_window_pref_key -window ${DriverLoad.1} -key dock_height -value_type integer -value 339
 gui_set_window_pref_key -window ${DriverLoad.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${DriverLoad.1} {{left 0} {top 0} {width 1150} {height 342} {dock_state bottom} {dock_on_new_line false}}
+gui_update_layout -id ${DriverLoad.1} {{left 0} {top 0} {width 1146} {height 338} {dock_state bottom} {dock_on_new_line false}}
 #### Start - Readjusting docked view's offset / size
 set dockAreaList { top left right bottom }
 foreach dockArea $dockAreaList {
@@ -173,7 +174,7 @@ if {![gui_exist_window -window TopLevel.2]} {
 } else { 
     set TopLevel.2 TopLevel.2
 }
-gui_show_window -window ${TopLevel.2} -show_state maximized -rect {{0 23} {1535 911}}
+gui_show_window -window ${TopLevel.2} -show_state normal -rect {{8 31} {1540 916}}
 
 # ToolBar settings
 gui_set_toolbar_attributes -toolbar {TimeOperations} -dock_state top
@@ -225,7 +226,7 @@ gui_sync_global -id ${TopLevel.2} -option true
 # MDI window settings
 set Wave.1 [gui_create_window -type {Wave}  -parent ${TopLevel.2}]
 gui_show_window -window ${Wave.1} -show_state maximized
-gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 445} {child_wave_right 1085} {child_wave_colname 307} {child_wave_colvalue 134} {child_wave_col1 0} {child_wave_col2 1}}
+gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 445} {child_wave_right 1082} {child_wave_colname 220} {child_wave_colvalue 221} {child_wave_col1 0} {child_wave_col2 1}}
 
 # End MDI window settings
 
@@ -277,6 +278,12 @@ set Group1 "$_session_group_1"
 
 gui_sg_addsignal -group "$_session_group_1" { intgr_fshifter_decode_tb.clk intgr_fshifter_decode_tb.rst_bar intgr_fshifter_decode_tb.from_f_cache_line intgr_fshifter_decode_tb.from_f_icache_valid intgr_fshifter_decode_tb.from_wb_flush intgr_fshifter_decode_tb.from_rr_stall intgr_fshifter_decode_tb.from_ex_flush intgr_fshifter_decode_tb.to_rr_pr_valid intgr_fshifter_decode_tb.to_rr_prefixes intgr_fshifter_decode_tb.to_rr_opcode intgr_fshifter_decode_tb.to_rr_modrm intgr_fshifter_decode_tb.to_rr_sib intgr_fshifter_decode_tb.to_rr_disp_size_mux intgr_fshifter_decode_tb.to_rr_addressing_mode intgr_fshifter_decode_tb.to_rr_disp intgr_fshifter_decode_tb.to_rr_imm_size intgr_fshifter_decode_tb.to_rr_imm intgr_fshifter_decode_tb.to_rr_instr_length intgr_fshifter_decode_tb.uut.to_pr_pr_valid intgr_fshifter_decode_tb.uut.to_pr_opcode intgr_fshifter_decode_tb.uut.to_pr_modrm intgr_fshifter_decode_tb.uut.STAGE_DECODE.LOGIC_STALL_FLUSH.tail_ptr intgr_fshifter_decode_tb.uut.STAGE_DECODE.LOGIC_STALL_FLUSH.incr_amt intgr_fshifter_decode_tb.uut.STAGE_DECODE.LOGIC_STALL_FLUSH.instr_valid intgr_fshifter_decode_tb.uut.STAGE_DECODE.LOGIC_STALL_FLUSH.instr_invalid intgr_fshifter_decode_tb.uut.STAGE_DECODE.DECODER.TRUE_PREFIX.prefix_num intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.flush_ex intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.take_branch intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.ld_pr_rr intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.instr_valid intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.ld_eip intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.not_flush intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.nand_valid_ld intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.bp_eip_target intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.ex_eip_target intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.i_eip intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.eip_true }
 
+set _session_group_2 Group2
+gui_sg_create "$_session_group_2"
+set Group2 "$_session_group_2"
+
+gui_sg_addsignal -group "$_session_group_2" { intgr_fshifter_decode_tb.clk intgr_fshifter_decode_tb.rst_bar intgr_fshifter_decode_tb.from_f_cache_line intgr_fshifter_decode_tb.from_f_icache_valid intgr_fshifter_decode_tb.from_wb_flush intgr_fshifter_decode_tb.from_ex_eip_target intgr_fshifter_decode_tb.from_rr_stall intgr_fshifter_decode_tb.from_ex_br_t_nt intgr_fshifter_decode_tb.from_ex_br_valid intgr_fshifter_decode_tb.from_ex_flush intgr_fshifter_decode_tb.from_ex_pht_idx intgr_fshifter_decode_tb.from_f_cl_pf intgr_fshifter_decode_tb.to_rr_exception_flags intgr_fshifter_decode_tb.to_rr_i_eip intgr_fshifter_decode_tb.to_rr_o_eip intgr_fshifter_decode_tb.to_rr_bp_target intgr_fshifter_decode_tb.to_rr_pr_valid intgr_fshifter_decode_tb.to_rr_prefixes intgr_fshifter_decode_tb.to_rr_opcode intgr_fshifter_decode_tb.to_rr_modrm intgr_fshifter_decode_tb.to_rr_sib intgr_fshifter_decode_tb.to_rr_disp_size_mux intgr_fshifter_decode_tb.to_rr_addressing_mode intgr_fshifter_decode_tb.to_rr_disp intgr_fshifter_decode_tb.to_rr_imm_size intgr_fshifter_decode_tb.to_rr_imm intgr_fshifter_decode_tb.to_rr_instr_length }
+
 # Global: Highlighting
 gui_highlight_signals -color #00ff00 {{intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.EIP_INCR_LOGIC.CHOOSE_INCR.mux4$_out0.S1_temp}}
 
@@ -286,7 +293,7 @@ gui_change_stack_mode -mode list
 # Post database loading setting...
 
 # Restore C1 time
-gui_set_time -C1_only 500.08
+gui_set_time -C1_only 1300.08
 
 
 
@@ -311,22 +318,19 @@ gui_list_set_filter -id ${Hier.1} -list { {Package 1} {All 0} {Process 1} {VirtP
 gui_list_set_filter -id ${Hier.1} -text {*}
 gui_hier_list_init -id ${Hier.1}
 gui_change_design -id ${Hier.1} -design V1
-catch {gui_list_expand -id ${Hier.1} intgr_fshifter_decode_tb}
-catch {gui_list_expand -id ${Hier.1} intgr_fshifter_decode_tb.uut}
-catch {gui_list_expand -id ${Hier.1} intgr_fshifter_decode_tb.uut.STAGE_DECODE}
-catch {gui_list_select -id ${Hier.1} {intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC}}
-gui_view_scroll -id ${Hier.1} -vertical -set 5
+catch {gui_list_select -id ${Hier.1} {intgr_fshifter_decode_tb}}
+gui_view_scroll -id ${Hier.1} -vertical -set 0
 gui_view_scroll -id ${Hier.1} -horizontal -set 0
 
 # Data 'Data.1'
 gui_list_set_filter -id ${Data.1} -list { {Buffer 1} {Input 1} {Others 1} {Linkage 1} {Output 1} {LowPower 1} {Parameter 1} {All 1} {Aggregate 1} {LibBaseMember 1} {Event 1} {Assertion 1} {Constant 1} {Interface 1} {BaseMembers 1} {Signal 1} {$unit 1} {Inout 1} {Variable 1} }
 gui_list_set_filter -id ${Data.1} -text {*}
-gui_list_show_data -id ${Data.1} {intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC}
+gui_list_show_data -id ${Data.1} {intgr_fshifter_decode_tb}
 gui_show_window -window ${Data.1}
-catch { gui_list_select -id ${Data.1} {intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.ld_pr_rr intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.instr_valid intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.ld_eip intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.not_flush intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.nand_valid_ld }}
-gui_view_scroll -id ${Data.1} -vertical -set 14
+catch { gui_list_select -id ${Data.1} {intgr_fshifter_decode_tb.clk intgr_fshifter_decode_tb.rst_bar intgr_fshifter_decode_tb.from_f_cache_line intgr_fshifter_decode_tb.from_f_icache_valid intgr_fshifter_decode_tb.from_wb_flush intgr_fshifter_decode_tb.from_ex_eip_target intgr_fshifter_decode_tb.from_rr_stall intgr_fshifter_decode_tb.from_ex_br_t_nt intgr_fshifter_decode_tb.from_ex_br_valid intgr_fshifter_decode_tb.from_ex_flush intgr_fshifter_decode_tb.from_ex_pht_idx intgr_fshifter_decode_tb.from_f_cl_pf intgr_fshifter_decode_tb.to_rr_exception_flags intgr_fshifter_decode_tb.to_rr_i_eip intgr_fshifter_decode_tb.to_rr_o_eip intgr_fshifter_decode_tb.to_rr_bp_target intgr_fshifter_decode_tb.to_rr_pr_valid intgr_fshifter_decode_tb.to_rr_prefixes intgr_fshifter_decode_tb.to_rr_opcode intgr_fshifter_decode_tb.to_rr_modrm intgr_fshifter_decode_tb.to_rr_sib intgr_fshifter_decode_tb.to_rr_disp_size_mux intgr_fshifter_decode_tb.to_rr_addressing_mode intgr_fshifter_decode_tb.to_rr_disp intgr_fshifter_decode_tb.to_rr_imm_size intgr_fshifter_decode_tb.to_rr_imm intgr_fshifter_decode_tb.to_rr_instr_length }}
+gui_view_scroll -id ${Data.1} -vertical -set 242
 gui_view_scroll -id ${Data.1} -horizontal -set 0
-gui_view_scroll -id ${Hier.1} -vertical -set 5
+gui_view_scroll -id ${Hier.1} -vertical -set 0
 gui_view_scroll -id ${Hier.1} -horizontal -set 0
 
 # DriverLoad 'DriverLoad.1'
@@ -353,9 +357,9 @@ gui_list_set_height -id Wave -height 25
 set origGroupCreationState [gui_list_create_group_when_add -wave]
 gui_list_create_group_when_add -wave -disable
 gui_marker_set_ref -id ${Wave.1}  C1
-gui_wv_zoom_timerange -id ${Wave.1} 0 768.522
-gui_list_add_group -id ${Wave.1} -after {New Group} {Group1}
-gui_list_select -id ${Wave.1} {intgr_fshifter_decode_tb.uut.STAGE_DECODE.LOGIC_STALL_FLUSH.tail_ptr }
+gui_wv_zoom_timerange -id ${Wave.1} 0 1449.985
+gui_list_add_group -id ${Wave.1} -after {New Group} {Group2}
+gui_list_select -id ${Wave.1} {intgr_fshifter_decode_tb.from_f_cache_line intgr_fshifter_decode_tb.to_rr_pr_valid intgr_fshifter_decode_tb.to_rr_opcode intgr_fshifter_decode_tb.to_rr_modrm }
 gui_seek_criteria -id ${Wave.1} {Any Edge}
 
 
@@ -371,10 +375,10 @@ if { $groupExD } {
 }
 gui_list_set_filter -id ${Wave.1} -list { {Buffer 1} {Input 1} {Others 1} {Linkage 1} {Output 1} {Parameter 1} {All 1} {Aggregate 1} {LibBaseMember 1} {Event 1} {Assertion 1} {Constant 1} {Interface 1} {BaseMembers 1} {Signal 1} {$unit 1} {Inout 1} {Variable 1} }
 gui_list_set_filter -id ${Wave.1} -text {*}
-gui_list_set_insertion_bar  -id ${Wave.1} -group Group1  -item intgr_fshifter_decode_tb.uut.STAGE_DECODE.EIP_LOGIC.nand_valid_ld -position below
+gui_list_set_insertion_bar  -id ${Wave.1} -group Group2  -position in
 
-gui_marker_move -id ${Wave.1} {C1} 500.08
-gui_view_scroll -id ${Wave.1} -vertical -set 295
+gui_marker_move -id ${Wave.1} {C1} 1300.08
+gui_view_scroll -id ${Wave.1} -vertical -set 48
 gui_show_grid -id ${Wave.1} -enable false
 # Restore toplevel window zorder
 # The toplevel window could be closed if it has no view/pane
