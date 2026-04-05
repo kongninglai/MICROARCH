@@ -285,7 +285,7 @@ module stage_ex(
                                                   {32'b0, eflags_out}, // for exception, but we don't need to use a temp register?  
                                                   {32'b0, to_ex_imm},
                                                   to_ex_load_result,
-                                                  {16'b0, to_ex_tempCS, to_ex_tempEIP}, 64'bx, 64'bx, 64'bx, 64'bx,
+                                                  {16'b0, to_ex_tempCS, to_ex_tempEIP}, {32'b0, regA_rm}, 64'bx, 64'bx, 64'bx,
                                                   sig_store_data_mux[0], sig_store_data_mux[1], sig_store_data_mux[2], sig_store_data_mux[3]);
 
 

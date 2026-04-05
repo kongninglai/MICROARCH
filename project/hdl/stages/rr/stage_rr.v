@@ -167,8 +167,9 @@ module stage_rr(
     wire ff_ldB, ff_from_rr_ldB;
     wire opcode_ff;
     big_and #(.WIDTH(8)) and_opcode_ff(opcode_ff, to_rr_opcode);
-    mux4$ mux4_store_data_mux[3:0](ff_store_data_mux, 4'bx, 4'b0001, 4'bx, 4'b1010, to_rr_modrm[4], to_rr_modrm[5]);
-    mux4$ mux4_rw[1:0](ff_from_rr_rw, 2'bx, 2'b11, 2'b10, 2'b11, to_rr_modrm[4], to_rr_modrm[5]);
+    mux4$ mux4_store_data_mux[3:0](ff_store_data_mux, 4'bx, 4'b0001, 4'bx, 4'b1100, to_rr_modrm[4], to_rr_modrm[5]);
+    mux4$ mux4_rw(ff_from_rr_rw[0], 1'bx, 1'b1, 1'b0, 1'b1, to_rr_modrm[4], to_rr_modrm[5]);
+    assign ff_from_rr_rw[1] = rm;
     mux4$ mux4_ff_ldB(ff_ldB, 1'bx, 1'b1, 1'b0, 1'b1, to_rr_modrm[4], to_rr_modrm[5]);
     mux4$ mux4_ldEIP(ff_from_rr_ldEIP, 1'bx, 1'b1, 1'b1, 1'b0, to_rr_modrm[4], to_rr_modrm[5]);
 
