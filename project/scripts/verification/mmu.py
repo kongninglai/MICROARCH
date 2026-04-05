@@ -63,7 +63,7 @@ class MMU:
     ):
         if check_lim == 1 and seg_idx == 2:
             check_lim = 0
-        if check_lim and not self.check_segment(offset, seg_idx):
+        if check_lim and not populating and not self.check_segment(offset, seg_idx):
             raise Exception("GP_FAULT")
 
         va = (self.state.seg[seg_idx] << 16) + offset
