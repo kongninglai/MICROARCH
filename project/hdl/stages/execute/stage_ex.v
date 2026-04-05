@@ -1,7 +1,7 @@
 module stage_ex(
     input clk,
     input rst_n,
-    input [54:0]    to_ex_control_sigs,
+    input [55:0]    to_ex_control_sigs,
     input [2:0]     to_ex_dstidA, 
     input [2:0]     to_ex_dstidB,
     input [31:0]    to_ex_srcregA,
@@ -105,7 +105,7 @@ module stage_ex(
 
     wire sig_shf_op, sig_cmps, sig_ldEFLAGS, sig_ldEIP, sig_ldCS, sig_alu_srcb_mux, sig_cmpxchg, sig_cmovc, sig_seg_dst_mux;
     
-    wire sig_rm, sig_op_ovr, sig_palu_size;
+    wire sig_rm, sig_op_ovr, sig_palu_size, sig_sbb_dir;
 
     wire [2:0] sig_ldREGS, sig_eflags_mux, sig_eip_mux, sig_alu_op, sig_gp_dstb_mux;
    
@@ -117,7 +117,7 @@ module stage_ex(
         .eflags_mux(sig_eflags_mux),.eip_mux(sig_eip_mux),.cs_mux(sig_cs_mux),.mmx_op(sig_mmx_op),.alu_op(sig_alu_op),.shf_op(sig_shf_op),
         .cmps(sig_cmps),.con_jmp(sig_con_jmp),.cmpxchg(sig_cmpxchg),.cmovc(sig_cmovc),
         .gp_dsta_mux(sig_gp_dsta_mux),.gp_dstb_mux(sig_gp_dstb_mux),.seg_dst_mux(sig_seg_dst_mux),.mm_dst_mux(sig_mm_dst_mux),
-        .store_data_mux(sig_store_data_mux),.rw(sig_rw), .ds(sig_ds), .rm(sig_rm), .op_ovr(sig_op_ovr), .palu_size(sig_palu_size)
+        .store_data_mux(sig_store_data_mux),.rw(sig_rw), .ds(sig_ds), .rm(sig_rm), .op_ovr(sig_op_ovr), .palu_size(sig_palu_size), .sbb_dir(sig_sbb_dir)
     );
 
     /*** EFLAGS ***/
@@ -162,6 +162,7 @@ module stage_ex(
         .ds             (sig_ds),
         .in0            (regA_rm),
         .in1            (alu_op2),
+        .sbb_dir        (sig_sbb_dir),
         .eflags_cf      (eflags_cf),
         .alu_out        (alu_out),
         .alu_eflags     (alu_eflags),

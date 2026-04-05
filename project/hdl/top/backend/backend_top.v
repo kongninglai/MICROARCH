@@ -95,7 +95,7 @@ module backend_top #(
     wire [2:0]      to_regunit_seg_prefix;
     wire            to_regunit_has_seg_prefix;
     
-    wire [64:0]     from_rr_control_sigs;
+    wire [65:0]     from_rr_control_sigs;
     wire [2:0]      from_rr_dstidA;
     wire [2:0]      from_rr_dstidB;
     wire [31:0]     from_rr_srcregA;
@@ -160,7 +160,7 @@ module backend_top #(
     wire [1:0]      to_dep_srcC_size;
 
     /*** RR TO AG ***/
-    wire [64:0]     to_ag_control_sigs;
+    wire [65:0]     to_ag_control_sigs;
     wire [2:0]      to_ag_dstidA;
     wire [2:0]      to_ag_dstidB;
     wire [31:0]     to_ag_srcregA;
@@ -188,7 +188,7 @@ module backend_top #(
     wire            to_ag_valid;
 
     /*** AG OUTPUTS ***/
-    wire [56:0]     from_ag_control_sigs;
+    wire [57:0]     from_ag_control_sigs;
     wire [2:0]      from_ag_dstidA;
     wire [2:0]      from_ag_dstidB;
     wire [31:0]     from_ag_srcregA;
@@ -226,7 +226,7 @@ module backend_top #(
     wire [2:0]     from_ag_ldREGS;
 
     /*** AG TO MEM  ***/
-    wire [56:0]     to_mem_control_sigs;
+    wire [57:0]     to_mem_control_sigs;
     wire [2:0]      to_mem_dstidA;
     wire [2:0]      to_mem_dstidB;
     wire [31:0]     to_mem_srcregA;
@@ -261,7 +261,7 @@ module backend_top #(
     
 
     /*** MEM OUTPUTS ***/
-    wire [54:0]     from_mem_control_sigs;
+    wire [55:0]     from_mem_control_sigs;
     wire [2:0]      from_mem_dstidA;
     wire [2:0]      from_mem_dstidB;
     wire [31:0]     from_mem_srcregA;
@@ -300,7 +300,7 @@ module backend_top #(
     wire [2:0]      from_mem_ldREGS;
 
     /*** MEM TO EX ***/
-    wire [54:0]     to_ex_control_sigs;
+    wire [55:0]     to_ex_control_sigs;
     wire [2:0]      to_ex_dstidA;
     wire [2:0]      to_ex_dstidB;
     wire [31:0]     to_ex_srcregA;

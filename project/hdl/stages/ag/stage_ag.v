@@ -1,5 +1,5 @@
 module stage_ag(
-    input [64:0]    to_ag_control_sigs,
+    input [65:0]    to_ag_control_sigs,
     input [2:0]     to_ag_dstidA,
     input [2:0]     to_ag_dstidB,
     input [31:0]    to_ag_srcregA,
@@ -32,7 +32,7 @@ module stage_ag(
     input           from_wb_stall_if_mem_en,
     input           from_wb_valid_store_inst,
 
-    output [56:0]    from_ag_control_sigs,
+    output [57:0]    from_ag_control_sigs,
     output [2:0]     from_ag_dstidA,
     output [2:0]     from_ag_dstidB,
     output [31:0]    from_ag_srcregA,
@@ -71,7 +71,7 @@ module stage_ag(
     output [2:0]     from_ag_ldREGS
 );
 
-    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size;
+    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size, sbb_dir;
     wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds, imm_mux, addr_mux;
     wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
     wire [3:0] gp_dsta_mux, store_data_mux;
@@ -84,7 +84,7 @@ module stage_ag(
         ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size
+        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir
     };
     
     assign from_ag_dstidA = to_ag_dstidA;
@@ -129,7 +129,7 @@ module stage_ag(
         .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
         .store_data_mux(store_data_mux), .rw(rw),
         .ds(ds), .mem_ds(mem_ds), .imm_mux(imm_mux), .addr_mux(addr_mux), .stack_push(stack_push), .intex(intex), .ret_with_imm(ret_with_imm),
-        .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size)
+        .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir)
     );
 
 

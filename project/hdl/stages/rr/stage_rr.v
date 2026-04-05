@@ -54,7 +54,7 @@ module stage_rr(
 
     output [10:0] to_dep_needREGS,
 
-    output [64:0] from_rr_control_sigs,
+    output [65:0] from_rr_control_sigs,
     output [2:0] from_rr_dstidA,
     output [2:0] from_rr_dstidB,
     output [31:0] from_rr_srcregA,
@@ -148,7 +148,7 @@ module stage_rr(
     wire [1:0] dstA_size, dstB_size;
     wire [1:0] mmx_op, con_jmp;
     wire [2:0] alu_op;
-    wire shf_op, cmps, cmpxchg, cmovc, palu_size;
+    wire shf_op, cmps, cmpxchg, cmovc, palu_size, sbb_dir;
     
     // dstA_size = 32 if dstidA_mux=101/110(ESI/ECX) else ds
     // dstB_size = ds if dstidB_mux=01/10(regr/EAX) else 32
@@ -183,7 +183,7 @@ module stage_rr(
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
                      mmx_op, alu_op, shf_op, cmps, con_jmp, cmpxchg, cmovc,
                      gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, from_rr_store_data_mux, from_rr_rw, ds_with_override, 
-                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size};
+                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir};
 
     assign mmx_op = {to_rr_opcode[7], to_rr_opcode[2]};
     wire pack_size, padd_size, pavg_size;
@@ -193,6 +193,7 @@ module stage_rr(
     mux4$ mux4_palu_size(palu_size, pack_size, 1'bx, pavg_size, padd_size, mmx_op[0], mmx_op[1]);
     assign shf_op = to_rr_modrm[4];
     assign cmps = 1'b0; // TODO: FIX CMPS
+    big_eq #(.WIDTH(8)) eq_1b(.eq(sbb_dir), .in0(to_rr_opcode), .in1(8'h1B));
 
     mux2$ mux2_aluop[2:0](alu_op, to_rr_opcode[5:3], to_rr_modrm[5:3], to_rr_opcode[7]);
     wire opcode_77, opcode_87, opcode_75, opcode_85, opcode_jnbe, opcode_jne;

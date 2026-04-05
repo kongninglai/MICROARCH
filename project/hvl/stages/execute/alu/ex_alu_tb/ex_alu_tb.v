@@ -11,7 +11,7 @@ end
     reg  [31:0] in0;
     reg  [31:0] in1;
     reg         eflags_cf;
-
+    reg         sbb_dir;
     wire [31:0] alu_out;
     wire [31:0] alu_eflags;
     wire [31:0] alu_eflags_mask;
@@ -26,6 +26,7 @@ end
         .ds             (ds),
         .in0            (in0),
         .in1            (in1),
+        .sbb_dir        (sbb_dir),
         .eflags_cf      (eflags_cf),
         .alu_out        (alu_out),
         .alu_eflags     (alu_eflags),
@@ -37,6 +38,7 @@ end
         .ds             (ds),
         .in0            (in0),
         .in1            (in1),
+        .sbb_dir        (sbb_dir),
         .eflags_cf      (eflags_cf),
         .alu_out        (alu_out_bh),
         .alu_eflags     (alu_eflags_bh),
@@ -212,15 +214,17 @@ end
         input [31:0] a;
         input [31:0] b;
         input [31:0] r;
+        input        sbb_dir;
         input        cf_in;
         reg cf, pf, af, zf, sf, of;
         begin
-            cf = exp_cf(op_i, ds_i, a, b, cf_in);
+
+            cf = sbb_dir ? exp_cf(op_i, ds_i, b, a, cf_in) : exp_cf(op_i, ds_i, a, b, cf_in);
             pf = exp_pf(r);
-            af = exp_af(op_i, a, b, r, cf_in);
+            af = sbb_dir ? exp_af(op_i, b, a, r, cf_in) : exp_af(op_i, a, b, r, cf_in);
             zf = exp_zf(ds_i, r);
             sf = exp_sf(ds_i, r);
-            of = exp_of(op_i, ds_i, a, b, r);
+            of = sbb_dir ? exp_of(op_i, ds_i, b, a, r) : exp_of(op_i, ds_i, a, b, r);
 
             exp_flags = 32'b0;
             exp_flags[0]  = cf;
@@ -258,16 +262,17 @@ end
         input [1:0]  ds_i;
         input [31:0] a;
         input [31:0] b;
+        input        sbb_dir;
         input        cf_in;
         reg   [31:0] mask;
         reg   [31:0] low_res;
         begin
             mask = mask_by_ds(ds_i);
-
+            
             case (op_i)
                 OP_ADD: low_res = ((a & mask) + (b & mask)) & mask;
                 OP_ADC: low_res = ((a & mask) + (b & mask) + cf_in) & mask;
-                OP_SBB: low_res = ((a & mask) - (b & mask) - cf_in) & mask;
+                OP_SBB: low_res = sbb_dir ? (((b & mask) - (a & mask) - cf_in) & mask) : (((a & mask) - (b & mask) - cf_in) & mask);
                 OP_OR : low_res = ((a & mask) | (b & mask)) & mask;
                 OP_AND: low_res = ((a & mask) & (b & mask)) & mask;
                 default: low_res = 32'b0;
@@ -278,7 +283,7 @@ end
             case (op_i)
                 OP_ADD: exp_out = a + b;
                 OP_ADC: exp_out = a + b + cf_in;
-                OP_SBB: exp_out = a - b - cf_in;
+                OP_SBB: exp_out = sbb_dir ? (b - a - cf_in) : (a - b - cf_in);
                 OP_OR : exp_out = a | b;
                 OP_AND: exp_out = a & b;
                 default: exp_out = 32'b0;
@@ -295,6 +300,7 @@ end
         input [1:0]   t_ds;
         input [31:0]  t_in0;
         input [31:0]  t_in1;
+        input         t_sbb_dir;
         input         t_cf;
         reg   [31:0]  expected_out;
         reg   [31:0]  expected_flags;
@@ -304,12 +310,13 @@ end
             ds        = t_ds;
             in0       = t_in0;
             in1       = t_in1;
+            sbb_dir   = t_sbb_dir;
             eflags_cf = t_cf;
 
             #10;
 
-            expected_out   = exp_out(t_op, t_ds, t_in0, t_in1, t_cf);
-            expected_flags = exp_flags(t_op, t_ds, t_in0, t_in1, expected_out, t_cf);
+            expected_out   = exp_out(t_op, t_ds, t_in0, t_in1, t_sbb_dir, t_cf);
+            expected_flags = exp_flags(t_op, t_ds, t_in0, t_in1, expected_out, t_sbb_dir, t_cf);
             expected_mask  = exp_mask(t_op, t_ds);
 
             if ((alu_out !== expected_out) ||
@@ -318,8 +325,8 @@ end
                     FAILURES = FAILURES + 1;
                     $display("==============================================================");
                     $display("TEST: %0s", name);
-                    $display("op=%b ds=%b in0=0x%08h in1=0x%08h cf_in=%0d",
-                            t_op, t_ds, t_in0, t_in1, t_cf);
+                    $display("op=%b ds=%b in0=0x%08h in1=0x%08h sbb_dir=%b0 cf_in=%0d",
+                            t_op, t_ds, t_in0, t_in1, t_sbb_dir, t_cf);
                     $display("alu_out        = 0x%08h (expected 0x%08h) %s",
                             alu_out, expected_out,
                             (alu_out === expected_out) ? "PASS" : "FAIL");
@@ -343,11 +350,13 @@ end
         reg [1:0]  rand_ds;
         reg [31:0] rand_in0;
         reg [31:0] rand_in1;
+        reg        rand_sbb_dir;
         reg        rand_cf;
         begin
             for (i = 0; i < num_tests; i = i + 1) begin
                 rand_in0 = {$random, $random};
                 rand_in1 = {$random, $random};
+                rand_sbb_dir = $random & 1'b1;
                 rand_cf  = $random & 1'b1;
 
                 case ($random % 5)
@@ -364,7 +373,7 @@ end
                     default: rand_ds = 2'b10;
                 endcase
 
-                run_test("random", rand_op, rand_ds, rand_in0, rand_in1, rand_cf);
+                run_test("random", rand_op, rand_ds, rand_in0, rand_in1, rand_sbb_dir, rand_cf);
             end
         end
     endtask
@@ -375,45 +384,47 @@ end
         // -------------------------
         // ADD
         // -------------------------
-        run_test("ADD 8-bit basic",         OP_ADD, 2'b00, 32'h00000005, 32'h00000003, 1'b0);
-        run_test("ADD 8-bit carry",         OP_ADD, 2'b00, 32'h000000FF, 32'h00000001, 1'b0);
-        run_test("ADD 8-bit overflow",      OP_ADD, 2'b00, 32'h0000007F, 32'h00000001, 1'b0);
-        run_test("ADD 16-bit zero",         OP_ADD, 2'b01, 32'h0000FFFF, 32'h00000001, 1'b0);
-        run_test("ADD 32-bit overflow",     OP_ADD, 2'b10, 32'h7FFFFFFF, 32'h00000001, 1'b0);
+        run_test("ADD 8-bit basic",         OP_ADD, 2'b00, 32'h00000005, 32'h00000003, 1'b0, 1'b0);
+        run_test("ADD 8-bit carry",         OP_ADD, 2'b00, 32'h000000FF, 32'h00000001, 1'b0, 1'b0);
+        run_test("ADD 8-bit overflow",      OP_ADD, 2'b00, 32'h0000007F, 32'h00000001, 1'b0, 1'b0);
+        run_test("ADD 16-bit zero",         OP_ADD, 2'b01, 32'h0000FFFF, 32'h00000001, 1'b0, 1'b0);
+        run_test("ADD 32-bit overflow",     OP_ADD, 2'b10, 32'h7FFFFFFF, 32'h00000001, 1'b0, 1'b0);
 
         // -------------------------
         // ADC
         // -------------------------
-        run_test("ADC 8-bit basic cf=1",    OP_ADC, 2'b00, 32'h00000005, 32'h00000003, 1'b1);
-        run_test("ADC 8-bit carry cf=1",    OP_ADC, 2'b00, 32'h000000FF, 32'h00000000, 1'b1);
-        run_test("ADC 16-bit carry",        OP_ADC, 2'b01, 32'h0000FFFF, 32'h00000000, 1'b1);
-        run_test("ADC 32-bit overflow",     OP_ADC, 2'b10, 32'h7FFFFFFF, 32'h00000000, 1'b1);
+        run_test("ADC 8-bit basic cf=1",    OP_ADC, 2'b00, 32'h00000005, 32'h00000003, 1'b0, 1'b1);
+        run_test("ADC 8-bit carry cf=1",    OP_ADC, 2'b00, 32'h000000FF, 32'h00000000, 1'b0, 1'b1);
+        run_test("ADC 16-bit carry",        OP_ADC, 2'b01, 32'h0000FFFF, 32'h00000000, 1'b0, 1'b1);
+        run_test("ADC 32-bit overflow",     OP_ADC, 2'b10, 32'h7FFFFFFF, 32'h00000000, 1'b0, 1'b1);
 
         // -------------------------
         // SBB
         // -------------------------
-        run_test("SBB 8-bit basic cf=0",    OP_SBB, 2'b00, 32'h00000005, 32'h00000003, 1'b0);
-        run_test("SBB 8-bit basic cf=1",    OP_SBB, 2'b00, 32'h00000005, 32'h00000003, 1'b1);
-        run_test("SBB 8-bit borrow",        OP_SBB, 2'b00, 32'h00000003, 32'h00000005, 1'b0);
-        run_test("SBB 8-bit overflow",      OP_SBB, 2'b00, 32'h00000080, 32'h00000001, 1'b0);
-        run_test("SBB 16-bit overflow",     OP_SBB, 2'b01, 32'h00008000, 32'h00000001, 1'b0);
-        run_test("SBB 32-bit overflow",     OP_SBB, 2'b10, 32'h80000000, 32'h00000001, 1'b0);
+        run_test("SBB 8-bit basic dir=0",   OP_SBB, 2'b00, 32'h00000008, 32'h00000003, 1'b0, 1'b0);
+        run_test("SBB 8-bit basic dir=1",   OP_SBB, 2'b00, 32'h00000003, 32'h00000008, 1'b1, 1'b0);
+        run_test("SBB 8-bit basic cf=0",    OP_SBB, 2'b00, 32'h00000005, 32'h00000003, 1'b0, 1'b0);
+        run_test("SBB 8-bit basic cf=1",    OP_SBB, 2'b00, 32'h00000005, 32'h00000003, 1'b0, 1'b1);
+        run_test("SBB 8-bit borrow",        OP_SBB, 2'b00, 32'h00000003, 32'h00000005, 1'b0, 1'b0);
+        run_test("SBB 8-bit overflow",      OP_SBB, 2'b00, 32'h00000080, 32'h00000001, 1'b0, 1'b0);
+        run_test("SBB 16-bit overflow",     OP_SBB, 2'b01, 32'h00008000, 32'h00000001, 1'b0, 1'b0);
+        run_test("SBB 32-bit overflow",     OP_SBB, 2'b10, 32'h80000000, 32'h00000001, 1'b0, 1'b0);
 
         // -------------------------
         // OR
         // -------------------------
-        run_test("OR 8-bit basic",          OP_OR,  2'b00, 32'h00000055, 32'h0000000F, 1'b0);
-        run_test("OR 8-bit sign",           OP_OR,  2'b00, 32'h00000080, 32'h00000001, 1'b0);
-        run_test("OR 16-bit zero",          OP_OR,  2'b01, 32'h00000000, 32'h00000000, 1'b0);
-        run_test("OR 32-bit basic",         OP_OR,  2'b10, 32'h12340000, 32'h00005678, 1'b0);
+        run_test("OR 8-bit basic",          OP_OR,  2'b00, 32'h00000055, 32'h0000000F, 1'b0, 1'b0);
+        run_test("OR 8-bit sign",           OP_OR,  2'b00, 32'h00000080, 32'h00000001, 1'b0, 1'b0);
+        run_test("OR 16-bit zero",          OP_OR,  2'b01, 32'h00000000, 32'h00000000, 1'b0, 1'b0);
+        run_test("OR 32-bit basic",         OP_OR,  2'b10, 32'h12340000, 32'h00005678, 1'b0, 1'b0);
 
         // -------------------------
         // AND
         // -------------------------
-        run_test("AND 8-bit basic",         OP_AND, 2'b00, 32'h000000F0, 32'h000000CC, 1'b0);
-        run_test("AND 8-bit zero",          OP_AND, 2'b00, 32'h000000F0, 32'h0000000F, 1'b0);
-        run_test("AND 16-bit sign",         OP_AND, 2'b01, 32'h00008001, 32'h0000FFFF, 1'b0);
-        run_test("AND 32-bit basic",        OP_AND, 2'b10, 32'hFFFF0000, 32'h0F0F0F0F, 1'b0);
+        run_test("AND 8-bit basic",         OP_AND, 2'b00, 32'h000000F0, 32'h000000CC, 1'b0, 1'b0);
+        run_test("AND 8-bit zero",          OP_AND, 2'b00, 32'h000000F0, 32'h0000000F, 1'b0, 1'b0);
+        run_test("AND 16-bit sign",         OP_AND, 2'b01, 32'h00008001, 32'h0000FFFF, 1'b0, 1'b0);
+        run_test("AND 32-bit basic",        OP_AND, 2'b10, 32'hFFFF0000, 32'h0F0F0F0F, 1'b0, 1'b0);
 
         run_random_tests(500);
 
