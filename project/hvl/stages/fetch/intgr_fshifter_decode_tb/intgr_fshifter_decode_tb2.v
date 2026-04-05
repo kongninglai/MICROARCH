@@ -3,21 +3,15 @@
 module intgr_fshifter_decode_tb2();
 
     // ---------------------------------------------------------
-    // 0. Parameters 
+    // 0. Parameters & Inputs
     // ---------------------------------------------------------
-    localparam CYCLE_TIME = 100; 
+    localparam CYCLE_TIME = 200; 
 
-    // ---------------------------------------------------------
-    // 1. Inputs (Regs)
-    // ---------------------------------------------------------
     reg clk;
     reg rst_bar;
-
-    reg shft_reg_we; 
     reg [127:0] from_f_cache_line;
     reg from_f_icache_valid; 
     reg from_wb_flush;
-
     reg [31:0] from_ex_eip_target;
     reg from_rr_stall;
     reg from_ex_br_t_nt;
@@ -27,7 +21,7 @@ module intgr_fshifter_decode_tb2();
     reg from_f_cl_pf; 
 
     // ---------------------------------------------------------
-    // 2. Outputs (Wires)
+    // Outputs & Instantiation
     // ---------------------------------------------------------
     wire [1:0] to_rr_exception_flags;
     wire [31:0] to_rr_i_eip, to_rr_o_eip, to_rr_bp_target;
@@ -43,21 +37,12 @@ module intgr_fshifter_decode_tb2();
     integer FAILURES = 0;
     integer SUCCESSES = 0;
 
-    // ---------------------------------------------------------
-    // 3. Instantiation
-    // ---------------------------------------------------------
     intgr_fshifter_decode uut (
         .clk(clk),
         .rst_bar(rst_bar),
-
-        // --- Fetch Buffer Inputs ---
         .from_f_cache_line(from_f_cache_line),
-        .ICACHE_VALID(from_f_icache_valid), // <--- FIXED PORT NAME
+        .ICACHE_VALID(from_f_icache_valid), 
         .from_wb_flush(from_wb_flush),
-        
-        // Note: .shft_reg_we(...) is REMOVED!
-
-        // --- Decode Inputs ---
         .from_ex_eip_target(from_ex_eip_target),
         .from_rr_stall(from_rr_stall),
         .from_ex_br_t_nt(from_ex_br_t_nt),
@@ -65,8 +50,6 @@ module intgr_fshifter_decode_tb2();
         .from_ex_flush(from_ex_flush),
         .from_ex_pht_idx(from_ex_pht_idx),
         .from_f_cl_pf(from_f_cl_pf),
-
-        // --- Outputs ---
         .to_rr_exception_flags(to_rr_exception_flags),
         .to_rr_i_eip(to_rr_i_eip),
         .to_rr_o_eip(to_rr_o_eip),
@@ -76,8 +59,6 @@ module intgr_fshifter_decode_tb2();
         .to_rr_opcode(to_rr_opcode),
         .to_rr_modrm(to_rr_modrm),
         .to_rr_sib(to_rr_sib),
-
-        // Make sure you include these bottom outputs to get rid of the "Too few connections" warning!
         .to_rr_disp_size_mux(to_rr_disp_size_mux),
         .to_rr_disp(to_rr_disp),
         .to_rr_imm_size(to_rr_imm_size),
@@ -87,7 +68,7 @@ module intgr_fshifter_decode_tb2();
     );
     
     // ---------------------------------------------------------
-    // 4. Clock and Tasks
+    // Clock and Tasks
     // ---------------------------------------------------------
     initial begin
         clk = 0;
@@ -98,12 +79,11 @@ module intgr_fshifter_decode_tb2();
         input integer byte_idx;
         input [7:0] byte_val;
         begin
-            // MODIFIED FOR BIG ENDIAN:
-            // Byte 0 goes to [127:120], Byte 1 goes to [119:112], etc.
             from_f_cache_line[((15 - byte_idx)*8) +: 8] = byte_val;
         end
     endtask
 
+    // Check ONLY the Latched Outputs
     task check_rr_stage;
         input [8*35:1] test_name;
         input exp_valid;
@@ -112,10 +92,10 @@ module intgr_fshifter_decode_tb2();
         begin
             if (to_rr_pr_valid === exp_valid && 
                (exp_valid == 0 || (to_rr_opcode === exp_opcode && to_rr_modrm === exp_modrm))) begin
-                $display("  ✅ PASS | %0s", test_name);
+                $display("  ✅ [RR LATCH] PASS | %0s", test_name);
                 SUCCESSES = SUCCESSES + 1;
             end else begin
-                $display("  ❌ FAIL | %0s", test_name);
+                $display("  ❌ [RR LATCH] FAIL | %0s", test_name);
                 $display("     EXPECTED: Valid=%b | Opcode=%h | ModRM=%h", exp_valid, exp_opcode, exp_modrm);
                 $display("     ACTUAL  : Valid=%b | Opcode=%h | ModRM=%h", to_rr_pr_valid, to_rr_opcode, to_rr_modrm);
                 FAILURES = FAILURES + 1;
@@ -126,6 +106,9 @@ module intgr_fshifter_decode_tb2();
     // ---------------------------------------------------------
     // 5. Stimulus Sequence
     // ---------------------------------------------------------
+    // ---------------------------------------------------------
+    // 5. Stimulus Sequence (Deterministic Time-Based)
+    // ---------------------------------------------------------
     initial begin
         $vcdplusfile("intgr_comprehensive.vpd");
         $vcdpluson(0, intgr_fshifter_decode_tb2);
@@ -134,18 +117,18 @@ module intgr_fshifter_decode_tb2();
         $display("   COMPREHENSIVE FRONT-END INTEGRATION TEST      ");
         $display("=================================================");
 
-        // Initialization 
+        // TIME 0: Initialization 
         rst_bar = 0;
-        shft_reg_we = 0; from_f_icache_valid = 0; from_wb_flush = 0; from_ex_flush = 0;
+        from_f_icache_valid = 0; from_wb_flush = 0; from_ex_flush = 0;
         from_rr_stall = 0; from_f_cl_pf = 0;
         from_ex_eip_target = 32'h0; from_ex_br_t_nt = 0; from_ex_br_valid = 0; from_ex_pht_idx = 0;
         from_f_cache_line = 128'h0;
 
-        #(CYCLE_TIME);
+        #(CYCLE_TIME);       // 200ns: Lands on Falling Edge
         rst_bar = 1;
 
-        // Align to just before the posedge 
-        #(1.4 * CYCLE_TIME); 
+        #(1.5 * CYCLE_TIME); // 300ns: We are now at 500ns (Rising Edge)
+        #1;                  // Safety buffer (501ns)
 
         // =========================================================
         // SCENARIO 1: BASIC SEQUENTIAL EXECUTION
@@ -156,39 +139,33 @@ module intgr_fshifter_decode_tb2();
         load_cache_byte(1, 8'hC3); // EAX, EBX
         load_cache_byte(2, 8'h89); // MOV 
         load_cache_byte(3, 8'hC8); // EAX, ECX
-
         from_f_icache_valid = 1; 
-        shft_reg_we = 1;
         
-        #(CYCLE_TIME); // Latch Cache Line
+        #(CYCLE_TIME); // 701ns: Clock Ticked. Buffer loads.
         from_f_icache_valid = 0; 
 
-        #(CYCLE_TIME); // Propagate Decoder
+        #(CYCLE_TIME); // 901ns: Clock Ticked. Pipeline Latches ADD.
         check_rr_stage("Decode Instr 1 (ADD)       ", 1'b1, 8'h01, 8'hC3);
         
-        #(CYCLE_TIME); // Shift buffer naturally handles MOV
+        #(CYCLE_TIME); // 1101ns: Clock Ticked. Pipeline Latches MOV.
         check_rr_stage("Decode Instr 2 (MOV)       ", 1'b1, 8'h89, 8'hC8);
-
 
         // =========================================================
         // SCENARIO 2: PIPELINE STALL (BACKPRESSURE)
         // =========================================================
         $display("\n--- SCENARIO 2: Pipeline Stall & Recovery ---");
-        from_rr_stall = 1;
-        shft_reg_we = 0; 
         
-        #(CYCLE_TIME);
+        from_rr_stall = 1; // Assert stall NOW (at 1101ns)
+        
+        #(CYCLE_TIME); // 1301ns: Clock Ticked. Stall held the pipeline register!
         check_rr_stage("Stall Cycle 1 (Hold MOV)   ", 1'b1, 8'h89, 8'hC8);
         
-        #(CYCLE_TIME);
+        #(CYCLE_TIME); // 1501ns: Clock Ticked.
         check_rr_stage("Stall Cycle 2 (Hold MOV)   ", 1'b1, 8'h89, 8'hC8);
+        from_rr_stall = 0; // Release Stall
         
-        from_rr_stall = 0; 
-        shft_reg_we = 1; 
-
-        #(CYCLE_TIME);
-        check_rr_stage("Post-Stall Recovery (ADD)  ", 1'b1, 8'h00, 8'h00); // 00 00 is ADD
-
+        #(CYCLE_TIME); // 1701ns: Clock ticks. Recovery.
+        check_rr_stage("Post-Stall Recovery (ADD)  ", 1'b1, 8'h00, 8'h00); 
 
         // =========================================================
         // SCENARIO 3: EXECUTE MISPREDICT FLUSH & MULTI-BYTE LOAD
@@ -196,66 +173,58 @@ module intgr_fshifter_decode_tb2();
         $display("\n--- SCENARIO 3: Mispredict Flush & Refetch ---");
         from_ex_flush = 1;
         
-        #(CYCLE_TIME);
+        #(CYCLE_TIME); // 1901ns: Clock Ticked. Pipeline invalidates.
         check_rr_stage("Pipeline Invalidated       ", 1'b0, 8'h00, 8'h00);
         
-        // Setup the Refetch
         from_ex_flush = 0;
         from_f_cache_line = 128'h0;
         
         // Instruction 1: MOV (2 bytes)
-        load_cache_byte(0, 8'h8B); // MOV r32, r/m32
-        load_cache_byte(1, 8'h11); // EDX, [ECX]
-        
+        load_cache_byte(0, 8'h8B); 
+        load_cache_byte(1, 8'h11); 
         // Instruction 2: ADD EAX, imm32 (5 bytes)
-        load_cache_byte(2, 8'h05); // Opcode
-        load_cache_byte(3, 8'h11); // Imm Byte 1
-        load_cache_byte(4, 8'h22); // Imm Byte 2
-        load_cache_byte(5, 8'h33); // Imm Byte 3
-        load_cache_byte(6, 8'h44); // Imm Byte 4
+        load_cache_byte(2, 8'h05); 
+        load_cache_byte(3, 8'h11); 
+        load_cache_byte(4, 8'h22); 
+        load_cache_byte(5, 8'h33); 
+        load_cache_byte(6, 8'h44); 
         
         from_f_icache_valid = 1;
         
-        #(CYCLE_TIME); // Latch new Cache Line
+        #(CYCLE_TIME); // 2101ns: Clock Ticked. Buffer loads.
         from_f_icache_valid = 0;
         
-        #(CYCLE_TIME); // Propagate Decoder
+        #(CYCLE_TIME); // 2301ns: Clock Ticked. Pipeline Latches MOV.
         check_rr_stage("Post-Flush Fetch (MOV)     ", 1'b1, 8'h8B, 8'h11);
-
 
         // =========================================================
         // SCENARIO 4: MULTI-BYTE INSTRUCTION DECODE
         // =========================================================
         $display("\n--- SCENARIO 4: Multi-Byte Instruction Flow ---");
-        
-        #(CYCLE_TIME); // Fetch Buffer naturally shifts past the MOV!
-        
-        // The hardware blindly routes the byte following the opcode to the ModRM wire.
-        // For '05 11 22 33 44', the next byte is '11', so we expect ModRM to equal '11'.
-        check_rr_stage("Decode 5-Byte ADD EAX      ", 1'b1, 8'h05, 8'h11); 
 
+        #(CYCLE_TIME); // 2501ns: Clock Ticked. Buffer shifted past MOV.
+        check_rr_stage("Decode 5-Byte ADD EAX      ", 1'b1, 8'h05, 8'h11); 
 
         // =========================================================
         // SCENARIO 5: PAGE FAULT HANDLING
         // =========================================================
         $display("\n--- SCENARIO 5: Page Fault Exception ---");
         
-        // Flush the pipeline to clear the system
-        from_ex_flush = 1;
-        #(CYCLE_TIME);
+        from_ex_flush = 1; 
+        #(CYCLE_TIME); // 2701ns: Pipeline Flushed
         from_ex_flush = 0;
 
-        // Run the Page Fault Test
         from_f_cache_line = 128'h0;
         load_cache_byte(0, 8'h90); // NOP
         from_f_cl_pf = 1; 
         from_f_icache_valid = 1;
 
-        #(CYCLE_TIME); // Latch
+        #(CYCLE_TIME); // 2901ns: Clock Ticked. Buffer Loads.
         from_f_icache_valid = 0;
         from_f_cl_pf = 0;
 
-        #(CYCLE_TIME); // Propagate
+        #(CYCLE_TIME); // 3101ns: Clock Ticked. Latches NOP + Fault.
+        check_rr_stage("Latched NOP with Page Fault", 1'b1, 8'h90, 8'h00);
         
         if (to_rr_exception_flags[0] === 1'b1) begin
             $display("  ✅ PASS | Page Fault Flag Logged");

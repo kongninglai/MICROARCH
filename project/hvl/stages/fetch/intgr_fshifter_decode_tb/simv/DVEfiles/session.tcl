@@ -1,6 +1,6 @@
 # Begin_DVE_Session_Save_Info
 # DVE full session
-# Saved on Sun Apr 5 05:10:11 2026
+# Saved on Sun Apr 5 05:33:17 2026
 # Designs open: 1
 #   V1: /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/intgr_fshifter_decode.vpd
 # Toplevel windows open: 1
@@ -67,7 +67,7 @@ if {![gui_exist_window -window TopLevel.2]} {
 } else { 
     set TopLevel.2 TopLevel.2
 }
-gui_show_window -window ${TopLevel.2} -show_state normal -rect {{8 31} {1540 916}}
+gui_show_window -window ${TopLevel.2} -show_state normal -rect {{8 31} {1539 915}}
 
 # ToolBar settings
 gui_set_toolbar_attributes -toolbar {TimeOperations} -dock_state top
@@ -119,7 +119,7 @@ gui_sync_global -id ${TopLevel.2} -option true
 # MDI window settings
 set Wave.1 [gui_create_window -type {Wave}  -parent ${TopLevel.2}]
 gui_show_window -window ${Wave.1} -show_state maximized
-gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 445} {child_wave_right 1082} {child_wave_colname 220} {child_wave_colvalue 221} {child_wave_col1 0} {child_wave_col2 1}}
+gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 445} {child_wave_right 1081} {child_wave_colname 220} {child_wave_colvalue 221} {child_wave_col1 0} {child_wave_col2 1}}
 
 # End MDI window settings
 
@@ -185,7 +185,7 @@ gui_change_stack_mode -mode list
 # Post database loading setting...
 
 # Restore C1 time
-gui_set_time -C1_only 1300.08
+gui_set_time -C1_only 800
 
 
 
@@ -233,8 +233,8 @@ gui_list_set_filter -id ${Wave.1} -list { {Buffer 1} {Input 1} {Others 1} {Linka
 gui_list_set_filter -id ${Wave.1} -text {*}
 gui_list_set_insertion_bar  -id ${Wave.1} -group Group2  -position in
 
-gui_marker_move -id ${Wave.1} {C1} 1300.08
-gui_view_scroll -id ${Wave.1} -vertical -set 48
+gui_marker_move -id ${Wave.1} {C1} 800
+gui_view_scroll -id ${Wave.1} -vertical -set 0
 gui_show_grid -id ${Wave.1} -enable false
 # Restore toplevel window zorder
 # The toplevel window could be closed if it has no view/pane

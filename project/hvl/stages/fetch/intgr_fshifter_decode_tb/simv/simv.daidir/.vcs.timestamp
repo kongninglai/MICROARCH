@@ -36,7 +36,7 @@ XDG_SESSION_ID=14945
 XDG_RUNTIME_DIR=/run/user/30132
 XDG_DATA_DIRS=/home/ecelrc/students/aak3265//.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share
 VSCODE_PYTHON_AUTOACTIVATE_GUARD=1
-VSCODE_IPC_HOOK_CLI=/run/user/30132/vscode-ipc-607d8d1d-740a-4b53-98fe-691b87298c88.sock
+VSCODE_IPC_HOOK_CLI=/run/user/30132/vscode-ipc-283f1005-40b6-4c9b-9e35-4790ad94991e.sock
 VSCODE_GIT_IPC_HANDLE=/run/user/30132/vscode-git-d35ae77ce6.sock
 VSCODE_GIT_ASKPASS_NODE=/home/ecelrc/students/aak3265/.vscode-server/cli/servers/Stable-61b3d0ab13be7dda2389f1d3e60a119c7f660cc3/server/node
 VSCODE_GIT_ASKPASS_MAIN=/home/ecelrc/students/aak3265/.vscode-server/cli/servers/Stable-61b3d0ab13be7dda2389f1d3e60a119c7f660cc3/server/extensions/git/dist/askpass-main.js
@@ -188,7 +188,7 @@ BASH_FUNC_ml%%=() {  module ml "$@"_}
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
 1775381939 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/fetch/intgr_fshifter_decode.v
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
-1775383959 /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/intgr_fshifter_decode_tb.v
+1775385447 /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/intgr_fshifter_decode_tb2.v
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib6
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib5
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
@@ -196,12 +196,12 @@ BASH_FUNC_ml%%=() {  module ml "$@"_}
 1649711265 /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
 1642711270 /home/projects/courses/spring_22/ee382n19_16785/lib/time
-1775374023 ../master_intgr_fshifter_decode_tb
+1775384094 ../master_intgr_fshifter_decode_tb
 1654052745 /usr/local/packages/synopsys_2022/vcs/T-2022.06/linux64/lib/vcsdp.tab
 4
 1654054205 /usr/local/packages/synopsys_2022/vcs/T-2022.06/linux64/lib/libvirsim.so
 1654053585 /usr/local/packages/synopsys_2022/vcs/T-2022.06/linux64/lib/liberrorinf.so
 1654053489 /usr/local/packages/synopsys_2022/vcs/T-2022.06/linux64/lib/libsnpsmalloc.so
 1654053565 /usr/local/packages/synopsys_2022/vcs/T-2022.06/linux64/lib/libvfs.so
-1775383965 simv.daidir
+1775385471 simv.daidir
 -1 partitionlib

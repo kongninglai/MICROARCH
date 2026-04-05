@@ -1,6 +1,6 @@
 # Begin_DVE_Session_Save_Info
 # DVE full session
-# Saved on Sun Apr 5 05:10:00 2026
+# Saved on Sun Apr 5 05:33:14 2026
 # Designs open: 1
 #   V1: intgr_fshifter_decode.vpd
 # Toplevel windows open: 2
@@ -69,7 +69,7 @@ if {![gui_exist_window -window TopLevel.1]} {
 } else { 
     set TopLevel.1 TopLevel.1
 }
-gui_show_window -window ${TopLevel.1} -show_state normal -rect {{8 31} {1426 853}}
+gui_show_window -window ${TopLevel.1} -show_state normal -rect {{8 31} {1425 852}}
 
 # ToolBar settings
 gui_set_toolbar_attributes -toolbar {TimeOperations} -dock_state top
@@ -116,28 +116,28 @@ gui_show_toolbar -toolbar {Testbench}
 # End ToolBar settings
 
 # Docked window settings
-set HSPane.1 [gui_create_window -type HSPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 415]
+set HSPane.1 [gui_create_window -type HSPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 414]
 catch { set Hier.1 [gui_share_window -id ${HSPane.1} -type Hier] }
-gui_set_window_pref_key -window ${HSPane.1} -key dock_width -value_type integer -value 415
+gui_set_window_pref_key -window ${HSPane.1} -key dock_width -value_type integer -value 414
 gui_set_window_pref_key -window ${HSPane.1} -key dock_height -value_type integer -value -1
 gui_set_window_pref_key -window ${HSPane.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${HSPane.1} {{left 0} {top 0} {width 414} {height 385} {dock_state left} {dock_on_new_line true} {child_hier_colhier 298} {child_hier_coltype 133} {child_hier_colpd 0} {child_hier_col1 0} {child_hier_col2 1} {child_hier_col3 -1}}
-set DLPane.1 [gui_create_window -type DLPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 375]
+gui_update_layout -id ${HSPane.1} {{left 0} {top 0} {width 413} {height 385} {dock_state left} {dock_on_new_line true} {child_hier_colhier 298} {child_hier_coltype 133} {child_hier_colpd 0} {child_hier_col1 0} {child_hier_col2 1} {child_hier_col3 -1}}
+set DLPane.1 [gui_create_window -type DLPane -parent ${TopLevel.1} -dock_state left -dock_on_new_line true -dock_extent 374]
 catch { set Data.1 [gui_share_window -id ${DLPane.1} -type Data] }
-gui_set_window_pref_key -window ${DLPane.1} -key dock_width -value_type integer -value 375
+gui_set_window_pref_key -window ${DLPane.1} -key dock_width -value_type integer -value 374
 gui_set_window_pref_key -window ${DLPane.1} -key dock_height -value_type integer -value 731
 gui_set_window_pref_key -window ${DLPane.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${DLPane.1} {{left 0} {top 0} {width 374} {height 385} {dock_state left} {dock_on_new_line true} {child_data_colvariable 180} {child_data_colvalue 135} {child_data_coltype 111} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
-set Console.1 [gui_create_window -type Console -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line true -dock_extent 339]
+gui_update_layout -id ${DLPane.1} {{left 0} {top 0} {width 373} {height 385} {dock_state left} {dock_on_new_line true} {child_data_colvariable 180} {child_data_colvalue 135} {child_data_coltype 111} {child_data_col1 0} {child_data_col2 1} {child_data_col3 2}}
+set Console.1 [gui_create_window -type Console -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line true -dock_extent 338]
 gui_set_window_pref_key -window ${Console.1} -key dock_width -value_type integer -value -1
-gui_set_window_pref_key -window ${Console.1} -key dock_height -value_type integer -value 339
+gui_set_window_pref_key -window ${Console.1} -key dock_height -value_type integer -value 338
 gui_set_window_pref_key -window ${Console.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${Console.1} {{left 0} {top 0} {width 271} {height 338} {dock_state bottom} {dock_on_new_line true}}
-set DriverLoad.1 [gui_create_window -type DriverLoad -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line false -dock_extent 339]
+gui_update_layout -id ${Console.1} {{left 0} {top 0} {width 271} {height 337} {dock_state bottom} {dock_on_new_line true}}
+set DriverLoad.1 [gui_create_window -type DriverLoad -parent ${TopLevel.1} -dock_state bottom -dock_on_new_line false -dock_extent 338]
 gui_set_window_pref_key -window ${DriverLoad.1} -key dock_width -value_type integer -value 150
-gui_set_window_pref_key -window ${DriverLoad.1} -key dock_height -value_type integer -value 339
+gui_set_window_pref_key -window ${DriverLoad.1} -key dock_height -value_type integer -value 338
 gui_set_window_pref_key -window ${DriverLoad.1} -key dock_offset -value_type integer -value 0
-gui_update_layout -id ${DriverLoad.1} {{left 0} {top 0} {width 1146} {height 338} {dock_state bottom} {dock_on_new_line false}}
+gui_update_layout -id ${DriverLoad.1} {{left 0} {top 0} {width 1145} {height 337} {dock_state bottom} {dock_on_new_line false}}
 #### Start - Readjusting docked view's offset / size
 set dockAreaList { top left right bottom }
 foreach dockArea $dockAreaList {
@@ -174,7 +174,7 @@ if {![gui_exist_window -window TopLevel.2]} {
 } else { 
     set TopLevel.2 TopLevel.2
 }
-gui_show_window -window ${TopLevel.2} -show_state normal -rect {{8 31} {1540 916}}
+gui_show_window -window ${TopLevel.2} -show_state normal -rect {{8 31} {1539 915}}
 
 # ToolBar settings
 gui_set_toolbar_attributes -toolbar {TimeOperations} -dock_state top
@@ -226,7 +226,7 @@ gui_sync_global -id ${TopLevel.2} -option true
 # MDI window settings
 set Wave.1 [gui_create_window -type {Wave}  -parent ${TopLevel.2}]
 gui_show_window -window ${Wave.1} -show_state maximized
-gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 445} {child_wave_right 1082} {child_wave_colname 220} {child_wave_colvalue 221} {child_wave_col1 0} {child_wave_col2 1}}
+gui_update_layout -id ${Wave.1} {{show_state maximized} {dock_state undocked} {dock_on_new_line false} {child_wave_left 445} {child_wave_right 1081} {child_wave_colname 220} {child_wave_colvalue 221} {child_wave_col1 0} {child_wave_col2 1}}
 
 # End MDI window settings
 
@@ -293,7 +293,7 @@ gui_change_stack_mode -mode list
 # Post database loading setting...
 
 # Restore C1 time
-gui_set_time -C1_only 1300.08
+gui_set_time -C1_only 800
 
 
 
@@ -377,8 +377,8 @@ gui_list_set_filter -id ${Wave.1} -list { {Buffer 1} {Input 1} {Others 1} {Linka
 gui_list_set_filter -id ${Wave.1} -text {*}
 gui_list_set_insertion_bar  -id ${Wave.1} -group Group2  -position in
 
-gui_marker_move -id ${Wave.1} {C1} 1300.08
-gui_view_scroll -id ${Wave.1} -vertical -set 48
+gui_marker_move -id ${Wave.1} {C1} 800
+gui_view_scroll -id ${Wave.1} -vertical -set 0
 gui_show_grid -id ${Wave.1} -enable false
 # Restore toplevel window zorder
 # The toplevel window could be closed if it has no view/pane
