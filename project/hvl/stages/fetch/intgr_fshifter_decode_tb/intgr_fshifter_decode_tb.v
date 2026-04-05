@@ -48,13 +48,9 @@ module intgr_fshifter_decode_tb();
     intgr_fshifter_decode uut (
         .clk(clk),
         .rst_bar(rst_bar),
-
-        // --- Fetch Buffer Inputs ---
         .from_f_cache_line(from_f_cache_line),
         .ICACHE_VALID(from_f_icache_valid), 
         .from_wb_flush(from_wb_flush),
-
-        // --- Decode Inputs ---
         .from_ex_eip_target(from_ex_eip_target),
         .from_rr_stall(from_rr_stall),
         .from_ex_br_t_nt(from_ex_br_t_nt),
@@ -62,8 +58,6 @@ module intgr_fshifter_decode_tb();
         .from_ex_flush(from_ex_flush),
         .from_ex_pht_idx(from_ex_pht_idx),
         .from_f_cl_pf(from_f_cl_pf),
-
-        // --- Outputs ---
         .to_rr_exception_flags(to_rr_exception_flags),
         .to_rr_i_eip(to_rr_i_eip),
         .to_rr_o_eip(to_rr_o_eip),
@@ -97,7 +91,6 @@ module intgr_fshifter_decode_tb();
         end
     endtask
 
-    // Checks Combinational logic BEFORE the PR_DE_RR register
     task check_pr_stage;
         input [8*35:1] test_name;
         input exp_valid;
@@ -117,7 +110,6 @@ module intgr_fshifter_decode_tb();
         end
     endtask
 
-    // Checks Latched logic AFTER the PR_DE_RR register
     task check_rr_stage;
         input [8*35:1] test_name;
         input exp_valid;
@@ -140,100 +132,71 @@ module intgr_fshifter_decode_tb();
     // ---------------------------------------------------------
     // 5. Stimulus Sequence
     // ---------------------------------------------------------
-    // ---------------------------------------------------------
-    // 5. Stimulus Sequence
-    // ---------------------------------------------------------
-    initial begin
+   initial begin
         $vcdplusfile("intgr_fshifter_decode.vpd");
         $vcdpluson(0, intgr_fshifter_decode_tb);
 
-        $display("=================================================");
-        $display("   FRONT-END INTEGRATION TEST (Fetch -> Decode)  ");
-        $display("=================================================");
-
-        // TIME 0: Initialize all signals to 0
+        // Initialization
         rst_bar = 0;
         from_f_icache_valid = 0; from_wb_flush = 0; from_ex_flush = 0;
         from_rr_stall = 0; from_f_cl_pf = 0;
         from_ex_eip_target = 32'h0; from_ex_br_t_nt = 0; from_ex_br_valid = 0; from_ex_pht_idx = 0;
         from_f_cache_line = 128'h0;
         
-        #(CYCLE_TIME); // Wait 200ns
-        rst_bar = 1; // Release reset 
+        #(CYCLE_TIME); // 200ns
+        rst_bar = 1;
 
-        #(1.5 * CYCLE_TIME); 
+        #(1.5 * CYCLE_TIME); // 300ns. We are now at 500ns (Rising Edge)
+        #2; // Safety buffer (501ns)
+
         // ==========================================
-        // We are now EXACTLY at 500ns (Rising Edge)
+        // CYCLE 3: Setup Cache Load
         // ==========================================
-        #1; // Step 1ns off the edge to prevent race conditions!
-        
-        // ------------------------------------------
-        // CYCLE 1: Setup Cache Load
-        // ------------------------------------------
         load_cache_byte(0, 8'h01); // ADD
         load_cache_byte(1, 8'hC3); // EAX, EBX
         load_cache_byte(2, 8'h89); // MOV 
         load_cache_byte(3, 8'hC8); 
         from_f_icache_valid = 1;
-    
-        // ------------------------------------------
-        // CYCLE 2: Fetch loads cache line
-        // ------------------------------------------
-        @(posedge clk); #1; // 701ns
+
+        #(CYCLE_TIME); // Now at 701ns
+        // ==========================================
+        // CYCLE 4: Buffer has the data. 
+        // ==========================================
         from_f_icache_valid = 0; 
-        
-        @(negedge clk); // 800ns
-        // Combinational decoder has had 100ns to settle. 
-        // We check it NOW, before the next clock tick destroys the state!
+        // Logic has had nearly a full cycle to ripple through the gates.
         check_pr_stage("Comb Decode ADD EAX, EBX   ", 1'b1, 8'h01, 8'hC3); 
-        
-        // ------------------------------------------
-        // CYCLE 3: RR Latches ADD, Comb sees MOV
-        // ------------------------------------------
-        @(posedge clk); #1; // 901ns
-        // The clock just ticked. RR latched ADD. Fetch Buffer shifted to MOV.
+
+        #(CYCLE_TIME); // Now at 901ns
+        // ==========================================
+        // CYCLE 5: RR Register latches the ADD.
+        // ==========================================
         check_rr_stage("Latched RR ADD EAX, EBX    ", 1'b1, 8'h01, 8'hC3); 
-        
-        @(negedge clk); // 1000ns
-        // Decoder has had 100ns to evaluate the newly shifted MOV.
+        // Since ADD was consumed, buffer shifted. MOV is now at the decoder.
         check_pr_stage("Comb Decode MOV            ", 1'b1, 8'h89, 8'hC8);
-        
-        // ------------------------------------------
-        // CYCLE 4: RR Latches MOV, assert Stall
-        // ------------------------------------------
-        @(posedge clk); #1; // 1101ns
+
+        #(CYCLE_TIME); // Now at 1101ns
+        // ==========================================
+        // CYCLE 6: RR Register latches the MOV.
+        // ==========================================
         check_rr_stage("Latched RR MOV             ", 1'b1, 8'h89, 8'hC8);
-        
-        from_rr_stall = 1; // Assert stall for next cycle
-        
-        // ------------------------------------------
-        // CYCLE 5: Check Stall, assert Flush
-        // ------------------------------------------
-        @(posedge clk); #1; // 1301ns
-        // Clock ticked, but Stall prevented the pipeline register from updating.
+        from_rr_stall = 1; // Drive stall for next cycle
+
+        #(CYCLE_TIME); // Now at 1301ns
+        // ==========================================
+        // CYCLE 7: Register update blocked by stall.
+        // ==========================================
         check_rr_stage("Pipeline Stall (Hold MOV)  ", 1'b1, 8'h89, 8'hC8);
-        
-        from_rr_stall = 0;  // Release stall
-        from_ex_flush = 1;  // Send Flush command!
-        
-        @(negedge clk); // 1400ns
-        // Combinational logic sees the flush and invalidates.
-        check_pr_stage("Comb Flush (Invalidate)    ", 1'b0, 8'h00, 8'h00);
-        
-        // ------------------------------------------
-        // CYCLE 6: Check Flush
-        // ------------------------------------------
-        @(posedge clk); #1; // 1501ns
-        // Pipeline register latches the invalid flush state.
+        from_rr_stall = 0; 
+        from_ex_flush = 1; 
+
+        #(CYCLE_TIME); // Now at 1501ns
+        // ==========================================
+        // CYCLE 8: Register latches the Flush.
+        // ==========================================
         check_rr_stage("Execute Flush (Invalidate) ", 1'b0, 8'h00, 8'h00);
+        check_pr_stage("Comb Flush (Invalidate)    ", 1'b0, 8'h00, 8'h00);
         from_ex_flush = 0;
 
-        $display("=================================================");
-        if (FAILURES == 0) begin
-            $display("  🎉 ALL TESTS PASSED! Integration is solid.");
-        end else begin
-            $display("  💥 %0d TESTS FAILED! Check waveforms.", FAILURES);
-        end
         $display("=================================================");
         $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
         $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
