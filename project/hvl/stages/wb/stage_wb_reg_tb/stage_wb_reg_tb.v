@@ -12,7 +12,7 @@ module stage_wb_reg_tb;
     reg clk;
     reg rst_n;
 
-    reg [5:0] to_rr_prefix;
+    reg [6:0] to_rr_prefix;
     reg [7:0] to_rr_opcode;
     reg [7:0] to_rr_modrm;
     reg [7:0] to_rr_sib;
@@ -50,6 +50,7 @@ module stage_wb_reg_tb;
     wire to_regunit_sig_segrd0_mux;
     wire to_regunit_sig_segrd1_mux;
     wire [2:0] to_regunit_seg_prefix;
+    wire to_regunit_has_seg_prefix;
     wire [15:0] from_regunit_srcSREG;
     wire [15:0] from_regunit_SREG1;
     wire [15:0] from_regunit_SREG2;
@@ -183,6 +184,7 @@ module stage_wb_reg_tb;
         .to_regunit_sig_segrd0_mux(to_regunit_sig_segrd0_mux),
         .to_regunit_sig_segrd1_mux(to_regunit_sig_segrd1_mux),
         .to_regunit_seg_prefix(to_regunit_seg_prefix),
+        .to_regunit_has_seg_prefix(to_regunit_has_seg_prefix),
         .from_regunit_srcSREG(from_regunit_srcSREG),
         .from_regunit_SREG1(from_regunit_SREG1),
         .from_regunit_SREG2(from_regunit_SREG2),
@@ -309,6 +311,7 @@ module stage_wb_reg_tb;
         .from_rr_sig_segrd0_mux(to_regunit_sig_segrd0_mux),
         .from_rr_sig_segrd1_mux(to_regunit_sig_segrd1_mux),
         .from_rr_seg_prefix(to_regunit_seg_prefix),
+        .from_rr_has_seg_prefix(to_regunit_has_seg_prefix),
         .to_rr_srcSREG(from_regunit_srcSREG),
         .to_rr_SREG1(from_regunit_SREG1),
         .to_rr_SREG2(from_regunit_SREG2),
@@ -1185,7 +1188,7 @@ module stage_wb_reg_tb;
 
     task clear_inputs;
     begin
-            to_rr_prefix = 5'd0;
+            to_rr_prefix = 7'd0;
             to_rr_opcode = 8'd0;
             to_rr_modrm = 8'd0;
             to_rr_sib = 8'd0;
@@ -1212,7 +1215,7 @@ module stage_wb_reg_tb;
 
 
     task apply_de_inputs;
-        input [5:0] prefix;
+        input [6:0] prefix;
         input [7:0] opcode;
         input [7:0] modrm;
         input [7:0] sib;

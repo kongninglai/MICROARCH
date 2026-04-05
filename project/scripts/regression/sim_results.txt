@@ -1,5 +1,37 @@
 address_adder_tb               FAILURES=0      SUCCESSES=256   
 arbiter_tb                     FAILURES=0      SUCCESSES=16    
+
+Regression run: Sun Apr  5 14:41:38 CDT 2026
+========================================
+PASS: AAA/aaa0.txt
+PASS: AAA/aaa1.txt
+PASS: ADC/adc.txt
+PASS: ADD/add.txt
+PASS: AND/and.txt
+PASS: BSF/BSF_tests_proc.txt
+PASS: CLD/CLD_tests_proc.txt
+PASS: CMOVC/CMOVC_tests_proc.txt
+PASS: CMPXCHG/CMPXCHG_tests_proc.txt
+PASS: cross_cache_line_2x_wb.txt
+PASS: dcache_test.txt
+PASS: HLT/HLT_tests_proc.txt
+PASS: MOV/MOV_tests_proc.txt
+PASS: MOVQ/MOVQ_tests_proc.txt
+PASS: MOVS/MOVS_tests_proc.txt
+PASS: NOT/NOT_tests_proc.txt
+PASS: OR/OR_tests_proc.txt
+PASS: PACKSS/PACKSS_tests_proc.txt
+PASS: PADD/PADD_tests_proc.txt
+PASS: PAVG/PAVG_tests_proc.txt
+PASS: PUSH_POP/PUSH_POP_tests_proc.txt
+PASS: SAL/SAL_tests_proc.txt
+PASS: SAR/SAR_tests_proc.txt
+PASS: STD/STD_tests_proc.txt
+PASS: touch_all_regs.txt
+PASS: XCHG/XCHG_tests_proc.txt
+========================================
+Total: 26  PASSED: 26  FAILED: 0
+backend_top_tb_instructions    FAILURES=0      SUCCESSES=26    
 backend_top_tb                 FAILURES=0      SUCCESSES=0     
 big_and_tb                     FAILURES=0      SUCCESSES=4096  
 big_decrement_tb               FAILURES=0      SUCCESSES=4097  
@@ -26,7 +58,7 @@ data_store_tb                  FAILURES=0      SUCCESSES=1032
 dcache_controller_wbe_tb       FAILURES=0      SUCCESSES=10240 
 decoder4_16_tb                 FAILURES=0      SUCCESSES=16    
 decoder5_32_tb                 FAILURES=0      SUCCESSES=32    
-de_to_rr_tb                    FAILURES=0      SUCCESSES=3      WARNINGS=1     
+de_to_rr_tb                    FAILURES=0      SUCCESSES=3     
 dmac_tb                        FAILURES=0      SUCCESSES=1040  
 dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
 dmu_tb                         FAILURES=0      SUCCESSES=4     
@@ -143,13 +175,11 @@ seg_limit_cmp_tb               FAILURES=0      SUCCESSES=4103
 se_tb                          FAILURES=0      SUCCESSES=258   
 shift_reg_tb                   FAILURES=0      SUCCESSES=5456  
 shift_reg_tiny_tb              FAILURES=0      SUCCESSES=5388  
-stage_ag_tb                    FAILURES=0      SUCCESSES=0      WARNINGS=3     
-stage_decoder_tb               FAILURES=0      SUCCESSES=13     WARNINGS=1     
-stage_ex_tb                    FAILURES=0      SUCCESSES=0      WARNINGS=3     
+stage_decoder_tb               FAILURES=0      SUCCESSES=13    
 stage_fetch_tb                 FAILURES=0      SUCCESSES=586   
 stage_mem_tb                   FAILURES=0      SUCCESSES=4326  
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
-stage_wb_reg_tb                FAILURES=0      SUCCESSES=0      WARNINGS=3     
+stage_wb_reg_tb                FAILURES=0      SUCCESSES=0     
 stage_wb_tb                    FAILURES=0      SUCCESSES=1644  
 sticky_bit_fsm_tb              FAILURES=0      SUCCESSES=4112  
 sticky_bit_load_fsm_tb         FAILURES=0      SUCCESSES=8     

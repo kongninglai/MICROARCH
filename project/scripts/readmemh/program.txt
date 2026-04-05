@@ -7,31 +7,27 @@
 0x15:  bc 00 01 00 00  // mov    esp,0x100
 0x1a:  bb 00 00 00 00  // mov    ebx,0x0
 0x1f:  bd 00 00 00 00  // mov    ebp,0x0
-0x24:  b8 ff ff ff ff  // mov    eax,0xffffffff
-0x29:  05 01 00 00 00  // add    eax,0x1
-0x2e:  b9 ef be ad de  // mov    ecx,0xdeadbeef
-0x33:  ba 78 56 34 12  // mov    edx,0x12345678
-0x38:  0f 42 ca  // cmovb  ecx,edx
-0x3b:  b8 00 00 00 00  // mov    eax,0x0
-0x40:  05 00 00 00 00  // add    eax,0x0
-0x45:  b9 aa aa aa aa  // mov    ecx,0xaaaaaaaa
-0x4a:  ba 11 11 11 11  // mov    edx,0x11111111
-0x4f:  0f 42 ca  // cmovb  ecx,edx
-0x52:  c7 03 be ba fe ca  // mov    DWORD PTR [ebx],0xcafebabe
-0x58:  b8 ff ff ff ff  // mov    eax,0xffffffff
-0x5d:  05 01 00 00 00  // add    eax,0x1
-0x62:  be 00 00 00 00  // mov    esi,0x0
-0x67:  0f 42 33  // cmovb  esi,DWORD PTR [ebx]
-0x6a:  b8 ff ff ff ff  // mov    eax,0xffffffff
-0x6f:  05 01 00 00 00  // add    eax,0x1
-0x74:  66 66 b8 34 12  // data16 mov ax,0x1234
-0x79:  66 66 b9 78 56  // data16 mov cx,0x5678
-0x7e:  66 0f 42 c1  // cmovb  ax,cx
-0x82:  b8 00 00 00 00  // mov    eax,0x0
-0x87:  05 00 00 00 00  // add    eax,0x0
-0x8c:  66 66 b8 cd ab  // data16 mov ax,0xabcd
-0x91:  66 66 b9 11 11  // data16 mov cx,0x1111
-0x96:  66 0f 42 c1  // cmovb  ax,cx
-0x9a:  f4  // hlt
+0x24:  b8 11 11 11 11  // mov    eax,0x11111111
+0x29:  b9 22 22 22 22  // mov    ecx,0x22222222
+0x2e:  91  // xchg   ecx,eax
+0x2f:  b8 aa aa aa aa  // mov    eax,0xaaaaaaaa
+0x34:  ba bb bb bb bb  // mov    edx,0xbbbbbbbb
+0x39:  92  // xchg   edx,eax
+0x3a:  be 78 56 34 12  // mov    esi,0x12345678
+0x3f:  bf 21 43 65 87  // mov    edi,0x87654321
+0x44:  87 fe  // xchg   esi,edi
+0x46:  c7 03 ef be ad de  // mov    DWORD PTR [ebx],0xdeadbeef
+0x4c:  b8 78 56 34 12  // mov    eax,0x12345678
+0x51:  87 03  // xchg   DWORD PTR [ebx],eax
+0x53:  b8 aa 00 00 00  // mov    eax,0xaa
+0x58:  b9 55 00 00 00  // mov    ecx,0x55
+0x5d:  86 c8  // xchg   al,cl
+0x5f:  66 66 b8 34 12  // data16 mov ax,0x1234
+0x64:  66 66 b9 78 56  // data16 mov cx,0x5678
+0x69:  66 87 c8  // xchg   ax,cx
+0x6c:  66 66 b8 cd ab  // data16 mov ax,0xabcd
+0x71:  66 66 b9 34 12  // data16 mov cx,0x1234
+0x76:  66 91  // xchg   cx,ax
+0x78:  f4  // hlt
 
 0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

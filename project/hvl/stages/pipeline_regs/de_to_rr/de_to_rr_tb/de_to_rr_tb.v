@@ -83,6 +83,7 @@ module de_to_rr_tb;
         .prefix_rep(prefix_rep), 
         .prefix_op_size(prefix_op_size),
         .prefix_seg_ov_id(prefix_seg_ov_id), 
+        .prefix_seg(), 
         .prefix_ext(prefix_ext),
         .opcode(opcode), 
         .modrm(modrm), 

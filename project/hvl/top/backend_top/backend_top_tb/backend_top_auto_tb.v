@@ -580,8 +580,8 @@ begin
     if (!from_rr_stall) begin
       accepted_cnt = accepted_cnt + 1;
 
-      $display("[ACCEPT] test=%0d oeip=%08x len=%0d ieip=%08x time=%0t",
-               cur_test, from_de_oeip, dut_fe.instr_len, from_de_ieip, $time);
+      // $display("[ACCEPT] test=%0d oeip=%08x len=%0d ieip=%08x time=%0t",
+      //          cur_test, from_de_oeip, dut_fe.instr_len, from_de_ieip, $time);
   
       cur_test = cur_test + 1;
 
@@ -591,8 +591,8 @@ begin
 
     else if (to_rr_valid && from_rr_stall) begin
       stalled_cnt = stalled_cnt + 1;
-      $display("[STALL ] holding test=%0d oeip=%08x time=%0t",
-               cur_test, from_de_oeip, $time);
+      // $display("[STALL ] holding test=%0d oeip=%08x time=%0t",
+      //          cur_test, from_de_oeip, $time);
     end
     if (!stream_done)
       drive_testcase(cur_test);
@@ -618,7 +618,7 @@ always @(posedge clk) begin
     pend_mem_cnt    = 0;
   end else begin
     if (print_pending) begin
-      $display("[WB COMMIT+1] time=%0t", $time);
+      // $display("[WB COMMIT+1] time=%0t", $time);
       print_arch_status(0);
       NUM_TESTS <= NUM_TESTS + 1;
     end
