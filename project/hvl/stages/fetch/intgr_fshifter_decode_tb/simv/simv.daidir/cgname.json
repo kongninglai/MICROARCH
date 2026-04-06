@@ -5,11 +5,11 @@
         "module",
         1
     ],
-    "intgr_fshifter_decode_tb": [
-        "intgr_fshifter_decode_tb",
-        "GiqdZ",
+    "tb_intgr_fshifter_decode_rigorous": [
+        "tb_intgr_fshifter_decode_rigorous",
+        "hvgr5",
         "module",
-        41
+        62
     ],
     "stage_decode": [
         "stage_decode",

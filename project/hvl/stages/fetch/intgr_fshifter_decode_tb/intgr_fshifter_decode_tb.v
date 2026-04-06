@@ -72,7 +72,9 @@ module intgr_fshifter_decode_tb();
         .to_rr_imm_size(to_rr_imm_size),
         .to_rr_imm(to_rr_imm),
         .to_rr_addressing_mode(to_rr_addressing_mode),
-        .to_rr_instr_length(to_rr_instr_length)
+        .to_rr_instr_length(to_rr_instr_length),
+        .from_de_eip_redirection(), //unused
+        .to_pr_bp_target() //unused
     );
     
     // ---------------------------------------------------------

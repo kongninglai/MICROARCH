@@ -1,0 +1,12 @@
+Each testcase_<name>.txt file should contain the following information in this exact order:
+    Format: i_eip o_eip prefix opcode has_modrm modrm imm_sz imm
+    
+    i.e.
+    00000000 00000005 00 ba 0 00 4 000000000A00
+    00000005 00000008 10 8e 1 da 0 000000000000
+    00000008 0000000d 10 81 1 c2 2 000000000100
+This file is used as an input to trace file parser, which figures out the expected 
+decoded values and compares them directly against the output of the integrated fetch
+and decode (which is done by the verify function).
+
+You can change the name of this file in the tb by searching for <trace_file>

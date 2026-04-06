@@ -5,55 +5,37 @@ module stage_fetch_a_tb();
     // 1. Inputs (Registers for the stimulus)
     reg clk;
     reg rst_bar;
+    reg shft_reg_we;               // Replaced from_f_cl_ld with direct shft_reg_we
     reg from_de_take_branch;
     reg from_ex_flush;
     reg from_ex_ld_cs;
     reg [15:0] from_rr_cs_reg;
-    reg from_f_cl_ld;
     reg [31:0] from_ex_eip_target;
     reg [31:0] from_de_eip_target;
     
-    // --- INOUT PORT FIXES ---
-    // We use a 'wire' for the connection to the UUT, driven by a 'reg' 
-    // via a continuous 'assign' so we can update them in the initial block.
-    reg          ICACHE_VALID_reg;
-    wire         ICACHE_VALID;
-    assign       ICACHE_VALID = ICACHE_VALID_reg;
-
-    reg [127:0]  ICACHE_HIT_DATA_reg;
-    wire [127:0] ICACHE_HIT_DATA;
-    assign       ICACHE_HIT_DATA = ICACHE_HIT_DATA_reg;
-
     // 2. Outputs
+    wire [19:0] ITLB_VPN;
+    wire [11:0] F_PAGE_OFFSET;
     wire [31:0] ic_addr;
-    
-    // Dummy wires for ports we aren't actively testing
-    wire [2:0]  dummy_pfn;
-    wire        dummy_fault;
-    wire [11:0] dummy_offset;
 
     // Internal stats
     integer FAILURES = 0;
     integer SUCCESSES = 0;
 
-    // 3. Instantiate UUT (Unit Under Test)
+    // 3. Instantiate UUT (Removed ghost cache/TLB ports)
     stage_fetch_a uut (
         .clk(clk), 
         .rst_bar(rst_bar),
-        .from_de_take_branch(from_de_take_branch), // Mapped to from_de_eip_redirection in module logic
+        .ITLB_VPN(ITLB_VPN),
+        .F_PAGE_OFFSET(F_PAGE_OFFSET),
+        .shft_reg_we(shft_reg_we),                 // FIXED PORT MAPPING
+        .from_de_bp_target(from_de_eip_target),
+        .from_de_take_branch(from_de_take_branch), // FIXED TYPO
+        .from_rr_cs(from_rr_cs_reg),
+        .from_ex_eip_target(from_ex_eip_target),
         .from_ex_flush(from_ex_flush),
         .from_ex_ld_cs(from_ex_ld_cs),
-        .from_rr_cs(from_rr_cs_reg),
-        .from_fetch_buffer_write_enable(from_f_cl_ld),
-        .from_ex_eip_target(from_ex_eip_target),
-        .from_de_bp_target(from_de_eip_target),
-        .ICACHE_VALID(ICACHE_VALID),
-        .ICACHE_HIT_DATA(ICACHE_HIT_DATA), 
-        .ITLB_PFN_OUT(dummy_pfn),
-        .ITLB_PAGE_FAULT_OUT(dummy_fault),
-        .F_PAGE_OFFSET(dummy_offset),
-        .ic_addr(ic_addr),
-        .from_wb_flush(1'b0)
+        .ic_addr(ic_addr)
     );
 
     // 4. Clock Generation (50MHz)
@@ -83,15 +65,12 @@ module stage_fetch_a_tb();
     // 6. Stimulus Block
     initial begin
         $dumpfile("stage_fetch_a_tb.vcd");
-        $dumpvars(0, stage_fetch_a_tb); // Match the module name!
+        $dumpvars(0, stage_fetch_a_tb); 
 
         // Initialize all registers
         from_de_take_branch = 0; from_ex_flush = 0; from_ex_ld_cs = 0;
-        from_rr_cs_reg = 16'h0; from_f_cl_ld = 0;
+        from_rr_cs_reg = 16'h0; shft_reg_we = 0;
         from_ex_eip_target = 32'h0; from_de_eip_target = 32'h0;
-        
-        ICACHE_VALID_reg = 0;       // Use the _reg version!
-        ICACHE_HIT_DATA_reg = 128'h0;
 
         // Reset Sequence
         rst_bar = 0;
@@ -110,30 +89,28 @@ module stage_fetch_a_tb();
         from_ex_ld_cs = 0;
         check_fetch("Load CS Segment Base  ", 32'h1000_0000);
 
-        // TEST 2: Cache Interaction
-        from_f_cl_ld = 1;
-        ICACHE_VALID_reg = 0;      // Waiting...
+        // TEST 2: Sequential Increment
+        shft_reg_we = 1;
         @(posedge clk); #1;
-        check_fetch("Stall: Waiting on Cache", 32'h1000_0000);
-
-        ICACHE_VALID_reg = 1;      // Hit!
-        @(posedge clk); #1;
-        from_f_cl_ld = 0;
-        ICACHE_VALID_reg = 0;
-        check_fetch("Valid Fetch (Inc 0x10)", 32'h1000_0010);
+        shft_reg_we = 0;
+        check_fetch("Sequential Fetch (+0x10)", 32'h1000_0010);
 
         // TEST 3: Branch Redirection
         from_de_eip_target = 32'h0000_00A5; 
         from_de_take_branch = 1;
+        shft_reg_we = 1;            // <-- REQUIRED: enable the register!
         @(posedge clk); #1;
         from_de_take_branch = 0;
+        shft_reg_we = 0;            // <-- TURN OFF
         check_fetch("Decode Branch (Aligned) ", 32'h1000_00A0);
 
         // TEST 4: Flush Redirection
         from_ex_eip_target = 32'h0000_BEEF; 
         from_ex_flush = 1;
+        shft_reg_we = 1;            // <-- REQUIRED: enable the register!
         @(posedge clk); #1;
         from_ex_flush = 0;
+        shft_reg_we = 0;            // <-- TURN OFF
         check_fetch("Execute Flush Target    ", 32'h1000_BEE0);
 
         $display("=======================================");

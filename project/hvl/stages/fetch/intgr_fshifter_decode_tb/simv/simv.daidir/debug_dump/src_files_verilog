@@ -64,7 +64,7 @@
 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/fetch_buffer.v
 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/logic_cl_shifter.v
 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de/logic_tail_ptr.v
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/intgr_fshifter_decode_tb.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/intgr_fshifter_decode_tb3.v
 /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
 /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
 /home/projects/courses/spring_22/ee382n19_16785/lib/lib3

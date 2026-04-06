@@ -19,7 +19,8 @@ module intgr_fshifter_decode(
     output wire [1:0] to_rr_exception_flags,
     output wire [31:0] to_rr_i_eip,
     output wire [31:0] to_rr_o_eip,
-    output wire [31:0] to_rr_bp_target,
+    output wire [31:0] to_rr_bp_target, //after latch
+    output wire [31:0] to_pr_bp_target, //before latch
     output wire to_rr_pr_valid, 
     output wire [5:0] to_rr_prefixes, //{prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
     output wire [7:0] to_rr_opcode,
@@ -30,12 +31,15 @@ module intgr_fshifter_decode(
     output wire [2:0] to_rr_imm_size,
     output wire [47:0] to_rr_imm,
     output wire [1:0] to_rr_addressing_mode,
-    output wire [3:0] to_rr_instr_length
+    output wire [3:0] to_rr_instr_length,
+    output wire from_de_eip_redirection,
+
+    output wire shft_reg_we
 );  
 
     wire [4:0]  tail_ptr;
     wire [3:0] to_pr_instr_length;
-    wire from_de_eip_redirection, to_pr_pr_valid, shft_reg_we;
+    wire to_pr_pr_valid, shft_reg_we;
 
     wire [127:0] to_de_outbytes;
     wire [15:0] to_de_pf_expn_bytes_out;
