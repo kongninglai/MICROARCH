@@ -34,37 +34,23 @@ module mcu_ctrl #(
   parameter WR_AND_DATA_EN_CYCLES     = ((CE_SETUP_X10  / CYCLE_TIME_X10)   + 1),
 
   parameter V_CT_1000   = RANK_BURST_SIZE - 1,
-  parameter V_CT_0100   = WR_AND_DATA_EN_CYCLES - 1,
-  parameter V_CT_1101   = RANK_BURST_SIZE  - 1,
-  parameter V_CT_1110   = (RD_EN_CYCLES - RANK_BURST_SIZE) - 1,
-  parameter V_CT_1111   = (RANK_BURST_SIZE) - 1
+  parameter V_CT_0100   = WR_AND_DATA_EN_CYCLES - 1
 ) (
   input           rst, clk, 
   input           DC_MEM_WR_ACK, DMA_MEM_WR_ACK,
-  input           DC_MEM_RD_ACK, IC_MEM_RD_ACK,
   output  [2:0]   MEM_CTRL_Q_MUX
 );
 
 /*** REWRITE COUNTER VALUES AS WIRES ***/
 
 wire    [0:0]   CT_1000,
-                CT_0100,
-                CT_1101,
-                CT_1110,
-                CT_1111;
+                CT_0100;
 
 wire    [2:0]   W_CT_1000,
-                W_CT_0100,
-                W_CT_0101,
-                W_CT_1101,
-                W_CT_1110,
-                W_CT_1111;
+                W_CT_0100;
 
 assign          W_CT_1000 = V_CT_1000 ;  
-assign          W_CT_0100 = V_CT_0100 ;  
-assign          W_CT_1101 = V_CT_1101 ;  
-assign          W_CT_1110 = V_CT_1110 ;
-assign          W_CT_1111 = V_CT_1111 ;
+assign          W_CT_0100 = V_CT_0100 ; 
 
 /*** STATE BITS + COUNTER ***/
 wire  [3:0] STATE, NEXT_STATE;
@@ -118,81 +104,44 @@ reg_n #(
 
 big_eq  #(.WIDTH(3)) done_1000  (.in0(counter_buf16), .in1(W_CT_1000), .eq(CT_1000));
 big_eq  #(.WIDTH(3)) done_0100  (.in0(counter_buf16), .in1(W_CT_0100), .eq(CT_0100));
-big_eq  #(.WIDTH(3)) done_1101  (.in0(counter_buf16), .in1(W_CT_1101), .eq(CT_1101));
-big_eq  #(.WIDTH(3)) done_1110  (.in0(counter_buf16), .in1(W_CT_1110), .eq(CT_1110));
-big_eq  #(.WIDTH(3)) done_1111  (.in0(counter_buf16), .in1(W_CT_1111), .eq(CT_1111));
 
 /* Inverters */
-wire CT_1000_bar;
-inv1$ inv_0(CT_1000_bar, CT_1000);
+wire Q0_bar;
 wire CT_0100_bar;
 inv1$ inv_1(CT_0100_bar, CT_0100);
-wire Q3_bar;
 wire Q2_bar;
 wire Q1_bar;
-wire Q0_bar;
-wire CT_1101_bar;
-inv1$ inv_6(CT_1101_bar, CT_1101);
-wire CT_1111_bar;
-inv1$ inv_7(CT_1111_bar, CT_1111);
+wire Q3_bar;
+wire CT_1000_bar;
+inv1$ inv_5(CT_1000_bar, CT_1000);
 
 /* Product Expressions */
 wire nand_0_0_0_out;
 wire nand_0_1_0_out;
-nand4$ nand_0_0_0(nand_0_0_0_out,nand_0_1_0_out,Q3,Q2,Q1);
-and2$ nand_0_1_0(nand_0_1_0_out,Q0_bar,CT_1110);
+nand4$ nand_0_0_0(nand_0_0_0_out,nand_0_1_0_out,Q3_bar,Q2,Q1_bar);
+and2$ nand_0_1_0(nand_0_1_0_out,Q0_bar,CT_0100_bar);
 wire nand_1_0_0_out;
 wire nand_1_1_0_out;
-nand4$ nand_1_0_0(nand_1_0_0_out,nand_1_1_0_out,Q3_bar,Q2,Q1_bar);
-and2$ nand_1_1_0(nand_1_1_0_out,Q0_bar,CT_0100_bar);
+nand4$ nand_1_0_0(nand_1_0_0_out,nand_1_1_0_out,Q3,Q2_bar,Q1_bar);
+and2$ nand_1_1_0(nand_1_1_0_out,Q0_bar,CT_1000);
 wire nand_2_0_0_out;
 wire nand_2_1_0_out;
-nand4$ nand_2_0_0(nand_2_0_0_out,nand_2_1_0_out,Q3_bar,Q2_bar,Q1_bar);
-and2$ nand_2_1_0(nand_2_1_0_out,Q0_bar,DMA_MEM_WR_ACK);
+nand4$ nand_2_0_0(nand_2_0_0_out,nand_2_1_0_out,Q3,Q2_bar,Q1_bar);
+and2$ nand_2_1_0(nand_2_1_0_out,Q0_bar,CT_1000_bar);
 wire nand_3_0_0_out;
 wire nand_3_1_0_out;
 nand4$ nand_3_0_0(nand_3_0_0_out,nand_3_1_0_out,Q3_bar,Q2_bar,Q1_bar);
-and2$ nand_3_1_0(nand_3_1_0_out,Q0_bar,DC_MEM_WR_ACK);
+and2$ nand_3_1_0(nand_3_1_0_out,Q0_bar,DMA_MEM_WR_ACK);
 wire nand_4_0_0_out;
-nand4$ nand_4_0_0(nand_4_0_0_out,Q3,Q2_bar,Q1_bar,CT_1000);
-wire nand_5_0_0_out;
-wire nand_5_1_0_out;
-nand4$ nand_5_0_0(nand_5_0_0_out,nand_5_1_0_out,Q3_bar,Q2_bar,Q1_bar);
-and2$ nand_5_1_0(nand_5_1_0_out,Q0_bar,IC_MEM_RD_ACK);
-wire nand_6_0_0_out;
-wire nand_6_1_0_out;
-nand4$ nand_6_0_0(nand_6_0_0_out,nand_6_1_0_out,Q3_bar,Q2_bar,Q1_bar);
-and2$ nand_6_1_0(nand_6_1_0_out,Q0_bar,DC_MEM_RD_ACK);
-wire nand_7_0_0_out;
-wire nand_7_1_0_out;
-nand4$ nand_7_0_0(nand_7_0_0_out,nand_7_1_0_out,Q3,Q2,Q1);
-and2$ nand_7_1_0(nand_7_1_0_out,Q0,CT_1111_bar);
-wire nand_8_0_0_out;
-wire nand_8_1_0_out;
-nand4$ nand_8_0_0(nand_8_0_0_out,nand_8_1_0_out,Q3,Q2,Q1_bar);
-and2$ nand_8_1_0(nand_8_1_0_out,Q0,CT_1101);
-wire nand_9_0_0_out;
-nand4$ nand_9_0_0(nand_9_0_0_out,Q3,Q2_bar,Q1_bar,CT_1000_bar);
-wire nand_10_0_0_out;
-nand4$ nand_10_0_0(nand_10_0_0_out,Q3,Q2,Q1,Q0_bar);
-wire nand_11_0_0_out;
-nand4$ nand_11_0_0(nand_11_0_0_out,Q3,Q1_bar,Q0,CT_1101_bar);
-wire nand_12_0_0_out;
-nand4$ nand_12_0_0(nand_12_0_0_out,Q3,Q2_bar,Q1_bar,Q0);
+wire nand_4_1_0_out;
+nand4$ nand_4_0_0(nand_4_0_0_out,nand_4_1_0_out,Q3_bar,Q2_bar,Q1_bar);
+and2$ nand_4_1_0(nand_4_1_0_out,Q0_bar,DC_MEM_WR_ACK);
 
 /* Sum Expressions */
-wire nand_0_1_1_out;
-wire nand_0_2_1_out;
-nand4$ nand_0_0_1(D3,nand_0_1_1_out,nand_2_0_0_out,nand_3_0_0_out,nand_5_0_0_out);
-and4$ nand_0_1_1(nand_0_1_1_out,nand_0_2_1_out,nand_6_0_0_out,nand_7_0_0_out,nand_8_0_0_out);
-and4$ nand_0_2_1(nand_0_2_1_out,nand_9_0_0_out,nand_10_0_0_out,nand_11_0_0_out,nand_12_0_0_out);
-wire nand_1_1_1_out;
-nand4$ nand_1_0_1(D2,nand_1_1_1_out,nand_1_0_0_out,nand_4_0_0_out,nand_7_0_0_out);
-and4$ nand_1_1_1(nand_1_1_1_out,nand_8_0_0_out,nand_10_0_0_out,nand_11_0_0_out,nand_12_0_0_out);
-nand3$ nand_2_0_1(D1,nand_7_0_0_out,nand_8_0_0_out,nand_10_0_0_out);
-wire nand_3_1_1_out;
-nand4$ nand_3_0_1(D0,nand_3_1_1_out,nand_0_0_0_out,nand_5_0_0_out,nand_6_0_0_out);
-and3$ nand_3_1_1(nand_3_1_1_out,nand_7_0_0_out,nand_11_0_0_out,nand_12_0_0_out);
+nand3$ nand_0_0_1(D3,nand_2_0_0_out,nand_3_0_0_out,nand_4_0_0_out);
+nand2$ nand_1_0_1(D2,nand_0_0_0_out,nand_1_0_0_out);
+assign D1 = 1'b0;
+assign D0 = 1'b0;
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);
