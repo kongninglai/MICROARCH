@@ -29,7 +29,7 @@ module stage_wb #(
   parameter PAGE_BIT_WIDTH=$clog2(PAGE_SIZE_BYTES),
   parameter PFN_BIT_WIDTH=MEM_ADDR_WIDTH-PAGE_BIT_WIDTH,
 
-  parameter TRUE_LRU=0,
+  parameter TRUE_LRU=1,
   parameter ENTRY_BIT_WIDTH=CHIPS_PER_RANK+PHYS_LINE_BIT_WIDTH+RANK_BIT_WIDTH,
 
   parameter NUM_ENTRIES=4,
@@ -215,9 +215,7 @@ assign WB_PR_ST_MASK_L0 = to_wb_store_mask_line_0;
 assign WB_SHF_ST_DATA_L0 = store_data_line_0;
 and3$   and3$_WB_VALID_IO_STORE_INST(WB_VALID_IO_STORE_INST, to_wb_store_is_io_line_0, to_wb_valid_buf16, no_exception);
 
-wire    stalling_for_store_queue;
-and2$   and2$_stalling_for_store_queue(stalling_for_store_queue, DCACHE_STALL, STOREQ_STORING);
-or3$    or3$_from_wb_stall_if_mem_en(from_wb_stall_if_mem_en, WB_VALID_IO_STORE_INST, stalling_for_store_queue, WBE_BUSY);
+or3$    or3$_from_wb_stall_if_mem_en(from_wb_stall_if_mem_en, WB_VALID_IO_STORE_INST, STOREQ_STORING, WBE_BUSY);
 
 /*** BETWEEN STORE QUEUE & CACHE, for WRITES ***/
 wire    WBE_BUSY_BAR;

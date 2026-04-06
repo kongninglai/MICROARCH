@@ -70,7 +70,7 @@ wire        Q2_bar_prebuf,Q1_bar_prebuf,Q0_bar_prebuf;
 
 bufferH16$  bufferH16$_Q2(Q2, Q2_prebuf);
 bufferH16$  bufferH16$_Q1(Q1, Q1_prebuf);
-bufferH16$  bufferH16$_Q0(Q0, Q0_prebuf);
+bufferH64$  bufferH64$_Q0(Q0, Q0_prebuf);
 
 wire  [2:0] counter, counter_buf1024;
 wire        L2B_CTR;
@@ -92,25 +92,26 @@ bufferH1024$  bufferH1024$_LOAD_BUF_LD_EN_buf1024 (LOAD_BUF_LD_EN_buf1024,  LOAD
 bufferH1024$  bufferH1024$_LOAD_ADDR_LD_EN_buf1024(LOAD_ADDR_LD_EN_buf1024, LOAD_ADDR_LD_EN);
 
 wire    MEM_ADDR_GATE_ST, MEM_ADDR_GATE_ST_buf16,
-        MEM_ADDR_GATE_LD, MEM_ADDR_GATE_LD_buf16,
+        MEM_ADDR_GATE_LD, MEM_ADDR_GATE_LD_buf1024,
         MEM_DIO_GATE, MEM_DIO_GATE_buf256,
         DATA_BUS_GATE, DATA_BUS_GATE_buf256;
 
 
 bufferH16$  bufferH16$_MEM_ADDR_GATE_ST_buf16(MEM_ADDR_GATE_ST_buf16, MEM_ADDR_GATE_ST);
-bufferH16$  bufferH16$_MEM_ADDR_GATE_LD_buf16(MEM_ADDR_GATE_LD_buf16, MEM_ADDR_GATE_LD);
+bufferH1024$  bufferH1024$_MEM_ADDR_GATE_LD_buf1024(MEM_ADDR_GATE_LD_buf1024, MEM_ADDR_GATE_LD);
 bufferH256$ bufferH256$_MEM_DIO_GATE_buf256(MEM_DIO_GATE_buf256, MEM_DIO_GATE);
 bufferH256$ bufferH256$_DATA_BUS_GATE_buf256(DATA_BUS_GATE_buf256, DATA_BUS_GATE);
 
-wire    MEM_BUSY_DRIVER_VALUE;
-or3$    or3$_MEM_BUSY_DRIVER_VALUE(MEM_BUSY_DRIVER_VALUE, Q2, Q1, Q0);
+wire    MEM_BUSY_DRIVER_VALUE_buf1024, MEM_BUSY_DRIVER_VALUE_inv_prebuf;
+nor3$    nor3$_MEM_BUSY_DRIVER_VALUE_inv_prebuf(MEM_BUSY_DRIVER_VALUE_inv_prebuf, Q2, Q1, Q0);
+bufferHInv1024$ bufferHInv1024$_MEM_BUSY_DRIVER_VALUE_buf1024(MEM_BUSY_DRIVER_VALUE_buf1024, MEM_BUSY_DRIVER_VALUE_inv_prebuf);
 tristate_bus_driver1$  tristate_bus_driver1$_MEM_BUSY(.enbar(1'b0), 
-                                                      .in(MEM_BUSY_DRIVER_VALUE), 
+                                                      .in(MEM_BUSY_DRIVER_VALUE_buf1024), 
                                                       .out(MEM_BUSY));
 
 wire    DATA_VALID_BAR_DRIVER_VALUE, NOT_MEM_BUSY_DRIVER_VALUE;
 assign  DATA_VALID_BAR_DRIVER_VALUE = DATA_BUS_GATE_buf256;
-inv1$   inv1$_NOT_MEM_BUSY_DRIVER_VALUE(NOT_MEM_BUSY_DRIVER_VALUE, MEM_BUSY_DRIVER_VALUE);
+inv1$   inv1$_NOT_MEM_BUSY_DRIVER_VALUE(NOT_MEM_BUSY_DRIVER_VALUE, MEM_BUSY_DRIVER_VALUE_buf1024);
 tristate_bus_driver1$  tristate_bus_driver1$_DATA_VALID_BAR(.enbar(NOT_MEM_BUSY_DRIVER_VALUE), 
                                                             .in(DATA_VALID_BAR_DRIVER_VALUE), 
                                                             .out(DATA_VALID_BAR));
@@ -158,8 +159,10 @@ assign STORE_BUFFER_OE = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
 
 /* STORE BUFFER DATA (DESERIALIZER) */
 
-wire    [RANK_BIT_WIDTH-1:0]  STORE_BUFFER_DATA, STORE_BUFFER_DATA_WR_EN, STORE_BUFFER_DATA_WR_EN_GATED,
+wire    [RANK_BIT_WIDTH-1:0]  STORE_BUFFER_DATA, STORE_BUFFER_DATA_buf256, STORE_BUFFER_DATA_WR_EN, STORE_BUFFER_DATA_WR_EN_GATED,
                               SHIFTED_DATA_BUS;
+
+bufferH256$   bufferH256$_STORE_BUFFER_DATA_buf256[RANK_BIT_WIDTH-1:0](STORE_BUFFER_DATA_buf256, STORE_BUFFER_DATA);
 
 mux4$   mux4$_STORE_BUFFER_DATA_WR_EN[RANK_BIT_WIDTH-1:0](STORE_BUFFER_DATA_WR_EN,
                                                           {{96{1'b0}}, {32{1'b1}}},
@@ -236,28 +239,33 @@ reg_n #(
 
 /* LOAD BUFFER MUX SELECT */
 
-wire    [RANK_IDX_WIDTH-1:0]                RANK_IDX_0, 
-                              RANK_IDX_1_D, RANK_IDX_1,
-                              RANK_IDX_2_D, RANK_IDX_2,
+wire    [RANK_IDX_WIDTH-1:0]                RANK_IDX_0, RANK_IDX_0_buf16,
+                              RANK_IDX_1_D, RANK_IDX_1, RANK_IDX_1_buf16,
+                              RANK_IDX_2_D, RANK_IDX_2, RANK_IDX_2_buf16,
                               RANK_IDX_3_D, RANK_IDX_3,
-                                            RANK_IDX_SELECTED, RANK_IDX_SELECTED_DUMMY;
+                                            RANK_IDX_SELECTED, RANK_IDX_SELECTED_buf64, RANK_IDX_SELECTED_DUMMY;
+
+bufferH16$    bufferH16$_RANK_IDX_0_buf16[RANK_IDX_WIDTH-1:0](RANK_IDX_0_buf16, RANK_IDX_0);
+bufferH16$    bufferH16$_RANK_IDX_1_buf16[RANK_IDX_WIDTH-1:0](RANK_IDX_1_buf16, RANK_IDX_1);
+bufferH16$    bufferH16$_RANK_IDX_2_buf16[RANK_IDX_WIDTH-1:0](RANK_IDX_2_buf16, RANK_IDX_2);
+bufferH64$    bufferH64$_RANK_IDX_SELECTED_buf64[RANK_IDX_WIDTH-1:0](RANK_IDX_SELECTED_buf64, RANK_IDX_SELECTED);
 
 mux16_8b mux16_8b_RANK_IDX_SELECTED (
-  .in0 ({4'd0, RANK_IDX_0}),
-  .in1 ({4'd0, RANK_IDX_0}),
-  .in2 ({4'd0, RANK_IDX_0}),
-  .in3 ({4'd0, RANK_IDX_0}),
-  .in4 ({4'd0, RANK_IDX_0}),
-  .in5 ({4'd0, RANK_IDX_0}),
-  .in6 ({4'd0, RANK_IDX_0}),
-  .in7 ({4'd0, RANK_IDX_0}),
-  .in8 ({4'd0, RANK_IDX_0}),
-  .in9 ({4'd0, RANK_IDX_0}),
-  .in10({4'd0, RANK_IDX_1}),
-  .in11({4'd0, RANK_IDX_1}),
-  .in12({4'd0, RANK_IDX_1}),
-  .in13({4'd0, RANK_IDX_1}),
-  .in14({4'd0, RANK_IDX_2}),
+  .in0 ({4'd0, RANK_IDX_0_buf16}),
+  .in1 ({4'd0, RANK_IDX_0_buf16}),
+  .in2 ({4'd0, RANK_IDX_0_buf16}),
+  .in3 ({4'd0, RANK_IDX_0_buf16}),
+  .in4 ({4'd0, RANK_IDX_0_buf16}),
+  .in5 ({4'd0, RANK_IDX_0_buf16}),
+  .in6 ({4'd0, RANK_IDX_0_buf16}),
+  .in7 ({4'd0, RANK_IDX_0_buf16}),
+  .in8 ({4'd0, RANK_IDX_0_buf16}),
+  .in9 ({4'd0, RANK_IDX_0_buf16}),
+  .in10({4'd0, RANK_IDX_1_buf16}),
+  .in11({4'd0, RANK_IDX_1_buf16}),
+  .in12({4'd0, RANK_IDX_1_buf16}),
+  .in13({4'd0, RANK_IDX_1_buf16}),
+  .in14({4'd0, RANK_IDX_2_buf16}),
   .in15({4'd0, RANK_IDX_3}),
   .s0(counter_buf1024[1]),
   .s1(Q0),
@@ -319,10 +327,12 @@ reg_n #(
 
 /* LOAD BUFFER DATA (SERIALIZER) */
 
-wire    [RANK_BIT_WIDTH-1:0]              LOAD_BUFFER_DATA, SELECTED_RANK_DIO;
+wire    [RANK_BIT_WIDTH-1:0]              LOAD_BUFFER_DATA, SELECTED_RANK_DIO, SELECTED_RANK_DIO_buf16;
 wire    [RANK_BIT_WIDTH-1:0]              DIO_PER_RANK[0:RANK_COUNT-1];
 wire    [RANK_COUNT*RANK_BIT_WIDTH-1:0]   DIO;
 wire    [BUS_BIT_WIDTH-1:0]               DATA_BUS_DRIVER_VALUE;
+
+bufferH16$    bufferH16$_SELECTED_RANK_DIO_buf16[RANK_BIT_WIDTH-1:0](SELECTED_RANK_DIO_buf16, SELECTED_RANK_DIO);
 
 genvar r;
 generate
@@ -360,10 +370,10 @@ generate
       .in13(DIO_PER_RANK[13][r*16 +: 16]),
       .in14(DIO_PER_RANK[14][r*16 +: 16]),
       .in15(DIO_PER_RANK[15][r*16 +: 16]),
-      .s0(RANK_IDX_SELECTED[0]),
-      .s1(RANK_IDX_SELECTED[1]),
-      .s2(RANK_IDX_SELECTED[2]),
-      .s3(RANK_IDX_SELECTED[3]),
+      .s0(RANK_IDX_SELECTED_buf64[0]),
+      .s1(RANK_IDX_SELECTED_buf64[1]),
+      .s2(RANK_IDX_SELECTED_buf64[2]),
+      .s3(RANK_IDX_SELECTED_buf64[3]),
       .outb(SELECTED_RANK_DIO[r*16 +: 16])
     );
   end
@@ -374,7 +384,7 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_LOAD_BUFFER_DATA (
   .clk(clk), .rst(rst),
-  .en({RANK_BIT_WIDTH{LOAD_BUF_LD_EN_buf1024}}), .d(SELECTED_RANK_DIO),
+  .en({RANK_BIT_WIDTH{LOAD_BUF_LD_EN_buf1024}}), .d(SELECTED_RANK_DIO_buf16),
   .q(LOAD_BUFFER_DATA)
 );
 
@@ -447,21 +457,21 @@ genvar a, b;
 generate
   for (a = 0; a < RANK_COUNT; a = a + 1) begin : PER_RANK_DIO_GEN
     for (b = 0; b < RANK_BIT_WIDTH / 16; b = b + 1) begin : PER_RANK_DIO_WORD_GEN
-      tristate_bus_driver16$  tristate_bus_driver16$_DIO(.enbar(MEM_DIO_GATE_buf256), .in(STORE_BUFFER_DATA[16*b+:16]), .out(DIO[(RANK_BIT_WIDTH*a+16*b)+:16]));
+      tristate_bus_driver16$  tristate_bus_driver16$_DIO(.enbar(MEM_DIO_GATE_buf256), .in(STORE_BUFFER_DATA_buf256[16*b+:16]), .out(DIO[(RANK_BIT_WIDTH*a+16*b)+:16]));
     end
   end
 endgenerate
 
-tristateL$  tristateL$_LOAD_BUFFER_A_RANK0 [RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD_buf16), .in(LOAD_BUFFER_A_RANK0),  .out(A_RANK0));
-tristateL$  tristateL$_LOAD_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD_buf16), .in(LOAD_BUFFER_A_OTHERS), .out(A_OTHERS));
+tristateL$  tristateL$_LOAD_BUFFER_A_RANK0 [RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD_buf1024), .in(LOAD_BUFFER_A_RANK0),  .out(A_RANK0));
+tristateL$  tristateL$_LOAD_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD_buf1024), .in(LOAD_BUFFER_A_OTHERS), .out(A_OTHERS));
 
 tristateL$  tristateL$_STORE_BUFFER_A_RANK0 [RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_ST_buf16), .in(STORE_BUFFER_A_RANK0),  .out(A_RANK0));
 tristateL$  tristateL$_STORE_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_ST_buf16), .in(STORE_BUFFER_A_OTHERS), .out(A_OTHERS));
 
 /* Now, pick which OE, CE, and WR goes to memory */
 
-assign OE = {256{MEM_ADDR_GATE_LD_buf16}};
-inv1$   inv1$_CE[255:0](CE, MEM_BUSY_DRIVER_VALUE);
+assign OE = {256{MEM_ADDR_GATE_LD_buf1024}};
+inv1$   inv1$_CE[255:0](CE, MEM_BUSY_DRIVER_VALUE_buf1024);
 
 genvar j;
 generate
@@ -543,7 +553,7 @@ reg_n #(
 );
 
 wire SET_OR_CLR_DC_PLUS_VALID;
-or2$    or2$_SET_OR_CLR_DC_PLUS_VALID(SET_OR_CLR_DC_PLUS_VALID, DC_PLUS_2_LD_EN_buf256, DC_MEM_WR_ACK);
+or3$    or3$_SET_OR_CLR_DC_PLUS_VALID(SET_OR_CLR_DC_PLUS_VALID, DC_PLUS_2_LD_EN_buf256, DC_MEM_WR_ACK, DMA_MEM_WR_ACK);
 
 reg_n #(
   .WIDTH(1),
@@ -559,7 +569,7 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_IC_PLUS_2_DATA (
   .clk(clk), .rst(rst),
-  .en({RANK_BIT_WIDTH{IC_PLUS_2_LD_EN_buf256}}), .d(SELECTED_RANK_DIO),
+  .en({RANK_BIT_WIDTH{IC_PLUS_2_LD_EN_buf256}}), .d(SELECTED_RANK_DIO_buf16),
   .q(IC_PLUS_2_DATA)
 );
 
@@ -568,7 +578,7 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_IC_PLUS_3_DATA (
   .clk(clk), .rst(rst),
-  .en({RANK_BIT_WIDTH{IC_PLUS_3_LD_EN_buf256}}), .d(SELECTED_RANK_DIO),
+  .en({RANK_BIT_WIDTH{IC_PLUS_3_LD_EN_buf256}}), .d(SELECTED_RANK_DIO_buf16),
   .q(IC_PLUS_3_DATA)
 );
 
@@ -577,7 +587,7 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_DC_PLUS_2_DATA (
   .clk(clk), .rst(rst),
-  .en({RANK_BIT_WIDTH{DC_PLUS_2_LD_EN_buf256}}), .d(SELECTED_RANK_DIO),
+  .en({RANK_BIT_WIDTH{DC_PLUS_2_LD_EN_buf256}}), .d(SELECTED_RANK_DIO_buf16),
   .q(DC_PLUS_2_DATA)
 );
 
@@ -586,7 +596,7 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_DC_PLUS_3_DATA (
   .clk(clk), .rst(rst),
-  .en({RANK_BIT_WIDTH{DC_PLUS_3_LD_EN_buf256}}), .d(SELECTED_RANK_DIO),
+  .en({RANK_BIT_WIDTH{DC_PLUS_3_LD_EN_buf256}}), .d(SELECTED_RANK_DIO_buf16),
   .q(DC_PLUS_3_DATA)
 );
 
@@ -594,7 +604,7 @@ wire [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE] IC_PLUS_ADDR, DC_PLUS_ADDR;
 wire [RANK_ADDR_WIDTH-1:0] PLUS_ADDR_D;
 wire IS_FIRST_2_RANKS, PLUS_ADDR_D_DUMMY;
 
-nor3$   nor3$_IS_FIRST_2_RANKS(IS_FIRST_2_RANKS, RANK_IDX_2[3], RANK_IDX_2[2], RANK_IDX_2[1]);
+nor3$   nor3$_IS_FIRST_2_RANKS(IS_FIRST_2_RANKS, RANK_IDX_2_buf16[3], RANK_IDX_2_buf16[2], RANK_IDX_2_buf16[1]);
 mux2_8$   mux2_8$_PLUS_ADDR_D({PLUS_ADDR_D_DUMMY, PLUS_ADDR_D},
                               {1'b0, LOAD_BUFFER_A_OTHERS},
                               {1'b0, LOAD_BUFFER_A_RANK0},
@@ -605,7 +615,7 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_IC_PLUS_ADDR (
   .clk(clk), .rst(rst),
-  .en({(MEM_ADDR_WIDTH-RANK_BURST_SIZE){IC_PLUS_2_LD_EN_buf256}}), .d({PLUS_ADDR_D, RANK_IDX_2}),
+  .en({(MEM_ADDR_WIDTH-RANK_BURST_SIZE){IC_PLUS_2_LD_EN_buf256}}), .d({PLUS_ADDR_D, RANK_IDX_2_buf16}),
   .q(IC_PLUS_ADDR)
 );
 
@@ -614,11 +624,12 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_DC_PLUS_ADDR (
   .clk(clk), .rst(rst),
-  .en({(MEM_ADDR_WIDTH-RANK_BURST_SIZE){DC_PLUS_2_LD_EN_buf256}}), .d({PLUS_ADDR_D, RANK_IDX_2}),
+  .en({(MEM_ADDR_WIDTH-RANK_BURST_SIZE){DC_PLUS_2_LD_EN_buf256}}), .d({PLUS_ADDR_D, RANK_IDX_2_buf16}),
   .q(DC_PLUS_ADDR)
 );
 
-wire IC_ADDR_HIT, IC_PLUS_HIT_D, IC_PLUS_HIT, DC_ADDR_HIT, DC_PLUS_HIT_D, DC_PLUS_HIT;
+wire IC_ADDR_HIT, IC_PLUS_HIT_D, IC_PLUS_HIT, DC_ADDR_HIT, DC_PLUS_HIT_D, DC_PLUS_HIT, DC_PLUS_HIT_buf16;
+bufferH16$    bufferH16$_DC_PLUS_HIT_buf16(DC_PLUS_HIT_buf16, DC_PLUS_HIT);
 
 big_eq #(
   .WIDTH(MEM_ADDR_WIDTH-RANK_BURST_SIZE)
@@ -636,12 +647,12 @@ big_eq #(
 
 wire IC_PLUS_MISS_D, DC_PLUS_MISS_D;
 
-and3$   and3$_IC_PLUS_HIT_D(IC_PLUS_HIT_D, IC_ADDR_HIT, IS_IC_MEM_RD, IC_PLUS_VALID);
-and3$   and3$_DC_PLUS_HIT_D(DC_PLUS_HIT_D, DC_ADDR_HIT, IS_DC_MEM_RD, DC_PLUS_VALID);
-
 wire IC_PLUS_HIT_D_BAR, DC_PLUS_HIT_D_BAR;
 nand3$   nand3$_IC_PLUS_HIT_D_BAR(IC_PLUS_HIT_D_BAR, IC_ADDR_HIT, IS_IC_MEM_RD, IC_PLUS_VALID);
 nand3$   nand3$_DC_PLUS_HIT_D_BAR(DC_PLUS_HIT_D_BAR, DC_ADDR_HIT, IS_DC_MEM_RD, DC_PLUS_VALID);
+
+inv1$   inv1$_IC_PLUS_HIT_D(IC_PLUS_HIT_D, IC_PLUS_HIT_D_BAR);
+inv1$   inv1$_DC_PLUS_HIT_D(DC_PLUS_HIT_D, DC_PLUS_HIT_D_BAR);
 
 and2$   and2$_IC_PLUS_MISS_D(IC_PLUS_MISS_D, IC_PLUS_HIT_D_BAR, IS_IC_MEM_RD);
 and2$   and2$_DC_PLUS_MISS_D(DC_PLUS_MISS_D, DC_PLUS_HIT_D_BAR, IS_DC_MEM_RD);
@@ -722,28 +733,28 @@ and3$   and3$_final_state(final_state, Q2, Q1, Q0);
 mux8_16b   mux8_16b_DATA_BUS_DRIVER_VALUE_TOP(    DATA_BUS_DRIVER_VALUE   [31:16]  ,
                                                   LOAD_BUFFER_DRIVER_VALUE[31:16]  ,
                                                   LOAD_BUFFER_DRIVER_VALUE[31:16]  ,
-                                                  IC_PLUS_2_DRIVER_VALUE  [31:16]  ,
-                                                  IC_PLUS_3_DRIVER_VALUE  [31:16]  ,
                                                   DC_PLUS_2_DRIVER_VALUE  [31:16]  ,
                                                   DC_PLUS_3_DRIVER_VALUE  [31:16]  ,
+                                                  IC_PLUS_2_DRIVER_VALUE  [31:16]  ,
+                                                  IC_PLUS_3_DRIVER_VALUE  [31:16]  ,
                                                   ,
                                                   ,                                                            
                                                   final_state,
-                                                  IC_PLUS_HIT,
-                                                  DC_PLUS_HIT);
+                                                  DC_PLUS_HIT_buf16,
+                                                  IC_PLUS_HIT);
 
 mux8_16b   mux8_16b_DATA_BUS_DRIVER_VALUE_BOT(    DATA_BUS_DRIVER_VALUE   [15:0]  ,
                                                   LOAD_BUFFER_DRIVER_VALUE[15:0]  ,
                                                   LOAD_BUFFER_DRIVER_VALUE[15:0]  ,
-                                                  IC_PLUS_2_DRIVER_VALUE  [15:0]  ,
-                                                  IC_PLUS_3_DRIVER_VALUE  [15:0]  ,
                                                   DC_PLUS_2_DRIVER_VALUE  [15:0]  ,
                                                   DC_PLUS_3_DRIVER_VALUE  [15:0]  ,
+                                                  IC_PLUS_2_DRIVER_VALUE  [15:0]  ,
+                                                  IC_PLUS_3_DRIVER_VALUE  [15:0]  ,
                                                   ,
                                                   ,                                                            
                                                   final_state,
-                                                  IC_PLUS_HIT,
-                                                  DC_PLUS_HIT);
+                                                  DC_PLUS_HIT_buf16,
+                                                  IC_PLUS_HIT);
 
 wire SKIP_STATE_INT;
 or2$    or2$_SKIP_STATE_INT(SKIP_STATE_INT, IC_PLUS_HIT_D, DC_PLUS_HIT_D);

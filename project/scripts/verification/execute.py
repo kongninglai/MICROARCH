@@ -351,6 +351,8 @@ class Executor:
                     seg, addr = self.get_rm(mod, rm)
                     if self.state.eflags["CF"] == 1:
                         self.set_reg(reg, self.read_rm(seg, addr, size), size)
+                    else:
+                        dummy = self.read_rm(seg, addr, size)
                 elif op == 0xA0:  # PUSH FS (16/32-bit)
                     self.push(self.state.seg[4], 2 if self.oso else 4)
                 elif op == 0xA1:  # POP FS (16/32-bit)
