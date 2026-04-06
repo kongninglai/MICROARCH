@@ -26,7 +26,7 @@ run_one_sim() {
   simdir="$leaf_dir/sim"
   out="$TMP_RESULTS/$tb_name.result"
 
-  echo "[$tb_name] Running..."
+  # echo "[$tb_name] Running..."
   (
     mkdir -p "$simdir"
     cd "$simdir"

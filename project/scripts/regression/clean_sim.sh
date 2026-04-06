@@ -8,10 +8,10 @@ pids=()
 remove_one_sim() {
   simdir="$1"
   tb_name=$(basename "$(dirname "$simdir")")
-  echo "[$tb_name] Removing sim directory..."
+  # echo "[$tb_name] Removing sim directory..."
   (
     rm -rf "$simdir"
-    echo "Done"
+    # echo "Done"
   ) 2>&1 | sed "s/^/[$tb_name] /"
 }
 
