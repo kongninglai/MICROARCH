@@ -447,7 +447,9 @@ generate
                           {CHIPS_PER_RANK{1'b1}},
                           STORE_BUFFER_OE[j*16 +: 16],
                           LOAD_BUFFER_OE_DEMAND[j*16 +: 16],
-                          LOAD_BUFFER_OE_DEMAND_AND_PREFETCH[j*16 +: 16],
+                          // DIO is shared across all ranks; enabling demand+prefetch
+                          // ranks together causes bus contention and X propagation.
+                          LOAD_BUFFER_OE_PREFETCH[j*16 +: 16],
                           LOAD_BUFFER_OE_PREFETCH[j*16 +: 16],    
 
                           MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
@@ -463,7 +465,7 @@ generate
                                                 {CHIPS_PER_RANK{1'b1}},
                                                 STORE_BUFFER_CE[j*16 +: 16],
                                                 LOAD_BUFFER_CE_DEMAND[j*16 +: 16],
-                                                LOAD_BUFFER_CE_DEMAND_AND_PREFETCH[j*16 +: 16],
+                                                LOAD_BUFFER_CE_PREFETCH[j*16 +: 16],
                                                 LOAD_BUFFER_CE_PREFETCH[j*16 +: 16],    
 
                                                 MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]

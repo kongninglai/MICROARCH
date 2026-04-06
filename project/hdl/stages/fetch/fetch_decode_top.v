@@ -4,12 +4,12 @@ module fetch_decode_top(
 
     // TLB I/O
     output wire [19:0] ITLB_VPN, //stage fetch a
-    inout wire [2:0]  ITLB_PFN_OUT, 
+    input wire [2:0]  ITLB_PFN_OUT, 
     input wire ITLB_PAGE_FAULT_OUT,
 
     // Cache I/o
-    inout wire ICACHE_VALID,
-    inout wire [127:0] ICACHE_HIT_DATA,
+    input wire ICACHE_VALID,
+    input wire [127:0] ICACHE_HIT_DATA,
     output wire [11:0] F_PAGE_OFFSET, //stage fetch a
 
     // Pipeline Inputs 

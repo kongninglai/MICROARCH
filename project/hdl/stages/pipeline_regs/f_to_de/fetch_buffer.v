@@ -26,13 +26,13 @@ module fetch_buffer(
 );  
 
     //Endianness Swap (big -> little)
-    wire [127:0] le_cache_line;
-    genvar b;
-    generate
-        for (b = 0; b < 16; b = b + 1) begin : BYTE_REVERSAL
-            assign le_cache_line[(b*8) + 7 : b*8] = from_f_cache_line[((15-b)*8) + 7 : (15-b)*8];
-        end
-    endgenerate
+    // wire [127:0] le_cache_line;
+    // genvar b;
+    // generate
+    //     for (b = 0; b < 16; b = b + 1) begin : BYTE_REVERSAL
+    //         assign le_cache_line[(b*8) + 7 : b*8] = from_f_cache_line[((15-b)*8) + 7 : (15-b)*8];
+    //     end
+    // endgenerate
 
     //Flush Signal Generation 
     wire v_cl_ld, v_cl_ld_bar, from_de_cache_line_load_signal, from_de_eip_redirection_valid, fb_req_cl_stable;
@@ -43,9 +43,12 @@ module fetch_buffer(
     inv1$ inv_flush_bar(flush_bar, flush);
     
     //Shift Enable Register Logic (WE = ~IF_FULL && ICACHE_VALID)
-    wire cl_write_shft_we;
+    wire cl_write_shft_we, shft_reg_we_internal;
     and2$ shft_reg_we_gate(.in0(ICACHE_VALID), .in1(v_cl_ld), .out(cl_write_shft_we));
-    or3$ or_shft_reg_we(shft_reg_we, cl_write_shft_we, from_de_valid, flush); //also shift when consuming instructions (branch taken or flush in execute)
+    or3$ or_shft_reg_we_internal(shft_reg_we_internal, cl_write_shft_we, from_de_valid, flush); //also shift when consuming instructions (branch taken or flush in execute)
+
+    //Generate fetch buffer enable signal
+    or2$ or_shft_reg_we(shft_reg_we, cl_write_shft_we, flush); //do not enable any time there is a valid instruction in decodeto prevent shifting by a cache line each time
 
     //True Consume Logic
     wire [3:0] gated_instr_len;
@@ -70,7 +73,7 @@ module fetch_buffer(
         .rst_bar(rst_bar),
         .incr_amt(gated_instr_len),
         .offset(offset),
-        .shft_reg_we(shft_reg_we),
+        .shft_reg_we(shft_reg_we_internal),
         .flush(flush),
         .stall(from_de_stall),
         .fb_req_cl(v_cl_ld), //input, fetch buffer request cache line signal (if there is space in the fetch buffer)
@@ -132,7 +135,7 @@ module fetch_buffer(
     wire [247:0] cl_aligned;
     logic_cl_shifter LOGIC_CL_SHIFTER(
         .offset(offset),
-        .cl(le_cache_line),
+        .cl(from_f_cache_line), //le_cache_line
         .tail_ptr(tail_ptr),
 
         .unaligned_eip_redir(unaligned_eip_redir),
@@ -144,7 +147,7 @@ module fetch_buffer(
     and2$ and_shft_reg_clr_bar(shft_reg_clr_bar, rst_bar, flush_bar); 
     shift_reg FETCH_BUFFER(
         .clk(clk), .rst_n(shft_reg_clr_bar), 
-        .shift(shft_reg_we), .instr_len(gated_instr_len), 
+        .shift(shft_reg_we_internal), .instr_len(gated_instr_len), 
         .inbytes(cl_aligned), .wr_en(wr_en), 
         .outbytes(to_de_outbytes[127:0]), .ready(ready_fb)
     ); 
@@ -162,7 +165,7 @@ module fetch_buffer(
     endgenerate
 
     wire ready_pfb;
-    shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(shft_reg_clr_bar), .shift(shft_reg_we), .instr_len(gated_instr_len), .inbytes(pf_expn_bits_in), 
+    shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(shft_reg_clr_bar), .shift(shft_reg_we_internal), .instr_len(gated_instr_len), .inbytes(pf_expn_bits_in), 
         .wr_en(wr_en), .outbytes(pf_expn_bits_out), .ready(ready_pfb)
     ); 
 

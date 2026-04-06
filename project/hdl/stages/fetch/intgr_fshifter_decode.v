@@ -39,7 +39,7 @@ module intgr_fshifter_decode(
 
     wire [4:0]  tail_ptr;
     wire [3:0] to_pr_instr_length;
-    wire to_pr_pr_valid, shft_reg_we;
+    wire to_pr_pr_valid;
 
     wire [127:0] to_de_outbytes;
     wire [15:0] to_de_pf_expn_bytes_out;

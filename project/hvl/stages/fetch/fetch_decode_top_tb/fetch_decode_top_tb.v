@@ -21,7 +21,7 @@ localparam VPN_BIT_WIDTH        = VA_BIT_WIDTH - PAGE_BIT_WIDTH;
 
 localparam SEGR_DATA_BIT_WIDTH  = 16;
 
-localparam CYCLE_TIME_X10 = 98;
+localparam CYCLE_TIME_X10 = 200;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 
 reg clk;
@@ -74,6 +74,7 @@ wire [PFN_BIT_WIDTH-1:0] DMA_PFN;
 wire [MEM_ADDR_WIDTH-1:0] ADDR_BUS;
 wire [BUS_BIT_WIDTH-1:0] DATA_BUS;
 wire [15:0] WR_mask;
+wire from_fetch_buffer_write_enable;
 wire [2:0] ICACHE_SET = F_PAGE_OFFSET[6:4];
 
 fetch_decode_top DUT (
@@ -205,6 +206,112 @@ tlb_wrapper tlb_inst (
 
 integer FAILURES = 0;
 integer SUCCESSES = 0;
+integer log_fd;
+
+// =========================================================
+// LOGGING INIT — open text log alongside VPD
+// =========================================================
+initial begin
+    log_fd = $fopen("fetch_decode_top_tb.log", "w");
+    if (log_fd == 0) begin
+        $display("WARNING: Could not open fetch_decode_top_tb.log. Logging to stdout only.");
+        log_fd = 1; // fall back to stdout
+    end
+    $fdisplay(log_fd, "=== fetch_decode_top_tb simulation log ===");
+end
+
+// =========================================================
+// ICACHE_VALID MONITOR
+// Logs every cache-line delivery: address + raw data.
+// Visible in both console output and the log file.
+// =========================================================
+always @(posedge clk) begin
+    if (ICACHE_VALID === 1'b1) begin
+        $display("[ICACHE] t=%0t  VPN=%h  PAGE_OFF=%h  DATA=%h",
+                 $time, ITLB_VPN, F_PAGE_OFFSET, ICACHE_HIT_DATA);
+        $fdisplay(log_fd, "[ICACHE] t=%0t  VPN=%h  PAGE_OFF=%h  DATA=%h",
+                  $time, ITLB_VPN, F_PAGE_OFFSET, ICACHE_HIT_DATA);
+
+    // Cache-controller source selection probe at the moment I$ data is marked valid.
+    $display("[ICDBG]  t=%0t  PA=%h  miss=%b hit=%b sb_hit=%b fsm_hit_mux=%b data_valid_bar=%b",
+         $time,
+         {ITLB_PFN_OUT, F_PAGE_OFFSET},
+         full_cache_inst.ICACHE_MISS,
+         full_cache_inst.ICACHE_HIT,
+         full_cache_inst.ICC_STREAM_BUF_HIT,
+         full_cache_inst.full_cc_off_core_inst.icache_controller_inst.FSM_HIT_DATA_MUX,
+         full_cache_inst.full_cc_off_core_inst.DATA_VALID_BAR);
+    $display("[ICDBG]  rd_data=%h  sb_data=%h  cc_hit_out=%h",
+         full_cache_inst.ICACHE_RD_DATA,
+         full_cache_inst.full_cc_off_core_inst.icache_controller_inst.SB_DATA_OUT,
+         full_cache_inst.ICC_HIT_DATA_OUT);
+    $fdisplay(log_fd, "[ICDBG]  t=%0t  PA=%h  miss=%b hit=%b sb_hit=%b fsm_hit_mux=%b data_valid_bar=%b",
+          $time,
+          {ITLB_PFN_OUT, F_PAGE_OFFSET},
+          full_cache_inst.ICACHE_MISS,
+          full_cache_inst.ICACHE_HIT,
+          full_cache_inst.ICC_STREAM_BUF_HIT,
+          full_cache_inst.full_cc_off_core_inst.icache_controller_inst.FSM_HIT_DATA_MUX,
+          full_cache_inst.full_cc_off_core_inst.DATA_VALID_BAR);
+    $fdisplay(log_fd, "[ICDBG]  rd_data=%h  sb_data=%h  cc_hit_out=%h",
+          full_cache_inst.ICACHE_RD_DATA,
+          full_cache_inst.full_cc_off_core_inst.icache_controller_inst.SB_DATA_OUT,
+          full_cache_inst.ICC_HIT_DATA_OUT);
+    end
+end
+
+// =========================================================
+// FETCH PIPELINE INTERNAL SIGNAL PROBE
+// Logs externally visible signals every posedge for first
+// 50 cycles to trace exactly when X first appears.
+// Kept shallow (no deep cell-level hierarchical paths).
+// =========================================================
+integer _probe_cycle;
+initial _probe_cycle = 0;
+always @(posedge clk) begin
+    _probe_cycle = _probe_cycle + 1;
+    if (_probe_cycle <= 50) begin
+        $display("[PROBE] cyc=%0d t=%0t | ic_addr=%h | shft_we=%b | to_rr_valid=%b | ICACHE_V=%b | tail=%0d",
+            _probe_cycle, $time,
+            {ITLB_VPN, F_PAGE_OFFSET},
+            DUT.from_fetch_buffer_shft_reg_we,
+            to_rr_valid,
+            ICACHE_VALID,
+            DUT.FETCHBUFF_DECODESTAGE_DEPR.tail_ptr);
+        $fdisplay(log_fd,
+            "[PROBE] cyc=%0d t=%0t | ic_addr=%h | shft_we=%b | to_rr_valid=%b | ICACHE_V=%b | tail=%0d",
+            _probe_cycle, $time,
+            {ITLB_VPN, F_PAGE_OFFSET},
+            DUT.from_fetch_buffer_shft_reg_we,
+            to_rr_valid,
+            ICACHE_VALID,
+            DUT.FETCHBUFF_DECODESTAGE_DEPR.tail_ptr);
+    end
+end
+
+// Probe stream-buffer write activity to see whether X enters during bus-to-buffer capture.
+always @(posedge clk) begin
+  if (full_cache_inst.full_cc_off_core_inst.icache_controller_inst.CC_STREAM_BUF_WR_MASK_GATED !== 4'b0000) begin
+    $display("[SBWR]   t=%0t  mask=%b  ctr=%b  cache_addr=%h  data_valid_bar=%b",
+         $time,
+         full_cache_inst.full_cc_off_core_inst.icache_controller_inst.CC_STREAM_BUF_WR_MASK_GATED,
+         full_cache_inst.full_cc_off_core_inst.icache_controller_inst.counter,
+         full_cache_inst.full_cc_off_core_inst.icache_controller_inst.CACHE_PHYS_ADDR,
+         full_cache_inst.full_cc_off_core_inst.DATA_VALID_BAR);
+    $display("[SBWR]   DATA_BUS=%h  DATA_BUS_SHF=%h",
+         full_cache_inst.full_cc_off_core_inst.DATA_BUS,
+         full_cache_inst.full_cc_off_core_inst.icache_controller_inst.DATA_BUS_SHF);
+    $fdisplay(log_fd, "[SBWR]   t=%0t  mask=%b  ctr=%b  cache_addr=%h  data_valid_bar=%b",
+          $time,
+          full_cache_inst.full_cc_off_core_inst.icache_controller_inst.CC_STREAM_BUF_WR_MASK_GATED,
+          full_cache_inst.full_cc_off_core_inst.icache_controller_inst.counter,
+          full_cache_inst.full_cc_off_core_inst.icache_controller_inst.CACHE_PHYS_ADDR,
+          full_cache_inst.full_cc_off_core_inst.DATA_VALID_BAR);
+    $fdisplay(log_fd, "[SBWR]   DATA_BUS=%h  DATA_BUS_SHF=%h",
+          full_cache_inst.full_cc_off_core_inst.DATA_BUS,
+          full_cache_inst.full_cc_off_core_inst.icache_controller_inst.DATA_BUS_SHF);
+  end
+end
 
 assign from_fetch_buffer_write_enable = ICACHE_VALID;
 
@@ -260,87 +367,169 @@ always @(posedge clk) begin
     end
 end
 
-//Verify Task
-task verify_instruction;
+// =========================================================
+// TASK: check_output
+// Checks one field (exp vs got, zero-extended to 64b).
+// Prints a mismatch line to console + log and sets passed=0.
+// Call signature is the same regardless of field width —
+// just zero-pad narrower values before passing in.
+// =========================================================
+task check_output;
+    input [8*24:1] field_name;  // up to 24-char label
+    input [63:0]   exp;
+    input [63:0]   got;
+    inout          passed;
+    begin
+        if (exp !== got) begin
+            $display("  [MISMATCH] %-24s | exp=%h | got=%h | t=%0t",
+                     field_name, exp, got, $time);
+            $fdisplay(log_fd, "  [MISMATCH] %-24s | exp=%h | got=%h | t=%0t",
+                      field_name, exp, got, $time);
+            passed = 0;
+        end
+    end
+endtask
+
+// =========================================================
+// TASK: wait_for_valid
+// Spins on negedge clk until to_rr_valid asserts or timeout.
+// Sets timed_out=1 and increments FAILURES if it expires.
+// max_cycles: how many negedge cycles to wait before giving up.
+// =========================================================
+task wait_for_valid;
+    input  integer max_cycles;
+    output         timed_out;
+    integer        cnt;
+    begin
+        timed_out = 0;
+        cnt = 0;
+        while (to_rr_valid !== 1'b1 && cnt < max_cycles) begin
+            @(negedge clk);
+            cnt = cnt + 1;
+        end
+        if (to_rr_valid !== 1'b1) begin
+            timed_out = 1;
+            $display("[TIMEOUT] wait_for_valid: no to_rr_valid after %0d cycles | t=%0t",
+                     max_cycles, $time);
+            $fdisplay(log_fd, "[TIMEOUT] wait_for_valid: no to_rr_valid after %0d cycles | t=%0t",
+                      max_cycles, $time);
+            FAILURES = FAILURES + 1;
+        end
+    end
+endtask
+
+// =========================================================
+// TASK: assert_all_fields
+// Snapshot-logs the current DUT output state, then calls
+// check_output on every to_rr_* field.  Tallies PASS/FAIL.
+//
+// Fields checked:
+//   to_rr_ieip, to_rr_oeip, to_rr_prefix, to_rr_opcode,
+//   to_rr_modrm (if exp_has_modrm), to_rr_addr_mode (if ModRM),
+//   to_rr_imm_size, to_rr_imm (if imm_size > 0)
+// =========================================================
+task assert_all_fields;
     input [8*40:1] inst_name;
-    input [31:0] exp_ieip;
-    input [31:0] exp_oeip;
-    input [5:0]  exp_prefix;     // {rep(1), opsize(1), seg_ov(3), ext(1)}
-    input [7:0]  exp_opcode;
-    input        exp_has_modrm;  // 1 if we expect a ModRM byte, 0 otherwise
-    input [7:0]  exp_modrm;
-    input [2:0]  exp_imm_size;   // 000(0), 001(1), 010(2), 100(4)
-    input [47:0] exp_imm;
-    
-    integer timeout;
-    reg passed;
+    input [31:0]   exp_ieip;
+    input [31:0]   exp_oeip;
+    input [5:0]    exp_prefix;    // {rep, opsize, seg_ov[2:0], ext}
+    input [7:0]    exp_opcode;
+    input          exp_has_modrm;
+    input [7:0]    exp_modrm;
+    input [2:0]    exp_imm_size;  // 000=none, 001=1B, 010=2B, 100=4B
+    input [47:0]   exp_imm;
+    reg            passed;
     begin
         passed = 1;
-        timeout = 0;
-        
-        // Wait for Decode to declare the instruction valid (Timeout after 20 cycles)
-        while (to_rr_valid !== 1'b1 && timeout < 20) begin
-            @(negedge clk);
-            timeout = timeout + 1;
+
+        // Snapshot: print what the DUT is actually outputting right now
+        $display("  [DUT OUT] %0s | t=%0t", inst_name, $time);
+        $display("    ieip=%h  oeip=%h  pfx=%b  op=%h  modrm=%h  addr_mode=%b",
+                 to_rr_ieip, to_rr_oeip, to_rr_prefix, to_rr_opcode,
+                 to_rr_modrm, to_rr_addr_mode);
+        $display("    imm_sz=%b  imm=%h  disp_sz=%b  disp=%h  sib=%h  exception=%b",
+                 to_rr_imm_size, to_rr_imm, to_rr_dispsize, to_rr_disp,
+                 to_rr_sib, to_rr_exception);
+        $fdisplay(log_fd, "  [DUT OUT] %0s | t=%0t", inst_name, $time);
+        $fdisplay(log_fd, "    ieip=%h  oeip=%h  pfx=%b  op=%h  modrm=%h  addr_mode=%b",
+                  to_rr_ieip, to_rr_oeip, to_rr_prefix, to_rr_opcode,
+                  to_rr_modrm, to_rr_addr_mode);
+        $fdisplay(log_fd, "    imm_sz=%b  imm=%h  disp_sz=%b  disp=%h  sib=%h  exception=%b",
+                  to_rr_imm_size, to_rr_imm, to_rr_dispsize, to_rr_disp,
+                  to_rr_sib, to_rr_exception);
+
+        // Per-field checks
+        check_output("to_rr_ieip",
+                     {32'd0, exp_ieip},    {32'd0, to_rr_ieip},    passed);
+        check_output("to_rr_oeip",
+                     {32'd0, exp_oeip},    {32'd0, to_rr_oeip},    passed);
+        check_output("to_rr_prefix",
+                     {58'd0, exp_prefix},  {58'd0, to_rr_prefix},  passed);
+        check_output("to_rr_opcode",
+                     {56'd0, exp_opcode},  {56'd0, to_rr_opcode},  passed);
+        check_output("to_rr_imm_size",
+                     {61'd0, exp_imm_size},{61'd0, to_rr_imm_size},passed);
+
+        if (exp_has_modrm) begin
+            check_output("to_rr_modrm",
+                         {56'd0, exp_modrm},  {56'd0, to_rr_modrm},  passed);
+            // addr_mode must be 01 (ModRM) or 11 (SIB) when ModRM is expected
+            if (to_rr_addr_mode !== 2'b01 && to_rr_addr_mode !== 2'b11) begin
+                $display("  [MISMATCH] %-24s | exp=01|11 (ModRM present) | got=%b | t=%0t",
+                         "to_rr_addr_mode", to_rr_addr_mode, $time);
+                $fdisplay(log_fd, "  [MISMATCH] %-24s | exp=01|11 (ModRM present) | got=%b | t=%0t",
+                          "to_rr_addr_mode", to_rr_addr_mode, $time);
+                passed = 0;
+            end
         end
 
-        if (timeout >= 20) begin
-            $display(" ❌ FAIL | %0s | Timeout waiting for to_rr_valid", inst_name);
-            FAILURES = FAILURES + 1;
+        if (exp_imm_size > 0)
+            check_output("to_rr_imm",
+                         {16'd0, exp_imm},    {16'd0, to_rr_imm},    passed);
+
+        if (passed) begin
+            $display(" [PASS] %0s", inst_name);
+            $fdisplay(log_fd, " [PASS] %0s", inst_name);
+            SUCCESSES = SUCCESSES + 1;
         end else begin
-            // Check EIPs
-            if (to_rr_ieip !== exp_ieip) begin
-                $display("    [EIP ERROR]   Exp iEIP: %h | Got: %h", exp_ieip, to_rr_ieip);
-                passed = 0;
-            end
-            if (to_rr_oeip !== exp_oeip) begin
-                $display("    [EIP ERROR]   Exp oEIP: %h | Got: %h", exp_oeip, to_rr_oeip);
-                passed = 0;
-            end
-            
-            // Check Prefix and Opcode
-            if (to_rr_prefix !== exp_prefix) begin
-                $display("    [PFX ERROR]   Exp Pfx: %b | Got: %b", exp_prefix, to_rr_prefix);
-                passed = 0;
-            end
-            if (to_rr_opcode !== exp_opcode) begin
-                $display("    [OP ERROR]    Exp Opcode: %h | Got: %h", exp_opcode, to_rr_opcode);
-                passed = 0;
-            end
+            $display(" [FAIL] %0s", inst_name);
+            $fdisplay(log_fd, " [FAIL] %0s", inst_name);
+            FAILURES = FAILURES + 1;
+        end
+    end
+endtask
 
-            // Check ModRM conditionally
-            if (exp_has_modrm) begin
-                if (to_rr_modrm !== exp_modrm) begin
-                    $display("    [MODRM ERROR] Exp ModRM: %h | Got: %h", exp_modrm, to_rr_modrm);
-                    passed = 0;
-                end
-                // Validate address mode confirms ModRM (01) or SIB (11)
-                if (to_rr_addr_mode !== 2'b01 && to_rr_addr_mode !== 2'b11) begin
-                    $display("    [ADDR ERROR]  Expected ModRM but addr_mode is %b", to_rr_addr_mode);
-                    passed = 0;
-                end
-            end
+// =========================================================
+// TASK: verify_instruction
+// Waits for to_rr_valid (via wait_for_valid), then runs
+// assert_all_fields.  Drop-in replacement for old task —
+// call signature is unchanged so run_automated_verification
+// and any manual test calls need no changes.
+// =========================================================
+task verify_instruction;
+    input [8*40:1] inst_name;
+    input [31:0]   exp_ieip;
+    input [31:0]   exp_oeip;
+    input [5:0]    exp_prefix;    // {rep, opsize, seg_ov[2:0], ext}
+    input [7:0]    exp_opcode;
+    input          exp_has_modrm;
+    input [7:0]    exp_modrm;
+    input [2:0]    exp_imm_size;  // 000=none, 001=1B, 010=2B, 100=4B
+    input [47:0]   exp_imm;
+    reg            timed_out;
+    begin
+        $display("--- Waiting for valid: %0s | t=%0t ---", inst_name, $time);
+        $fdisplay(log_fd, "--- Waiting for valid: %0s | t=%0t ---", inst_name, $time);
 
-            // Check Immediate conditionally
-            if (to_rr_imm_size !== exp_imm_size) begin
-                $display("    [IMM SZ ERR]  Exp Size: %b | Got: %b", exp_imm_size, to_rr_imm_size);
-                passed = 0;
-            end else if (exp_imm_size > 0 && to_rr_imm !== exp_imm) begin
-                $display("    [IMM ERROR]   Exp Imm: %h | Got: %h", exp_imm, to_rr_imm);
-                passed = 0;
-            end
+        wait_for_valid(20, timed_out);
 
-            // Pass/Fail Result
-            if (passed) begin
-                $display(" ✅ PASS | %0s", inst_name);
-                SUCCESSES = SUCCESSES + 1;
-            end else begin
-                $display(" ❌ FAIL | %0s", inst_name);
-                FAILURES = FAILURES + 1;
-            end
-            
-            // Step one clock forward so we don't double-trigger on the same valid signal
-            @(negedge clk);
+        if (!timed_out) begin
+            assert_all_fields(inst_name,
+                              exp_ieip,     exp_oeip,
+                              exp_prefix,   exp_opcode,
+                              exp_has_modrm, exp_modrm,
+                              exp_imm_size, exp_imm);
+            @(negedge clk); // advance past this valid pulse
         end
     end
 endtask
@@ -368,6 +557,9 @@ task run_automated_verification;
         $display("=======================================");
         $display("      STARTING AUTOMATED TRACE         ");
         $display("=======================================");
+        $fdisplay(log_fd, "=======================================");
+        $fdisplay(log_fd, "      STARTING AUTOMATED TRACE         ");
+        $fdisplay(log_fd, "=======================================");
 
         // 2. Loop through the file until the end
         while (!$feof(trace_file)) begin
@@ -396,12 +588,16 @@ task run_automated_verification;
         $display("TRACE COMPLETE: %0d Instructions Checked", instruction_count);
         $display("FAILURES = %0d | SUCCESSES = %0d", FAILURES, SUCCESSES);
         $display("=======================================");
+        $fdisplay(log_fd, "=======================================");
+        $fdisplay(log_fd, "TRACE COMPLETE: %0d Instructions Checked", instruction_count);
+        $fdisplay(log_fd, "FAILURES = %0d | SUCCESSES = %0d", FAILURES, SUCCESSES);
+        $fdisplay(log_fd, "=======================================");
     end
 endtask
 
 initial begin
     rst_n = 0;
-    from_rr_cs = 16'h0200;
+    from_rr_cs = 16'h0000;
     from_rr_stall = 0;
     from_ex_ld_cs = 0;
     from_ex_eip_target_out = 32'h00000005;
@@ -425,6 +621,9 @@ initial begin
 
     $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
     $display("SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
+    $fdisplay(log_fd, "FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
+    $fdisplay(log_fd, "SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
+    $fclose(log_fd);
 
     $finish;
 end
