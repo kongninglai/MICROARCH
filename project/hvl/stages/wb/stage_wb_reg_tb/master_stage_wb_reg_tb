@@ -7,6 +7,7 @@
 ~/MICROARCH/project/hdl/local-lib/gates/big_and.v
 ~/MICROARCH/project/hdl/local-lib/gates/big_or.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_8.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_16.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux3_32.v
