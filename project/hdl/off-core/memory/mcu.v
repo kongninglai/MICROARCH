@@ -192,7 +192,7 @@ reg_n #(
 
 /*** LOAD BUFFER ***/
 
-/* LOAD BUFFER ADDRESS FOR RANK 0 */
+/* LOAD BUFFER ADDRESS FOR RANK 0, 1, 2 */
 
 wire    [RANK_ADDR_WIDTH-1:0]  LOAD_BUFFER_A_RANK0, LOAD_BUFFER_A_RANK0_CALC;
 
@@ -214,21 +214,12 @@ big_increment #(
   .s(INCREMENTED_A_RANK0)
 );
 
-wire    LAST_RANK_ACTIVE;
+wire LOAD_BUFFER_A_RANK0_CALC_DUMMY;
 
-and4$   and4$_LAST_RANK_ACTIVE(LAST_RANK_ACTIVE,  ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1],
-                                                  ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-2],
-                                                  ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-3],
-                                                  ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]);
-
-wire    LAST_RANK_ACTIVE_buf16;
-
-bufferH16$  bufferH16$_LAST_RANK_ACTIVE_buf16(LAST_RANK_ACTIVE_buf16, LAST_RANK_ACTIVE);
-
-mux2$   mux2$_LOAD_BUFFER_A_RANK0_CALC[RANK_ADDR_WIDTH-1:0](  LOAD_BUFFER_A_RANK0_CALC,
-                                                              ADDR_BUS[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH],
-                                                              INCREMENTED_A_RANK0,
-                                                              LAST_RANK_ACTIVE_buf16);
+mux2_8$   mux2_8$_LOAD_BUFFER_A_RANK0_CALC( {LOAD_BUFFER_A_RANK0_CALC_DUMMY, LOAD_BUFFER_A_RANK0_CALC},
+                                            {1'b0, ADDR_BUS[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH]},
+                                            {1'b0, INCREMENTED_A_RANK0},
+                                            ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1]);
 
 /* LOAD BUFFER ADDRESS FOR OTHER RANKS */
 
@@ -243,93 +234,102 @@ reg_n #(
   .q(LOAD_BUFFER_A_OTHERS)
 );
 
-/* LOAD BUFFER MEM CTRL (WR, OE, CE) */
+/* LOAD BUFFER MUX SELECT */
 
-wire    [RANK_COUNT*CHIPS_PER_RANK-1:0]   LOAD_BUFFER_OE_DEMAND_CALC, LOAD_BUFFER_OE_DEMAND, 
-                                          LOAD_BUFFER_OE_DEMAND_AND_PREFETCH_CALC, LOAD_BUFFER_OE_DEMAND_AND_PREFETCH, 
-                                          LOAD_BUFFER_OE_PREFETCH_CALC, LOAD_BUFFER_OE_PREFETCH;
+wire    [RANK_IDX_WIDTH-1:0]                RANK_IDX_0, 
+                              RANK_IDX_1_D, RANK_IDX_1,
+                              RANK_IDX_2_D, RANK_IDX_2,
+                              RANK_IDX_3_D, RANK_IDX_3,
+                                            RANK_IDX_SELECTED, RANK_IDX_SELECTED_DUMMY;
 
-wire    [RANK_COUNT*CHIPS_PER_RANK-1:0]   LOAD_BUFFER_CE_DEMAND_CALC, LOAD_BUFFER_CE_DEMAND, 
-                                          LOAD_BUFFER_CE_DEMAND_AND_PREFETCH_CALC, LOAD_BUFFER_CE_DEMAND_AND_PREFETCH, 
-                                          LOAD_BUFFER_CE_PREFETCH_CALC, LOAD_BUFFER_CE_PREFETCH;
-
-wire    [RANK_COUNT*CHIPS_PER_RANK-1:0]   LOAD_BUFFER_WR_DEMAND_CALC, LOAD_BUFFER_WR_DEMAND, 
-                                          LOAD_BUFFER_WR_DEMAND_AND_PREFETCH_CALC, LOAD_BUFFER_WR_DEMAND_AND_PREFETCH, 
-                                          LOAD_BUFFER_WR_PREFETCH_CALC, LOAD_BUFFER_WR_PREFETCH;
-
-lshf_chunks_var_256b lshf_chunks_var_256b_LOAD_BUFFER_OE_DEMAND_CALC (
-  .in({{(RANK_COUNT-1)*CHIPS_PER_RANK{1'b1}}, {CHIPS_PER_RANK{1'b0}}}),
-  .shf_amt(ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]),
-  .out(LOAD_BUFFER_OE_DEMAND_CALC)
-);
-
-wire    [RANK_IDX_WIDTH-1:0]   INCREMENTED_RANK_NUMBER;
-
-big_increment #(
-  .WIDTH(RANK_IDX_WIDTH)
-) big_increment_INCREMENTED_RANK_NUMBER (
-  .a(ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]),
-  .s(INCREMENTED_RANK_NUMBER)
-);
-
-lshf_chunks_var_256b lshf_chunks_var_256b_LOAD_BUFFER_OE_PREFETCH_CALC (
-  .in({{(RANK_COUNT-1)*CHIPS_PER_RANK{1'b1}}, {CHIPS_PER_RANK{1'b0}}}),
-  .shf_amt(INCREMENTED_RANK_NUMBER),
-  .out(LOAD_BUFFER_OE_PREFETCH_CALC)
-);
-
-and2$ and2$_LOAD_BUFFER_OE_DEMAND_AND_PREFETCH_CALC[RANK_COUNT*CHIPS_PER_RANK-1:0]( LOAD_BUFFER_OE_DEMAND_AND_PREFETCH_CALC,
-                                                                                    LOAD_BUFFER_OE_DEMAND_CALC,
-                                                                                    LOAD_BUFFER_OE_PREFETCH_CALC);
-
-reg_n #(
-  .WIDTH(RANK_COUNT*CHIPS_PER_RANK),
-  .USE_EN_BAR(0)
-) reg_n_LOAD_BUFFER_OE_DEMAND (
-  .clk(clk), .rst(rst),
-  .en({RANK_COUNT*CHIPS_PER_RANK{LOAD_ADDR_LD_EN_buf1024}}), .d(LOAD_BUFFER_OE_DEMAND_CALC),
-  .q(LOAD_BUFFER_OE_DEMAND)
+mux16_8b mux16_8b_RANK_IDX_SELECTED (
+  .in0 ({4'd0, RANK_IDX_0}),
+  .in1 ({4'd0, RANK_IDX_0}),
+  .in2 ({4'd0, RANK_IDX_0}),
+  .in3 ({4'd0, RANK_IDX_0}),
+  .in4 ({4'd0, RANK_IDX_0}),
+  .in5 ({4'd0, RANK_IDX_0}),
+  .in6 ({4'd0, RANK_IDX_0}),
+  .in7 ({4'd0, RANK_IDX_0}),
+  .in8 ({4'd0, RANK_IDX_0}),
+  .in9 ({4'd0, RANK_IDX_0}),
+  .in10({4'd0, RANK_IDX_1}),
+  .in11({4'd0, RANK_IDX_1}),
+  .in12({4'd0, RANK_IDX_1}),
+  .in13({4'd0, RANK_IDX_1}),
+  .in14({4'd0, RANK_IDX_2}),
+  .in15({4'd0, RANK_IDX_3}),
+  .s0(counter_buf1024[1]),
+  .s1(Q0),
+  .s2(Q1),
+  .s3(Q2),
+  .outb({RANK_IDX_SELECTED_DUMMY, RANK_IDX_SELECTED})
 );
 
 reg_n #(
-  .WIDTH(RANK_COUNT*CHIPS_PER_RANK),
+  .WIDTH(RANK_IDX_WIDTH),
   .USE_EN_BAR(0)
-) reg_n_LOAD_BUFFER_OE_DEMAND_AND_PREFETCH (
+) reg_n_RANK_IDX_0 (
   .clk(clk), .rst(rst),
-  .en({RANK_COUNT*CHIPS_PER_RANK{LOAD_ADDR_LD_EN_buf1024}}), .d(LOAD_BUFFER_OE_DEMAND_AND_PREFETCH_CALC),
-  .q(LOAD_BUFFER_OE_DEMAND_AND_PREFETCH)
+  .en({RANK_IDX_WIDTH{LOAD_ADDR_LD_EN_buf1024}}), .d(ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]),
+  .q(RANK_IDX_0)
+);
+
+PA_4b PA_4b_RANK_IDX_1_D (
+  .in0(ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]), .in1(4'd1),
+	.s(RANK_IDX_1_D)
 );
 
 reg_n #(
-  .WIDTH(RANK_COUNT*CHIPS_PER_RANK),
+  .WIDTH(RANK_IDX_WIDTH),
   .USE_EN_BAR(0)
-) reg_n_LOAD_BUFFER_OE_PREFETCH (
+) reg_n_RANK_IDX_1 (
   .clk(clk), .rst(rst),
-  .en({RANK_COUNT*CHIPS_PER_RANK{LOAD_ADDR_LD_EN_buf1024}}), .d(LOAD_BUFFER_OE_PREFETCH_CALC),
-  .q(LOAD_BUFFER_OE_PREFETCH)
+  .en({RANK_IDX_WIDTH{LOAD_ADDR_LD_EN_buf1024}}), .d(RANK_IDX_1_D),
+  .q(RANK_IDX_1)
 );
 
-assign LOAD_BUFFER_CE_DEMAND_CALC = LOAD_BUFFER_OE_DEMAND_CALC;
-assign LOAD_BUFFER_CE_DEMAND_AND_PREFETCH_CALC = LOAD_BUFFER_OE_DEMAND_AND_PREFETCH_CALC;
-assign LOAD_BUFFER_CE_PREFETCH_CALC = LOAD_BUFFER_OE_PREFETCH_CALC;
+PA_4b PA_4b_RANK_IDX_2_D (
+  .in0(ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]), .in1(4'd2),
+	.s(RANK_IDX_2_D)
+);
 
-assign LOAD_BUFFER_CE_DEMAND = LOAD_BUFFER_OE_DEMAND;
-assign LOAD_BUFFER_CE_DEMAND_AND_PREFETCH = LOAD_BUFFER_OE_DEMAND_AND_PREFETCH;
-assign LOAD_BUFFER_CE_PREFETCH = LOAD_BUFFER_OE_PREFETCH;
+reg_n #(
+  .WIDTH(RANK_IDX_WIDTH),
+  .USE_EN_BAR(0)
+) reg_n_RANK_IDX_2 (
+  .clk(clk), .rst(rst),
+  .en({RANK_IDX_WIDTH{LOAD_ADDR_LD_EN_buf1024}}), .d(RANK_IDX_2_D),
+  .q(RANK_IDX_2)
+);
 
-assign LOAD_BUFFER_WR_DEMAND_CALC = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
-assign LOAD_BUFFER_WR_DEMAND_AND_PREFETCH_CALC = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
-assign LOAD_BUFFER_WR_PREFETCH_CALC = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
+PA_4b PA_4b_RANK_IDX_3_D (
+  .in0(ADDR_BUS[MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH-4]), .in1(4'd3),
+	.s(RANK_IDX_3_D)
+);
 
-assign LOAD_BUFFER_WR_DEMAND = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
-assign LOAD_BUFFER_WR_DEMAND_AND_PREFETCH = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
-assign LOAD_BUFFER_WR_PREFETCH = {RANK_COUNT*CHIPS_PER_RANK{1'b1}};
+reg_n #(
+  .WIDTH(RANK_IDX_WIDTH),
+  .USE_EN_BAR(0)
+) reg_n_RANK_IDX_3 (
+  .clk(clk), .rst(rst),
+  .en({RANK_IDX_WIDTH{LOAD_ADDR_LD_EN_buf1024}}), .d(RANK_IDX_3_D),
+  .q(RANK_IDX_3)
+);
 
 /* LOAD BUFFER DATA (SERIALIZER) */
 
-wire    [RANK_BIT_WIDTH-1:0]  LOAD_BUFFER_DATA;
-wire    [RANK_BIT_WIDTH-1:0]  DIO;
-wire    [BUS_BIT_WIDTH-1:0]   DATA_BUS_DRIVER_VALUE;
+wire    [RANK_BIT_WIDTH-1:0]              LOAD_BUFFER_DATA, SELECTED_RANK_DIO;
+wire    [RANK_BIT_WIDTH-1:0]              DIO_PER_RANK[0:RANK_COUNT-1];
+wire    [RANK_COUNT*RANK_BIT_WIDTH-1:0]   DIO;
+wire    [BUS_BIT_WIDTH-1:0]               DATA_BUS_DRIVER_VALUE;
+
+genvar r;
+generate
+  for (r = 0; r < RANK_COUNT; r = r + 1) begin : DIO_PER_RANK_GEN
+    assign DIO_PER_RANK[r] = DIO[RANK_BIT_WIDTH*r+:RANK_BIT_WIDTH];
+  end
+endgenerate
 
 mux4$   mux4$_DATA_BUS_DRIVER_VALUE[BUS_BIT_WIDTH-1:0] (DATA_BUS_DRIVER_VALUE,
                                                         LOAD_BUFFER_DATA[BUS_BIT_WIDTH-1:0],
@@ -339,12 +339,40 @@ mux4$   mux4$_DATA_BUS_DRIVER_VALUE[BUS_BIT_WIDTH-1:0] (DATA_BUS_DRIVER_VALUE,
                                                         counter_buf1024[0],
                                                         counter_buf1024[1]);
 
+generate
+  for (r = 0; r < 8; r = r + 1) begin : MUX16_16b_SELECTED_RANK_DIO_GEN
+    mux16_16b mux16_16b_inst (
+      .in0 (DIO_PER_RANK[0 ][r*16 +: 16]),
+      .in1 (DIO_PER_RANK[1 ][r*16 +: 16]),
+      .in2 (DIO_PER_RANK[2 ][r*16 +: 16]),
+      .in3 (DIO_PER_RANK[3 ][r*16 +: 16]),
+      .in4 (DIO_PER_RANK[4 ][r*16 +: 16]),
+      .in5 (DIO_PER_RANK[5 ][r*16 +: 16]),
+      .in6 (DIO_PER_RANK[6 ][r*16 +: 16]),
+      .in7 (DIO_PER_RANK[7 ][r*16 +: 16]),
+      .in8 (DIO_PER_RANK[8 ][r*16 +: 16]),
+      .in9 (DIO_PER_RANK[9 ][r*16 +: 16]),
+      .in10(DIO_PER_RANK[10][r*16 +: 16]),
+      .in11(DIO_PER_RANK[11][r*16 +: 16]),
+      .in12(DIO_PER_RANK[12][r*16 +: 16]),
+      .in13(DIO_PER_RANK[13][r*16 +: 16]),
+      .in14(DIO_PER_RANK[14][r*16 +: 16]),
+      .in15(DIO_PER_RANK[15][r*16 +: 16]),
+      .s0(RANK_IDX_SELECTED[0]),
+      .s1(RANK_IDX_SELECTED[1]),
+      .s2(RANK_IDX_SELECTED[2]),
+      .s3(RANK_IDX_SELECTED[3]),
+      .outb(SELECTED_RANK_DIO[r*16 +: 16])
+    );
+  end
+endgenerate
+
 reg_n #(
   .WIDTH(RANK_BIT_WIDTH),
   .USE_EN_BAR(0)
 ) reg_n_LOAD_BUFFER_DATA (
   .clk(clk), .rst(rst),
-  .en({RANK_BIT_WIDTH{LOAD_BUF_LD_EN_buf1024}}), .d(DIO),
+  .en({RANK_BIT_WIDTH{LOAD_BUF_LD_EN_buf1024}}), .d(SELECTED_RANK_DIO),
   .q(LOAD_BUFFER_DATA)
 );
 
@@ -413,8 +441,11 @@ big_eq  #(.WIDTH(3)) done_RD_EN_DONE         (.in0(counter_buf1024), .in1(W_CT_R
 big_eq  #(.WIDTH(3)) done_SHORT_BRST_DONE    (.in0(counter_buf1024), .in1(W_CT_SHORT_BRST_DONE), .eq(SHORT_BRST_DONE));
 
 /*** DATA TO MAIN MEMORY (DIO declared above) ***/
-wire    [RANK_ADDR_WIDTH-1:0]           A_RANK0, A_OTHERS;
+wire    [RANK_ADDR_WIDTH-1:0]           A_RANK0, A_RANK1, A_RANK2, A_OTHERS;
 wire    [RANK_COUNT*CHIPS_PER_RANK-1:0] WR, OE, CE;
+
+assign A_RANK1 = A_RANK0;
+assign A_RANK2 = A_RANK0;
 
 tristate_bus_driver16$  tristate_bus_driver16$_DATA_BUS_H(.enbar(DATA_BUS_GATE_buf256), 
                                                           .in(DATA_BUS_DRIVER_VALUE[BUS_BIT_WIDTH-1:16]), 
@@ -424,7 +455,14 @@ tristate_bus_driver16$  tristate_bus_driver16$_DATA_BUS_L(.enbar(DATA_BUS_GATE_b
                                                           .in(DATA_BUS_DRIVER_VALUE[15:0]), 
                                                           .out(DATA_BUS[15:0]));
 
-tristate_bus_driver1$  tristate_bus_driver1$_DIO[RANK_BIT_WIDTH-1:0](.enbar(MEM_DIO_GATE_buf256), .in(STORE_BUFFER_DATA), .out(DIO));
+genvar a, b;
+generate
+  for (a = 0; a < RANK_COUNT; a = a + 1) begin : PER_RANK_DIO_GEN
+    for (b = 0; b < RANK_BIT_WIDTH / 16; b = b + 1) begin : PER_RANK_DIO_WORD_GEN
+      tristate_bus_driver16$  tristate_bus_driver16$_DIO(.enbar(MEM_DIO_GATE_buf256), .in(STORE_BUFFER_DATA[16*b+:16]), .out(DIO[(RANK_BIT_WIDTH*a+16*b)+:16]));
+    end
+  end
+endgenerate
 
 tristateL$  tristateL$_LOAD_BUFFER_A_RANK0 [RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD_buf16), .in(LOAD_BUFFER_A_RANK0),  .out(A_RANK0));
 tristateL$  tristateL$_LOAD_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD_buf16), .in(LOAD_BUFFER_A_OTHERS), .out(A_OTHERS));
@@ -445,45 +483,45 @@ generate
                           {CHIPS_PER_RANK{1'b1}},
                           {CHIPS_PER_RANK{1'b1}},
                           {CHIPS_PER_RANK{1'b1}},
-                          STORE_BUFFER_OE[j*16 +: 16],
-                          LOAD_BUFFER_OE_DEMAND[j*16 +: 16],
-                          LOAD_BUFFER_OE_DEMAND_AND_PREFETCH[j*16 +: 16],
-                          LOAD_BUFFER_OE_PREFETCH[j*16 +: 16],    
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b0}},
+                          {CHIPS_PER_RANK{1'b0}},
+                          {CHIPS_PER_RANK{1'b0}},    
 
                           MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
                         );
 
     mux8_16b   mux8_CE
-                                              ( 
-                                                CE[j*16 +: 16],
+                        ( 
+                          CE[j*16 +: 16],
 
-                                                {CHIPS_PER_RANK{1'b1}},
-                                                {CHIPS_PER_RANK{1'b1}},
-                                                {CHIPS_PER_RANK{1'b1}},
-                                                {CHIPS_PER_RANK{1'b1}},
-                                                STORE_BUFFER_CE[j*16 +: 16],
-                                                LOAD_BUFFER_CE_DEMAND[j*16 +: 16],
-                                                LOAD_BUFFER_CE_DEMAND_AND_PREFETCH[j*16 +: 16],
-                                                LOAD_BUFFER_CE_PREFETCH[j*16 +: 16],    
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          STORE_BUFFER_CE[j*16 +: 16],
+                          {CHIPS_PER_RANK{1'b0}},
+                          {CHIPS_PER_RANK{1'b0}},
+                          {CHIPS_PER_RANK{1'b0}},    
 
-                                                MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
-                                              );
+                          MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
+                        );
 
     mux8_16b   mux8_WR
-                                              ( 
-                                                WR[j*16 +: 16],
+                        ( 
+                          WR[j*16 +: 16],
 
-                                                {CHIPS_PER_RANK{1'b1}},
-                                                {CHIPS_PER_RANK{1'b1}},
-                                                {CHIPS_PER_RANK{1'b1}},
-                                                {CHIPS_PER_RANK{1'b1}},
-                                                STORE_BUFFER_WR[j*16 +: 16],
-                                                LOAD_BUFFER_WR_DEMAND[j*16 +: 16],
-                                                LOAD_BUFFER_WR_DEMAND_AND_PREFETCH[j*16 +: 16],
-                                                LOAD_BUFFER_WR_PREFETCH[j*16 +: 16],    
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          STORE_BUFFER_WR[j*16 +: 16],
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},
+                          {CHIPS_PER_RANK{1'b1}},    
 
-                                                MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
-                                              );
+                          MEM_CTRL_Q_MUX_buf1024[0], MEM_CTRL_Q_MUX_buf1024[1], MEM_CTRL_Q_MUX_buf1024[2]
+                        );
   end
 endgenerate
 
@@ -498,7 +536,7 @@ main_memory #(
 
 ) main_memory_inst (
   .clk(clk), .rst(rst),
-  .A_RANK0(A_RANK0), .A_OTHERS(A_OTHERS),
+  .A_RANK0(A_RANK0), .A_RANK1(A_RANK1), .A_RANK2(A_RANK2), .A_OTHERS(A_OTHERS),
   .WR(WR), .OE(OE), .CE(CE),
   .DIO(DIO)
 );

@@ -21,6 +21,7 @@
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_16b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_8b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_16b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_256b.v
 ~/MICROARCH/project/hdl/local-lib/gates/big_or.v
@@ -28,6 +29,7 @@
 ~/MICROARCH/project/hdl/local-lib/gates/xor3LL.v
 ~/MICROARCH/project/hdl/local-lib/adders/gen_prop.v
 ~/MICROARCH/project/hdl/local-lib/adders/gen_prop_2.v
+~/MICROARCH/project/hdl/local-lib/adders/PA_4b.v
 ~/MICROARCH/project/hdl/local-lib/adders/PA_8b.v
 ~/MICROARCH/project/hdl/off-core/io/dma_disk_buffer.v
 ~/MICROARCH/project/hdl/off-core/io/dmu.v
@@ -56,7 +58,6 @@
 ~/MICROARCH/project/hdl/cache/tlb/tlb_wrapper.v
 ~/MICROARCH/project/hdl/local-lib/adders/prefix_modrm_sib_adder.v
 ~/MICROARCH/project/hdl/local-lib/adders/p_m_s_d_adder.v
-~/MICROARCH/project/hdl/local-lib/adders/PA_4b.v
 ~/MICROARCH/project/hdl/local-lib/adders/PA_32b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/rshf_chunks.v
 ~/MICROARCH/project/hdl/local-lib/shifters/rshf_bytes_var_128b.v
@@ -70,7 +71,6 @@
 ~/MICROARCH/project/hdl/local-lib/muxes/mux4_48.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_8.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_32.v
-~/MICROARCH/project/hdl/local-lib/muxes/mux16_8b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_16.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_32.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_48.v
