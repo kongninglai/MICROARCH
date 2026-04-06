@@ -6,13 +6,8 @@ module tb_predictor();
     reg clk;
     reg rst_bar;
     reg br_t_nt_in;
-<<<<<<< HEAD
     reg [3:0] ext_pht_idx; 
     reg [3:0] b_pht_idx;   
-=======
-    reg ext_pht_idx; 
-    reg b_pht_idx;   
->>>>>>> origin/main
     reg b_valid;     // NEW INPUT: From decode stage
 
     // 2. Outputs
@@ -66,13 +61,8 @@ module tb_predictor();
         clk = 0;
         rst_bar = 0;
         br_t_nt_in = 0;
-<<<<<<< HEAD
         ext_pht_idx = 4'd0;
         b_pht_idx = 4'd0;
-=======
-        ext_pht_idx = 0;
-        b_pht_idx = 0;
->>>>>>> origin/main
         b_valid = 0;
 
         // Release Reset

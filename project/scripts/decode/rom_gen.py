@@ -14,11 +14,7 @@ import csv
 import os
 
 def rom_gen(input_csv):
-<<<<<<< HEAD
     folder_name = "/home/ecelrc/students/aak3265/MICROARCH/project/scripts/decode/rom_data"
-=======
-    folder_name = "/home/ecelrc/students/kl38888/MICROARCH/project/scripts/decode/rom_data"
->>>>>>> origin/main
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 
@@ -92,8 +88,4 @@ def rom_gen(input_csv):
     write_rom_file("rom_ext_oso_hi.data", opcode_map_ext_oso, 128)
     print(f"Successfully generated X-padded ROMs in {folder_name}/")
 
-<<<<<<< HEAD
 rom_gen("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/decode/instr_info.csv")
-=======
-rom_gen("/home/ecelrc/students/kl38888/MICROARCH/project/scripts/decode/instr_info.csv")
->>>>>>> origin/main

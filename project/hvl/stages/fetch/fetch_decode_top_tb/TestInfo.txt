@@ -9,4 +9,7 @@ This file is used as an input to trace file parser, which figures out the expect
 decoded values and compares them directly against the output of the integrated fetch
 and decode (which is done by the verify function).
 
-You can change the name of this file in the tb by searching for <trace_file>
+You can change the name of this file in the tb by searching for <trace_file>.
+
+If you get a file not found error when running, make sure to move your testcase_<name.txt file 
+to the sim directory or wherever you call vcs command from

@@ -51,7 +51,6 @@ module tb_logic_modrm_imm();
         error_count = 0;
 
         // 5. Load All 8 Files
-<<<<<<< HEAD
         $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_std_lo.data",     golden_std_lo);
         $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_std_hi.data",     golden_std_hi);
         
@@ -63,19 +62,6 @@ module tb_logic_modrm_imm();
         
         $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_ext_oso_lo.data", golden_ext_oso_lo);
         $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_ext_oso_hi.data", golden_ext_oso_hi);
-=======
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_std_lo.data",     golden_std_lo);
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_std_hi.data",     golden_std_hi);
-        
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_oso_lo.data",     golden_oso_lo);
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_oso_hi.data",     golden_oso_hi);
-        
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_lo.data",     golden_ext_lo);
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_hi.data",     golden_ext_hi);
-        
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_oso_lo.data", golden_ext_oso_lo);
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/rom/rom_ext_oso_hi.data", golden_ext_oso_hi);
->>>>>>> origin/main
 
         #10; // Wait for load
         

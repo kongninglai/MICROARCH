@@ -1,15 +1,4 @@
 module shift_reg_behav(
-<<<<<<< HEAD
-    input clk,
-    input rst_n,
-    input shift,
-    input [3:0] instr_len,
-    input [247:0] inbytes, 
-    input [30:0] wr_en,
-    output [127:0] outbytes,
-    output ready
-);
-=======
     input                 clk,
     input                 rst_n,
     input                 shift,
@@ -51,7 +40,6 @@ module shift_reg_behav(
         end
     end
     
->>>>>>> origin/main
     reg [7:0] buffer [30:0];
     integer i;
 
@@ -60,11 +48,7 @@ module shift_reg_behav(
                        buffer[11], buffer[10], buffer[9],  buffer[8], 
                        buffer[7],  buffer[6],  buffer[5],  buffer[4], 
                        buffer[3],  buffer[2],  buffer[1],  buffer[0]};
-<<<<<<< HEAD
-    assign ready = 1'b1;
-=======
     assign ready = ~(tail_ptr[4]);
->>>>>>> origin/main
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

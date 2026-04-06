@@ -9,11 +9,7 @@ ROW_COUNT  = 1 << ROW_BITS
 RANK_COUNT = 1 << RANK_BITS
 CHIP_COUNT = 1 << CHIP_BITS
 
-<<<<<<< HEAD
 OUT_DIR = "/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/mem_init" 
-=======
-OUT_DIR = "/home/ecelrc/students/kl38888/MICROARCH/project/scripts/readmemh/mem_init" 
->>>>>>> origin/main
 
 mem = {}
 for r in range(RANK_COUNT):
@@ -96,10 +92,6 @@ def generate_verilog_file():
 
 
 if __name__ == "__main__":
-<<<<<<< HEAD
     parse_file("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/program.txt")
-=======
-    parse_file("/home/ecelrc/students/kl38888/MICROARCH/project/scripts/readmemh/program.txt")
->>>>>>> origin/main
     dump_hex_files()
     generate_verilog_file()

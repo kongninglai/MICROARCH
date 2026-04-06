@@ -21,7 +21,7 @@ localparam VPN_BIT_WIDTH        = VA_BIT_WIDTH - PAGE_BIT_WIDTH;
 
 localparam SEGR_DATA_BIT_WIDTH  = 16;
 
-localparam CYCLE_TIME_X10 = 200;
+localparam CYCLE_TIME_X10 = 150;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 
 reg clk;
@@ -548,7 +548,7 @@ task run_automated_verification;
     begin
         instruction_count = 0;
         // 1. Open the file (Make sure it's in your simulation directory)
-        trace_file = $fopen("testcase_dcache.txt", "r");
+        trace_file = $fopen("../testcase_dcache.txt", "r");
         if (trace_file == 0) begin
             $display("CRITICAL ERROR: Could not open test case expected values file.");
             $finish;

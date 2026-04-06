@@ -32,10 +32,6 @@ module tb_choose_eip();
         .clk(clk),
         .rst_bar(rst_bar),
         .instr_length(instr_length),
-<<<<<<< HEAD
-=======
-        .i_eip(i_eip),                 
->>>>>>> origin/main
         .ld_pr_rr(ld_pr_rr),
         .instr_valid(instr_valid),
         .cur_instr_prediction(cur_instr_prediction),
@@ -44,16 +40,11 @@ module tb_choose_eip();
         .ex_eip_target(ex_eip_target),
         .branch_type(branch_type),
         .hit(hit), 
-<<<<<<< HEAD
         .i_eip(i_eip),     
         .o_eip(), // Ignored in this testbench
         .ld_eip(ld_eip),
         .eip_true(eip_true),
         .take_branch() // Ignored in this testbench
-=======
-        .ld_eip(ld_eip),
-        .eip_true(eip_true)
->>>>>>> origin/main
     );
 
     // --- CLOCK GENERATION ---
