@@ -4,6 +4,7 @@ initial begin
   // $vcdplusfile("mcu_tb.dump.vpd");
   // $vcdpluson(0, mcu_tb); 
   // $vcdpluson(0, mcu_tb.DUT); 
+  // $vcdpluson(0, mcu_tb.DUT.DIO_PER_RANK); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;
@@ -25,7 +26,7 @@ localparam ADDR_SETUP_X10            = 280;
 localparam CE_SETUP_X10              = 370;
 localparam DOE_TIME_X10              = 620;
 localparam HZ_TIME_X10               = 175;
-localparam CYCLE_TIME_X10            = 100;
+localparam CYCLE_TIME_X10            = 97;
 localparam RD_EN_CYCLES              = ((DOE_TIME_X10 / CYCLE_TIME_X10)   + 1);
 localparam ADDR_EN_TO_WR_EN_CYCLES   = ((ADDR_SETUP_X10  / CYCLE_TIME_X10)   + 1);
 localparam WR_AND_DATA_EN_CYCLES     = ((CE_SETUP_X10  / CYCLE_TIME_X10)   + 1);
@@ -33,7 +34,7 @@ localparam V_CT_WRITE_DONE           = WR_AND_DATA_EN_CYCLES - 1;
 localparam V_CT_RD_EN_DONE           = RD_EN_CYCLES - 1;
 localparam V_CT_SHORT_BRST_DONE      = (RANK_BURST_SIZE - 1) - 1;
 
-localparam DELAY_ADJ = 7;
+localparam DELAY_ADJ = 5.5;
 
 reg     rst, clk, DC_MEM_WR_ACK, DMA_MEM_WR_ACK, DC_MEM_RD_ACK, IC_MEM_RD_ACK;
 
@@ -47,6 +48,8 @@ reg           ADDR_driver_enable;
 
 reg   [127:0] RAND_DATA0;
 reg   [127:0] RAND_DATA1;
+reg   [127:0] RAND_DATA2;
+reg   [127:0] RAND_DATA3;
 
 wire  [15:0]  WR_mask  = WR_mask_driver_enable ? WR_mask_driver : {16{1'bz}};
 wire  [31:0]  DATA_BUS = DATA_driver_enable ? DATA_driver : {32{1'bz}};
@@ -184,7 +187,10 @@ endtask
 task checkRDaddr;
   input [RANK_BIT_WIDTH-1:0] EXPECTED_DATA0, EXPECTED_DATA1;
   begin
-    #((1 + RD_EN_CYCLES + 1) * CYCLE_TIME);
+    #(2 * CYCLE_TIME);
+    while (DATA_VALID_BAR === 1'b1) begin
+      #(CYCLE_TIME);
+    end
     check(EXPECTED_DATA0[31:0]);
     #(CYCLE_TIME);
     check(EXPECTED_DATA0[63:32]);
@@ -213,7 +219,7 @@ initial begin
   rst               <= 1'b1;
   #(CYCLE_TIME);
 
-  // for (i = 0; i < 32; i = i + 1) begin
+  // for (i = 0; i < 4; i = i + 1) begin
   for (i = 0; i < 2047; i = i + 1) begin
     assertOneCycle(0);
     RAND_DATA0 = {$random, $random, $random, $random};
@@ -231,13 +237,69 @@ initial begin
     join
     #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
 
-    assertOneCycle(3);
+    assertOneCycle(2);
     fork
       driveRDaddr(i << 4);
       checkRDaddr(RAND_DATA0, RAND_DATA1);
       #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
     join
   end
+
+  rst = 1'b0;
+  #(2 * CYCLE_TIME);
+  rst = 1'b1;
+  #(CYCLE_TIME);
+
+  // for (i = 0; i < 4; i = i + 4) begin
+  for (i = 0; i < 2048; i = i + 4) begin
+    assertOneCycle(0);
+    RAND_DATA0 = {$random, $random, $random, $random};
+    RAND_DATA1 = {$random, $random, $random, $random};
+    RAND_DATA2 = {$random, $random, $random, $random};
+    RAND_DATA3 = {$random, $random, $random, $random};
+    fork
+      driveWRmaskWRaddr(16'h0000, (i << 4));
+      driveWRdata(RAND_DATA0);
+    join
+    #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+    assertOneCycle(0);
+    fork
+      driveWRmaskWRaddr(16'h0000, ((i+1) << 4));
+      driveWRdata(RAND_DATA1);
+    join
+    #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+    assertOneCycle(0);
+    fork
+      driveWRmaskWRaddr(16'h0000, ((i+2) << 4));
+      driveWRdata(RAND_DATA2);
+    join
+    #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+    assertOneCycle(0);
+    fork
+      driveWRmaskWRaddr(16'h0000, ((i+3) << 4));
+      driveWRdata(RAND_DATA3);
+    join
+    #(WR_AND_DATA_EN_CYCLES * CYCLE_TIME);
+
+    assertOneCycle(2);
+    fork
+      driveRDaddr(i << 4);
+      checkRDaddr(RAND_DATA0, RAND_DATA1);
+      #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+    join
+
+    assertOneCycle(2);
+    fork
+      driveRDaddr((i+2) << 4);
+      checkRDaddr(RAND_DATA2, RAND_DATA3);
+      #((RD_EN_CYCLES + 2*RANK_BURST_SIZE) * CYCLE_TIME);
+    join
+  end
+
+  #(10 * CYCLE_TIME);
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);

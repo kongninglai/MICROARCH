@@ -35,18 +35,20 @@ module main_memory #(
 
 ) (
   input                                                     clk, rst,
-  input   [RANK_ADDR_WIDTH-1:0]                             A_RANK0, A_OTHERS,
+  input   [RANK_ADDR_WIDTH-1:0]                             A_RANK0, A_RANK1, A_RANK2, A_OTHERS,
   input   [RANK_COUNT*CHIPS_PER_RANK-1:0]                   WR, OE, CE,
-  inout   [RANK_BIT_WIDTH-1:0]                              DIO
+  inout   [RANK_COUNT*RANK_BIT_WIDTH-1:0]                   DIO
 );
 
-wire   [RANK_ADDR_WIDTH-1:0] A_RANK0_buf256, A_OTHERS_buf256;
+wire   [RANK_ADDR_WIDTH-1:0] A_RANK0_buf256, A_RANK1_buf256, A_RANK2_buf256, A_OTHERS_buf256;
 bufferH256$   bufferH256$_A_RANK0_buf256 [RANK_ADDR_WIDTH-1:0](A_RANK0_buf256, A_RANK0);
+bufferH256$   bufferH256$_A_RANK1_buf256 [RANK_ADDR_WIDTH-1:0](A_RANK1_buf256, A_RANK1);
+bufferH256$   bufferH256$_A_RANK2_buf256 [RANK_ADDR_WIDTH-1:0](A_RANK2_buf256, A_RANK2);
 bufferH256$   bufferH256$_A_OTHERS_buf256[RANK_ADDR_WIDTH-1:0](A_OTHERS_buf256, A_OTHERS);
 
 wire   [RANK_COUNT*CHIPS_PER_RANK*RANK_ADDR_WIDTH-1:0]  A;
 
-assign A = {{CHIPS_PER_RANK*(RANK_COUNT-1){A_OTHERS_buf256}}, {CHIPS_PER_RANK{A_RANK0_buf256}}};
+assign A = {{CHIPS_PER_RANK*(RANK_COUNT-3){A_OTHERS_buf256}}, {CHIPS_PER_RANK{A_RANK2_buf256}}, {CHIPS_PER_RANK{A_RANK1_buf256}}, {CHIPS_PER_RANK{A_RANK0_buf256}}};
 
 genvar rank_idx;
 generate
@@ -61,7 +63,14 @@ generate
           CHIPS_PER_RANK*RANK_ADDR_WIDTH*(rank_idx)
         ]
       ),
-      .DIO(DIO),
+      .DIO
+      (
+            DIO 
+            [
+              RANK_BIT_WIDTH*(rank_idx+1)-1:
+              RANK_BIT_WIDTH*rank_idx
+            ]
+      ),
       .OE
       (
         OE

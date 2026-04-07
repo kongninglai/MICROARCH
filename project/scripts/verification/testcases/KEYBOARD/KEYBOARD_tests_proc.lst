@@ -1,0 +1,28 @@
+// Keyboard I/O test
+// GS = 0x0800  ->  VA base = 0x08000000  ->  VPN 0x08000 -> PFN 3 (keyboard)
+// GS limit = 0x007FF, all offsets (0x20, 0x28, 0x50) are within limit.
+//
+// Instructions:
+//   1. MOV GS, DX          (set GS = 0x0800)
+//   2. MOV BYTE [GS:0x20], 1   (write 1 to VA 0x08000020)
+//   3. MOV AL, BYTE [GS:0x28]  (read from VA 0x08000028 -> AL)
+//   4. MOV CL, BYTE [GS:0x50]  (read from VA 0x08000050 -> CL)
+//   5. MOV DL, BYTE [GS:0x28]  (read from VA 0x08000028 again -> DL)
+//   6. HLT
+//
+// Encoding notes:
+//   GS segment override prefix = 0x65
+//   MOV Sreg, r/m16 = 8E /r  (reg field 5 = GS)
+//   MOV r/m8, imm8  = C6 /0
+//   MOV r8, r/m8    = 8A /r
+//   All offsets use mod=01 disp8 (0x20, 0x28, 0x50 all < 0x80)
+//   Base register: EBX = 0
+
+0x0:  ba 00 08 00 00  // mov    edx,0x800
+0x5:  8e ea  // mov    gs,edx
+0x7:  bb 00 00 00 00  // mov    ebx,0x0
+0xc:  65 c6 43 20 01  // mov    BYTE PTR gs:[ebx+0x20],0x1
+0x11:  65 8a 43 28  // mov    al,BYTE PTR gs:[ebx+0x28]
+0x15:  65 8a 4b 50  // mov    cl,BYTE PTR gs:[ebx+0x50]
+0x19:  65 8a 53 28  // mov    dl,BYTE PTR gs:[ebx+0x28]
+0x1d:  f4  // hlt
