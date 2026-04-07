@@ -1,8 +1,8 @@
 module stage_rr_tb;
 
     initial begin
-        // $vcdplusfile("stage_rr_tb.dump.vpd");
-        // $vcdpluson(0, stage_rr_tb); 
+        $vcdplusfile("stage_rr_tb.dump.vpd");
+        $vcdpluson(0, stage_rr_tb); 
     end
 
     integer i;
@@ -28,6 +28,9 @@ module stage_rr_tb;
     reg to_rr_valid;
 
     reg from_ag_stall;
+    reg from_wb_exception;
+    reg from_ex_cmps_found;
+    reg interrupt;
 
     wire [7:0] to_regunit_opcode;
     wire [5:0] to_regunit_modrm;
@@ -121,6 +124,8 @@ module stage_rr_tb;
     wire [2:0] to_dep_MMB_idx;
 
     stage_rr dut_rr (
+        .clk(clk),
+        .rst_n(rst_n),
         .to_rr_prefix(to_rr_prefix),
         .to_rr_opcode(to_rr_opcode),
         .to_rr_modrm(to_rr_modrm),
@@ -194,7 +199,10 @@ module stage_rr_tb;
         .from_rr_stall(from_rr_stall),
         .to_dep_needREGS(to_dep_needREGS),
         .from_dep_unit_data_dep(),
-        .from_rr_we_pipe_reg()
+        .from_rr_we_pipe_reg(),
+        .from_wb_exception(from_wb_exception),
+        .from_ex_cmps_found(from_ex_cmps_found),
+        .interrupt(interrupt)
     );
 
     regunit dut_regunit (
@@ -336,7 +344,7 @@ module stage_rr_tb;
         .sbb_dir(sbb_dir)
     );
 
-    always #3 clk = ~clk;
+    always #4.5 clk = ~clk;
 
     task clear_inputs;
     begin
@@ -355,6 +363,9 @@ module stage_rr_tb;
             to_rr_valid = 1'b0;
 
             from_ag_stall = 1'b0;
+            from_wb_exception = 1'b0;
+            from_ex_cmps_found = 1'b0;
+            interrupt = 1'b0;
 
             from_wb_gpwr0_idx   = 'b0;
             from_wb_gpwr0_data  = 'b0;
@@ -488,7 +499,7 @@ module stage_rr_tb;
         @(negedge clk);
         apply_exwb_inputs(3'd0, 32'h0000_0000, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd0, 16'h0000, 1'b1, 16'h1111, 1'b1, 3'd0, 64'h0000_0000_0000_0000, 1'b1);
         @(negedge clk);
-        apply_exwb_inputs(3'd1, 32'h1111_1111, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd1, 16'h1111, 1'b0, 16'b0, 1'b0, 3'd1, 64'h1111_1111_1111_1111, 1'b1);
+        apply_exwb_inputs(3'd1, 32'h0000_0001, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd1, 16'h1111, 1'b0, 16'b0, 1'b0, 3'd1, 64'h1111_1111_1111_1111, 1'b1);
         @(negedge clk);
         apply_exwb_inputs(3'd2, 32'h2222_2222, 2'b10, 1'b1, 3'd0, 32'b0, 2'b10, 1'b0, 3'd2, 16'h2222, 1'b1, 16'b0, 1'b0, 3'd2, 64'h2222_2222_2222_2222, 1'b1);
         @(negedge clk);
@@ -656,6 +667,32 @@ module stage_rr_tb;
         apply_de_inputs(7'b0000001, 8'h7f, 8'h39, 8'bx, 32'bx, 2'b00,
                         48'bx, 3'b000, 2'b01, 32'h0, 32'h4, 1'b1);
         #5
+        print_from_rr_outputs();
+        $display("\n");
+
+
+        $display("======================================");
+        $display("TEST CASE10: REP MOVS m8, m8"); // here we test segment override and mmx reading
+        $display("======================================");
+        // F3 A4
+        // prefix(7), opcode(8), modrm(8), sib(8), disp(32), dispsize(2),
+        // imm(48), imm_size(3), addr_mode(2), oeip(32), ieip(32), valid
+        @(posedge clk);
+        apply_de_inputs(7'b0100110, 8'hA4, 8'bx, 8'bx, 32'bx, 2'b00,
+                        48'bx, 3'b000, 2'b00, 32'h0, 32'h2, 1'b1);
+        #8
+        print_from_rr_outputs();
+
+        @(posedge clk);
+        #8
+        print_from_rr_outputs();
+
+        @(posedge clk);
+        #8
+        print_from_rr_outputs();
+
+        @(posedge clk);
+        #8
         print_from_rr_outputs();
         $display("\n");
 

@@ -21,6 +21,7 @@ module ex_to_wb(
     input [4:0]         from_ex_store_data_shf_amt,
     input [15:0]        from_ex_cs,
     input [31:0]        from_ex_oeip,
+    input [31:0]        from_ex_ieip,
     input               from_ex_valid,
     input [1:0]         from_ex_exception,
  
@@ -42,13 +43,14 @@ module ex_to_wb(
     output [4:0]        to_wb_store_data_shf_amt,
     output [15:0]       to_wb_cs,
     output [31:0]       to_wb_oeip,
+    output [31:0]       to_wb_ieip,
     output              to_wb_valid,
     output [1:0]        to_wb_exception
 );
 
-wire [338:0] reg_din, reg_q, reg_qb;
-assign reg_din = {from_ex_control_sigs, from_ex_dstidA, from_ex_dstidB, from_ex_gp_wr_data_1, from_ex_gp_wr_data_2, from_ex_seg_wr_data, from_ex_mmx_wr_data, from_ex_store_data, from_ex_store_is_io_line_0, from_ex_store_addr_line_0, from_ex_store_mask_line_0, from_ex_store_queue_alloc_line_0, from_ex_store_addr_line_1, from_ex_store_mask_line_1, from_ex_store_queue_alloc_line_1, from_ex_store_data_shf_amt, from_ex_cs, from_ex_oeip, from_ex_valid, from_ex_exception};
-assign {to_wb_control_sigs, to_wb_dstidA, to_wb_dstidB, to_wb_gp_wr_data_1, to_wb_gp_wr_data_2, to_wb_seg_wr_data, to_wb_mmx_wr_data, to_wb_store_data, to_wb_store_is_io_line_0, to_wb_store_addr_line_0, to_wb_store_mask_line_0, to_wb_store_queue_alloc_line_0, to_wb_store_addr_line_1, to_wb_store_mask_line_1, to_wb_store_queue_alloc_line_1, to_wb_store_data_shf_amt, to_wb_cs, to_wb_oeip, to_wb_valid, to_wb_exception} = reg_q;
+wire [370:0] reg_din, reg_q, reg_qb;
+assign reg_din = {from_ex_control_sigs, from_ex_dstidA, from_ex_dstidB, from_ex_gp_wr_data_1, from_ex_gp_wr_data_2, from_ex_seg_wr_data, from_ex_mmx_wr_data, from_ex_store_data, from_ex_store_is_io_line_0, from_ex_store_addr_line_0, from_ex_store_mask_line_0, from_ex_store_queue_alloc_line_0, from_ex_store_addr_line_1, from_ex_store_mask_line_1, from_ex_store_queue_alloc_line_1, from_ex_store_data_shf_amt, from_ex_cs, from_ex_oeip, from_ex_ieip, from_ex_valid, from_ex_exception};
+assign {to_wb_control_sigs, to_wb_dstidA, to_wb_dstidB, to_wb_gp_wr_data_1, to_wb_gp_wr_data_2, to_wb_seg_wr_data, to_wb_mmx_wr_data, to_wb_store_data, to_wb_store_is_io_line_0, to_wb_store_addr_line_0, to_wb_store_mask_line_0, to_wb_store_queue_alloc_line_0, to_wb_store_addr_line_1, to_wb_store_mask_line_1, to_wb_store_queue_alloc_line_1, to_wb_store_data_shf_amt, to_wb_cs, to_wb_oeip, to_wb_ieip, to_wb_valid, to_wb_exception} = reg_q;
 reg_ex_to_wb reg340_ex_to_wb(clk, reg_din, reg_q, reg_qb, rst_n, 1'b1, we);
 
 endmodule

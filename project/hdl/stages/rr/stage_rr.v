@@ -1,4 +1,7 @@
 module stage_rr(
+    input       clk,
+    input       rst_n,
+
     input [6:0] to_rr_prefix,
     input [7:0] to_rr_opcode,
     input [7:0] to_rr_modrm,
@@ -16,6 +19,11 @@ module stage_rr(
 
     input from_ag_stall,
     input from_dep_unit_data_dep,
+
+    input from_wb_flush,
+    input from_ex_cmps_found,
+    input interrupt,
+
     output from_rr_we_pipe_reg,
 
     output [7:0]  to_regunit_opcode,
@@ -54,7 +62,7 @@ module stage_rr(
 
     output [10:0] to_dep_needREGS,
 
-    output [65:0] from_rr_control_sigs,
+    output [66:0] from_rr_control_sigs,
     output [2:0] from_rr_dstidA,
     output [2:0] from_rr_dstidB,
     output [31:0] from_rr_srcregA,
@@ -84,12 +92,43 @@ module stage_rr(
     output from_rr_stall
 ); 
     wire [95:0] ucode_sig;
-    ucode_controller uctlr (.ucode_sig(ucode_sig), 
-                            .opcode(to_rr_opcode), 
-                            .ext_opcode(to_rr_prefix[0]),
-                            .modrm(to_rr_modrm[7:6]),
-                            .has_modrm(to_rr_addr_mode[0])
-                           );
+
+    wire movs_8, movs_32, movs, cmps, iret;
+    big_eq #(.WIDTH(8)) eq_a4(.eq(movs_8), .in0(to_rr_opcode), .in1(8'ha4));
+    big_eq #(.WIDTH(8)) eq_a5(.eq(movs_32), .in0(to_rr_opcode), .in1(8'ha5));
+    or2$ or_movs(movs, movs_8, movs_32);
+    big_eq #(.WIDTH(8)) eq_a7(.eq(cmps), .in0(to_rr_opcode), .in1(8'ha7));
+    big_eq #(.WIDTH(8)) eq_cf(.eq(iret), .in0(to_rr_opcode), .in1(8'hcf));
+    
+    wire        ucode_stall;
+    wire        ucode_valid;
+
+    wire cmps0, cmps1;
+    wire fsm_stall;
+    or2$ or2_fsm_stall(fsm_stall, from_ag_stall, from_dep_unit_data_dep);
+    ucode_fsm ucode_fsm_inst (
+        .clk(clk),
+        .rst_n(rst_n),
+        .to_rr_valid(to_rr_valid),
+        .rep(to_rr_prefix[5]),
+        .stall(fsm_stall),
+        .interrupt(interrupt),
+        .exception(from_wb_flush),
+        .movs(movs),
+        .cmps(cmps),
+        .iret(iret),
+        .cmps_found(from_ex_cmps_found),
+        .opcode(to_rr_opcode),
+        .ext_opcode(to_rr_prefix[0]),
+        .modrm(to_rr_modrm[7:6]),
+        .has_modrm(to_rr_addr_mode[0]),
+        .reg_ecx(from_regunit_srcregA),
+        .cmps0(cmps0),
+        .cmps1(cmps1),
+        .ucode_stall(ucode_stall),
+        .ucode_valid(ucode_valid),
+        .ucode_sig(ucode_sig)
+    );
 
     wire [1:0] ldAB, dstidB_mux, gprd0_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds, mem_ds, imm_mux, addr_mux;
     wire [2:0] dstidA_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
@@ -148,7 +187,7 @@ module stage_rr(
     wire [1:0] dstA_size, dstB_size;
     wire [1:0] mmx_op, con_jmp;
     wire [2:0] alu_op;
-    wire shf_op, cmps, cmpxchg, cmovc, palu_size, sbb_dir;
+    wire shf_op, cmpxchg, cmovc, palu_size, sbb_dir;
     
     // dstA_size = 32 if dstidA_mux=101/110(ESI/ECX) else ds
     // dstB_size = ds if dstidB_mux=01/10(regr/EAX) else 32
@@ -181,7 +220,7 @@ module stage_rr(
     big_eq #(.WIDTH(7)) eq_ret_with_imm(.eq(ret_with_imm), .in0({to_rr_opcode[7:4], to_rr_opcode[2:0]}), .in1(7'h62));
     assign from_rr_control_sigs={{ldAB[1], ff_from_rr_ldB}, dstA_size, dstB_size, ldREGS, ldEFLAGS,
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
-                     mmx_op, alu_op, shf_op, cmps, con_jmp, cmpxchg, cmovc,
+                     mmx_op, alu_op, shf_op, cmps0, cmps1, con_jmp, cmpxchg, cmovc,
                      gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, from_rr_store_data_mux, from_rr_rw, ds_with_override, 
                      mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir};
 
@@ -192,7 +231,6 @@ module stage_rr(
     assign pavg_size = to_rr_opcode[0];
     mux4$ mux4_palu_size(palu_size, pack_size, 1'bx, pavg_size, padd_size, mmx_op[0], mmx_op[1]);
     assign shf_op = to_rr_modrm[4];
-    assign cmps = 1'b0; // TODO: FIX CMPS
     big_eq #(.WIDTH(8)) eq_1b(.eq(sbb_dir), .in0(to_rr_opcode), .in1(8'h1B));
 
     mux2$ mux2_aluop[2:0](alu_op, to_rr_opcode[5:3], to_rr_modrm[5:3], to_rr_opcode[7]);
@@ -297,10 +335,10 @@ module stage_rr(
       .neq(is_not_hlt)
     );
 
-    and3$ and_valid(from_rr_valid, no_dep, to_rr_valid, is_not_hlt);
+    and3$ and_valid(from_rr_valid, ucode_valid, no_dep, to_rr_valid);
 
     /* TODO: ADD STALL LOGIC */
-    or3$ or_from_rr_stall(from_rr_stall, from_ag_stall, from_dep_unit_data_dep, is_hlt_valid);
+    or4$ or_from_rr_stall(from_rr_stall, ucode_stall, from_ag_stall, from_dep_unit_data_dep, is_hlt_valid);
 
     assign to_dep_needREGS = {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]};
     inv1$  inv1$_from_rr_we_pipe_reg(from_rr_we_pipe_reg, from_ag_stall);

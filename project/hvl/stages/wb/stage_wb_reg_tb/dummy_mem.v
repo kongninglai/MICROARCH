@@ -2,7 +2,7 @@ module dummy_mem(
     input clk,
     input rst_n,
     input we,
-    input [57:0]     to_mem_control_sigs,
+    input [58:0]     to_mem_control_sigs,
     input [2:0]      to_mem_dstidA,
     input [2:0]      to_mem_dstidB,
     input [31:0]     to_mem_srcregA,
@@ -31,7 +31,7 @@ module dummy_mem(
     input [1:0]      to_mem_exception,
     input            to_mem_valid,
     
-    output [55:0]     from_mem_control_sigs,
+    output [56:0]     from_mem_control_sigs,
     output [2:0]      from_mem_dstidA,
     output [2:0]      from_mem_dstidB,
     output [31:0]     from_mem_srcregA,
@@ -84,7 +84,7 @@ module dummy_mem(
     wire [1:0]      mmx_op;
     wire [2:0]      alu_op;
     wire            shf_op;
-    wire            cmps;
+    wire            cmps0, cmps1;
     wire [1:0]      con_jmp;
     wire            cmpxchg;
     wire            cmovc;
@@ -115,7 +115,8 @@ module dummy_mem(
         .mmx_op(mmx_op),
         .alu_op(alu_op),
         .shf_op(shf_op),
-        .cmps(cmps),
+        .cmps0(cmps0),
+        .cmps1(cmps1),
         .con_jmp(con_jmp),
         .cmpxchg(cmpxchg),
         .cmovc(cmovc),
@@ -133,7 +134,7 @@ module dummy_mem(
         .sbb_dir(sbb_dir)
     );
     assign from_mem_control_sigs = {
-        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
+        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
         gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir

@@ -29,6 +29,7 @@
 ~/MICROARCH/project/hdl/stages/rr/regunit.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucoderom.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_controller.v
+~/MICROARCH/project/hvl/stages/rr/ucode_fsm_tb/ucode_fsm_bh.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/rr_sig.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ag_sig.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/mem_sig.v

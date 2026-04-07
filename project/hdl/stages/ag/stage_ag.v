@@ -1,5 +1,5 @@
 module stage_ag(
-    input [65:0]    to_ag_control_sigs,
+    input [66:0]    to_ag_control_sigs,
     input [2:0]     to_ag_dstidA,
     input [2:0]     to_ag_dstidB,
     input [31:0]    to_ag_srcregA,
@@ -32,7 +32,7 @@ module stage_ag(
     input           from_wb_stall_if_mem_en,
     input           from_wb_valid_store_inst,
 
-    output [57:0]    from_ag_control_sigs,
+    output [58:0]    from_ag_control_sigs,
     output [2:0]     from_ag_dstidA,
     output [2:0]     from_ag_dstidB,
     output [31:0]    from_ag_srcregA,
@@ -71,7 +71,7 @@ module stage_ag(
     output [2:0]     from_ag_ldREGS
 );
 
-    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size, sbb_dir;
+    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size, sbb_dir;
     wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds, imm_mux, addr_mux;
     wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
     wire [3:0] gp_dsta_mux, store_data_mux;
@@ -81,7 +81,7 @@ module stage_ag(
     assign {load_addr_mux, store_addr_mux} = addr_mux;
 
     assign from_ag_control_sigs = {
-        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
+        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
         gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir
@@ -124,7 +124,7 @@ module stage_ag(
         .ldEFLAGS(ldEFLAGS), .ldEIP(ldEIP), .ldCS(ldCS),
         .alu_srcb_mux(alu_srcb_mux), .shf_srcb_mux(shf_srcb_mux), .eflags_mux(eflags_mux),
         .eip_mux(eip_mux), .cs_mux(cs_mux),
-        .mmx_op(mmx_op), .alu_op(alu_op), .shf_op(shf_op), .cmps(cmps), .con_jmp(con_jmp),
+        .mmx_op(mmx_op), .alu_op(alu_op), .shf_op(shf_op), .cmps0(cmps0), .cmps1(cmps1), .con_jmp(con_jmp),
         .cmpxchg(cmpxchg), .cmovc(cmovc),
         .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
         .store_data_mux(store_data_mux), .rw(rw),

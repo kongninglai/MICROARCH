@@ -1,7 +1,7 @@
 module stage_ex(
     input clk,
     input rst_n,
-    input [55:0]    to_ex_control_sigs,
+    input [56:0]    to_ex_control_sigs,
     input [2:0]     to_ex_dstidA, 
     input [2:0]     to_ex_dstidB,
     input [31:0]    to_ex_srcregA,
@@ -45,6 +45,8 @@ module stage_ex(
     /* FLUSH SIGNAL */
     output              from_ex_flush, 
 
+    /* REP CMPS SIGNAL */
+    output              from_ex_cmps_found,
 
      /* TO FETCH/DECODE SIGNALS */
     output              from_ex_ld_cs,
@@ -72,6 +74,7 @@ module stage_ex(
     output [4:0]        from_ex_store_data_shf_amt,
     output [15:0]       from_ex_cs,
     output [31:0]       from_ex_oeip,
+    output [31:0]       from_ex_ieip,
     output              from_ex_valid_store_inst,
     output              from_ex_valid,
     output [1:0]        from_ex_exception,
@@ -98,12 +101,13 @@ module stage_ex(
     // assign from_ex_store_queue_alloc_line_1 = to_ex_store_queue_alloc_line_1;
     assign from_ex_store_data_shf_amt = to_ex_store_data_shf_amt;
     assign from_ex_oeip = to_ex_oeip;
+    assign from_ex_ieip = to_ex_ieip;
     assign from_ex_cs = to_ex_cs;
     assign from_ex_valid = to_ex_valid;
     /*** Control Signals ***/
     wire [1:0] sig_ldAB, sig_dstA_size, sig_dstB_size, sig_shf_srcb_mux, sig_cs_mux, sig_mmx_op, sig_con_jmp, sig_mm_dst_mux, sig_rw, sig_ds;
 
-    wire sig_shf_op, sig_cmps, sig_ldEFLAGS, sig_ldEIP, sig_ldCS, sig_alu_srcb_mux, sig_cmpxchg, sig_cmovc, sig_seg_dst_mux;
+    wire sig_shf_op, sig_cmps0, sig_cmps1, sig_ldEFLAGS, sig_ldEIP, sig_ldCS, sig_alu_srcb_mux, sig_cmpxchg, sig_cmovc, sig_seg_dst_mux;
     
     wire sig_rm, sig_op_ovr, sig_palu_size, sig_sbb_dir;
 
@@ -115,7 +119,7 @@ module stage_ex(
         .ucode_sig(to_ex_control_sigs),.ldAB(sig_ldAB),.dstA_size(sig_dstA_size),.dstB_size(sig_dstB_size),
         .ldREGS(sig_ldREGS),.ldEFLAGS(sig_ldEFLAGS),.ldEIP(sig_ldEIP),.ldCS(sig_ldCS),.alu_srcb_mux(sig_alu_srcb_mux),.shf_srcb_mux(sig_shf_srcb_mux),
         .eflags_mux(sig_eflags_mux),.eip_mux(sig_eip_mux),.cs_mux(sig_cs_mux),.mmx_op(sig_mmx_op),.alu_op(sig_alu_op),.shf_op(sig_shf_op),
-        .cmps(sig_cmps),.con_jmp(sig_con_jmp),.cmpxchg(sig_cmpxchg),.cmovc(sig_cmovc),
+        .cmps0(sig_cmps0), .cmps1(sig_cmps1), .con_jmp(sig_con_jmp),.cmpxchg(sig_cmpxchg),.cmovc(sig_cmovc),
         .gp_dsta_mux(sig_gp_dsta_mux),.gp_dstb_mux(sig_gp_dstb_mux),.seg_dst_mux(sig_seg_dst_mux),.mm_dst_mux(sig_mm_dst_mux),
         .store_data_mux(sig_store_data_mux),.rw(sig_rw), .ds(sig_ds), .rm(sig_rm), .op_ovr(sig_op_ovr), .palu_size(sig_palu_size), .sbb_dir(sig_sbb_dir)
     );
@@ -204,9 +208,13 @@ module stage_ex(
     );
 
     // CMP
+    // LOAD TEMP CMPS0(DS:[ESI])
+    wire [31:0] temp_cmps0;
+    reg32e$ reg32e$_temp_cmps0(clk, to_ex_load_result[31:0], temp_cmps0, , rst_n, 1'b1, sig_cmps0);
+
     wire [31:0] cmp_in0, cmp_in1;
-    mux2_32 mux2_cmp_in0(cmp_in0, to_ex_srcregC, to_ex_CMPS0, sig_cmps);
-    mux2_32 mux2_cmp_in1(cmp_in1, regA_rm, to_ex_CMPS1, sig_cmps);
+    mux2_32 mux2_cmp_in0(cmp_in0, to_ex_srcregC, temp_cmps0, sig_cmps1);
+    mux2_32 mux2_cmp_in1(cmp_in1, regA_rm, to_ex_load_result[31:0], sig_cmps1);
 
     ex_cmp cmp (
         .ds(sig_ds),
@@ -215,7 +223,10 @@ module stage_ex(
         .cmp_eflags(cmp_eflags),
         .cmp_eflags_mask(cmp_eflags_mask)
     );
-
+    // from_ex_cmps_found = sig_cmps1 & zf=0 & valid_instruction
+    wire cmp_zf_is_0;
+    inv1$ inv1_cmps_zf(cmp_zf_is_0, cmp_eflags[6]);
+    and3$ and_cmps_found(from_ex_cmps_found, sig_cmps1, cmp_zf_is_0, valid_instruction);
     // NOT
     wire [31:0] not_out;
     ex_not not_inst (
@@ -239,13 +250,13 @@ module stage_ex(
         .inc_in(to_ex_srcregB)
     );
 
-    // INC_ECX
-    wire [31:0] inc_ecx_out;
-    big_increment #(
+    // DEC_ECX
+    wire [31:0] dec_ecx_out;
+    big_decrement #(
         .WIDTH(32)
-    ) big_increment_inc_ecx (
+    ) big_decrement_inc_ecx (
         .a(to_ex_srcregA),
-        .s(inc_ecx_out)
+        .s(dec_ecx_out)
     );
 
     // PALU
@@ -263,7 +274,7 @@ module stage_ex(
 
     /*** REGFILE WRITE DATA*/
     mux16_32 mux16_gp_wr_data1(from_ex_gp_wr_data_1, alu_out, bsf_out, aaa_out, shf_out, not_out, inc1_out, regA_rm, to_ex_srcregA, 
-                                to_ex_srcregB, {16'b0, to_ex_srcSREG}, to_ex_imm, to_ex_load_result[31:0], inc_ecx_out, 32'bx, 32'bx, 32'bx, 
+                                to_ex_srcregB, {16'b0, to_ex_srcSREG}, to_ex_imm, to_ex_load_result[31:0], dec_ecx_out, 32'bx, 32'bx, 32'bx, 
                                 sig_gp_dsta_mux[0], sig_gp_dsta_mux[1], sig_gp_dsta_mux[2], sig_gp_dsta_mux[3]);
     
     mux8_32 mux8_gp_wr_data2(from_ex_gp_wr_data_2, inc2_out, to_ex_inc_esp, to_ex_dec_esp, regA_rm, to_ex_srcregB, 32'bx, 32'bx, 32'bx, 
@@ -334,13 +345,14 @@ module stage_ex(
     wire valid_ld_CS, valid_ld_EIP;
     and2$ and2_valid_ldCS(valid_ld_CS, valid_instruction, sig_ldCS);
     and3$ and3_valid_ldEIP(valid_ld_EIP, valid_instruction, sig_ldEIP, mispredict);
-    or2$ or_flush(from_ex_flush, valid_ld_CS, valid_ld_EIP);
+    or3$ or_flush(from_ex_flush, valid_ld_CS, valid_ld_EIP, from_ex_cmps_found);
     assign from_ex_ld_cs = valid_ld_CS;
     
     assign from_ex_br_t_nt = branch_taken;
     // and2$ and_br_valid(from_ex_br_valid, sig_ldEIP, from_ex_valid);
     assign from_ex_br_valid = sig_ldEIP;
-    assign from_ex_eip_target = target_eip;
+    mux2_32 mux2_32_eip_target(from_ex_eip_target, target_eip, to_ex_ieip, sig_cmps1);
+    // assign from_ex_eip_target = target_eip;
 
     // ldAB for cmov/cmpxchg
     /* from_ex_control_sigs, */
