@@ -108,6 +108,10 @@ wire from_wb_flush;
 reg [31:0] wb_ieip;
 reg [31:0] wb_eflags;
 
+/*** KEYBOARD TEST CASE ***/
+reg [7:0] TEST_CASE_NEW_CHAR, TEST_CASE_NEW_CHAR_WR;
+reg TEST_CASE_NEW_READY, TEST_CASE_NEW_READY_WR;
+
 /*** DUT ***/
 backend_top dut (
   .clk(clk),
@@ -221,14 +225,26 @@ full_cache #(
 
   .DMA_INT(DMA_INT),
 
-  .TEST_CASE_NEW_CHAR(8'd0),
-  .TEST_CASE_NEW_CHAR_WR(8'd0),
-  .TEST_CASE_NEW_READY(1'b0),
-  .TEST_CASE_NEW_READY_WR(1'b0),
+  .TEST_CASE_NEW_CHAR(TEST_CASE_NEW_CHAR),
+  .TEST_CASE_NEW_CHAR_WR(TEST_CASE_NEW_CHAR_WR),
+  .TEST_CASE_NEW_READY(TEST_CASE_NEW_READY),
+  .TEST_CASE_NEW_READY_WR(TEST_CASE_NEW_READY_WR),
 
   .WB_FLUSH(from_wb_flush),
   .EX_FLUSH(from_ex_flush)
 );
+
+always @(posedge full_cache_inst.full_cc_off_core_inst.off_core_top_inst.kb_inst.KBER) begin
+  TEST_CASE_NEW_CHAR <= 8'h67;
+  TEST_CASE_NEW_CHAR_WR <= 8'hFF;
+  TEST_CASE_NEW_READY <= 1'b1;
+  TEST_CASE_NEW_READY_WR <= 1'b1;
+  #(CYCLE_TIME);
+  TEST_CASE_NEW_CHAR <= 8'h00;
+  TEST_CASE_NEW_CHAR_WR <= 8'h00;
+  TEST_CASE_NEW_READY <= 1'b0;
+  TEST_CASE_NEW_READY_WR <= 1'b0;
+end
 
 tlb_wrapper tlb_inst (
   .ITLB_VPN(),
@@ -652,6 +668,10 @@ integer j;
 integer file_handle_cmp;
 
 initial begin 
+  TEST_CASE_NEW_CHAR         <= 8'd0;
+  TEST_CASE_NEW_CHAR_WR      <= 8'd0;
+  TEST_CASE_NEW_READY        <= 1'b0;
+  TEST_CASE_NEW_READY_WR     <= 1'b0;
   clk = 1'b0;
   rst_n = 1'b0;
   file_handle_cmp = $fopen("/home/ecelrc/students/var2427/MICROARCH/project/hvl/top/backend_top/backend_top_tb/results_cmp.txt", "w");
