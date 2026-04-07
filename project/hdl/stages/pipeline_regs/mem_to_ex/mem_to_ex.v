@@ -3,7 +3,7 @@ module mem_to_ex(
     input rst_n,
     input we,
     input flush_bar,
-    input [56:0]     from_mem_control_sigs,
+    input [57:0]     from_mem_control_sigs,
     input [2:0]      from_mem_dstidA,
     input [2:0]      from_mem_dstidB,
     input [31:0]     from_mem_srcregA,
@@ -36,7 +36,7 @@ module mem_to_ex(
     input [1:0]      from_mem_exception,
     input            from_mem_valid,
     
-    output [56:0]    to_ex_control_sigs,
+    output [57:0]    to_ex_control_sigs,
     output [2:0]     to_ex_dstidA,
     output [2:0]     to_ex_dstidB,
     output [31:0]    to_ex_srcregA,
@@ -70,7 +70,10 @@ module mem_to_ex(
     output           to_ex_valid
 );
 
-    wire [687:0] reg_din, reg_q, reg_qb;
+    wire [688:0] reg_din, reg_q, reg_qb;
+    wire valid_with_flush;
+    and2$ and2_valid(valid_with_flush, flush_bar, from_mem_valid);
+
     assign reg_din = {from_mem_control_sigs, 
                       from_mem_dstidA, 
                       from_mem_dstidB, 
@@ -99,7 +102,7 @@ module mem_to_ex(
                       from_mem_ieip, 
                       from_mem_pred_eip,
                       from_mem_exception,
-                      from_mem_valid};
+                      valid_with_flush};
     assign {to_ex_control_sigs, 
             to_ex_dstidA, 
             to_ex_dstidB, 
@@ -130,8 +133,6 @@ module mem_to_ex(
             to_ex_exception,
             to_ex_valid} = reg_q;
     
-    wire rst_or_flush;
-    and2$ and2_rst_or_flush(rst_or_flush, flush_bar, rst_n);
-    reg_mem_to_ex reg_mem_to_ex_inst(clk, reg_din, reg_q, reg_qb, rst_or_flush, 1'b1, we);
+    reg_mem_to_ex reg_mem_to_ex_inst(clk, reg_din, reg_q, reg_qb, rst_n, 1'b1, we);
 
 endmodule

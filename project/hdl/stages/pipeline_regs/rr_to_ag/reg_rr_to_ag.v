@@ -1,5 +1,5 @@
 module reg_rr_to_ag #(
-    parameter REG_SIZE=690
+    parameter REG_SIZE=691
 )(CLK, Din, Q, QBAR, CLR, PRE,en);
     input  CLK;
     input  CLR;
@@ -10,7 +10,7 @@ module reg_rr_to_ag #(
     output [REG_SIZE-1:0] QBAR;
 
     wire [703:0] din_padded, q_padded, qbar_padded;
-    assign din_padded = {14'b0, Din};
+    assign din_padded = {13'b0, Din};
     assign Q = q_padded[REG_SIZE-1:0];
     assign QBAR = qbar_padded[REG_SIZE-1:0];
     

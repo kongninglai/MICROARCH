@@ -21,6 +21,7 @@ module ucode_fsm(
 
     output cmps0,
     output cmps1,
+    output cmps2,
     output ucode_stall,
     output ucode_valid,
     output [95:0] ucode_sig
@@ -32,17 +33,19 @@ module ucode_fsm(
 
     localparam S_REP_CMPS0 = 4'd3;
     localparam S_REP_CMPS1 = 4'd4;
+    localparam S_REP_CMPS2 = 4'd5;
 
-    localparam S_INTEX_INIT0 = 4'd5;
-    localparam S_INTEX_INIT1 = 4'd6;
+    localparam S_INTEX_INIT0 = 4'd6;
+    localparam S_INTEX_INIT1 = 4'd7;
 
-    localparam S_IRET0 = 4'd7;
-    localparam S_IRET1 = 4'd8;
+    localparam S_IRET0 = 4'd8;
+    localparam S_IRET1 = 4'd9;
 
     localparam OPC_REP_READ_ECX     = 8'd39;
     localparam OPC_REP_MOVS1        = 8'd40;
     localparam OPC_REP_CMPS0        = 8'd42;
     localparam OPC_REP_CMPS1        = 8'd41;
+    localparam OPC_REP_CMPS2        = 8'd47;
     localparam OPC_INTEX_INIT0      = 8'd43;
     localparam OPC_INTEX_INIT1      = 8'd44;
     localparam OPC_IRET0            = 8'd45;
@@ -120,8 +123,17 @@ module ucode_fsm(
                 end
             end
 
-
             S_REP_CMPS1: begin 
+                if (exception) begin 
+                    next_state = S_INTEX_INIT0;
+                end else if (cmps_found) begin 
+                    next_state = S_IDLE;
+                end else begin 
+                    next_state = S_REP_CMPS2;
+                end
+            end
+
+            S_REP_CMPS2: begin 
                 if (interrupt | exception) begin 
                     next_state = S_INTEX_INIT0;
                 end else if (counter_finish | cmps_found) begin 
@@ -164,6 +176,7 @@ module ucode_fsm(
             S_REP_MOVS1:    ucode_opcode = OPC_REP_MOVS1;
             S_REP_CMPS0:    ucode_opcode = OPC_REP_CMPS0;
             S_REP_CMPS1:    ucode_opcode = OPC_REP_CMPS1;
+            S_REP_CMPS2:    ucode_opcode = OPC_REP_CMPS2;
             S_INTEX_INIT0:  ucode_opcode = OPC_INTEX_INIT0;
             S_INTEX_INIT1:  ucode_opcode = OPC_INTEX_INIT1;
             S_IRET0:        ucode_opcode = OPC_IRET0;
@@ -190,6 +203,7 @@ module ucode_fsm(
     assign ucode_sig = (state == S_IDLE) ? sig_idle : sig_reg;
     assign cmps0 = (state == S_REP_CMPS0);
     assign cmps1 = (state == S_REP_CMPS1);
+    assign cmps2 = (state == S_REP_CMPS2);
 endmodule
 
 module ecx_counter(

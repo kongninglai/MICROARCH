@@ -62,7 +62,7 @@ module stage_rr(
 
     output [10:0] to_dep_needREGS,
 
-    output [66:0] from_rr_control_sigs,
+    output [67:0] from_rr_control_sigs,
     output [2:0] from_rr_dstidA,
     output [2:0] from_rr_dstidB,
     output [31:0] from_rr_srcregA,
@@ -103,7 +103,7 @@ module stage_rr(
     wire        ucode_stall;
     wire        ucode_valid;
 
-    wire cmps0, cmps1;
+    wire cmps0, cmps1, cmps2;
     wire fsm_stall;
     or2$ or2_fsm_stall(fsm_stall, from_ag_stall, from_dep_unit_data_dep);
     ucode_fsm ucode_fsm_inst (
@@ -125,6 +125,7 @@ module stage_rr(
         .reg_ecx(from_regunit_srcregA),
         .cmps0(cmps0),
         .cmps1(cmps1),
+        .cmps2(cmps2),
         .ucode_stall(ucode_stall),
         .ucode_valid(ucode_valid),
         .ucode_sig(ucode_sig)
@@ -220,7 +221,7 @@ module stage_rr(
     big_eq #(.WIDTH(7)) eq_ret_with_imm(.eq(ret_with_imm), .in0({to_rr_opcode[7:4], to_rr_opcode[2:0]}), .in1(7'h62));
     assign from_rr_control_sigs={{ldAB[1], ff_from_rr_ldB}, dstA_size, dstB_size, ldREGS, ldEFLAGS,
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
-                     mmx_op, alu_op, shf_op, cmps0, cmps1, con_jmp, cmpxchg, cmovc,
+                     mmx_op, alu_op, shf_op, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
                      gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, from_rr_store_data_mux, from_rr_rw, ds_with_override, 
                      mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir};
 

@@ -507,7 +507,7 @@ always @(posedge clk) begin
           pend_mem_pa   [pend_mem_cnt] = {dut.inst_stage_wb.to_wb_store_addr_line_0[14:4], 4'd0} + n;
           if (n >= 16) 
             pend_mem_pa   [pend_mem_cnt] = {dut.inst_stage_wb.to_wb_store_addr_line_1[14:4], 4'd0} + (n-16);
-          pend_mem_ieip [pend_mem_cnt] = saved_ieip;
+          pend_mem_ieip [pend_mem_cnt] = dut.to_wb_ieip;
           pend_mem_cnt = pend_mem_cnt + 1;
         end
       end
@@ -597,16 +597,98 @@ begin
 end
 endtask
 
+
+// task run_test_stream;
+//   integer drain_cycles;
+// begin
+//   cur_test     = 0;
+//   accepted_cnt = 0;
+//   stalled_cnt  = 0;
+//   stream_done  = 1'b0;
+
+//   @(posedge clk);
+//   if (cur_test < NUM_TESTS_MEM)
+//     drive_testcase(cur_test);
+//   else
+//     drive_idle();
+
+//   while (!stream_done) begin
+//     @(posedge clk);
+
+//     // --------------------------------------------------------
+//     // Case 1: EX requested a flush in previous cycle
+//     // --------------------------------------------------------
+//     if (flush_pending) begin
+//       flush_target_idx = find_idx_from_eip(flush_target_eip);
+
+//       if (flush_target_idx >= 0) begin
+//         cur_test = flush_target_idx;
+//         // optional debug
+//         // $display("[FLUSH-REDIRECT] target_eip=%08x -> idx=%0d at time=%0t",
+//         //          flush_target_eip, flush_target_idx, $time);
+//       end else begin
+//         $display("[FLUSH-ERROR] cannot find testcase for target_eip=%08x at time=%0t",
+//                  flush_target_eip, $time);
+//         $finish;
+//       end
+//     end
+//     // --------------------------------------------------------
+//     // Case 2: normal FE->RR accept
+//     // --------------------------------------------------------
+//     else if (!from_rr_stall) begin
+//       accepted_cnt = accepted_cnt + 1;
+
+//       // Record mapping the first time this testcase is accepted
+//       if (!testcase_seen[cur_test]) begin
+//         testcase_seen[cur_test] = 1'b1;
+//         testcase_oeip[cur_test] = from_de_oeip;
+//         testcase_ieip[cur_test] = from_de_ieip;
+//       end
+
+//       // optional debug
+//       // $display("[ACCEPT] idx=%0d oeip=%08x ieip=%08x time=%0t",
+//       //          cur_test, from_de_oeip, from_de_ieip, $time);
+
+//       cur_test = cur_test + 1;
+
+//       if (cur_test >= NUM_TESTS_MEM)
+//         stream_done = 1'b1;
+//     end
+//     // --------------------------------------------------------
+//     // Case 3: frontend stalled
+//     // --------------------------------------------------------
+//     else if (to_rr_valid && from_rr_stall) begin
+//       stalled_cnt = stalled_cnt + 1;
+//       // optional debug
+//       // $display("[STALL] idx=%0d oeip=%08x time=%0t",
+//       //          cur_test, from_de_oeip, $time);
+//     end
+
+//     // --------------------------------------------------------
+//     // Drive next cycle's FE input
+//     // Flush redirect has highest priority
+//     // --------------------------------------------------------
+//     if (flush_pending) begin
+//       drive_testcase(cur_test);
+//     end else if (!stream_done) begin
+//       drive_testcase(cur_test);
+//     end else begin
+//       drive_idle();
+//     end
+//   end
+
+//   for (drain_cycles = 0; drain_cycles < 30; drain_cycles = drain_cycles + 1)
+//     @(posedge clk);
+
+//   $display("accepted_cnt = %0d", accepted_cnt);
+//   $display("stalled_cnt  = %0d", stalled_cnt);
+// end
+// endtask
+
 reg        testcase_seen [0:NUM_TESTS_MEM-1];
 reg [31:0] testcase_oeip [0:NUM_TESTS_MEM-1];
 reg [31:0] testcase_ieip [0:NUM_TESTS_MEM-1];
 
-// pending flush redirection
-reg        flush_pending;
-reg [31:0] flush_target_eip;
-integer    flush_target_idx;
-
-// find testcase index from oeip
 function integer find_idx_from_eip;
   input [31:0] target_eip;
   integer fi;
@@ -619,22 +701,9 @@ function integer find_idx_from_eip;
   end
 endfunction
 
-always @(posedge clk) begin
-  if (!rst_n) begin
-    flush_pending    <= 1'b0;
-    flush_target_eip <= 32'b0;
-  end else begin
-    if (from_ex_flush) begin
-      flush_pending    <= 1'b1;
-      flush_target_eip <= from_ex_eip_target;
-    end else begin
-      flush_pending    <= 1'b0;
-    end
-  end
-end
-
 task run_test_stream;
   integer drain_cycles;
+  integer redirect_idx;
 begin
   cur_test     = 0;
   accepted_cnt = 0;
@@ -651,24 +720,28 @@ begin
     @(posedge clk);
 
     // --------------------------------------------------------
-    // Case 1: EX requested a flush in previous cycle
+    // Highest priority: EX flush redirects FE immediately
     // --------------------------------------------------------
-    if (flush_pending) begin
-      flush_target_idx = find_idx_from_eip(flush_target_eip);
+    if (from_ex_flush) begin
+      redirect_idx = find_idx_from_eip(from_ex_eip_target);
 
-      if (flush_target_idx >= 0) begin
-        cur_test = flush_target_idx;
+      if (redirect_idx >= 0) begin
+        cur_test = redirect_idx;
+
         // optional debug
-        // $display("[FLUSH-REDIRECT] target_eip=%08x -> idx=%0d at time=%0t",
-        //          flush_target_eip, flush_target_idx, $time);
+        // $display("[FLUSH-REDIRECT] target_eip=%08x -> idx=%0d time=%0t",
+        //          from_ex_eip_target, redirect_idx, $time);
+
+        drive_testcase(cur_test);
       end else begin
         $display("[FLUSH-ERROR] cannot find testcase for target_eip=%08x at time=%0t",
-                 flush_target_eip, $time);
+                 from_ex_eip_target, $time);
         $finish;
       end
     end
+
     // --------------------------------------------------------
-    // Case 2: normal FE->RR accept
+    // Normal FE->RR accept
     // --------------------------------------------------------
     else if (!from_rr_stall) begin
       accepted_cnt = accepted_cnt + 1;
@@ -686,28 +759,28 @@ begin
 
       cur_test = cur_test + 1;
 
-      if (cur_test >= NUM_TESTS_MEM)
+      if (cur_test >= NUM_TESTS_MEM) begin
         stream_done = 1'b1;
-    end
-    // --------------------------------------------------------
-    // Case 3: frontend stalled
-    // --------------------------------------------------------
-    else if (to_rr_valid && from_rr_stall) begin
-      stalled_cnt = stalled_cnt + 1;
-      // optional debug
-      // $display("[STALL] idx=%0d oeip=%08x time=%0t",
-      //          cur_test, from_de_oeip, $time);
+        drive_idle();
+      end else begin
+        drive_testcase(cur_test);
+      end
     end
 
     // --------------------------------------------------------
-    // Drive next cycle's FE input
-    // Flush redirect has highest priority
+    // Frontend stalled: keep driving same testcase
     // --------------------------------------------------------
-    if (flush_pending) begin
+    else if (to_rr_valid && from_rr_stall) begin
+      stalled_cnt = stalled_cnt + 1;
+
+      // optional debug
+      // $display("[STALL] idx=%0d oeip=%08x time=%0t",
+      //          cur_test, from_de_oeip, $time);
+
       drive_testcase(cur_test);
-    end else if (!stream_done) begin
-      drive_testcase(cur_test);
-    end else begin
+    end
+
+    else begin
       drive_idle();
     end
   end
@@ -835,8 +908,6 @@ initial begin
     testcase_ieip[map_i] = 32'b0;
   end
 
-  flush_pending    = 1'b0;
-  flush_target_eip = 32'b0;
 
   @(posedge clk);
   @(posedge clk);
@@ -858,9 +929,10 @@ initial begin
 end
 
 initial begin 
-  #(5000 * CYCLE_TIME);
+  #(10000 * CYCLE_TIME);
   $finish;
 end
+
 // Auto-generated memory initialization (Verilog-2005)
 
 initial begin
