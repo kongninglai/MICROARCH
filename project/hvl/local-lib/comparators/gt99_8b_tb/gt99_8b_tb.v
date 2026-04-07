@@ -1,8 +1,8 @@
 module  gt99_8b_tb;
 
 initial begin
-  $vcdplusfile("gt99_8b_tb.dump.vpd");
-  $vcdpluson(0, gt99_8b_tb); 
+  // $vcdplusfile("gt99_8b_tb.dump.vpd");
+  // $vcdpluson(0, gt99_8b_tb); 
 end
 
 localparam WIDTH = 8;

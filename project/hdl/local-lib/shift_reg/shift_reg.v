@@ -21,7 +21,13 @@ module shift_reg(
         end
     endgenerate
 
-    wire [7:0] updated_q[30:0];
+    wire [7:0] updated_q[45:0];
+
+    generate
+        for (i = 31; i <= 45; i = i + 1) begin : DUMMY_UPDATED_Q_GEN
+            assign updated_q[i] = 8'h00;
+        end
+    endgenerate
 
     wire debug_en;
     wire [7:0] debug_d, debug_q, debug_inbytes;
@@ -31,32 +37,16 @@ module shift_reg(
     assign debug_inbytes = inbytes_i[1];
     generate 
         for (i = 0; i < 31; i=i+1) begin
-            localparam [4:0] i0 = i;
-            localparam [4:0] i1   = (i0 + 4'd1);
-            localparam [4:0] i2   = (i0 + 4'd2);
-            localparam [4:0] i3   = (i0 + 4'd3);
-            localparam [4:0] i4  =  (i0 + 4'd4);
-            localparam [4:0] i5   = (i0 + 4'd5);
-            localparam [4:0] i6   = (i0 + 4'd6);
-            localparam [4:0] i7   = (i0 + 4'd7);
-            localparam [4:0] i8   = (i0 + 4'd8);
-            localparam [4:0] i9   = (i0 + 4'd9);
-            localparam [4:0] i10  = (i0 + 4'd10);
-            localparam [4:0] i11  = (i0 + 4'd11);
-            localparam [4:0] i12  = (i0 + 4'd12);
-            localparam [4:0] i13  = (i0 + 4'd13);
-            localparam [4:0] i14  = (i0 + 4'd14);
-            localparam [4:0] i15  = (i0 + 4'd15); 
-            localparam [4:0] i_31 = 5'd30 - i0;
+            localparam [4:0] i_31 = 5'd30 - i;
             wire [3:0] update_idx;
             wire le, shift_en, not_shift, not_shift_and_wr;
             mux2$ mux2_update[7:0](updated_q[i], q[i], inbytes_i[i], wr_en[i]);
     
             mux2$ mux_update_idx[3:0](update_idx, 4'b0, instr_len, shift);
-            mux16 mux16_shift[7:0](d[i], updated_q[i0], updated_q[i1], updated_q[i2], updated_q[i3], 
-                                        updated_q[i4], updated_q[i5], updated_q[i6], updated_q[i7], 
-                                        updated_q[i8], updated_q[i9], updated_q[i10], updated_q[i11], 
-                                        updated_q[i12], updated_q[i13], updated_q[i14], updated_q[i15], 
+            mux16 mux16_shift[7:0](d[i], updated_q[i], updated_q[i+1], updated_q[i+2], updated_q[i+3], 
+                                        updated_q[i+4], updated_q[i+5], updated_q[i+6], updated_q[i+7], 
+                                        updated_q[i+8], updated_q[i+9], updated_q[i+10], updated_q[i+11], 
+                                        updated_q[i+12], updated_q[i+13], updated_q[i+14], updated_q[i+15], 
                                         update_idx[0], update_idx[1], update_idx[2], update_idx[3]);
             // en[i] = (shift & instr_len < 32-i) | (~shift & wr_en[i])
             le_5b le5_instrlen(le, {1'b0, instr_len}, i_31);

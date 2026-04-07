@@ -1,8 +1,8 @@
 module lru_store_per_set_tb;
 
 initial begin
-  $vcdplusfile("lru_store_per_set_tb.dump.vpd");
-  $vcdpluson(0, lru_store_per_set_tb);
+  // $vcdplusfile("lru_store_per_set_tb.dump.vpd");
+  // $vcdpluson(0, lru_store_per_set_tb);
 end
 
 localparam CYCLE_TIME = 10.0;

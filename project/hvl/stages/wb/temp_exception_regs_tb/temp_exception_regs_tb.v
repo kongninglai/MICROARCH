@@ -1,8 +1,8 @@
 module  temp_exception_regs_tb;
 
 initial begin
-  $vcdplusfile("temp_exception_regs_tb.dump.vpd");
-  $vcdpluson(0, temp_exception_regs_tb); 
+  // $vcdplusfile("temp_exception_regs_tb.dump.vpd");
+  // $vcdpluson(0, temp_exception_regs_tb); 
 end
 
 

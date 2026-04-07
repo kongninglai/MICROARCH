@@ -1,8 +1,8 @@
 module  xor4LL_tb;
 
 initial begin
-  $vcdplusfile("xor4LL_tb.dump.vpd");
-  $vcdpluson(0, xor4LL_tb); 
+  // $vcdplusfile("xor4LL_tb.dump.vpd");
+  // $vcdpluson(0, xor4LL_tb); 
 end
 
 reg   [3:0] in;

@@ -1,8 +1,8 @@
 module  SUB_32b_tb;
 
 initial begin
-  $vcdplusfile("SUB_32b_tb.dump.vpd");
-  $vcdpluson(0, SUB_32b_tb); 
+  // $vcdplusfile("SUB_32b_tb.dump.vpd");
+  // $vcdpluson(0, SUB_32b_tb); 
 end
 
 localparam WIDTH = 32;

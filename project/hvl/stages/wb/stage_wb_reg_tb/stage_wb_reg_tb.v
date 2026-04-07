@@ -1,8 +1,8 @@
 module stage_wb_reg_tb;
 
     initial begin
-        $vcdplusfile("stage_wb_reg_tb.dump.vpd");
-        $vcdpluson(0, stage_wb_reg_tb); 
+        // $vcdplusfile("stage_wb_reg_tb.dump.vpd");
+        // $vcdpluson(0, stage_wb_reg_tb); 
     end
 
     integer i;

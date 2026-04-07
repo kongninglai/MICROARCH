@@ -52,10 +52,7 @@ FA_32b_tb                      FAILURES=0      SUCCESSES=518
 FA_4b_tb                       FAILURES=0      SUCCESSES=512   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 fetch_buffer_tb                FAILURES=9      SUCCESSES=4     
-fetch_decode_top_tb            FAILURES=0
-0    SUCCESSES=14
-14 
-fetch_plus_buffer_tb           COMPILE_ERROR
+fetch_decode_top_tb            COMPILE_ERROR
 fetch_pointer_tb               FAILURES=0      SUCCESSES=4     
 fsearch                        COMPILE_ERROR
 full_cache_init_tb             FAILURES=0      SUCCESSES=0     

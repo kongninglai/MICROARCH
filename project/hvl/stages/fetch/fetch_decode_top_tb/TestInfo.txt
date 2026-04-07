@@ -1,5 +1,6 @@
 Each testcase_<name>.txt file should contain the following information in this exact order:
-    Format: i_eip o_eip prefix opcode has_modrm modrm imm_sz imm
+    Format for Dcache Test Case: i_eip o_eip prefix opcode has_modrm modrm imm_sz imm
+    Format for Exception Test Case: i_eip o_eip prefix opcode has_modrm modrm imm_sz imm exception
     
     i.e.
     00000000 00000005 00 ba 0 00 4 000000000A00
@@ -11,5 +12,11 @@ and decode (which is done by the verify function).
 
 You can change the name of this file in the tb by searching for <trace_file>.
 
-If you get a file not found error when running, make sure to move your testcase_<name.txt file 
-to the sim directory or wherever you call vcs command from
+If you get a file not found error when running, make sure to move your testcase_<name.txt> file 
+to the directory one above the sim directory or wherever you call vcs command from. 
+
+When running the program, you can include the file name to run either the dcache test or the exception
+test. Howeverk, it will default to the dcache test if no file name is provided. Also, the program expects
+the file test case to always be one directory above. 
+Use this command: 
+./simv +TRACE_FILE=testcase_exception.txt

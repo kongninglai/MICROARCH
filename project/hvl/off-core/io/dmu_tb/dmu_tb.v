@@ -1,9 +1,9 @@
 module  dmu_tb;
 
 initial begin
-  $vcdplusfile("dmu_tb.dump.vpd");
-  $vcdpluson(0, dmu_tb); 
-  $vcdpluson(0, dmu_tb.DUT); 
+  // $vcdplusfile("dmu_tb.dump.vpd");
+  // $vcdpluson(0, dmu_tb); 
+  // $vcdpluson(0, dmu_tb.DUT); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;

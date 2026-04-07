@@ -1,8 +1,8 @@
 module  le_5b_tb;
 
 initial begin
-  $vcdplusfile("le_5b_tb.dump.vpd");
-  $vcdpluson(0, le_5b_tb); 
+  // $vcdplusfile("le_5b_tb.dump.vpd");
+  // $vcdpluson(0, le_5b_tb); 
 end
 
 reg   [4:0] A, B;

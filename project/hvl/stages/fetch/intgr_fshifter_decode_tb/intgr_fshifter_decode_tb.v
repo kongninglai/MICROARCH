@@ -135,8 +135,8 @@ module intgr_fshifter_decode_tb();
     // 5. Stimulus Sequence
     // ---------------------------------------------------------
    initial begin
-        $vcdplusfile("intgr_fshifter_decode.vpd");
-        $vcdpluson(0, intgr_fshifter_decode_tb);
+        // $vcdplusfile("intgr_fshifter_decode.vpd");
+        // $vcdpluson(0, intgr_fshifter_decode_tb);
 
         // Initialization
         rst_bar = 0;

@@ -72,11 +72,11 @@ module tb_block_decoder_more();
     // INITIAL BLOCK
     // --------------------------------------------------------------------
     initial begin
-        $vcdplusfile("block_decoder_more_tb.dump.vpd");
-        $vcdpluson(0, tb_block_decoder_more); 
-        $vcdpluson(0, tb_block_decoder_more.uut);
-        $vcdpluson(0, tb_block_decoder_more.mem_in);
-        $vcdpluson(0, tb_block_decoder_more.mem_exp);
+        // $vcdplusfile("block_decoder_more_tb.dump.vpd");
+        // $vcdpluson(0, tb_block_decoder_more); 
+        // $vcdpluson(0, tb_block_decoder_more.uut);
+        // $vcdpluson(0, tb_block_decoder_more.mem_in);
+        // $vcdpluson(0, tb_block_decoder_more.mem_exp);
 
         // Read input and expected output memories
         $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/testcases.mem", mem_in);

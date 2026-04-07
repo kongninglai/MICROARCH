@@ -1,9 +1,9 @@
 module  dma_disk_buffer_tb;
 
 initial begin
-  $vcdplusfile("dma_disk_buffer_tb.dump.vpd");
-  $vcdpluson(0, dma_disk_buffer_tb); 
-  $vcdpluson(0, dma_disk_buffer_tb.DUT.buffer); 
+  // $vcdplusfile("dma_disk_buffer_tb.dump.vpd");
+  // $vcdpluson(0, dma_disk_buffer_tb); 
+  // $vcdpluson(0, dma_disk_buffer_tb.DUT.buffer); 
 end
 
 reg           clk, rst, start_xfer;

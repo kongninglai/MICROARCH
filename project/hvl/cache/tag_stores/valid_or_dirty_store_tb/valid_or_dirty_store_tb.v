@@ -1,8 +1,8 @@
 module valid_or_dirty_store_tb;
 
 initial begin
-  $vcdplusfile("valid_or_dirty_store_tb.dump.vpd");
-  $vcdpluson(0, valid_or_dirty_store_tb);
+  // $vcdplusfile("valid_or_dirty_store_tb.dump.vpd");
+  // $vcdpluson(0, valid_or_dirty_store_tb);
 end
 
 localparam NUM_SETS     = 8;

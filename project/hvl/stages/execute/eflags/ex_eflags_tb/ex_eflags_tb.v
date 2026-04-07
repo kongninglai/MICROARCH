@@ -1,7 +1,7 @@
 module ex_eflags_tb;
 initial begin
-    $vcdplusfile("ex_eflags_tb.dump.vpd");
-    $vcdpluson(0, ex_eflags_tb); 
+    // $vcdplusfile("ex_eflags_tb.dump.vpd");
+    // $vcdpluson(0, ex_eflags_tb); 
 end
 
 reg clk;

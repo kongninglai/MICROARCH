@@ -1,8 +1,8 @@
 module stage_ex_tb;
 
     initial begin
-        $vcdplusfile("stage_ex_tb.dump.vpd");
-        $vcdpluson(0, stage_ex_tb); 
+        // $vcdplusfile("stage_ex_tb.dump.vpd");
+        // $vcdpluson(0, stage_ex_tb); 
     end
 
     integer i;

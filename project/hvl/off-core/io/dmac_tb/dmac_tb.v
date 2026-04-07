@@ -1,9 +1,9 @@
 module  dmac_tb;
 
 initial begin
-  $vcdplusfile("dmac_tb.dump.vpd");
-  $vcdpluson(0, dmac_tb); 
-  $vcdpluson(0, dmac_tb.DUT); 
+  // $vcdplusfile("dmac_tb.dump.vpd");
+  // $vcdpluson(0, dmac_tb); 
+  // $vcdpluson(0, dmac_tb.DUT); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;

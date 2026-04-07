@@ -1,8 +1,8 @@
 module stage_rr_tb;
 
     initial begin
-        $vcdplusfile("stage_rr_tb.dump.vpd");
-        $vcdpluson(0, stage_rr_tb); 
+        // $vcdplusfile("stage_rr_tb.dump.vpd");
+        // $vcdpluson(0, stage_rr_tb); 
     end
 
     integer i;

@@ -7,8 +7,8 @@
 module fetch_buffer_tb;
 
 initial begin
-    $vcdplusfile("fetch_buffer_tb.dump.vpd");
-    $vcdpluson(0, fetch_buffer_tb);
+    // $vcdplusfile("fetch_buffer_tb.dump.vpd");
+    // $vcdpluson(0, fetch_buffer_tb);
 end
 
 // ═══════════════════════════════════════════════════════════════

@@ -1,8 +1,8 @@
 module sticky_bit_load_fsm_tb;
 
 initial begin
-  $vcdplusfile("sticky_bit_load_fsm_tb.dump.vpd");
-  $vcdpluson(0, sticky_bit_load_fsm_tb);
+  // $vcdplusfile("sticky_bit_load_fsm_tb.dump.vpd");
+  // $vcdpluson(0, sticky_bit_load_fsm_tb);
 end
 
 reg  [2:0] in_long;

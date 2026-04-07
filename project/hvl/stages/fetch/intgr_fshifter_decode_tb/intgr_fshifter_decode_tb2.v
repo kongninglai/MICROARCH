@@ -112,8 +112,8 @@ module intgr_fshifter_decode_tb2();
     // 5. Stimulus Sequence (Deterministic Time-Based)
     // ---------------------------------------------------------
     initial begin
-        $vcdplusfile("intgr_comprehensive.vpd");
-        $vcdpluson(0, intgr_fshifter_decode_tb2);
+        // $vcdplusfile("intgr_comprehensive.vpd");
+        // $vcdpluson(0, intgr_fshifter_decode_tb2);
 
         $display("=================================================");
         $display("   COMPREHENSIVE FRONT-END INTEGRATION TEST      ");

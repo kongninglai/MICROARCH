@@ -1,9 +1,9 @@
 module  mcu_tb;
 
 initial begin
-  $vcdplusfile("mcu_tb.dump.vpd");
-  $vcdpluson(0, mcu_tb); 
-  $vcdpluson(0, mcu_tb.DUT); 
+  // $vcdplusfile("mcu_tb.dump.vpd");
+  // $vcdpluson(0, mcu_tb); 
+  // $vcdpluson(0, mcu_tb.DUT); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;

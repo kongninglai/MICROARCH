@@ -1,9 +1,9 @@
 module cache_controller_tb;
 
 initial begin
-    $vcdplusfile("cache_controller_tb.dump.vpd");
-    $vcdpluson(0, cache_controller_tb); 
-    $vcdpluson(0, cache_controller_tb.DUT); 
+    // $vcdplusfile("cache_controller_tb.dump.vpd");
+    // $vcdpluson(0, cache_controller_tb); 
+    // $vcdpluson(0, cache_controller_tb.DUT); 
 end
 
 localparam RANK_BIT_WIDTH               = 128;

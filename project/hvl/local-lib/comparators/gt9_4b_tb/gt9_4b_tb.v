@@ -1,8 +1,8 @@
 module  gt9_4b_tb;
 
 initial begin
-  $vcdplusfile("gt9_4b_tb.dump.vpd");
-  $vcdpluson(0, gt9_4b_tb); 
+  // $vcdplusfile("gt9_4b_tb.dump.vpd");
+  // $vcdpluson(0, gt9_4b_tb); 
 end
 
 localparam WIDTH = 4;

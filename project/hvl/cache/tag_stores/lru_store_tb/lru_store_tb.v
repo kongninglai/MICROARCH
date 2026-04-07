@@ -1,8 +1,8 @@
 module lru_store_tb;
 
 initial begin
-  $vcdplusfile("lru_store_tb.dump.vpd");
-  $vcdpluson(0, lru_store_tb);
+  // $vcdplusfile("lru_store_tb.dump.vpd");
+  // $vcdpluson(0, lru_store_tb);
 end
 
 localparam NUM_SETS = 8;

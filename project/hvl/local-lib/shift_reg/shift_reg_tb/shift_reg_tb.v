@@ -1,8 +1,8 @@
 module shifter_tb;
 
     initial begin
-      $vcdplusfile("shifter_tb.dump.vpd");
-      $vcdpluson(0, shifter_tb);
+      // $vcdplusfile("shifter_tb.dump.vpd");
+      // $vcdpluson(0, shifter_tb);
     end
 
     reg clk, rst_n;

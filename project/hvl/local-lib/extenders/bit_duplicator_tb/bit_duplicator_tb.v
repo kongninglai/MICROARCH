@@ -1,8 +1,8 @@
 module bit_duplicator_tb;
 
 initial begin
-  $vcdplusfile("bit_duplicator_tb.dump.vpd");
-  $vcdpluson(0, bit_duplicator_tb);
+  // $vcdplusfile("bit_duplicator_tb.dump.vpd");
+  // $vcdpluson(0, bit_duplicator_tb);
 end
 
 localparam IN_WIDTH  = 16;

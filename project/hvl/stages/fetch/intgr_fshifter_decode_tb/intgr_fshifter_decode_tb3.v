@@ -129,8 +129,8 @@ module tb_intgr_fshifter_decode_rigorous();
     // 3. Stimulus Sequence (Deterministic Time-Based)
     // ---------------------------------------------------------
     initial begin
-        $vcdplusfile("intgr_fshifter_decode.vpd");
-        $vcdpluson(0, tb_intgr_fshifter_decode_rigorous);
+        // $vcdplusfile("intgr_fshifter_decode.vpd");
+        // $vcdpluson(0, tb_intgr_fshifter_decode_rigorous);
 
         $display("=================================================");
         $display("   RIGOROUS FRONT-END EDGE CASE STRESS TEST      ");

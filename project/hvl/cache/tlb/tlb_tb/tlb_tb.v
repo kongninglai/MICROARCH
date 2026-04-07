@@ -1,10 +1,10 @@
 module tlb_tb;
 
 initial begin
-  $vcdplusfile("tlb_tb.dump.vpd");
-  $vcdpluson(0, tlb_tb);
-  $vcdpluson(0, tlb_tb.DUT.TLB_ENTRIES_BEHAV);
-  $vcdpluson(0, tlb_tb.REF.TLB_ENTRIES_BEHAV);
+  // $vcdplusfile("tlb_tb.dump.vpd");
+  // $vcdpluson(0, tlb_tb);
+  // $vcdpluson(0, tlb_tb.DUT.TLB_ENTRIES_BEHAV);
+  // $vcdpluson(0, tlb_tb.REF.TLB_ENTRIES_BEHAV);
 end
 
 localparam VA_BIT_WIDTH=32;

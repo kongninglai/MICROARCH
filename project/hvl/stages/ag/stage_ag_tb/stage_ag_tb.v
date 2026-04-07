@@ -1,8 +1,8 @@
 module stage_ag_tb;
 
     initial begin
-        $vcdplusfile("stage_ag_tb.dump.vpd");
-        $vcdpluson(0, stage_ag_tb); 
+        // $vcdplusfile("stage_ag_tb.dump.vpd");
+        // $vcdpluson(0, stage_ag_tb); 
     end
 
     integer i;

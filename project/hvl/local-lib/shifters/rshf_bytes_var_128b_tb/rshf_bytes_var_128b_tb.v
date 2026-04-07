@@ -1,8 +1,8 @@
 module  rshf_bytes_var_128b_tb;//
 
 initial begin
-  $vcdplusfile("rshf_bytes_var_128b_tb.dump.vpd");
-  $vcdpluson(0, rshf_bytes_var_128b_tb); 
+  // $vcdplusfile("rshf_bytes_var_128b_tb.dump.vpd");
+  // $vcdpluson(0, rshf_bytes_var_128b_tb); 
 end
 
 localparam WIDTH = 128;

@@ -4,8 +4,8 @@ module big_increment_cout_tb;
 
     initial begin
       // Creates the waveform dump for debugging in VCS/DVE
-      $vcdplusfile("big_increment_cout_tb.dump.vpd");
-      $vcdpluson(0, big_increment_cout_tb); 
+      // $vcdplusfile("big_increment_cout_tb.dump.vpd");
+      // $vcdpluson(0, big_increment_cout_tb); 
     end
 
     localparam WIDTH = 4; // Set to 4 to match your incrementer

@@ -1,8 +1,8 @@
 module  mux64_tb;
 
 initial begin
-  $vcdplusfile("mux64_tb.dump.vpd");
-  $vcdpluson(0, mux64_tb); 
+  // $vcdplusfile("mux64_tb.dump.vpd");
+  // $vcdpluson(0, mux64_tb); 
 end
 
 localparam IN_WIDTH = 64 + 6;

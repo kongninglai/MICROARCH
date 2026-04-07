@@ -1,8 +1,8 @@
 module logic_cl_shifter_tb;
 
 initial begin
-  $vcdplusfile("logic_cl_shifter_tb.dump.vpd");
-  $vcdpluson(0, logic_cl_shifter_tb); 
+  // $vcdplusfile("logic_cl_shifter_tb.dump.vpd");
+  // $vcdpluson(0, logic_cl_shifter_tb); 
 end
 
 localparam WIDTH = 9;

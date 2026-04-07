@@ -1,8 +1,8 @@
 module  negate_32b_tb;
 
 initial begin
-  $vcdplusfile("negate_32b_tb.dump.vpd");
-  $vcdpluson(0, negate_32b_tb); 
+  // $vcdplusfile("negate_32b_tb.dump.vpd");
+  // $vcdpluson(0, negate_32b_tb); 
 end
 
 localparam WIDTH = 32;

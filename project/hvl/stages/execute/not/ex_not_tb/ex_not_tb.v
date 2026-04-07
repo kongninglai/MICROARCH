@@ -1,8 +1,8 @@
 module  ex_not_tb;
 
 initial begin
-  $vcdplusfile("ex_not_tb.dump.vpd");
-  $vcdpluson(0, ex_not_tb); 
+  // $vcdplusfile("ex_not_tb.dump.vpd");
+  // $vcdpluson(0, ex_not_tb); 
 end
 
 localparam WIDTH = 32;

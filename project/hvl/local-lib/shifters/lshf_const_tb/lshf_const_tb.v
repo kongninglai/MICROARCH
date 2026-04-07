@@ -1,8 +1,8 @@
 module  lshf_const_tb;
 
 initial begin
-  $vcdplusfile("lshf_const_tb.dump.vpd");
-  $vcdpluson(0, lshf_const_tb); 
+  // $vcdplusfile("lshf_const_tb.dump.vpd");
+  // $vcdpluson(0, lshf_const_tb); 
 end
 
 localparam WIDTH = 32;

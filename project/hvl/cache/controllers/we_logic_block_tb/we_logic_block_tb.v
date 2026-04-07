@@ -1,8 +1,8 @@
 module we_logic_block_tb;
 
 initial begin
-  $vcdplusfile("we_logic_block_tb.dump.vpd");
-  $vcdpluson(0, we_logic_block_tb);
+  // $vcdplusfile("we_logic_block_tb.dump.vpd");
+  // $vcdpluson(0, we_logic_block_tb);
 end
 
 localparam RANK_BIT_WIDTH  = 128;

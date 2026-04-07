@@ -1,8 +1,8 @@
 module  lshf_chunks_var_128b_tb;
 
 initial begin
-  $vcdplusfile("lshf_chunks_var_128b_tb.dump.vpd");
-  $vcdpluson(0, lshf_chunks_var_128b_tb); 
+  // $vcdplusfile("lshf_chunks_var_128b_tb.dump.vpd");
+  // $vcdpluson(0, lshf_chunks_var_128b_tb); 
 end
 
 localparam WIDTH = 128;
