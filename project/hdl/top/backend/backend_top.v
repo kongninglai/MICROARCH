@@ -442,7 +442,7 @@ module backend_top #(
         .from_mem_dstB_size(from_mem_dstB_size),
         .from_mem_ldAB(from_mem_ldAB),
         .from_mem_ldREGS(from_mem_ldREGS),
-        .from_mem_valid(from_mem_valid),
+        .from_mem_valid(to_mem_valid), // Special case
         .from_ex_dstidA(from_ex_dstidA),
         .from_ex_dstidB(from_ex_dstidB),
         .from_ex_dstA_size(from_ex_dstA_size),

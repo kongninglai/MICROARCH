@@ -1,4 +1,4 @@
-Regression run: Mon Apr  6 16:11:01 CDT 2026
+Regression run: Tue Apr  7 00:51:35 CDT 2026
 ========================================
 PASS: AAA/aaa0.txt
 PASS: AAA/aaa1.txt
@@ -11,9 +11,11 @@ PASS: CMOVC/CMOVC_tests_proc.txt
 PASS: CMPXCHG/CMPXCHG_tests_proc.txt
 PASS: cross_cache_line_2x_wb.txt
 PASS: dcache_test.txt
+PASS: DEPS/DEPS_tests_proc.txt
 PASS: HLT/HLT_tests_proc.txt
+PASS: MISC/MISC1_tests_proc.txt
 PASS: MISC/MISC2_tests_proc.txt
-PASS: MISC/MISC_tests_proc.txt
+PASS: MISC/MISC3_tests_proc.txt
 PASS: MOV/MOV_tests_proc.txt
 PASS: MOVQ/MOVQ_tests_proc.txt
 PASS: MOVS/MOVS_tests_proc.txt
@@ -30,4 +32,4 @@ PASS: STD/STD_tests_proc.txt
 PASS: touch_all_regs.txt
 PASS: XCHG/XCHG_tests_proc.txt
 ========================================
-Total: 29  PASSED: 29  FAILED: 0
+Total: 31  PASSED: 31  FAILED: 0
