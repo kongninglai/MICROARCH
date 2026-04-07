@@ -435,6 +435,11 @@ module backend_top #(
     /*** DEP UNIT ***/
     wire from_dep_unit_data_dep;
 
+    /*** FLUSH LOGIC ***/
+    wire ex_or_wb_flush_bar, wb_flush_bar;
+    nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar, from_ex_flush, from_wb_flush);
+    inv1$ inv1_wb_flush_bar(wb_flush_bar, from_wb_flush);
+
     dep_unit dut (
         .from_ag_dstidA(from_ag_dstidA),
         .from_ag_dstidB(from_ag_dstidB),
@@ -563,6 +568,7 @@ module backend_top #(
     rr_to_ag inst_rr_to_ag (
         .clk(clk),
         .rst_n(rst_n),
+        .flush_bar(ex_or_wb_flush_bar),
         .we(from_rr_we_pipe_reg),
         .from_rr_control_sigs(from_rr_control_sigs),
         .from_rr_dstidA(from_rr_dstidA),
@@ -758,6 +764,7 @@ module backend_top #(
     ag_to_mem inst_ag_to_mem (
         .clk(clk),
         .rst_n(rst_n),
+        .flush_bar(ex_or_wb_flush_bar),
         .we(from_ag_we_pipe_reg),
         .from_ag_control_sigs(from_ag_control_sigs),
         .from_ag_dstidA(from_ag_dstidA),
@@ -912,6 +919,7 @@ module backend_top #(
         .clk(clk),
         .rst_n(rst_n),
         .we(1'b1),
+        .flush_bar(ex_or_wb_flush_bar),
         .from_mem_control_sigs(from_mem_control_sigs),
         .from_mem_dstidA(from_mem_dstidA),
         .from_mem_dstidB(from_mem_dstidB),
@@ -1050,6 +1058,7 @@ module backend_top #(
         .clk(clk),
         .rst_n(rst_n),
         .we(1'b1),
+        .flush_bar(wb_flush_bar),
         .from_ex_control_sigs(from_ex_control_sigs),
         .from_ex_dstidA(from_ex_dstidA),
         .from_ex_dstidB(from_ex_dstidB),
