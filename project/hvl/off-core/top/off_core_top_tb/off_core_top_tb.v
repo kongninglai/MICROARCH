@@ -33,7 +33,7 @@ localparam V_CT_WRITE_DONE           = WR_AND_DATA_EN_CYCLES - 1;
 localparam V_CT_RD_EN_DONE           = RD_EN_CYCLES - 1;
 localparam V_CT_SHORT_BRST_DONE      = (RANK_BURST_SIZE - 1) - 1;
 
-localparam DELAY_ADJ = 7;
+localparam DELAY_ADJ = 6;
 
 reg rst, clk;
 reg DC_MEM_WR_RQ, DC_DMA_WR_RQ, DC_KB_WR_RQ;
@@ -599,6 +599,13 @@ initial begin
 
   @(posedge DUT.arbiter_inst.NOBODY_BUSY);
   @(posedge clk);
+
+  /*** Flush out the I$ row buffer...technically we never write to regions read by I$ ***/
+  assertTwoCycles(1);
+  fork
+    driveRDaddr(5 << 4);
+    #(70 * CYCLE_TIME);
+  join
 
   /*** REPEAT MEMORY CONTROLLER TESTING (TEST DMA TRANFSER BY INSPECTION) ***/
   assertTwoCycles(1);

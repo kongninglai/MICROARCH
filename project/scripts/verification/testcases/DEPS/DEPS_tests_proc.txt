@@ -1,0 +1,356 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  c7 43 00 8b 49 9f 9f  // mov    DWORD PTR [ebx+0x0],0x9f9f498b
+0x2b:  c7 43 04 d2 75 44 7b  // mov    DWORD PTR [ebx+0x4],0x7b4475d2
+0x32:  c7 43 08 1d 8a 97 b4  // mov    DWORD PTR [ebx+0x8],0xb4978a1d
+0x39:  c7 43 0c 89 e4 d6 be  // mov    DWORD PTR [ebx+0xc],0xbed6e489
+0x40:  c7 43 10 fd 2d 75 61  // mov    DWORD PTR [ebx+0x10],0x61752dfd
+0x47:  c7 43 14 69 42 33 e6  // mov    DWORD PTR [ebx+0x14],0xe6334269
+0x4e:  c7 43 18 a0 be 72 fe  // mov    DWORD PTR [ebx+0x18],0xfe72bea0
+0x55:  c7 43 1c 36 1a 00 c5  // mov    DWORD PTR [ebx+0x1c],0xc5001a36
+0x5c:  c7 43 20 76 64 dd f0  // mov    DWORD PTR [ebx+0x20],0xf0dd6476
+0x63:  c7 43 24 32 ce a9 8c  // mov    DWORD PTR [ebx+0x24],0x8ca9ce32
+0x6a:  c7 43 28 2f 48 aa e6  // mov    DWORD PTR [ebx+0x28],0xe6aa482f
+0x71:  c7 43 2c 03 96 6b a5  // mov    DWORD PTR [ebx+0x2c],0xa56b9603
+0x78:  c7 43 30 6f 72 d2 02  // mov    DWORD PTR [ebx+0x30],0x2d2726f
+0x7f:  c7 43 34 ee 4f da 90  // mov    DWORD PTR [ebx+0x34],0x90da4fee
+0x86:  c7 43 38 35 94 24 80  // mov    DWORD PTR [ebx+0x38],0x80249435
+0x8d:  c7 43 3c aa ff 5c 42  // mov    DWORD PTR [ebx+0x3c],0x425cffaa
+0x94:  c7 43 40 5b fa 67 21  // mov    DWORD PTR [ebx+0x40],0x2167fa5b
+0x9b:  c7 43 44 aa bc f0 6f  // mov    DWORD PTR [ebx+0x44],0x6ff0bcaa
+0xa2:  c7 43 48 96 88 3e 61  // mov    DWORD PTR [ebx+0x48],0x613e8896
+0xa9:  c7 43 4c 07 9a 0f 51  // mov    DWORD PTR [ebx+0x4c],0x510f9a07
+0xb0:  c7 43 50 df 5d a6 b9  // mov    DWORD PTR [ebx+0x50],0xb9a65ddf
+0xb7:  c7 43 54 9e ce b2 9e  // mov    DWORD PTR [ebx+0x54],0x9eb2ce9e
+0xbe:  c7 43 58 f4 e2 5d 94  // mov    DWORD PTR [ebx+0x58],0x945de2f4
+0xc5:  c7 43 5c cc 68 14 51  // mov    DWORD PTR [ebx+0x5c],0x511468cc
+0xcc:  c7 43 60 5e 86 95 f5  // mov    DWORD PTR [ebx+0x60],0xf595865e
+0xd3:  c7 43 64 88 fc bb 7c  // mov    DWORD PTR [ebx+0x64],0x7cbbfc88
+0xda:  c7 43 68 10 c3 26 7d  // mov    DWORD PTR [ebx+0x68],0x7d26c310
+0xe1:  c7 43 6c a7 6a 13 1c  // mov    DWORD PTR [ebx+0x6c],0x1c136aa7
+0xe8:  c7 43 70 d4 d3 43 21  // mov    DWORD PTR [ebx+0x70],0x2143d3d4
+0xef:  c7 43 74 63 dc 5f a3  // mov    DWORD PTR [ebx+0x74],0xa35fdc63
+0xf6:  c7 43 78 23 be b7 cd  // mov    DWORD PTR [ebx+0x78],0xcdb7be23
+0xfd:  c7 43 7c d4 3d 9d 32  // mov    DWORD PTR [ebx+0x7c],0x329d3dd4
+0x104:  b8 31 b1 e6 1c  // mov    eax,0x1ce6b131
+0x109:  8b c8  // mov    ecx,eax
+0x10b:  b8 d4 2a 48 0f  // mov    eax,0xf482ad4
+0x110:  ba 11 11 11 11  // mov    edx,0x11111111
+0x115:  8b c8  // mov    ecx,eax
+0x117:  b8 6d f6 c1 fc  // mov    eax,0xfcc1f66d
+0x11c:  ba 11 11 11 11  // mov    edx,0x11111111
+0x121:  83 c2 01  // add    edx,0x1
+0x124:  8b c8  // mov    ecx,eax
+0x126:  b8 76 24 70 17  // mov    eax,0x17702476
+0x12b:  ba 11 11 11 11  // mov    edx,0x11111111
+0x130:  83 c2 01  // add    edx,0x1
+0x133:  ba 22 22 22 22  // mov    edx,0x22222222
+0x138:  8b c8  // mov    ecx,eax
+0x13a:  b8 c8 66 84 2b  // mov    eax,0x2b8466c8
+0x13f:  ba 11 11 11 11  // mov    edx,0x11111111
+0x144:  83 c2 01  // add    edx,0x1
+0x147:  ba 22 22 22 22  // mov    edx,0x22222222
+0x14c:  83 c2 02  // add    edx,0x2
+0x14f:  8b c8  // mov    ecx,eax
+0x151:  b8 01 00 00 00  // mov    eax,0x1
+0x156:  05 01 00 00 00  // add    eax,0x1
+0x15b:  03 c8  // add    ecx,eax
+0x15d:  b9 10 00 00 00  // mov    ecx,0x10
+0x162:  05 01 00 00 00  // add    eax,0x1
+0x167:  ba 11 11 11 11  // mov    edx,0x11111111
+0x16c:  03 c8  // add    ecx,eax
+0x16e:  b8 00 01 00 00  // mov    eax,0x100
+0x173:  05 01 00 00 00  // add    eax,0x1
+0x178:  ba 11 11 11 11  // mov    edx,0x11111111
+0x17d:  83 c2 01  // add    edx,0x1
+0x180:  03 c8  // add    ecx,eax
+0x182:  b8 00 10 00 00  // mov    eax,0x1000
+0x187:  05 01 00 00 00  // add    eax,0x1
+0x18c:  ba 11 11 11 11  // mov    edx,0x11111111
+0x191:  83 c2 01  // add    edx,0x1
+0x194:  ba 22 22 22 22  // mov    edx,0x22222222
+0x199:  03 c8  // add    ecx,eax
+0x19b:  b8 00 00 01 00  // mov    eax,0x10000
+0x1a0:  05 01 00 00 00  // add    eax,0x1
+0x1a5:  ba 11 11 11 11  // mov    edx,0x11111111
+0x1aa:  83 c2 01  // add    edx,0x1
+0x1ad:  ba 22 22 22 22  // mov    edx,0x22222222
+0x1b2:  83 c2 02  // add    edx,0x2
+0x1b5:  03 c8  // add    ecx,eax
+0x1b7:  b0 1c  // mov    al,0x1c
+0x1b9:  04 23  // add    al,0x23
+0x1bb:  b0 b3  // mov    al,0xb3
+0x1bd:  ba 11 11 11 11  // mov    edx,0x11111111
+0x1c2:  04 a0  // add    al,0xa0
+0x1c4:  b0 e7  // mov    al,0xe7
+0x1c6:  ba 11 11 11 11  // mov    edx,0x11111111
+0x1cb:  83 c2 01  // add    edx,0x1
+0x1ce:  04 af  // add    al,0xaf
+0x1d0:  b0 f2  // mov    al,0xf2
+0x1d2:  ba 11 11 11 11  // mov    edx,0x11111111
+0x1d7:  83 c2 01  // add    edx,0x1
+0x1da:  ba 22 22 22 22  // mov    edx,0x22222222
+0x1df:  04 53  // add    al,0x53
+0x1e1:  b0 cb  // mov    al,0xcb
+0x1e3:  ba 11 11 11 11  // mov    edx,0x11111111
+0x1e8:  83 c2 01  // add    edx,0x1
+0x1eb:  ba 22 22 22 22  // mov    edx,0x22222222
+0x1f0:  83 c2 02  // add    edx,0x2
+0x1f3:  04 c8  // add    al,0xc8
+0x1f5:  66 b8 55 f1  // mov    ax,0xf155
+0x1f9:  66 05 d6 49  // add    ax,0x49d6
+0x1fd:  66 b8 fe c0  // mov    ax,0xc0fe
+0x201:  ba 11 11 11 11  // mov    edx,0x11111111
+0x206:  66 05 38 0c  // add    ax,0xc38
+0x20a:  66 b8 ed 49  // mov    ax,0x49ed
+0x20e:  ba 11 11 11 11  // mov    edx,0x11111111
+0x213:  83 c2 01  // add    edx,0x1
+0x216:  66 05 8c e2  // add    ax,0xe28c
+0x21a:  66 b8 cf 67  // mov    ax,0x67cf
+0x21e:  ba 11 11 11 11  // mov    edx,0x11111111
+0x223:  83 c2 01  // add    edx,0x1
+0x226:  ba 22 22 22 22  // mov    edx,0x22222222
+0x22b:  66 05 42 c2  // add    ax,0xc242
+0x22f:  66 b8 b1 83  // mov    ax,0x83b1
+0x233:  ba 11 11 11 11  // mov    edx,0x11111111
+0x238:  83 c2 01  // add    edx,0x1
+0x23b:  ba 22 22 22 22  // mov    edx,0x22222222
+0x240:  83 c2 02  // add    edx,0x2
+0x243:  66 05 c2 fc  // add    ax,0xfcc2
+0x247:  ba 00 02 00 00  // mov    edx,0x200
+0x24c:  8e da  // mov    ds,edx
+0x24e:  8b 43 00  // mov    eax,DWORD PTR [ebx+0x0]
+0x251:  ba 00 02 00 00  // mov    edx,0x200
+0x256:  8e da  // mov    ds,edx
+0x258:  ba 11 11 11 11  // mov    edx,0x11111111
+0x25d:  8b 43 00  // mov    eax,DWORD PTR [ebx+0x0]
+0x260:  ba 00 02 00 00  // mov    edx,0x200
+0x265:  8e da  // mov    ds,edx
+0x267:  ba 11 11 11 11  // mov    edx,0x11111111
+0x26c:  83 c2 01  // add    edx,0x1
+0x26f:  8b 43 00  // mov    eax,DWORD PTR [ebx+0x0]
+0x272:  ba 00 02 00 00  // mov    edx,0x200
+0x277:  8e da  // mov    ds,edx
+0x279:  ba 11 11 11 11  // mov    edx,0x11111111
+0x27e:  83 c2 01  // add    edx,0x1
+0x281:  ba 22 22 22 22  // mov    edx,0x22222222
+0x286:  8b 43 00  // mov    eax,DWORD PTR [ebx+0x0]
+0x289:  ba 00 02 00 00  // mov    edx,0x200
+0x28e:  8e da  // mov    ds,edx
+0x290:  ba 11 11 11 11  // mov    edx,0x11111111
+0x295:  83 c2 01  // add    edx,0x1
+0x298:  ba 22 22 22 22  // mov    edx,0x22222222
+0x29d:  83 c2 02  // add    edx,0x2
+0x2a0:  8b 43 00  // mov    eax,DWORD PTR [ebx+0x0]
+0x2a3:  ba 00 04 00 00  // mov    edx,0x400
+0x2a8:  8e c2  // mov    es,edx
+0x2aa:  26 8b 4d 00  // mov    ecx,DWORD PTR es:[ebp+0x0]
+0x2ae:  ba 00 04 00 00  // mov    edx,0x400
+0x2b3:  8e c2  // mov    es,edx
+0x2b5:  ba 11 11 11 11  // mov    edx,0x11111111
+0x2ba:  26 8b 4d 00  // mov    ecx,DWORD PTR es:[ebp+0x0]
+0x2be:  ba 00 04 00 00  // mov    edx,0x400
+0x2c3:  8e c2  // mov    es,edx
+0x2c5:  ba 11 11 11 11  // mov    edx,0x11111111
+0x2ca:  83 c2 01  // add    edx,0x1
+0x2cd:  26 8b 4d 00  // mov    ecx,DWORD PTR es:[ebp+0x0]
+0x2d1:  ba 00 04 00 00  // mov    edx,0x400
+0x2d6:  8e c2  // mov    es,edx
+0x2d8:  ba 11 11 11 11  // mov    edx,0x11111111
+0x2dd:  83 c2 01  // add    edx,0x1
+0x2e0:  ba 22 22 22 22  // mov    edx,0x22222222
+0x2e5:  26 8b 4d 00  // mov    ecx,DWORD PTR es:[ebp+0x0]
+0x2e9:  ba 00 04 00 00  // mov    edx,0x400
+0x2ee:  8e c2  // mov    es,edx
+0x2f0:  ba 11 11 11 11  // mov    edx,0x11111111
+0x2f5:  83 c2 01  // add    edx,0x1
+0x2f8:  ba 22 22 22 22  // mov    edx,0x22222222
+0x2fd:  83 c2 02  // add    edx,0x2
+0x300:  26 8b 4d 00  // mov    ecx,DWORD PTR es:[ebp+0x0]
+0x304:  0f 6f 4b 08  // movq   mm1,QWORD PTR [ebx+0x8]
+0x308:  0f 6f 43 00  // movq   mm0,QWORD PTR [ebx+0x0]
+0x30c:  0f fe c1  // paddd  mm0,mm1
+0x30f:  0f 6f 43 00  // movq   mm0,QWORD PTR [ebx+0x0]
+0x313:  ba 11 11 11 11  // mov    edx,0x11111111
+0x318:  0f fe c1  // paddd  mm0,mm1
+0x31b:  0f 6f 43 00  // movq   mm0,QWORD PTR [ebx+0x0]
+0x31f:  ba 11 11 11 11  // mov    edx,0x11111111
+0x324:  83 c2 01  // add    edx,0x1
+0x327:  0f fe c1  // paddd  mm0,mm1
+0x32a:  0f 6f 43 00  // movq   mm0,QWORD PTR [ebx+0x0]
+0x32e:  ba 11 11 11 11  // mov    edx,0x11111111
+0x333:  83 c2 01  // add    edx,0x1
+0x336:  ba 22 22 22 22  // mov    edx,0x22222222
+0x33b:  0f fe c1  // paddd  mm0,mm1
+0x33e:  0f 6f 43 00  // movq   mm0,QWORD PTR [ebx+0x0]
+0x342:  ba 11 11 11 11  // mov    edx,0x11111111
+0x347:  83 c2 01  // add    edx,0x1
+0x34a:  ba 22 22 22 22  // mov    edx,0x22222222
+0x34f:  83 c2 02  // add    edx,0x2
+0x352:  0f fe c1  // paddd  mm0,mm1
+0x355:  0f 6f 43 00  // movq   mm0,QWORD PTR [ebx+0x0]
+0x359:  0f 6f d0  // movq   mm2,mm0
+0x35c:  0f 6f 43 00  // movq   mm0,QWORD PTR [ebx+0x0]
+0x360:  ba 11 11 11 11  // mov    edx,0x11111111
+0x365:  0f 6f d0  // movq   mm2,mm0
+0x368:  0f 6f 43 00  // movq   mm0,QWORD PTR [ebx+0x0]
+0x36c:  ba 11 11 11 11  // mov    edx,0x11111111
+0x371:  83 c2 01  // add    edx,0x1
+0x374:  0f 6f d0  // movq   mm2,mm0
+0x377:  0f 6f 43 00  // movq   mm0,QWORD PTR [ebx+0x0]
+0x37b:  ba 11 11 11 11  // mov    edx,0x11111111
+0x380:  83 c2 01  // add    edx,0x1
+0x383:  ba 22 22 22 22  // mov    edx,0x22222222
+0x388:  0f 6f d0  // movq   mm2,mm0
+0x38b:  0f 6f 43 00  // movq   mm0,QWORD PTR [ebx+0x0]
+0x38f:  ba 11 11 11 11  // mov    edx,0x11111111
+0x394:  83 c2 01  // add    edx,0x1
+0x397:  ba 22 22 22 22  // mov    edx,0x22222222
+0x39c:  83 c2 02  // add    edx,0x2
+0x39f:  0f 6f d0  // movq   mm2,mm0
+0x3a2:  c7 43 00 c9 73 1f 1d  // mov    DWORD PTR [ebx+0x0],0x1d1f73c9
+0x3a9:  8b 73 00  // mov    esi,DWORD PTR [ebx+0x0]
+0x3ac:  03 ce  // add    ecx,esi
+0x3ae:  c7 43 04 6b 70 2b d0  // mov    DWORD PTR [ebx+0x4],0xd02b706b
+0x3b5:  ba 11 11 11 11  // mov    edx,0x11111111
+0x3ba:  8b 73 04  // mov    esi,DWORD PTR [ebx+0x4]
+0x3bd:  03 ce  // add    ecx,esi
+0x3bf:  c7 43 08 4a 01 5d a5  // mov    DWORD PTR [ebx+0x8],0xa55d014a
+0x3c6:  ba 11 11 11 11  // mov    edx,0x11111111
+0x3cb:  83 c2 01  // add    edx,0x1
+0x3ce:  8b 73 08  // mov    esi,DWORD PTR [ebx+0x8]
+0x3d1:  03 ce  // add    ecx,esi
+0x3d3:  c7 43 0c 7c 03 8f 56  // mov    DWORD PTR [ebx+0xc],0x568f037c
+0x3da:  ba 11 11 11 11  // mov    edx,0x11111111
+0x3df:  83 c2 01  // add    edx,0x1
+0x3e2:  ba 22 22 22 22  // mov    edx,0x22222222
+0x3e7:  8b 73 0c  // mov    esi,DWORD PTR [ebx+0xc]
+0x3ea:  03 ce  // add    ecx,esi
+0x3ec:  c7 43 10 d8 52 35 66  // mov    DWORD PTR [ebx+0x10],0x663552d8
+0x3f3:  ba 11 11 11 11  // mov    edx,0x11111111
+0x3f8:  83 c2 01  // add    edx,0x1
+0x3fb:  ba 22 22 22 22  // mov    edx,0x22222222
+0x400:  83 c2 02  // add    edx,0x2
+0x403:  8b 73 10  // mov    esi,DWORD PTR [ebx+0x10]
+0x406:  03 ce  // add    ecx,esi
+0x408:  c7 43 14 e3 80 41 30  // mov    DWORD PTR [ebx+0x14],0x304180e3
+0x40f:  8b 73 14  // mov    esi,DWORD PTR [ebx+0x14]
+0x412:  03 ce  // add    ecx,esi
+0x414:  c7 43 18 ec dd c8 62  // mov    DWORD PTR [ebx+0x18],0x62c8ddec
+0x41b:  ba 11 11 11 11  // mov    edx,0x11111111
+0x420:  8b 73 18  // mov    esi,DWORD PTR [ebx+0x18]
+0x423:  03 ce  // add    ecx,esi
+0x425:  c7 43 1c 2b 01 72 b7  // mov    DWORD PTR [ebx+0x1c],0xb772012b
+0x42c:  ba 11 11 11 11  // mov    edx,0x11111111
+0x431:  83 c2 01  // add    edx,0x1
+0x434:  8b 73 1c  // mov    esi,DWORD PTR [ebx+0x1c]
+0x437:  03 ce  // add    ecx,esi
+0x439:  c7 43 20 db fa b4 9d  // mov    DWORD PTR [ebx+0x20],0x9db4fadb
+0x440:  ba 11 11 11 11  // mov    edx,0x11111111
+0x445:  83 c2 01  // add    edx,0x1
+0x448:  ba 22 22 22 22  // mov    edx,0x22222222
+0x44d:  8b 73 20  // mov    esi,DWORD PTR [ebx+0x20]
+0x450:  03 ce  // add    ecx,esi
+0x452:  c7 43 24 79 45 a9 0e  // mov    DWORD PTR [ebx+0x24],0xea94579
+0x459:  ba 11 11 11 11  // mov    edx,0x11111111
+0x45e:  83 c2 01  // add    edx,0x1
+0x461:  ba 22 22 22 22  // mov    edx,0x22222222
+0x466:  83 c2 02  // add    edx,0x2
+0x469:  8b 73 24  // mov    esi,DWORD PTR [ebx+0x24]
+0x46c:  03 ce  // add    ecx,esi
+0x46e:  c7 43 28 4a f9 a4 5e  // mov    DWORD PTR [ebx+0x28],0x5ea4f94a
+0x475:  8b 73 28  // mov    esi,DWORD PTR [ebx+0x28]
+0x478:  03 ce  // add    ecx,esi
+0x47a:  c7 43 2c 47 9e 45 4a  // mov    DWORD PTR [ebx+0x2c],0x4a459e47
+0x481:  ba 11 11 11 11  // mov    edx,0x11111111
+0x486:  8b 73 2c  // mov    esi,DWORD PTR [ebx+0x2c]
+0x489:  03 ce  // add    ecx,esi
+0x48b:  c7 43 30 05 96 b7 40  // mov    DWORD PTR [ebx+0x30],0x40b79605
+0x492:  ba 11 11 11 11  // mov    edx,0x11111111
+0x497:  83 c2 01  // add    edx,0x1
+0x49a:  8b 73 30  // mov    esi,DWORD PTR [ebx+0x30]
+0x49d:  03 ce  // add    ecx,esi
+0x49f:  c7 43 34 c8 48 df 59  // mov    DWORD PTR [ebx+0x34],0x59df48c8
+0x4a6:  ba 11 11 11 11  // mov    edx,0x11111111
+0x4ab:  83 c2 01  // add    edx,0x1
+0x4ae:  ba 22 22 22 22  // mov    edx,0x22222222
+0x4b3:  8b 73 34  // mov    esi,DWORD PTR [ebx+0x34]
+0x4b6:  03 ce  // add    ecx,esi
+0x4b8:  c7 43 38 dc 61 d9 6a  // mov    DWORD PTR [ebx+0x38],0x6ad961dc
+0x4bf:  ba 11 11 11 11  // mov    edx,0x11111111
+0x4c4:  83 c2 01  // add    edx,0x1
+0x4c7:  ba 22 22 22 22  // mov    edx,0x22222222
+0x4cc:  83 c2 02  // add    edx,0x2
+0x4cf:  8b 73 38  // mov    esi,DWORD PTR [ebx+0x38]
+0x4d2:  03 ce  // add    ecx,esi
+0x4d4:  c7 43 3c 4f b2 3a dc  // mov    DWORD PTR [ebx+0x3c],0xdc3ab24f
+0x4db:  8b 73 3c  // mov    esi,DWORD PTR [ebx+0x3c]
+0x4de:  03 ce  // add    ecx,esi
+0x4e0:  c7 43 40 af 3a c8 27  // mov    DWORD PTR [ebx+0x40],0x27c83aaf
+0x4e7:  ba 11 11 11 11  // mov    edx,0x11111111
+0x4ec:  8b 73 40  // mov    esi,DWORD PTR [ebx+0x40]
+0x4ef:  03 ce  // add    ecx,esi
+0x4f1:  c7 43 44 04 ff b4 02  // mov    DWORD PTR [ebx+0x44],0x2b4ff04
+0x4f8:  ba 11 11 11 11  // mov    edx,0x11111111
+0x4fd:  83 c2 01  // add    edx,0x1
+0x500:  8b 73 44  // mov    esi,DWORD PTR [ebx+0x44]
+0x503:  03 ce  // add    ecx,esi
+0x505:  c7 43 48 08 33 08 a3  // mov    DWORD PTR [ebx+0x48],0xa3083308
+0x50c:  ba 11 11 11 11  // mov    edx,0x11111111
+0x511:  83 c2 01  // add    edx,0x1
+0x514:  ba 22 22 22 22  // mov    edx,0x22222222
+0x519:  8b 73 48  // mov    esi,DWORD PTR [ebx+0x48]
+0x51c:  03 ce  // add    ecx,esi
+0x51e:  c7 43 4c a1 32 4b 93  // mov    DWORD PTR [ebx+0x4c],0x934b32a1
+0x525:  ba 11 11 11 11  // mov    edx,0x11111111
+0x52a:  83 c2 01  // add    edx,0x1
+0x52d:  ba 22 22 22 22  // mov    edx,0x22222222
+0x532:  83 c2 02  // add    edx,0x2
+0x535:  8b 73 4c  // mov    esi,DWORD PTR [ebx+0x4c]
+0x538:  03 ce  // add    ecx,esi
+0x53a:  c7 43 00 28 07 f4 ee  // mov    DWORD PTR [ebx+0x0],0xeef40728
+0x541:  c7 43 04 05 1d 2c b2  // mov    DWORD PTR [ebx+0x4],0xb22c1d05
+0x548:  c7 43 08 cd b7 ea b7  // mov    DWORD PTR [ebx+0x8],0xb7eab7cd
+0x54f:  8b 43 00  // mov    eax,DWORD PTR [ebx+0x0]
+0x552:  8b 4b 04  // mov    ecx,DWORD PTR [ebx+0x4]
+0x555:  8b 73 08  // mov    esi,DWORD PTR [ebx+0x8]
+0x558:  c7 43 0c a9 3a 93 98  // mov    DWORD PTR [ebx+0xc],0x98933aa9
+0x55f:  8b 7b 00  // mov    edi,DWORD PTR [ebx+0x0]
+0x562:  c7 43 10 0e 1e b6 e5  // mov    DWORD PTR [ebx+0x10],0xe5b61e0e
+0x569:  8b 43 0c  // mov    eax,DWORD PTR [ebx+0xc]
+0x56c:  8b 4b 10  // mov    ecx,DWORD PTR [ebx+0x10]
+0x56f:  f4  // hlt
+
+0x2000: 8b 49 9f 9f d2 75 44 7b 1d 8a 97 b4 89 e4 d6 be
+0x2010: fd 2d 75 61 69 42 33 e6 a0 be 72 fe 36 1a 00 c5
+0x2020: 76 64 dd f0 32 ce a9 8c 2f 48 aa e6 03 96 6b a5
+0x2030: 6f 72 d2 02 ee 4f da 90 35 94 24 80 aa ff 5c 42
+0x2040: 5b fa 67 21 aa bc f0 6f 96 88 3e 61 07 9a 0f 51
+0x2050: df 5d a6 b9 9e ce b2 9e f4 e2 5d 94 cc 68 14 51
+0x2060: 5e 86 95 f5 88 fc bb 7c 10 c3 26 7d a7 6a 13 1c
+0x2070: d4 d3 43 21 63 dc 5f a3 23 be b7 cd d4 3d 9d 32
+0x5000: 1d 10 fd 18 2c 1c 23 b3 a0 e7 af f2 53 cb c8 f2
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

@@ -76,15 +76,16 @@ generate
       assign eq = and_0_0_out;
     end
     11: begin : width11_gen
-      wire and_0_0_out;
-      wire and_0_1_out;
-      wire and_0_2_out;
-      wire and_0_3_out;
-      and4$ and_0_0(and_0_0_out,and_0_1_out,and_0_2_out,and_0_3_out,in[0]);
-      and4$ and_0_1(and_0_1_out,in[1],in[2],in[3],in[4]);
-      and4$ and_0_2(and_0_2_out,in[5],in[6],in[7],in[8]);
-      and2$ and_0_3(and_0_3_out,in[9],in[10]);
-      assign eq = and_0_0_out;
+      // Optimized for physical cache line address compares (mcu row buffer)
+      wire nor_0_0_out;
+      wire nand_0_0_out;
+      wire nand_0_1_out;
+      wire nand_0_2_out;
+      nor3$  nor_0_0(nor_0_0_out,nand_0_0_out,nand_0_1_out,nand_0_2_out);
+      nand4$ nand_0_0(nand_0_0_out,in[1],in[2],in[3],in[4]);
+      nand4$ nand_0_1(nand_0_1_out,in[5],in[6],in[7],in[8]);
+      nand3$ nand_0_2(nand_0_2_out,in[9],in[10],in[0]);
+      assign eq = nor_0_0_out;
     end
     12: begin : width12_gen
       wire and_0_0_out;

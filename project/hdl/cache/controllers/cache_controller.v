@@ -209,7 +209,9 @@ endgenerate
 wire  [NUM_WAYS*RANK_BURST_SIZE-1:0]          D0_CC_DATA_WR_MASK_OUT_01, D1_CC_DATA_WR_MASK_OUT_01, 
                                               D_CC_DATA_WR_MASK_OUT_01, D_CC_DATA_WR_MASK_OUT_11;
 wire  [NUM_WAYS-1:0]                          D_CC_TAG_WR_MASK_OUT_1;
-wire  [INDEX_WIDTH+WAY_WIDTH-1:0]             D_CC_VALID_WR_EN_1;
+wire  [INDEX_WIDTH+WAY_WIDTH-1:0]             D_CC_VALID_WR_EN_1, D_CC_VALID_WR_EN_1_buf16;
+
+bufferH16$    bufferH16$_D_CC_VALID_WR_EN_1_buf16[INDEX_WIDTH+WAY_WIDTH-1:0](D_CC_VALID_WR_EN_1_buf16, D_CC_VALID_WR_EN_1);
 
 we_logic_block we_logic_block_inst (           
   .CACHE_PHYS_ADDR(CACHE_PHYS_ADDR),
@@ -286,7 +288,7 @@ reg_n #(
   .USE_EN_BAR(0)
 ) reg_n_Q_CC_VALID_WR_EN_1 (
   .clk(clk), .rst(rst),
-  .en({(INDEX_WIDTH+WAY_WIDTH){FSM_LD_REGS_buf64}}), .d(D_CC_VALID_WR_EN_1),
+  .en({(INDEX_WIDTH+WAY_WIDTH){FSM_LD_REGS_buf64}}), .d(D_CC_VALID_WR_EN_1_buf16),
   .q(Q_CC_VALID_WR_EN_1)
 );
 

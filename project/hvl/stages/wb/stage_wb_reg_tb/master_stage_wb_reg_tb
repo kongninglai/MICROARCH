@@ -7,6 +7,7 @@
 ~/MICROARCH/project/hdl/local-lib/gates/big_and.v
 ~/MICROARCH/project/hdl/local-lib/gates/big_or.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_8.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_16.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux3_32.v
@@ -55,6 +56,7 @@
 ~/MICROARCH/project/hdl/local-lib/adders/PA_16b.v
 ~/MICROARCH/project/hdl/local-lib/adders/FA_16b.v
 ~/MICROARCH/project/hdl/local-lib/adders/FA_32b.v
+~/MICROARCH/project/hdl/local-lib/adders/PA_4b.v
 ~/MICROARCH/project/hdl/local-lib/adders/PA_8b.v
 ~/MICROARCH/project/hdl/local-lib/adders/HA_32b.v
 ~/MICROARCH/project/hdl/local-lib/adders/SUB_32b.v
@@ -98,6 +100,7 @@
 ~/MICROARCH/project/hdl/cache/controllers/cache_controller.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_16b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_8b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_16b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_256b.v
 ~/MICROARCH/project/hdl/off-core/io/dma_disk_buffer.v

@@ -117,6 +117,10 @@ reg [63:0] arch_snap_mmx [0:7];
 reg [15:0] arch_snap_seg [0:5];
 reg [15:0] arch_snap_cs;
 
+/*** KEYBOARD TEST CASE ***/
+reg [7:0] TEST_CASE_NEW_CHAR, TEST_CASE_NEW_CHAR_WR;
+reg TEST_CASE_NEW_READY, TEST_CASE_NEW_READY_WR;
+
 /*** DUT ***/
 backend_top dut (
   .clk(clk),
@@ -230,14 +234,26 @@ full_cache #(
 
   .DMA_INT(DMA_INT),
 
-  .TEST_CASE_NEW_CHAR(8'd0),
-  .TEST_CASE_NEW_CHAR_WR(8'd0),
-  .TEST_CASE_NEW_READY(1'b0),
-  .TEST_CASE_NEW_READY_WR(1'b0),
+  .TEST_CASE_NEW_CHAR(TEST_CASE_NEW_CHAR),
+  .TEST_CASE_NEW_CHAR_WR(TEST_CASE_NEW_CHAR_WR),
+  .TEST_CASE_NEW_READY(TEST_CASE_NEW_READY),
+  .TEST_CASE_NEW_READY_WR(TEST_CASE_NEW_READY_WR),
 
   .WB_FLUSH(from_wb_flush),
   .EX_FLUSH(from_ex_flush)
 );
+
+always @(posedge full_cache_inst.full_cc_off_core_inst.off_core_top_inst.kb_inst.KBER) begin
+  TEST_CASE_NEW_CHAR <= 8'h67;
+  TEST_CASE_NEW_CHAR_WR <= 8'hFF;
+  TEST_CASE_NEW_READY <= 1'b1;
+  TEST_CASE_NEW_READY_WR <= 1'b1;
+  #(CYCLE_TIME);
+  TEST_CASE_NEW_CHAR <= 8'h00;
+  TEST_CASE_NEW_CHAR_WR <= 8'h00;
+  TEST_CASE_NEW_READY <= 1'b0;
+  TEST_CASE_NEW_READY_WR <= 1'b0;
+end
 
 tlb_wrapper tlb_inst (
   .ITLB_VPN(),
@@ -409,7 +425,7 @@ begin
 end
 endtask
 
-integer load_iters, k, m, n;
+integer load_iters, k, m, n, difference, starting_point;
 
 always @(posedge clk) begin
   if (!rst_n) begin 
@@ -436,19 +452,30 @@ always @(posedge clk) begin
   if (dut.inst_stage_mem.rw_buf16[0] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
     saved_st_addr = dut.inst_stage_mem.to_mem_st_addr;
   end
-  if (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
+  if ((dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b0 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) ||
+      (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.LINE_0_LOAD_DONE === 1'b1) ||
+      (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0)) begin
     case (dut.inst_stage_mem.mem_ds)
       2'b00: load_iters=1;
       2'b01: load_iters=2;
       2'b10: load_iters=4;
       2'b11: load_iters=8;
     endcase
-    for (k = 0; k < load_iters; k = k + 1) begin
+    if ((dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0)) begin
+      difference = 16 - dut.inst_stage_mem.to_mem_ld_addr[3:0];
+      starting_point = 0;
+    end else begin
+      difference = 0;
+      starting_point = dut.inst_stage_mem.to_mem_ld_addr[3:0];
+    end
+    // $display("TIME %t: difference = %d, starting_point = %d", $time, difference, starting_point);
+    for (k = starting_point; k < (starting_point + load_iters - difference) && k < 16; k = k + 1) begin
       if (pend_mem_cnt < MAX_PENDING_MEM) begin
         pend_mem_is_wr[pend_mem_cnt] = 1'b0;
-        pend_mem_val  [pend_mem_cnt] = (dut.inst_stage_mem.from_mem_load_result >> (8 * k)) & 8'hFF;
-        pend_mem_va   [pend_mem_cnt] = dut.inst_stage_mem.to_mem_ld_addr[31:0] + k;
-        pend_mem_pa   [pend_mem_cnt] = {D_RD_TLB_PFN_OUT[2:0], dut.inst_stage_mem.to_mem_ld_addr[11:4], dut.inst_stage_mem.to_mem_ld_addr[3:0]} + k;
+        pend_mem_val  [pend_mem_cnt] = (dut.inst_stage_mem.from_mem_load_result >> (8 * ((k-starting_point)+difference))) & 8'hFF;
+        pend_mem_va   [pend_mem_cnt] = dut.inst_stage_mem.to_mem_ld_addr[31:0] + ((k-starting_point)+difference);
+        pend_mem_pa   [pend_mem_cnt] = (dut.inst_stage_mem.to_mem_ld_addr[14:0] + ((k-starting_point)+difference)) & 16'h7FFF;
+        pend_mem_pa   [pend_mem_cnt][14:12] = D_RD_TLB_PFN_OUT[2:0];
         pend_mem_ieip [pend_mem_cnt] = dut.to_mem_ieip;
         pend_mem_cnt = pend_mem_cnt + 1;
       end
@@ -478,7 +505,9 @@ always @(posedge clk) begin
           pend_mem_val  [pend_mem_cnt] = (combined_data >> (8*n)) & 8'hFF;
           pend_mem_va   [pend_mem_cnt] = {saved_st_addr[31:4], 4'd0} + n;
           pend_mem_pa   [pend_mem_cnt] = {dut.inst_stage_wb.to_wb_store_addr_line_0[14:4], 4'd0} + n;
-          pend_mem_ieip [pend_mem_cnt] = dut.to_wb_ieip;
+          if (n >= 16) 
+            pend_mem_pa   [pend_mem_cnt] = {dut.inst_stage_wb.to_wb_store_addr_line_1[14:4], 4'd0} + (n-16);
+          pend_mem_ieip [pend_mem_cnt] = saved_ieip;
           pend_mem_cnt = pend_mem_cnt + 1;
         end
       end
@@ -788,6 +817,10 @@ integer j;
 integer file_handle_cmp;
 integer map_i;
 initial begin 
+  TEST_CASE_NEW_CHAR         <= 8'd0;
+  TEST_CASE_NEW_CHAR_WR      <= 8'd0;
+  TEST_CASE_NEW_READY        <= 1'b0;
+  TEST_CASE_NEW_READY_WR     <= 1'b0;
   clk = 1'b0;
   rst_n = 1'b0;
   file_handle_cmp = $fopen("/home/ecelrc/students/kl38888/MICROARCH/project/hvl/top/backend_top/backend_top_tb/results_cmp.txt", "w");
