@@ -89,7 +89,8 @@ module intgr_fshifter_decode_tb();
         input integer byte_idx;
         input [7:0] byte_val;
         begin
-            from_f_cache_line[((15 - byte_idx)*8) +: 8] <= byte_val; 
+            // CORRECTED: Byte 0 goes to [7:0], Byte 1 to [15:8], etc.
+            from_f_cache_line[(byte_idx * 8) +: 8] <= byte_val; 
         end
     endtask
 
