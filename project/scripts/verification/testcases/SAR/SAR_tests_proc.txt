@@ -1,0 +1,39 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  b8 00 00 00 80  // mov    eax,0x80000000
+0x29:  d1 f8  // sar    eax,1
+0x2b:  b8 08 00 00 00  // mov    eax,0x8
+0x30:  d1 f8  // sar    eax,1
+0x32:  b9 00 00 00 80  // mov    ecx,0x80000000
+0x37:  c1 f9 04  // sar    ecx,0x4
+0x3a:  b9 10 00 00 00  // mov    ecx,0x10
+0x3f:  c1 f9 02  // sar    ecx,0x2
+0x42:  ba 00 00 00 80  // mov    edx,0x80000000
+0x47:  b9 01 00 00 00  // mov    ecx,0x1
+0x4c:  d3 fa  // sar    edx,cl
+0x4e:  66 66 b8 00 80  // data16 mov ax,0x8000
+0x53:  66 d1 f8  // sar    ax,1
+0x56:  66 66 b8 00 80  // data16 mov ax,0x8000
+0x5b:  66 c1 f8 04  // sar    ax,0x4
+0x5f:  66 66 b8 10 00  // data16 mov ax,0x10
+0x64:  b9 02 00 00 00  // mov    ecx,0x2
+0x69:  66 d3 f8  // sar    ax,cl
+0x6c:  b8 80 00 00 00  // mov    eax,0x80
+0x71:  d0 f8  // sar    al,1
+0x73:  b8 80 00 00 00  // mov    eax,0x80
+0x78:  c0 f8 02  // sar    al,0x2
+0x7b:  b8 10 00 00 00  // mov    eax,0x10
+0x80:  b9 02 00 00 00  // mov    ecx,0x2
+0x85:  d2 f8  // sar    al,cl
+0x87:  c7 03 00 00 00 80  // mov    DWORD PTR [ebx],0x80000000
+0x8d:  d1 3b  // sar    DWORD PTR [ebx],1
+0x8f:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

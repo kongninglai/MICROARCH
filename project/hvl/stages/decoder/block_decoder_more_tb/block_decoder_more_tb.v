@@ -46,6 +46,7 @@ module tb_block_decoder_more();
         .prefix_rep(prefix_rep),
         .prefix_op_size(prefix_op_size),
         .prefix_seg_ov_id(prefix_seg_ov_id),
+        .prefix_seg(),
         .prefix_ext(prefix_ext),
         .opcode(opcode),
         .modrm_v(modrm_v),

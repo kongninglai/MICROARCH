@@ -61,33 +61,43 @@ localparam RD_EN_CYCLES                 = ((DOE_TIME_X10 / CYCLE_TIME_X10)   + 1
 localparam ADDR_EN_TO_WR_EN_CYCLES      = ((ADDR_SETUP_X10  / CYCLE_TIME_X10)   + 1);
 localparam WR_AND_DATA_EN_CYCLES        = ((CE_SETUP_X10  / CYCLE_TIME_X10)   + 1);
 
-reg   [RANK_ADDR_WIDTH-1:0]             A_RANK0;
+reg   [RANK_ADDR_WIDTH-1:0]             A_RANK0, A_RANK1, A_RANK2;
 reg   [RANK_COUNT*CHIPS_PER_RANK-1:0]   WR, OE, CE;
 reg                                     clk, rst;
 reg   [RANK_BIT_WIDTH-1:0]              DIO_driver;
 reg                                     DIO_driver_enable;
-
+reg   [RANK_IDX_WIDTH-1:0]              active_rank;
 
 wire  [RANK_ADDR_WIDTH-1:0]             A_OTHERS = A_RANK0;
 
-wire  [RANK_BIT_WIDTH-1:0]  DIO     = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
-wire  [RANK_BIT_WIDTH-1:0]  DIO_exp = DIO_driver_enable ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
+wire  [RANK_COUNT*RANK_BIT_WIDTH-1:0]   DIO;
+wire  [RANK_COUNT*RANK_BIT_WIDTH-1:0]   DIO_exp;
+
+genvar r;
+generate
+  for (r = 0; r < RANK_COUNT; r = r + 1) begin : DIO_DRIVE_GEN
+    assign DIO    [RANK_BIT_WIDTH*(r+1)-1:RANK_BIT_WIDTH*r] =
+      (DIO_driver_enable && (active_rank == r)) ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
+    assign DIO_exp[RANK_BIT_WIDTH*(r+1)-1:RANK_BIT_WIDTH*r] =
+      (DIO_driver_enable && (active_rank == r)) ? DIO_driver : {RANK_BIT_WIDTH{1'bz}};
+  end
+endgenerate
 
 integer i, j;
 
 main_memory #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) DUT 
 (
   .clk(clk), .rst(rst),
-  .A_RANK0(A_RANK0), .A_OTHERS(A_OTHERS), .WR(WR),
-	.OE(OE), .CE(CE),
+  .A_RANK0(A_RANK0), .A_RANK1(A_RANK1), .A_RANK2(A_RANK2), .A_OTHERS(A_OTHERS),
+  .WR(WR), .OE(OE), .CE(CE),
   .DIO(DIO)
 );
 
 main_memory_behav #(.MEM_BYTE_CAPACITY(MEM_BYTE_CAPACITY)) REF 
 (
   .clk(clk), .rst(rst),
-  .A_RANK0(A_RANK0), .A_OTHERS(A_OTHERS), .WR(WR),
-	.OE(OE), .CE(CE),
+  .A_RANK0(A_RANK0), .A_RANK1(A_RANK1), .A_RANK2(A_RANK2), .A_OTHERS(A_OTHERS),
+  .WR(WR), .OE(OE), .CE(CE),
   .DIO(DIO_exp)
 );
 
@@ -104,10 +114,13 @@ initial begin
 end
 
 task check;
-  if (DIO !== DIO_exp) begin
+  if (DIO[RANK_BIT_WIDTH*active_rank+:RANK_BIT_WIDTH] !==
+      DIO_exp[RANK_BIT_WIDTH*active_rank+:RANK_BIT_WIDTH]) begin
     FAILURES = FAILURES + 1;
     $display("FAILURE AT TIME %t. DIO_exp = %h, DIO = %h\n", 
-              $time, DIO_exp, DIO);
+              $time,
+              DIO_exp[RANK_BIT_WIDTH*active_rank+:RANK_BIT_WIDTH],
+              DIO    [RANK_BIT_WIDTH*active_rank+:RANK_BIT_WIDTH]);
   end else begin
     SUCCESSES = SUCCESSES + 1;
   end
@@ -116,8 +129,10 @@ endtask
 initial begin
   // Apply test vectors (active low WR, OE, CE)
   // Do a write phase (sequential) and then a read back phase to check
-
   A_RANK0             <= 0;
+  A_RANK1             <= 0;
+  A_RANK2             <= 0;
+  active_rank         <= 0;
   WR                  <= {CHIP_COUNT{1'b1}};
   OE                  <= {CHIP_COUNT{1'b1}};
   CE                  <= {CHIP_COUNT{1'b1}};
@@ -132,6 +147,9 @@ initial begin
       
       #(CYCLE_TIME);
       A_RANK0             <= i[RANK_ADDR_WIDTH-1:0];
+      A_RANK1             <= i[RANK_ADDR_WIDTH-1:0];
+      A_RANK2             <= i[RANK_ADDR_WIDTH-1:0];
+      active_rank         <= j[RANK_IDX_WIDTH-1:0];
       DIO_driver_enable <= 1'b1;
       DIO_driver        <= {4{$random}};
 
@@ -157,6 +175,9 @@ initial begin
     for (i = 0; i < MEM_BYTE_CAPACITY; i = i + 16) begin
       #(CYCLE_TIME);
       A_RANK0             <= i[RANK_ADDR_WIDTH-1:0];
+      A_RANK1             <= i[RANK_ADDR_WIDTH-1:0];
+      A_RANK2             <= i[RANK_ADDR_WIDTH-1:0];
+      active_rank         <= j[RANK_IDX_WIDTH-1:0];
       CE       = ~(256'd65535 << (16*j));
       OE       = CE;
       WR      <= {CHIP_COUNT{1'b1}};

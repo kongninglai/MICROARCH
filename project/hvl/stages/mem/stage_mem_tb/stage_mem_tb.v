@@ -33,7 +33,7 @@ localparam VPN_BIT_WIDTH        = 32 - PAGE_BIT_WIDTH;
 localparam STORE_DATA_BIT_WIDTH = 64;
 localparam TWO_LINES_SHF_AMT_BIT_WIDTH = $clog2((2*RANK_BIT_WIDTH)/8);
 
-localparam MEM_CONTROL_SIGS_BIT_WIDTH = 57;
+localparam MEM_CONTROL_SIGS_BIT_WIDTH = 58;
 
 localparam CYCLE_TIME_X10 = 98;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
@@ -132,9 +132,6 @@ wire from_mem_store_queue_alloc_line_0;
 wire from_mem_store_queue_alloc_line_1;
 wire [TWO_LINES_SHF_AMT_BIT_WIDTH-1:0] from_mem_store_data_shf_amt;
 
-wire EX_FLUSH;
-wire WB_FLUSH;
-
 reg [31:0] from_rr_code_segment_limit;
 reg from_ex_flush;
 reg from_wb_flush;
@@ -201,9 +198,6 @@ stage_mem DUT (
   .MEM_PAGE_OFFSET(MEM_PAGE_OFFSET),
   .MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST),
 
-  .EX_FLUSH(EX_FLUSH),
-  .WB_FLUSH(WB_FLUSH),
-
   .from_mem_stall(from_mem_stall),
   .from_mem_valid_store_inst(from_mem_valid_store_inst),
   .from_mem_control_sigs(from_mem_control_sigs),
@@ -236,7 +230,11 @@ stage_mem DUT (
   .from_mem_ieip(),
   .from_mem_pred_eip(),
   .from_mem_exception(from_mem_exception),
-  .from_mem_valid(from_mem_valid)
+  .from_mem_valid(from_mem_valid),
+  .from_mem_dstA_size(),
+  .from_mem_dstB_size(),
+  .from_mem_ldAB(),
+  .from_mem_ldREGS()
 );
 
 full_cache #(
@@ -290,8 +288,8 @@ full_cache #(
   .TEST_CASE_NEW_READY(1'b0),
   .TEST_CASE_NEW_READY_WR(1'b0),
 
-  .WB_FLUSH(WB_FLUSH),
-  .EX_FLUSH(EX_FLUSH)
+  .WB_FLUSH(from_wb_flush),
+  .EX_FLUSH(from_ex_flush)
 );
 
 tlb_wrapper tlb_inst (
@@ -471,8 +469,8 @@ initial begin
   to_mem_ld_offset = 0;
   to_mem_st_addr = {MAPPED_VPN,12'h000};
   to_mem_st_offset = 0;
-  to_mem_control_sigs = {23'd0, 2'b00, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
-  // to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b00, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
+  // to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
 
   WB_PR_ST_ADDR_L0        = 11'd0;
   WB_PR_ST_MASK_L0        = 16'd0;
@@ -511,7 +509,7 @@ initial begin
   to_mem_st_addr = {MAPPED_VPN,12'h000};
   to_mem_st_offset = to_mem_st_addr;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
@@ -542,7 +540,7 @@ initial begin
   to_mem_st_addr = {MAPPED_VPN,12'h00C};
   to_mem_st_offset = to_mem_st_addr + 7;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b01, 2'b11, 2'b00, 2'b11, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b01, 2'b11, 2'b00, 2'b11, 15'd0, 12'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
@@ -577,7 +575,7 @@ initial begin
   to_mem_ld_addr = {MAPPED_VPN,12'h000};
   to_mem_ld_offset = to_mem_ld_addr;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
@@ -610,7 +608,7 @@ initial begin
   to_mem_ld_addr = {MAPPED_VPN,12'h00C};
   to_mem_ld_offset = to_mem_ld_addr + 7;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b10, 2'b11, 2'b00, 2'b11, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b10, 2'b11, 2'b00, 2'b11, 15'd0, 12'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
@@ -646,7 +644,7 @@ initial begin
   to_mem_ld_addr = {MAPPED_VPN,12'h000};
   to_mem_ld_offset = to_mem_ld_addr + 3;
   to_mem_valid = 1'b1;
-  to_mem_control_sigs = {23'd0, 2'b10, 2'b10, 2'b00, 2'b10, 15'd0, 11'd0};
+  to_mem_control_sigs = {23'd0, 2'b10, 2'b10, 2'b00, 2'b10, 15'd0, 12'd0};
   #(CYCLE_TIME);
   while (from_mem_stall === 1'b1) begin
     #(CYCLE_TIME);
@@ -677,7 +675,7 @@ initial begin
     to_mem_st_addr = {20'h08000,12'h000};
     to_mem_st_offset = to_mem_st_addr;
     to_mem_valid = 1'b1;
-    to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+    to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
     #(CYCLE_TIME);
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
@@ -693,7 +691,7 @@ initial begin
     to_mem_st_addr = {20'h06000,12'h010};
     to_mem_st_offset = to_mem_st_addr;
     to_mem_valid = 1'b1;
-    to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+    to_mem_control_sigs = {23'd0, 2'b01, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
     #(CYCLE_TIME);
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
@@ -710,7 +708,7 @@ initial begin
     to_mem_ld_addr = {20'h08000,12'h000};
     to_mem_ld_offset = to_mem_ld_addr;
     to_mem_valid = 1'b1;
-    to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+    to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
     #(CYCLE_TIME);
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
@@ -726,7 +724,7 @@ initial begin
     to_mem_ld_addr = {20'h06000,12'h010};
     to_mem_ld_offset = to_mem_ld_addr;
     to_mem_valid = 1'b1;
-    to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 11'd0};
+    to_mem_control_sigs = {23'd0, 2'b10, 2'b00, 2'b00, 2'b00, 15'd0, 12'd0};
     #(CYCLE_TIME);
     while (from_mem_stall === 1'b1) begin
       #(CYCLE_TIME);
@@ -738,11 +736,12 @@ initial begin
   end
 
   // /*** TEST TWO-CACHE-LINE ACCESSES WITH PAGE CROSSING, Change LINE 4 to Re-map 0a001 instead of 0b000: 000010100000000000011001101 ***/
+  // /* ALSO CHANGE 600 to 2048 in the first loop, and swap the "IF" condition for the PFN */
   // to_mem_ld_slim = 20'hFFFFF;
   // to_mem_ld_addr = 32'h0A000FFC;
   // to_mem_ld_offset = to_mem_ld_addr + 7;
   // to_mem_valid = 1'b1;
-  // to_mem_control_sigs = {23'd0, 2'b10, 2'b11, 2'b00, 2'b11, 15'd0, 11'd0};
+  // to_mem_control_sigs = {23'd0, 2'b10, 2'b11, 2'b00, 2'b11, 15'd0, 12'd0};
   // #(CYCLE_TIME);
   // while (from_mem_stall === 1'b1) begin
   //   #(CYCLE_TIME);

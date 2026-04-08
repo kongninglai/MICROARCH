@@ -3,6 +3,7 @@ module block_decoder(
     output wire prefix_rep,
     output wire prefix_op_size, 
     output wire [2:0] prefix_seg_ov_id,
+    output wire prefix_seg,
     output wire prefix_ext,
     output wire [7:0] opcode,
     output wire [7:0] modrm,
@@ -56,6 +57,7 @@ module block_decoder(
     assign prefix_rep = is_rep;
     assign prefix_op_size = is_op_size;
     assign prefix_seg_ov_id = seg_id;
+    assign prefix_seg = is_seg_ov;
     assign prefix_ext = is_ext;
 
     //Opcode Logic

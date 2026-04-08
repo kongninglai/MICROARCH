@@ -1,3 +1,5 @@
 **/sim/**
 **/mem_init/**
+**/__pycache__/**
 session*
+**/timing/**

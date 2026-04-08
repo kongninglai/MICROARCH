@@ -1,0 +1,32 @@
+// Change line 4 of both tlb_init.v and main.py to 000010100000000000011001101 for this 
+
+0x0:  ba 00 0a 00 00  // mov    edx,0xa00
+0x5:  8e da  // mov    ds,edx
+0x7:  bb 00 00 00 00  // mov    ebx,0x0
+0xc:  c7 83 fd 0f 00 00 ef be ad de  // mov    DWORD PTR [ebx+0xffd],0xdeadbeef
+0x16:  8b 83 fd 0f 00 00  // mov    eax,DWORD PTR [ebx+0xffd]
+0x1c:  c7 83 fe 0f 00 00 be ba fe ca  // mov    DWORD PTR [ebx+0xffe],0xcafebabe
+0x26:  8b 8b fe 0f 00 00  // mov    ecx,DWORD PTR [ebx+0xffe]
+0x2c:  c7 83 ff 0f 00 00 78 56 34 12  // mov    DWORD PTR [ebx+0xfff],0x12345678
+0x36:  8b 93 ff 0f 00 00  // mov    edx,DWORD PTR [ebx+0xfff]
+0x3c:  c7 83 00 10 00 00 fe ca ef be  // mov    DWORD PTR [ebx+0x1000],0xbeefcafe
+0x46:  8b b3 00 10 00 00  // mov    esi,DWORD PTR [ebx+0x1000]
+0x4c:  c6 83 ff 0f 00 00 aa  // mov    BYTE PTR [ebx+0xfff],0xaa
+0x53:  c6 83 00 10 00 00 bb  // mov    BYTE PTR [ebx+0x1000],0xbb
+0x5a:  c6 83 01 10 00 00 cc  // mov    BYTE PTR [ebx+0x1001],0xcc
+0x61:  c6 83 02 10 00 00 dd  // mov    BYTE PTR [ebx+0x1002],0xdd
+0x68:  8b bb ff 0f 00 00  // mov    edi,DWORD PTR [ebx+0xfff]
+0x6e:  66 c7 83 ff 0f 00 00 34 12  // mov    WORD PTR [ebx+0xfff],0x1234
+0x77:  66 8b 83 ff 0f 00 00  // mov    ax,WORD PTR [ebx+0xfff]
+0x7e:  c7 83 fd 0f 00 00 01 00 00 00  // mov    DWORD PTR [ebx+0xffd],0x1
+0x88:  b8 01 00 00 00  // mov    eax,0x1
+0x8d:  03 83 fd 0f 00 00  // add    eax,DWORD PTR [ebx+0xffd]
+0x93:  c7 83 fb 0f 00 00 34 12 cd ab  // mov    DWORD PTR [ebx+0xffb],0xabcd1234
+0x9d:  8b 8b fb 0f 00 00  // mov    ecx,DWORD PTR [ebx+0xffb]
+0xa3:  c7 83 01 10 00 00 aa 55 aa 55  // mov    DWORD PTR [ebx+0x1001],0x55aa55aa
+0xad:  8b 93 01 10 00 00  // mov    edx,DWORD PTR [ebx+0x1001]
+0xb3:  f4  // hlt
+
+0x5ff0: aa bb cc dd ee ff 11 22 33 44 55 66 77 88 99 a0
+0x4000: b1 c2 d3 e4 f5 06 17 28 39 4a 5b 6c 7d 8e 9f a0
+0x4010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

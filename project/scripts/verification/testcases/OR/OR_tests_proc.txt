@@ -1,0 +1,38 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  b8 00 00 00 00  // mov    eax,0x0
+0x29:  0c f0  // or     al,0xf0
+0x2b:  b8 00 00 00 00  // mov    eax,0x0
+0x30:  0d 78 56 34 12  // or     eax,0x12345678
+0x35:  b9 00 00 00 00  // mov    ecx,0x0
+0x3a:  81 c9 ef be ad de  // or     ecx,0xdeadbeef
+0x40:  ba 00 00 00 00  // mov    edx,0x0
+0x45:  83 ca 0f  // or     edx,0xf
+0x48:  be f0 f0 f0 f0  // mov    esi,0xf0f0f0f0
+0x4d:  bf 0f 0f 0f 0f  // mov    edi,0xf0f0f0f
+0x52:  09 fe  // or     esi,edi
+0x54:  b8 ff 00 ff 00  // mov    eax,0xff00ff
+0x59:  b9 00 ff 00 ff  // mov    ecx,0xff00ff00
+0x5e:  0b c1  // or     eax,ecx
+0x60:  c7 03 00 00 00 00  // mov    DWORD PTR [ebx],0x0
+0x66:  81 0b be ba fe ca  // or     DWORD PTR [ebx],0xcafebabe
+0x6c:  b8 01 00 00 00  // mov    eax,0x1
+0x71:  0b 03  // or     eax,DWORD PTR [ebx]
+0x73:  b8 00 00 00 00  // mov    eax,0x0
+0x78:  80 c8 aa  // or     al,0xaa
+0x7b:  b8 f0 00 00 00  // mov    eax,0xf0
+0x80:  b9 0f 00 00 00  // mov    ecx,0xf
+0x85:  08 c8  // or     al,cl
+0x87:  b8 00 00 00 00  // mov    eax,0x0
+0x8c:  b9 55 00 00 00  // mov    ecx,0x55
+0x91:  0a c1  // or     al,cl
+0x93:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

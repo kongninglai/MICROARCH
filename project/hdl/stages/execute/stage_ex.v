@@ -1,7 +1,7 @@
 module stage_ex(
     input clk,
     input rst_n,
-    input [54:0]    to_ex_control_sigs,
+    input [55:0]    to_ex_control_sigs,
     input [2:0]     to_ex_dstidA, 
     input [2:0]     to_ex_dstidB,
     input [31:0]    to_ex_srcregA,
@@ -74,20 +74,28 @@ module stage_ex(
     output [31:0]       from_ex_oeip,
     output              from_ex_valid_store_inst,
     output              from_ex_valid,
-    output [1:0]        from_ex_exception
+    output [1:0]        from_ex_exception,
+
+    /* TO DEP UNIT */
+    input  [1:0]        from_ex_dstA_size,
+    input  [1:0]        from_ex_dstB_size,
+    input               from_ex_ld_gp0,
+    input               from_ex_ld_gp1,
+    input               from_ex_ld_seg,
+    input               from_ex_ld_mmx
 ); 
     wire valid_instruction;
 
     /*** PASS THROUGH SIGNALS ***/
     assign from_ex_dstidA = to_ex_dstidA;
     assign from_ex_dstidB = to_ex_dstidB;
-    assign from_ex_store_is_io_line_0 = to_ex_store_is_io_line_0;
+    // assign from_ex_store_is_io_line_0 = to_ex_store_is_io_line_0;
     assign from_ex_store_addr_line_0 = to_ex_store_addr_line_0;
     assign from_ex_store_mask_line_0 = to_ex_store_mask_line_0;
-    assign from_ex_store_queue_alloc_line_0 = to_ex_store_queue_alloc_line_0;
+    // assign from_ex_store_queue_alloc_line_0 = to_ex_store_queue_alloc_line_0;
     assign from_ex_store_addr_line_1 = to_ex_store_addr_line_1;
     assign from_ex_store_mask_line_1 = to_ex_store_mask_line_1;
-    assign from_ex_store_queue_alloc_line_1 = to_ex_store_queue_alloc_line_1;
+    // assign from_ex_store_queue_alloc_line_1 = to_ex_store_queue_alloc_line_1;
     assign from_ex_store_data_shf_amt = to_ex_store_data_shf_amt;
     assign from_ex_oeip = to_ex_oeip;
     assign from_ex_cs = to_ex_cs;
@@ -97,7 +105,7 @@ module stage_ex(
 
     wire sig_shf_op, sig_cmps, sig_ldEFLAGS, sig_ldEIP, sig_ldCS, sig_alu_srcb_mux, sig_cmpxchg, sig_cmovc, sig_seg_dst_mux;
     
-    wire sig_rm, sig_op_ovr, sig_palu_size;
+    wire sig_rm, sig_op_ovr, sig_palu_size, sig_sbb_dir;
 
     wire [2:0] sig_ldREGS, sig_eflags_mux, sig_eip_mux, sig_alu_op, sig_gp_dstb_mux;
    
@@ -109,7 +117,7 @@ module stage_ex(
         .eflags_mux(sig_eflags_mux),.eip_mux(sig_eip_mux),.cs_mux(sig_cs_mux),.mmx_op(sig_mmx_op),.alu_op(sig_alu_op),.shf_op(sig_shf_op),
         .cmps(sig_cmps),.con_jmp(sig_con_jmp),.cmpxchg(sig_cmpxchg),.cmovc(sig_cmovc),
         .gp_dsta_mux(sig_gp_dsta_mux),.gp_dstb_mux(sig_gp_dstb_mux),.seg_dst_mux(sig_seg_dst_mux),.mm_dst_mux(sig_mm_dst_mux),
-        .store_data_mux(sig_store_data_mux),.rw(sig_rw), .ds(sig_ds), .rm(sig_rm), .op_ovr(sig_op_ovr), .palu_size(sig_palu_size)
+        .store_data_mux(sig_store_data_mux),.rw(sig_rw), .ds(sig_ds), .rm(sig_rm), .op_ovr(sig_op_ovr), .palu_size(sig_palu_size), .sbb_dir(sig_sbb_dir)
     );
 
     /*** EFLAGS ***/
@@ -154,6 +162,7 @@ module stage_ex(
         .ds             (sig_ds),
         .in0            (regA_rm),
         .in1            (alu_op2),
+        .sbb_dir        (sig_sbb_dir),
         .eflags_cf      (eflags_cf),
         .alu_out        (alu_out),
         .alu_eflags     (alu_eflags),
@@ -196,8 +205,8 @@ module stage_ex(
 
     // CMP
     wire [31:0] cmp_in0, cmp_in1;
-    mux2_32 mux2_cmp_in0(cmp_in0, regA_rm, to_ex_CMPS0, sig_cmps);
-    mux2_32 mux2_cmp_in1(cmp_in1, to_ex_srcregC, to_ex_CMPS1, sig_cmps);
+    mux2_32 mux2_cmp_in0(cmp_in0, to_ex_srcregC, to_ex_CMPS0, sig_cmps);
+    mux2_32 mux2_cmp_in1(cmp_in1, regA_rm, to_ex_CMPS1, sig_cmps);
 
     ex_cmp cmp (
         .ds(sig_ds),
@@ -277,7 +286,7 @@ module stage_ex(
                                                   {32'b0, eflags_out}, // for exception, but we don't need to use a temp register?  
                                                   {32'b0, to_ex_imm},
                                                   to_ex_load_result,
-                                                  {16'b0, to_ex_tempCS, to_ex_tempEIP}, 64'bx, 64'bx, 64'bx, 64'bx,
+                                                  {16'b0, to_ex_tempCS, to_ex_tempEIP}, {32'b0, regA_rm}, 64'bx, 64'bx, 64'bx,
                                                   sig_store_data_mux[0], sig_store_data_mux[1], sig_store_data_mux[2], sig_store_data_mux[3]);
 
 
@@ -335,11 +344,27 @@ module stage_ex(
 
     // ldAB for cmov/cmpxchg
     /* from_ex_control_sigs, */
-    // if cmpxchg: ldA=ZF, ldB=~ZF
+    // if cmpxchg & r/m=r: ldA=ZF, ldB=~ZF
+    // if cmpxchg & r/m=m: store=ZF, ldB=~ZF
     // if cmov: ldA=CF
 
-    wire ldA_cmpxchg, ldA_cond, cmpxchg_ZF_inv, ldB_cond;
-    mux2$ mux2_ldA_cmpxchg(ldA_cmpxchg, sig_ldAB[1], cmp_eflags[6], sig_cmpxchg);
+    wire ldA_cmpxchg, ldA_cond, cmpxchg_ZF_inv, ldB_cond, sig_rm_is_r, cmpxchg_r, cmpxchg_m;
+    inv1$ inv_sig_rm_is_r(sig_rm_is_r, sig_rm);
+    and2$ and2_cmpxchg_r(cmpxchg_r, sig_cmpxchg, sig_rm_is_r);
+    and2$ and2_cmpxchg_m(cmpxchg_m, sig_cmpxchg, sig_rm);
+    
+    wire cmpxchg_store_is_io_line_0, cmpxchg_store_queue_alloc_line_0, cmpxchg_store_queue_alloc_line_1;
+    and2$ and2_cmpxchg_store_is_io_line_0(cmpxchg_store_is_io_line_0, to_ex_store_is_io_line_0, cmp_eflags[6]);
+    and2$ and2_cmpxchg_store_queue_alloc_line_0(cmpxchg_store_queue_alloc_line_0, to_ex_store_queue_alloc_line_0, cmp_eflags[6]);
+    and2$ and2_cmpxchg_store_queue_alloc_line_1(cmpxchg_store_queue_alloc_line_1, to_ex_store_queue_alloc_line_1, cmp_eflags[6]);
+
+    mux2$ mux2_store_is_io_line_0(from_ex_store_is_io_line_0, to_ex_store_is_io_line_0, cmpxchg_store_is_io_line_0, cmpxchg_m);
+    mux2$ mux2_store_queue_alloc_line_0(from_ex_store_queue_alloc_line_0, to_ex_store_queue_alloc_line_0, cmpxchg_store_queue_alloc_line_0, cmpxchg_m);
+    mux2$ mux2_store_queue_alloc_line_1(from_ex_store_queue_alloc_line_1, to_ex_store_queue_alloc_line_1, cmpxchg_store_queue_alloc_line_1, cmpxchg_m);
+
+    wire ldA_cmpxchg_r;
+    and2$ and2_ldA_cmpxchg_r(ldA_cmpxchg_r, sig_ldAB[1], cmp_eflags[6]);
+    mux2$ mux2_ldA_cmpxchg(ldA_cmpxchg, sig_ldAB[1], ldA_cmpxchg_r, cmpxchg_r);
     mux2$ mux2_ldA_cond(ldA_cond, ldA_cmpxchg, eflags_cf, sig_cmovc);
 
     inv1$ inv1_cmpxchg_ZF(cmpxchg_ZF_inv, cmp_eflags[6]);
@@ -359,4 +384,11 @@ module stage_ex(
     };
 
     and2$ and2_valid_store_inst(from_ex_valid_store_inst, valid_instruction, sig_rw[0]);
+
+    assign from_ex_dstA_size = sig_dstA_size;
+    assign from_ex_dstB_size = sig_dstB_size;
+    assign from_ex_ld_gp0 = gpwr0_en;
+    assign from_ex_ld_gp1 = gpwr1_en;
+    assign from_ex_ld_seg = segwr_en;
+    assign from_ex_ld_mmx = mmxwr_en;
 endmodule

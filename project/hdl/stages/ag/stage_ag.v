@@ -1,5 +1,5 @@
 module stage_ag(
-    input [64:0]    to_ag_control_sigs,
+    input [65:0]    to_ag_control_sigs,
     input [2:0]     to_ag_dstidA,
     input [2:0]     to_ag_dstidB,
     input [31:0]    to_ag_srcregA,
@@ -26,13 +26,13 @@ module stage_ag(
     input [1:0]     to_ag_exception,
     input           to_ag_valid,
 
-    input from_mem_stall,
-    input from_mem_valid_store_inst,
-    input from_ex_valid_store_inst,
-    input from_wb_stall_if_mem_en,
-    input from_wb_valid_store_inst,
+    input           from_mem_stall,
+    input           from_mem_valid_store_inst,
+    input           from_ex_valid_store_inst,
+    input           from_wb_stall_if_mem_en,
+    input           from_wb_valid_store_inst,
 
-    output [56:0]    from_ag_control_sigs,
+    output [57:0]    from_ag_control_sigs,
     output [2:0]     from_ag_dstidA,
     output [2:0]     from_ag_dstidB,
     output [31:0]    from_ag_srcregA,
@@ -61,10 +61,17 @@ module stage_ag(
     output [1:0]     from_ag_exception,
     output           from_ag_valid,
 
-    output           from_ag_stall
+    output           from_ag_stall,
+    output           from_ag_we_pipe_reg,
+
+    /* TO DEP UNIT */
+    output [1:0]     from_ag_dstA_size,
+    output [1:0]     from_ag_dstB_size,
+    output [1:0]     from_ag_ldAB,
+    output [2:0]     from_ag_ldREGS
 );
 
-    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size;
+    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size, sbb_dir;
     wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds, imm_mux, addr_mux;
     wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
     wire [3:0] gp_dsta_mux, store_data_mux;
@@ -77,7 +84,7 @@ module stage_ag(
         ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size
+        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir
     };
     
     assign from_ag_dstidA = to_ag_dstidA;
@@ -95,9 +102,21 @@ module stage_ag(
     assign from_ag_ieip = to_ag_ieip;
     assign from_ag_pred_eip = to_ag_pred_eip;
     assign from_ag_exception = to_ag_exception;
-    assign from_ag_valid = to_ag_valid;
+    /* NOTE: moved from_ag_valid logic below. -VR, 3/31/2026 */
 
-    big_or #(.WIDTH(5)) or_from_ag_stall(from_ag_stall, {from_mem_stall, from_mem_valid_store_inst, from_ex_valid_store_inst, from_wb_stall_if_mem_en, from_wb_valid_store_inst});
+    wire is_mem_inst, stall_if_mem_inst, mem_inst_needs_stall;
+    or2$    or2$_is_mem_inst(is_mem_inst, rw[1], rw[0]);
+    or4$    or4$_stall_if_mem_inst(stall_if_mem_inst, from_mem_valid_store_inst, from_ex_valid_store_inst, from_wb_stall_if_mem_en, from_wb_valid_store_inst);
+    and2$   and2$_mem_inst_needs_stall(mem_inst_needs_stall, is_mem_inst, stall_if_mem_inst);
+    or2$    or2$_from_ag_stall(from_ag_stall, from_mem_stall, mem_inst_needs_stall);
+    inv1$   inv1$_from_ag_we_pipe_reg(from_ag_we_pipe_reg, from_mem_stall);
+
+    /* Insert bubbles if mem_inst_needs_stall and NOT from_mem_stall */
+    wire from_ag_valid_gate, from_mem_stall_bar;
+    inv1$   inv1$_from_mem_stall_bar(from_mem_stall_bar, from_mem_stall);
+    nand2$  nand2$_from_ag_valid_gate(from_ag_valid_gate, from_mem_stall_bar, mem_inst_needs_stall);
+    and2$   and2$_from_ag_valid(from_ag_valid, to_ag_valid, from_ag_valid_gate);
+
     // TODO: Add control signals into the ag_sig module
     ag_sig dut_sig (
         .ucode_sig(to_ag_control_sigs),
@@ -110,7 +129,7 @@ module stage_ag(
         .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
         .store_data_mux(store_data_mux), .rw(rw),
         .ds(ds), .mem_ds(mem_ds), .imm_mux(imm_mux), .addr_mux(addr_mux), .stack_push(stack_push), .intex(intex), .ret_with_imm(ret_with_imm),
-        .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size)
+        .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir)
     );
 
 
@@ -155,5 +174,8 @@ module stage_ag(
     mux2_32 mux_st_offset(from_ag_st_offset, offset1, offset2, store_addr_mux);
     mux2_32 mux_st_slim(from_ag_st_slim, to_ag_slim1, to_ag_slim2, store_addr_mux);
     
-    
+    assign from_ag_dstA_size = dstA_size;
+    assign from_ag_dstB_size = dstB_size;
+    assign from_ag_ldAB = ldAB;
+    assign from_ag_ldREGS = ldREGS;
 endmodule

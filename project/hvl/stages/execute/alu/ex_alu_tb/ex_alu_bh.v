@@ -4,6 +4,7 @@ module ex_alu_bh(
     input  [31:0] in0,
     input  [31:0] in1,
     input         eflags_cf,
+    input         sbb_dir,
     output [31:0] alu_out,
     output [31:0] alu_eflags,
     output [31:0] alu_eflags_mask
@@ -31,9 +32,12 @@ module ex_alu_bh(
 
     // SBB
     wire [31:0] sbb_out, sbb_cout;
+    wire [31:0] sbb_in0, sbb_in1;
+    assign sbb_in0 = sbb_dir ? in1 : in0;
+    assign sbb_in1 = sbb_dir ? in0 : in1;
     SUB_32b SUB32_SBB(
-        .in0 (in0),
-        .in1 (in1),
+        .in0 (sbb_in0),
+        .in1 (sbb_in1),
         .cin (eflags_cf),
         .s   (sbb_out),
         .cout(sbb_cout)

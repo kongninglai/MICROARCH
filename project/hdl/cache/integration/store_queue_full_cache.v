@@ -30,7 +30,7 @@ module store_queue_full_cache #(
   parameter PAGE_BIT_WIDTH=$clog2(PAGE_SIZE_BYTES),
   parameter PFN_BIT_WIDTH=MEM_ADDR_WIDTH-PAGE_BIT_WIDTH,
 
-  parameter TRUE_LRU=0,
+  parameter TRUE_LRU=1,
 
   /**
     * ORDER (MSB to LSB):

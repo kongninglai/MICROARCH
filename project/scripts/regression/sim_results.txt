@@ -1,6 +1,45 @@
 address_adder_tb               FAILURES=0      SUCCESSES=256    WARNINGS=1     
 ag_to_mem_tb                   FAILURES=0      SUCCESSES=0     
 arbiter_tb                     FAILURES=0      SUCCESSES=16    
+
+Regression run: Tue Apr  7 14:40:57 CDT 2026
+========================================
+PASS: AAA/aaa0.txt
+PASS: AAA/aaa1.txt
+PASS: ADC/adc.txt
+PASS: ADD/add.txt
+PASS: AND/and.txt
+PASS: BSF/BSF_tests_proc.txt
+PASS: CACHE/CACHE_tests.proc.txt
+PASS: CLD/CLD_tests_proc.txt
+PASS: CMOVC/CMOVC_tests_proc.txt
+PASS: CMPXCHG/CMPXCHG_tests_proc.txt
+PASS: cross_cache_line_2x_wb.txt
+PASS: dcache_test.txt
+PASS: DEPS/DEPS_tests_proc.txt
+PASS: HLT/HLT_tests_proc.txt
+PASS: MISC/MISC1_tests_proc.txt
+PASS: MISC/MISC2_tests_proc.txt
+PASS: MISC/MISC3_tests_proc.txt
+PASS: MOV/MOV_tests_proc.txt
+PASS: MOVQ/MOVQ_tests_proc.txt
+PASS: MOVS/MOVS_tests_proc.txt
+PASS: NOT/NOT_tests_proc.txt
+PASS: OR/OR_tests_proc.txt
+PASS: PACKSS/PACKSS_tests_proc.txt
+PASS: PADD/PADD_tests_proc.txt
+PASS: PAVG/PAVG_tests_proc.txt
+PASS: PUSH_POP/PUSH_POP_tests_proc.txt
+PASS: SAL/SAL_tests_proc.txt
+PASS: SAR/SAR_tests_proc.txt
+PASS: SBB/SBB_tests_proc.txt
+PASS: STD/STD_tests_proc.txt
+PASS: touch_all_regs.txt
+PASS: XCHG/XCHG_tests_proc.txt
+========================================
+Total: 32  PASSED: 32  FAILED: 0
+backend_top_tb_instructions    FAILURES=0      SUCCESSES=32    
+backend_top_tb                 FAILURES=0      SUCCESSES=0     
 big_and_tb                     FAILURES=0      SUCCESSES=4096  
 big_decrement_tb               FAILURES=0      SUCCESSES=4097  
 big_eq_tb                      FAILURES=0      SUCCESSES=267   
@@ -33,7 +72,7 @@ dmu_tb                         FAILURES=0      SUCCESSES=4
 eip_incr_tb                    FAILURES=0      SUCCESSES=1680  
 encoder4_2_tb                  FAILURES=0      SUCCESSES=5     
 ex_aaa_tb                      FAILURES=0      SUCCESSES=311   
-ex_alu_tb                      FAILURES=0      SUCCESSES=523   
+ex_alu_tb                      FAILURES=0      SUCCESSES=525   
 ex_bsf_tb                      FAILURES=0      SUCCESSES=512   
 ex_cmp_tb                      FAILURES=0      SUCCESSES=508   
 ex_eflags_tb                   FAILURES=0      SUCCESSES=256   
@@ -159,7 +198,7 @@ stage_fetch_a_tb               FAILURES=0      SUCCESSES=4
 stage_mem_tb                   FAILURES=0      SUCCESSES=4326  
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
 stage_wb_reg_tb                FAILURES=0      SUCCESSES=0     
-stage_wb_tb                    FAILURES=0      SUCCESSES=1644  
+stage_wb_tb                    FAILURES=0      SUCCESSES=1642  
 sticky_bit_fsm_tb              FAILURES=0      SUCCESSES=4112  
 sticky_bit_load_fsm_tb         FAILURES=0      SUCCESSES=8     
 store_queue_entry_tb           FAILURES=0      SUCCESSES=4112  

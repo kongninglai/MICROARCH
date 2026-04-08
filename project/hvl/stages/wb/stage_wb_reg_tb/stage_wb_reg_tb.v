@@ -12,7 +12,7 @@ module stage_wb_reg_tb;
     reg clk;
     reg rst_n;
 
-    reg [5:0] to_rr_prefix;
+    reg [6:0] to_rr_prefix;
     reg [7:0] to_rr_opcode;
     reg [7:0] to_rr_modrm;
     reg [7:0] to_rr_sib;
@@ -28,6 +28,7 @@ module stage_wb_reg_tb;
     reg to_rr_valid;
 
     wire from_ag_stall;
+    wire from_ag_we_pipe_reg;
 
     wire [7:0] to_regunit_opcode;
     wire [5:0] to_regunit_modrm;
@@ -49,6 +50,7 @@ module stage_wb_reg_tb;
     wire to_regunit_sig_segrd0_mux;
     wire to_regunit_sig_segrd1_mux;
     wire [2:0] to_regunit_seg_prefix;
+    wire to_regunit_has_seg_prefix;
     wire [15:0] from_regunit_srcSREG;
     wire [15:0] from_regunit_SREG1;
     wire [15:0] from_regunit_SREG2;
@@ -57,7 +59,7 @@ module stage_wb_reg_tb;
     wire [15:0] from_regunit_CS;
     wire [63:0] from_regunit_MMA;
     wire [63:0] from_regunit_MMB;
-    wire [64:0] from_rr_control_sigs;
+    wire [65:0] from_rr_control_sigs;
     wire [2:0] from_rr_dstidA;
     wire [2:0] from_rr_dstidB;
     wire [31:0] from_rr_srcregA;
@@ -119,7 +121,7 @@ module stage_wb_reg_tb;
     wire [2:0] to_dep_MMA_idx;
     wire [2:0] to_dep_MMB_idx;
 
-    wire [64:0]     to_ag_control_sigs;
+    wire [65:0]     to_ag_control_sigs;
     wire [2:0]      to_ag_dstidA;
     wire [2:0]      to_ag_dstidB;
     wire [31:0]     to_ag_srcregA;
@@ -182,6 +184,7 @@ module stage_wb_reg_tb;
         .to_regunit_sig_segrd0_mux(to_regunit_sig_segrd0_mux),
         .to_regunit_sig_segrd1_mux(to_regunit_sig_segrd1_mux),
         .to_regunit_seg_prefix(to_regunit_seg_prefix),
+        .to_regunit_has_seg_prefix(to_regunit_has_seg_prefix),
         .from_regunit_srcSREG(from_regunit_srcSREG),
         .from_regunit_SREG1(from_regunit_SREG1),
         .from_regunit_SREG2(from_regunit_SREG2),
@@ -217,7 +220,9 @@ module stage_wb_reg_tb;
         .from_rr_exception(from_rr_exception),
         .from_rr_valid(from_rr_valid),
         .from_rr_stall(from_rr_stall),
-        .to_dep_needREGS(to_dep_needREGS)
+        .to_dep_needREGS(to_dep_needREGS),
+        .from_dep_unit_data_dep(),
+        .from_rr_we_pipe_reg()
     );
 
     rr_to_ag dut_rr_to_ag (
@@ -306,6 +311,7 @@ module stage_wb_reg_tb;
         .from_rr_sig_segrd0_mux(to_regunit_sig_segrd0_mux),
         .from_rr_sig_segrd1_mux(to_regunit_sig_segrd1_mux),
         .from_rr_seg_prefix(to_regunit_seg_prefix),
+        .from_rr_has_seg_prefix(to_regunit_has_seg_prefix),
         .to_rr_srcSREG(from_regunit_srcSREG),
         .to_rr_SREG1(from_regunit_SREG1),
         .to_rr_SREG2(from_regunit_SREG2),
@@ -335,7 +341,10 @@ module stage_wb_reg_tb;
         .from_ex_cs_wr_en(from_ex_ld_cs),
         .from_wb_mmxwr_idx(from_wb_mmxwr_idx),
         .from_wb_mmxwr_data(from_wb_mmxwr_data),
-        .from_wb_mmxwr_en(from_wb_mmxwr_en)
+        .from_wb_mmxwr_en(from_wb_mmxwr_en),
+        .to_dep_srcA_size(),
+        .to_dep_srcB_size(),
+        .to_dep_srcC_size()
     );  
 
     wire [1:0] ldAB;
@@ -370,7 +379,7 @@ module stage_wb_reg_tb;
     wire stack_push;
     wire intex;
     wire ret_with_imm;
-    wire rm, op_ovr, palu_size;
+    wire rm, op_ovr, palu_size, sbb_dir;
 
     ag_sig dut_sig (
         .ucode_sig(from_rr_control_sigs),
@@ -408,7 +417,8 @@ module stage_wb_reg_tb;
         .ret_with_imm(ret_with_imm),
         .rm(rm),
         .op_ovr(op_ovr),
-        .palu_size(palu_size)
+        .palu_size(palu_size),
+        .sbb_dir(sbb_dir)
     );
 
     wire from_mem_stall;
@@ -417,7 +427,7 @@ module stage_wb_reg_tb;
     reg from_wb_stall_if_mem_en;
     reg from_wb_valid_store_inst;
 
-    wire [56:0]    from_ag_control_sigs;
+    wire [57:0]    from_ag_control_sigs;
     wire [2:0]     from_ag_dstidA;
     wire [2:0]     from_ag_dstidB;
     wire [31:0]    from_ag_srcregA;
@@ -510,7 +520,12 @@ module stage_wb_reg_tb;
         .from_ag_exception(from_ag_exception),
         .from_ag_valid(from_ag_valid),
 
-        .from_ag_stall(from_ag_stall)
+        .from_ag_stall(from_ag_stall),
+        .from_ag_we_pipe_reg(from_ag_we_pipe_reg),
+        .from_ag_dstA_size(),
+        .from_ag_dstB_size(),
+        .from_ag_ldAB(),
+        .from_ag_ldREGS()
     );
 
     wire [1:0]      from_ag_ldAB;
@@ -540,7 +555,7 @@ module stage_wb_reg_tb;
     wire [1:0]      from_ag_rw;
     wire [1:0]      from_ag_ds;
     wire [1:0]      from_ag_mem_ds;
-    wire            from_ag_rm, from_ag_op_ovr, from_ag_palu_size;
+    wire            from_ag_rm, from_ag_op_ovr, from_ag_palu_size, from_ag_sbb_dir;
     mem_sig dut_from_ag_sig (
         .ucode_sig(from_ag_control_sigs),
         .ldAB(from_ag_ldAB),
@@ -572,10 +587,11 @@ module stage_wb_reg_tb;
         .mem_ds(from_ag_mem_ds),
         .rm(from_ag_rm),
         .op_ovr(from_ag_op_ovr),
-        .palu_size(from_ag_palu_size)
+        .palu_size(from_ag_palu_size),
+        .sbb_dir(from_ag_sbb_dir)
     );
 
-    wire [56:0]    to_mem_control_sigs;
+    wire [57:0]    to_mem_control_sigs;
     wire [2:0]     to_mem_dstidA;
     wire [2:0]     to_mem_dstidB;
     wire [31:0]    to_mem_srcregA;
@@ -662,7 +678,7 @@ module stage_wb_reg_tb;
         .to_mem_valid(to_mem_valid)
     );
 
-    wire [54:0] from_mem_control_sigs;
+    wire [55:0] from_mem_control_sigs;
     wire [2:0] from_mem_dstidA;
     wire [2:0] from_mem_dstidB;
     wire [31:0] from_mem_srcregA;
@@ -780,7 +796,7 @@ module stage_wb_reg_tb;
     wire [3:0]      from_mem_store_data_mux;
     wire [1:0]      from_mem_rw;
     wire [1:0]      from_mem_ds;
-    wire            from_mem_rm, from_mem_op_ovr, from_mem_palu_size;
+    wire            from_mem_rm, from_mem_op_ovr, from_mem_palu_size, from_mem_sbb_dir;
 
     ex_sig dut_from_mem_sig (
         .ucode_sig(from_mem_control_sigs),
@@ -812,10 +828,11 @@ module stage_wb_reg_tb;
         .ds(from_mem_ds),
         .rm(from_mem_rm),
         .op_ovr(from_mem_op_ovr),
-        .palu_size(from_mem_palu_size)
+        .palu_size(from_mem_palu_size),
+        .sbb_dir(from_mem_sbb_dir)
     );
 
-    wire [54:0] to_ex_control_sigs;
+    wire [55:0] to_ex_control_sigs;
     wire [2:0] to_ex_dstidA;
     wire [2:0] to_ex_dstidB;
     wire [31:0] to_ex_srcregA;
@@ -1003,7 +1020,13 @@ module stage_wb_reg_tb;
         .from_ex_oeip(from_ex_oeip),
         .from_ex_valid_store_inst(from_ex_valid_store_inst),
         .from_ex_valid(from_ex_valid),
-        .from_ex_exception(from_ex_exception)
+        .from_ex_exception(from_ex_exception),
+        .from_ex_dstA_size(),
+        .from_ex_dstB_size(),
+        .from_ex_ld_gp0(),
+        .from_ex_ld_gp1(),
+        .from_ex_ld_seg(),
+        .from_ex_ld_mmx()
     );
     
     wire from_ex_gpwr0_en, from_ex_gpwr1_en, from_ex_segwr_en, from_ex_mmxwr_en;
@@ -1168,7 +1191,7 @@ module stage_wb_reg_tb;
 
     task clear_inputs;
     begin
-            to_rr_prefix = 5'd0;
+            to_rr_prefix = 7'd0;
             to_rr_opcode = 8'd0;
             to_rr_modrm = 8'd0;
             to_rr_sib = 8'd0;
@@ -1195,7 +1218,7 @@ module stage_wb_reg_tb;
 
 
     task apply_de_inputs;
-        input [5:0] prefix;
+        input [6:0] prefix;
         input [7:0] opcode;
         input [7:0] modrm;
         input [7:0] sib;

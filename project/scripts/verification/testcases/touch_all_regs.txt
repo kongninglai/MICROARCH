@@ -1,0 +1,27 @@
+0x0:  b0 02           //    mov    al,0x2
+0x2:  c1 e0 08        //    shl    eax,0x8
+0x5:  b1 01           //    mov    cl,0x1
+0x7:  b2 03           //    mov    dl,0x3
+0x9:  b3 04           //    mov    bl,0x4
+0xb:  66 bc 05 00     //    mov    sp,0x5
+0xf:  66 bd 06 00     //    mov    bp,0x6
+0x13: 66 bf 07 00     //    mov    di,0x7
+0x17: 66 be 08 00     //    mov    si,0x8
+0x1b: 0f 6f 06        //    movq   mm0,QWORD PTR [esi]
+0x1e: 0f 6f 09        //    movq   mm1,QWORD PTR [ecx]
+0x21: 0f 6f 12        //    movq   mm2,QWORD PTR [edx]
+0x24: 0f 6f 1b        //    movq   mm3,QWORD PTR [ebx]
+0x27: 0f 6f 27        //    movq   mm4,QWORD PTR [edi]
+0x2a: 0f e0 e8        //    pavgb  mm5,mm0
+0x2d: 0f e3 e8        //    pavgw  mm5,mm0
+0x30: 0f 63 f5        //    packsswb mm6,mm5
+0x33: 0f 6b fe        //    packssdw mm7,mm6
+0x36: 0f fe e9        //    paddd  mm5,mm1
+0x39: 0f fe ea        //    paddd  mm5,mm2
+0x3c: 8e c3           //    mov    es,ebx
+0x3e: 8e e1           //    mov    fs,ecx
+0x40: 8e ea           //    mov    gs,edx
+0x42: 8e d5           //    mov    ss,ebp
+0x44: 8e d8           //    mov    ds,eax
+0x46: 8c 01           //    mov    WORD PTR [ecx],es
+0x48: f4              //    hlt

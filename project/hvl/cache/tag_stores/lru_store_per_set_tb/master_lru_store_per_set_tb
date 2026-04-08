@@ -1,7 +1,9 @@
 /home/projects/courses/spring_22/ee382n19_16785/lib/time
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib3
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_8.v
 ~/MICROARCH/project/hdl/cache/tag_stores/lru_store_per_set.v
 ~/MICROARCH/project/hvl/cache/tag_stores/lru_store_per_set_tb/lru_store_per_set_behav.v
 ~/MICROARCH/project/hvl/cache/tag_stores/lru_store_per_set_tb/lru_store_per_set_tb.v

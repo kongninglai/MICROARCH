@@ -1,0 +1,28 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  fc  // cld
+0x25:  be 00 00 00 00  // mov    esi,0x0
+0x2a:  bf 00 00 00 00  // mov    edi,0x0
+0x2f:  c7 03 ef be ad de  // mov    DWORD PTR [ebx],0xdeadbeef
+0x35:  a5  // movs   DWORD PTR es:[edi],DWORD PTR ds:[esi]
+0x36:  c6 43 04 ab  // mov    BYTE PTR [ebx+0x4],0xab
+0x3a:  be 04 00 00 00  // mov    esi,0x4
+0x3f:  bf 04 00 00 00  // mov    edi,0x4
+0x44:  a4  // movs   BYTE PTR es:[edi],BYTE PTR ds:[esi]
+0x45:  fd  // std
+0x46:  c7 43 08 78 56 34 12  // mov    DWORD PTR [ebx+0x8],0x12345678
+0x4d:  be 0b 00 00 00  // mov    esi,0xb
+0x52:  bf 0b 00 00 00  // mov    edi,0xb
+0x57:  a5  // movs   DWORD PTR es:[edi],DWORD PTR ds:[esi]
+0x58:  fc  // cld
+0x59:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

@@ -29,7 +29,7 @@ module wb_full_cache #(
   parameter PAGE_BIT_WIDTH=$clog2(PAGE_SIZE_BYTES),
   parameter PFN_BIT_WIDTH=MEM_ADDR_WIDTH-PAGE_BIT_WIDTH,
 
-  parameter TRUE_LRU=0,
+  parameter TRUE_LRU=1,
   parameter ENTRY_BIT_WIDTH=CHIPS_PER_RANK+PHYS_LINE_BIT_WIDTH+RANK_BIT_WIDTH,
 
   parameter NUM_ENTRIES=4,
