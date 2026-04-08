@@ -1,9 +1,9 @@
 module backend_top_auto_tb;
 
-initial begin
-  $vcdplusfile("backend_top_auto_tb.dump.vpd");
-  $vcdpluson(0, backend_top_auto_tb); 
-end
+// initial begin
+//   $vcdplusfile("backend_top_auto_tb.dump.vpd");
+//   $vcdpluson(0, backend_top_auto_tb); 
+// end
 
 integer i;
 integer NUM_TESTS = 0;
@@ -291,6 +291,41 @@ localparam NUM_TESTS_MEM = 4096;
 reg [127:0] mem_in [0:NUM_TESTS_MEM-1];
 
 always #(CYCLE_TIME / 2.0) clk = ~clk;
+
+localparam MAX_MAP_ENTRIES = 4096;
+
+reg [31:0] map_eip [0:MAX_MAP_ENTRIES-1];
+integer    map_idx [0:MAX_MAP_ENTRIES-1];
+integer    map_count;
+
+task load_eip_idx_map;
+  input [1023:0] filename;
+  integer fd;
+  integer code;
+  reg [31:0] eip_tmp;
+  integer idx_tmp;
+begin
+  map_count = 0;
+
+  fd = $fopen(filename, "r");
+  if (fd == 0) begin
+    $display("ERROR: cannot open mapping file: %0s", filename);
+    $finish;
+  end
+
+  while (!$feof(fd)) begin
+    code = $fscanf(fd, "0x%h %d\n", eip_tmp, idx_tmp);
+    if (code == 2) begin
+      map_eip[map_count] = eip_tmp;
+      map_idx[map_count] = idx_tmp;
+      map_count = map_count + 1;
+    end
+  end
+
+  $fclose(fd);
+  $display("Loaded %0d eip->idx entries", map_count);
+end
+endtask
 
 task clear_inputs;
 begin
@@ -597,93 +632,19 @@ begin
 end
 endtask
 
+function integer find_idx_from_eip_filemap;
+  input [31:0] target_eip;
+  integer fi;
+  begin
+    find_idx_from_eip_filemap = -1;
+    for (fi = 0; fi < map_count; fi = fi + 1) begin
+      if (map_eip[fi] == target_eip) begin
+        find_idx_from_eip_filemap = map_idx[fi];
+      end
+    end
+  end
+endfunction
 
-// task run_test_stream;
-//   integer drain_cycles;
-// begin
-//   cur_test     = 0;
-//   accepted_cnt = 0;
-//   stalled_cnt  = 0;
-//   stream_done  = 1'b0;
-
-//   @(posedge clk);
-//   if (cur_test < NUM_TESTS_MEM)
-//     drive_testcase(cur_test);
-//   else
-//     drive_idle();
-
-//   while (!stream_done) begin
-//     @(posedge clk);
-
-//     // --------------------------------------------------------
-//     // Case 1: EX requested a flush in previous cycle
-//     // --------------------------------------------------------
-//     if (flush_pending) begin
-//       flush_target_idx = find_idx_from_eip(flush_target_eip);
-
-//       if (flush_target_idx >= 0) begin
-//         cur_test = flush_target_idx;
-//         // optional debug
-//         // $display("[FLUSH-REDIRECT] target_eip=%08x -> idx=%0d at time=%0t",
-//         //          flush_target_eip, flush_target_idx, $time);
-//       end else begin
-//         $display("[FLUSH-ERROR] cannot find testcase for target_eip=%08x at time=%0t",
-//                  flush_target_eip, $time);
-//         $finish;
-//       end
-//     end
-//     // --------------------------------------------------------
-//     // Case 2: normal FE->RR accept
-//     // --------------------------------------------------------
-//     else if (!from_rr_stall) begin
-//       accepted_cnt = accepted_cnt + 1;
-
-//       // Record mapping the first time this testcase is accepted
-//       if (!testcase_seen[cur_test]) begin
-//         testcase_seen[cur_test] = 1'b1;
-//         testcase_oeip[cur_test] = from_de_oeip;
-//         testcase_ieip[cur_test] = from_de_ieip;
-//       end
-
-//       // optional debug
-//       // $display("[ACCEPT] idx=%0d oeip=%08x ieip=%08x time=%0t",
-//       //          cur_test, from_de_oeip, from_de_ieip, $time);
-
-//       cur_test = cur_test + 1;
-
-//       if (cur_test >= NUM_TESTS_MEM)
-//         stream_done = 1'b1;
-//     end
-//     // --------------------------------------------------------
-//     // Case 3: frontend stalled
-//     // --------------------------------------------------------
-//     else if (to_rr_valid && from_rr_stall) begin
-//       stalled_cnt = stalled_cnt + 1;
-//       // optional debug
-//       // $display("[STALL] idx=%0d oeip=%08x time=%0t",
-//       //          cur_test, from_de_oeip, $time);
-//     end
-
-//     // --------------------------------------------------------
-//     // Drive next cycle's FE input
-//     // Flush redirect has highest priority
-//     // --------------------------------------------------------
-//     if (flush_pending) begin
-//       drive_testcase(cur_test);
-//     end else if (!stream_done) begin
-//       drive_testcase(cur_test);
-//     end else begin
-//       drive_idle();
-//     end
-//   end
-
-//   for (drain_cycles = 0; drain_cycles < 30; drain_cycles = drain_cycles + 1)
-//     @(posedge clk);
-
-//   $display("accepted_cnt = %0d", accepted_cnt);
-//   $display("stalled_cnt  = %0d", stalled_cnt);
-// end
-// endtask
 
 reg        testcase_seen [0:NUM_TESTS_MEM-1];
 reg [31:0] testcase_oeip [0:NUM_TESTS_MEM-1];
@@ -723,7 +684,7 @@ begin
     // Highest priority: EX flush redirects FE immediately
     // --------------------------------------------------------
     if (from_ex_flush) begin
-      redirect_idx = find_idx_from_eip(from_ex_eip_target);
+      redirect_idx = find_idx_from_eip_filemap(from_ex_eip_target);
 
       if (redirect_idx >= 0) begin
         cur_test = redirect_idx;
@@ -793,55 +754,6 @@ begin
 end
 endtask
 
-// task run_test_stream;
-//   integer drain_cycles;
-// begin
-//   cur_test     = 0;
-//   accepted_cnt = 0;
-//   stalled_cnt  = 0;
-//   stream_done  = 1'b0;
-
-//   @(posedge clk);
-//   if (cur_test < NUM_TESTS_MEM)
-//     drive_testcase(cur_test);
-//   else
-//     drive_idle();
-
-//   while (!stream_done) begin
-//     @(posedge clk);
-
-//     if (!from_rr_stall) begin
-//       accepted_cnt = accepted_cnt + 1;
-
-//       // $display("[ACCEPT] test=%0d oeip=%08x len=%0d ieip=%08x time=%0t",
-//       //          cur_test, from_de_oeip, dut_fe.instr_len, from_de_ieip, $time);
-  
-//       cur_test = cur_test + 1;
-
-//       if (cur_test >= NUM_TESTS_MEM)
-//         stream_done = 1'b1;
-//     end
-
-//     else if (to_rr_valid && from_rr_stall) begin
-//       stalled_cnt = stalled_cnt + 1;
-//       // $display("[STALL ] holding test=%0d oeip=%08x time=%0t",
-//       //          cur_test, from_de_oeip, $time);
-//     end
-//     if (!stream_done)
-//       drive_testcase(cur_test);
-//     else
-//       drive_idle();
-//   end
-
-//   for (drain_cycles = 0; drain_cycles < 30; drain_cycles = drain_cycles + 1)
-//     @(posedge clk);
-
-//   $display("accepted_cnt = %0d", accepted_cnt);
-//   $display("stalled_cnt  = %0d", stalled_cnt);
-// end
-// endtask
-
-
 reg wb_commit_pending;
 reg [31:0] wb_commit_ieip;
 reg [31:0] wb_commit_eflags;
@@ -901,6 +813,7 @@ initial begin
     $display("Error: Failed to open results_cmp.txt!");
   end
   clear_inputs();
+  load_eip_idx_map("/home/ecelrc/students/kl38888/MICROARCH/project/scripts/verification/program_eip_idx_map.txt");
 
   for (map_i = 0; map_i < NUM_TESTS_MEM; map_i = map_i + 1) begin
     testcase_seen[map_i] = 1'b0;
@@ -925,11 +838,6 @@ initial begin
                   
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
-  $finish;
-end
-
-initial begin 
-  #(10000 * CYCLE_TIME);
   $finish;
 end
 
