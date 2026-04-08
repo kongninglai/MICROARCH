@@ -1,7 +1,6 @@
-address_adder_tb               FAILURES=0      SUCCESSES=256   
+address_adder_tb               FAILURES=0      SUCCESSES=256    WARNINGS=1     
 ag_to_mem_tb                   FAILURES=0      SUCCESSES=0     
 arbiter_tb                     FAILURES=0      SUCCESSES=16    
-archive.149                    COMPILE_ERROR
 big_and_tb                     FAILURES=0      SUCCESSES=4096  
 big_decrement_tb               FAILURES=0      SUCCESSES=4097  
 big_eq_tb                      FAILURES=0      SUCCESSES=267   
@@ -10,15 +9,14 @@ big_increment_tb               FAILURES=0      SUCCESSES=4097
 big_neq_tb                     FAILURES=0      SUCCESSES=264   
 big_or_tb                      FAILURES=0      SUCCESSES=4096  
 bit_duplicator_tb              FAILURES=0      SUCCESSES=66560 
-block_decoder_more_tb          FAILURES=0      SUCCESSES=10217 
+block_decoder_more_tb          FAILURES=0      SUCCESSES=10217  WARNINGS=1     
 block_decoder_tb               FAILURES=0      SUCCESSES=59    
 bp_tb                          FAILURES=0      SUCCESSES=5     
 br_target_tb                   FAILURES=0      SUCCESSES=4     
 cache_controller_tb            FAILURES=0      SUCCESSES=90112 
 cc_off_core_tb                 FAILURES=0      SUCCESSES=30720 
-cc                             COMPILE_ERROR
 choose_eip_tb                  FAILURES=0      SUCCESSES=11    
-cmp_gen_20b_tb                 FAILURES=0      SUCCESSES=4103  
+cmp_gen_20b_tb                 FAILURES=0      SUCCESSES=4103   WARNINGS=1     
 cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=4103  
 cmp_gt_32b_tb                  FAILURES=0      SUCCESSES=4104  
 comb_choose_eip_tb             FAILURES=0      SUCCESSES=8     
@@ -32,7 +30,6 @@ de_to_rr_tb                    FAILURES=0      SUCCESSES=3
 dmac_tb                        FAILURES=0      SUCCESSES=1040  
 dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
 dmu_tb                         FAILURES=0      SUCCESSES=4     
-DVEfiles                       COMPILE_ERROR
 eip_incr_tb                    FAILURES=0      SUCCESSES=1680  
 encoder4_2_tb                  FAILURES=0      SUCCESSES=5     
 ex_aaa_tb                      FAILURES=0      SUCCESSES=311   
@@ -51,28 +48,29 @@ FA_16b_tb                      FAILURES=0      SUCCESSES=4096
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_4b_tb                       FAILURES=0      SUCCESSES=512   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
-fetch_buffer_tb                FAILURES=9      SUCCESSES=4     
-fetch_decode_top_tb            COMPILE_ERROR
+fetch_buffer_tb                COMPILE_ERROR
+fetch_decode_top_tb            FAILURES=0
+0    SUCCESSES=17
+17  WARNINGS=2     
 fetch_pointer_tb               FAILURES=0      SUCCESSES=4     
-fsearch                        COMPILE_ERROR
 full_cache_init_tb             FAILURES=0      SUCCESSES=0     
 full_cache_tb                  FAILURES=0      SUCCESSES=6155  
 full_cc_off_core_tb            FAILURES=0      SUCCESSES=32063 
-gen_prop_2_tb                  FAILURES=0      SUCCESSES=16    
-gen_prop_tb                    FAILURES=0      SUCCESSES=4     
+gen_prop_2_tb                  FAILURES=0      SUCCESSES=16     WARNINGS=1     
+gen_prop_tb                    FAILURES=0      SUCCESSES=4      WARNINGS=1     
 ghr_tb                         FAILURES=0      SUCCESSES=5     
-gt9_4b_tb                      FAILURES=0      SUCCESSES=16    
-gt99_8b_tb                     FAILURES=0      SUCCESSES=256   
+gt9_4b_tb                      FAILURES=0      SUCCESSES=16     WARNINGS=1     
+gt99_8b_tb                     FAILURES=0      SUCCESSES=256    WARNINGS=1     
 HA_16b_tb                      FAILURES=0      SUCCESSES=1024  
 HA_32b_tb                      FAILURES=0      SUCCESSES=262   
 HA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 hash_tb                        FAILURES=0      SUCCESSES=6     
-hsim                           COMPILE_ERROR
+intgr_fshifter_decode_tb       FAILURES=5      SUCCESSES=2      WARNINGS=3     
 io_addr_logic_block_tb         FAILURES=0      SUCCESSES=512   
 kb_tb                          FAILURES=0      SUCCESSES=28    
 le_5b_tb                       FAILURES=0      SUCCESSES=256   
 logic_branch_tb                FAILURES=0      SUCCESSES=8     
-logic_cl_shifter_tb            FAILURES=0      SUCCESSES=4     
+logic_cl_shifter_tb            FAILURES=0      SUCCESSES=4      WARNINGS=1     
 logic_disp_bytes_tb            FAILURES=0      SUCCESSES=5     
 logic_disp_size_tb             FAILURES=0      SUCCESSES=5     
 logic_imm_tb                   FAILURES=0      SUCCESSES=4     
@@ -101,7 +99,7 @@ lshf_var_32b_tb                FAILURES=0      SUCCESSES=4096
 main_memory_tb                 FAILURES=0      SUCCESSES=32768 
 mcu_ctrl_tb                    FAILURES=0      SUCCESSES=0     
 mcu_tb                         FAILURES=0      SUCCESSES=16376 
-mem_to_ex_tb                   FAILURES=0      SUCCESSES=4096  
+mem_to_ex_tb                   FAILURES=0      SUCCESSES=4096   WARNINGS=2     
 mux16_16b_tb                   FAILURES=0      SUCCESSES=524288
 mux16_16_tb                    FAILURES=0      SUCCESSES=16    
 mux16_32_tb                    FAILURES=0      SUCCESSES=1024  
@@ -137,13 +135,13 @@ predictor_tb                   FAILURES=0      SUCCESSES=4
 prefix_modrm_sib_adder_tb      FAILURES=0      SUCCESSES=20    
 rank_tb                        FAILURES=0      SUCCESSES=2048  
 regfile_2r1w_tb                FAILURES=0      SUCCESSES=520   
-regfile_3r2w_tb                FAILURES=0      SUCCESSES=114   
+regfile_3r2w_tb                FAILURES=0      SUCCESSES=114    WARNINGS=1     
 regfile_gp_tb                  FAILURES=0      SUCCESSES=1043  
 regfile_mmx_tb                 FAILURES=0      SUCCESSES=520   
 regfile_seg_tb                 FAILURES=0      SUCCESSES=19    
 reg_n_tb                       FAILURES=0      SUCCESSES=1000  
 regunit_tb                     FAILURES=0      SUCCESSES=0     
-rom_modrm_imm_tb               FAILURES=0      SUCCESSES=1024  
+rom_modrm_imm_tb               FAILURES=0      SUCCESSES=1024   WARNINGS=1     
 rr_to_ag_tb                    FAILURES=0      SUCCESSES=0     
 rshfa_const_tb                 FAILURES=0      SUCCESSES=1024  
 rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
@@ -155,10 +153,9 @@ se_tb                          FAILURES=0      SUCCESSES=258
 shift_reg_tb                   FAILURES=0      SUCCESSES=4     
 shift_reg_tiny_tb              FAILURES=0      SUCCESSES=5388  
 stage_ag_tb                    FAILURES=0      SUCCESSES=0     
-stage_decoder_tb               FAILURES=0      SUCCESSES=13    
+stage_decoder_tb               FAILURES=0      SUCCESSES=13     WARNINGS=1     
 stage_ex_tb                    FAILURES=0      SUCCESSES=0     
 stage_fetch_a_tb               FAILURES=0      SUCCESSES=4     
-stage_fetch_tb                 FAILURES=0      SUCCESSES=586   
 stage_mem_tb                   FAILURES=0      SUCCESSES=4326  
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
 stage_wb_reg_tb                FAILURES=0      SUCCESSES=0     
@@ -167,7 +164,7 @@ sticky_bit_fsm_tb              FAILURES=0      SUCCESSES=4112
 sticky_bit_load_fsm_tb         FAILURES=0      SUCCESSES=8     
 store_queue_entry_tb           FAILURES=0      SUCCESSES=4112  
 store_queue_full_cache_tb      FAILURES=0      SUCCESSES=3072  
-store_queue_tb                 FAILURES=0      SUCCESSES=2049  
+store_queue_tb                 FAILURES=0      SUCCESSES=2049   WARNINGS=1     
 stream_buffer_tb               FAILURES=0      SUCCESSES=4130  
 SUB_32b_tb                     FAILURES=0      SUCCESSES=518   
 tag_hit_logic_tb               FAILURES=0      SUCCESSES=5200  
@@ -175,8 +172,7 @@ tag_store_tb                   FAILURES=0      SUCCESSES=160
 temp_exception_regs_tb         FAILURES=0      SUCCESSES=256   
 tlb_tb                         FAILURES=0      SUCCESSES=65538 
 tlb_wrapper_tb                 FAILURES=0      SUCCESSES=65794 
-ucode_rom_tb                   FAILURES=0      SUCCESSES=0     
-udps                           COMPILE_ERROR
+ucode_rom_tb                   FAILURES=0      SUCCESSES=0      WARNINGS=1     
 valid_or_dirty_store_tb        FAILURES=0      SUCCESSES=1056  
 wb_full_cache_tb               FAILURES=0      SUCCESSES=1538  
 we_logic_block_tb              FAILURES=0      SUCCESSES=132   

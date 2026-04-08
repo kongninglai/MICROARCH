@@ -24,4 +24,4 @@
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
 
 // Testbench for Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/pipeline_regs/logic_tail_ptr_tb/logic_tail_ptr_tb.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/pipeline_regs/f_to_de/logic_tail_ptr_tb/logic_tail_ptr_tb.v

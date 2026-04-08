@@ -1,9 +1,9 @@
 module fetch_decode_top_tb;
 
 initial begin
-  $vcdplusfile("fetch_decode_top_tb.dump.vpd");
-  $vcdpluson(0, fetch_decode_top_tb);
-  $vcdpluson(0, fetch_decode_top_tb.DUT);
+  // $vcdplusfile("fetch_decode_top_tb.dump.vpd");
+  // $vcdpluson(0, fetch_decode_top_tb);
+  // $vcdpluson(0, fetch_decode_top_tb.DUT);
 end
 
 localparam MEM_BYTE_CAPACITY    = 32768;
@@ -628,8 +628,8 @@ initial begin
 
     $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
     $display("SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
-    $fdisplay(log_fd, "FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
-    $fdisplay(log_fd, "SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
+    // $fdisplay(log_fd, "FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);
+    // $fdisplay(log_fd, "SUCCESSES = %d out of %d", SUCCESSES, FAILURES + SUCCESSES);
     $fclose(log_fd);
 
     $finish;

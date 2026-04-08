@@ -1,5 +1,0 @@
-{"vcs1":{"timestamp_begin":1775375915.260556493, "rt":0.17, "ut":0.07, "st":0.04}}
-{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1775375914.785029741}
-{"VCS_COMP_START_TIME": 1775375914.785029741}
-{"VCS_COMP_END_TIME": 1775375915.482855998}
-{"VCS_USER_OPTIONS": "-full64 -v2005 -debug_all -f ../master_intgr_fshifter_decode_tb"}
