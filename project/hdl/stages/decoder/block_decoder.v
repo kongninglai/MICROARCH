@@ -157,6 +157,7 @@ module block_decoder(
     mux2$   mux2$_disp_plus_sib_final[2:0](disp_plus_sib_final, 3'b000, disp_plus_sib, is_modrm_true);
 
     logic_incr_amt EIP_INCR_AMT(
+        .opcode(opcode), 
         .rom_sum(sum_modrm_imm_true), //Ready at 4.2ns
         .disp_plus_sib(disp_plus_sib_final), //Ready at 5.05ns
         .prefix_amount(prefix_num), //Ready at 3.38ns

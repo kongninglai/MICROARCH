@@ -365,55 +365,55 @@ module tb_block_decoder();
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hC2); load_cache_byte(2, 8'h08); load_cache_byte(3, 8'h00);
         check_decode(11, "o16 ret 0x0008", "66 C2 08 00",
-            1'b0, 1'b1, 3'b011, 1'b0, 8'hC2, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h0008, 2'b00, 4'd4);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hC2, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h0008, 2'b00, 4'd0); 
 
         // 12. RET imm16 (near) (C2 08 00) (2 bytes -> 2'b01)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hC2); load_cache_byte(1, 8'h08); load_cache_byte(2, 8'h00);
         check_decode(12, "ret 0x0008", "C2 08 00",
-            1'b0, 1'b0, 3'b011, 1'b0, 8'hC2, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h0008, 2'b00, 4'd3);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hC2, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h0008, 2'b00, 4'd0);
 
         // 13. RET (near, 16-bit pop) (66 C3) (0 bytes immediate -> 2'b00)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hC3);
         check_decode(13, "o16 ret", "66 C3",
-            1'b0, 1'b1, 3'b011, 1'b0, 8'hC3, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b00, 4'd2);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hC3, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b00, 4'd0);
 
         // 14. RET (near) (C3) (0 bytes immediate -> 2'b00)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hC3);
         check_decode(14, "ret", "C3",
-            1'b0, 1'b0, 3'b011, 1'b0, 8'hC3, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b00, 4'd1);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hC3, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b00, 4'd0);
 
         // 15. RET imm16 (far, 16-bit pop) (66 CA 08 00) (2 bytes -> 2'b01)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hCA); load_cache_byte(2, 8'h08); load_cache_byte(3, 8'h00);
         check_decode(15, "o16 retf 0x0008", "66 CA 08 00",
-            1'b0, 1'b1, 3'b011, 1'b0, 8'hCA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h0008, 2'b00, 4'd4);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hCA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h0008, 2'b00, 4'd0);
 
         // 16. RET imm16 (far) (CA 08 00) (2 bytes -> 2'b01)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hCA); load_cache_byte(1, 8'h08); load_cache_byte(2, 8'h00);
         check_decode(16, "retf 0x0008", "CA 08 00",
-            1'b0, 1'b0, 3'b011, 1'b0, 8'hCA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h0008, 2'b00, 4'd3);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hCA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h0008, 2'b00, 4'd0);
 
         // 17. RET (far, 16-bit pop) (66 CB) (0 bytes immediate -> 2'b00)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hCB);
         check_decode(17, "o16 retf", "66 CB",
-            1'b0, 1'b1, 3'b011, 1'b0, 8'hCB, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b00, 4'd2);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hCB, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b00, 4'd0);
 
         // 18. RET (far) (CB) (0 bytes immediate -> 2'b00)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hCB);
         check_decode(18, "retf", "CB",
-            1'b0, 1'b0, 3'b011, 1'b0, 8'hCB, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b00, 4'd1);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hCB, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b00, 4'd0);
 
         // 19. IRETD (CF) (0 bytes immediate -> 2'b00)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hCF);
         check_decode(19, "iretd", "CF",
-            1'b0, 1'b0, 3'b011, 1'b0, 8'hCF, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b00, 4'd1);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hCF, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b00, 4'd0);
 
         // --------------------------------------------------------------------------------
         // UNCONDITIONAL RELATIVE CALLS & JUMPS
