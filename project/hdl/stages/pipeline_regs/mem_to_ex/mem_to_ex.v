@@ -1,9 +1,12 @@
-module mem_to_ex(
+module mem_to_ex #(
+    parameter EX_CONTROL_SIGS_WIDTH=59,
+    parameter REG_SIZE=631+EX_CONTROL_SIGS_WIDTH
+)(
     input clk,
     input rst_n,
     input we,
     input flush_bar,
-    input [57:0]     from_mem_control_sigs,
+    input [EX_CONTROL_SIGS_WIDTH-1:0]     from_mem_control_sigs,
     input [2:0]      from_mem_dstidA,
     input [2:0]      from_mem_dstidB,
     input [31:0]     from_mem_srcregA,
@@ -36,7 +39,7 @@ module mem_to_ex(
     input [1:0]      from_mem_exception,
     input            from_mem_valid,
     
-    output [57:0]    to_ex_control_sigs,
+    output [EX_CONTROL_SIGS_WIDTH-1:0]    to_ex_control_sigs,
     output [2:0]     to_ex_dstidA,
     output [2:0]     to_ex_dstidB,
     output [31:0]    to_ex_srcregA,
@@ -70,7 +73,7 @@ module mem_to_ex(
     output           to_ex_valid
 );
 
-    wire [688:0] reg_din, reg_q, reg_qb;
+    wire [REG_SIZE-1:0] reg_din, reg_q, reg_qb;
     wire valid_with_flush;
     and2$ and2_valid(valid_with_flush, flush_bar, from_mem_valid);
 
@@ -133,6 +136,9 @@ module mem_to_ex(
             to_ex_exception,
             to_ex_valid} = reg_q;
     
-    reg_mem_to_ex reg_mem_to_ex_inst(clk, reg_din, reg_q, reg_qb, rst_n, 1'b1, we);
+    wire flush, we_with_flush;
+    inv1$ inv_flush_bar(flush, flush_bar);
+    or2$ or2_we_with_flush(we_with_flush, flush, we);
+    reg_mem_to_ex #(.REG_SIZE(REG_SIZE)) reg_mem_to_ex_inst(clk, reg_din, reg_q, reg_qb, rst_n, 1'b1, we_with_flush);
 
 endmodule

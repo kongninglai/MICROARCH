@@ -110,6 +110,7 @@ reg [31:0] wb_eflags;
 
 reg        arch_snap_valid;
 reg [31:0] arch_snap_ieip;
+reg [31:0] arch_snap_oeip;
 reg [31:0] arch_snap_eflags;
 
 reg [31:0] arch_snap_gpr [0:7];
@@ -323,7 +324,7 @@ begin
   end
 
   $fclose(fd);
-  $display("Loaded %0d eip->idx entries", map_count);
+  // $display("Loaded %0d eip->idx entries", map_count);
 end
 endtask
 
@@ -337,11 +338,13 @@ endtask
 
 
 task take_arch_snapshot;
+  input [31:0] snap_oeip;
   input [31:0] snap_ieip;
   input [31:0] snap_eflags;
   integer si;
 begin
   arch_snap_valid  = 1'b1;
+  arch_snap_oeip   = snap_oeip;
   arch_snap_ieip   = snap_ieip;
   arch_snap_eflags = snap_eflags;
 
@@ -371,7 +374,7 @@ reg        pend_mem_is_wr [0:MAX_PENDING_MEM-1]; // 0=Read, 1=Wrote
 reg [7:0]  pend_mem_val   [0:MAX_PENDING_MEM-1];
 reg [31:0] pend_mem_va    [0:MAX_PENDING_MEM-1];
 reg [15:0] pend_mem_pa    [0:MAX_PENDING_MEM-1];
-reg [31:0] pend_mem_ieip  [0:MAX_PENDING_MEM-1]; // which instruction this belongs to
+reg [31:0] pend_mem_oeip  [0:MAX_PENDING_MEM-1]; // which instruction this belongs to
 integer    pend_mem_cnt;
 
 // Snapshot buffer: holds the Read/Wrote lines to print after the separator
@@ -383,13 +386,13 @@ integer    snap_cnt;
 
 integer flush_i;
 // Print and remove all pending entries whose ieip matches the given ieip
-task flush_pending_for_ieip;
-  input [31:0] target_ieip;
+task flush_pending_for_oeip;
+  input [31:0] target_oeip;
   integer fi, new_cnt;
 begin
   // First pass: print matching entries
   for (fi = 0; fi < pend_mem_cnt; fi = fi + 1) begin
-    if (pend_mem_ieip[fi] === target_ieip) begin
+    if (pend_mem_oeip[fi] === target_oeip) begin
       if (pend_mem_is_wr[fi] === 1'b0)
         $fdisplay(file_handle_cmp,"Read  0x%02x from va = 0x%08x and pa = 0x%04x",
           pend_mem_val[fi], pend_mem_va[fi], pend_mem_pa[fi]);
@@ -401,12 +404,12 @@ begin
   // Second pass: compact out matched entries
   new_cnt = 0;
   for (fi = 0; fi < pend_mem_cnt; fi = fi + 1) begin
-    if (pend_mem_ieip[fi] !== target_ieip) begin
+    if (pend_mem_oeip[fi] !== target_oeip) begin
       pend_mem_is_wr[new_cnt] = pend_mem_is_wr[fi];
       pend_mem_val  [new_cnt] = pend_mem_val  [fi];
       pend_mem_va   [new_cnt] = pend_mem_va   [fi];
       pend_mem_pa   [new_cnt] = pend_mem_pa   [fi];
-      pend_mem_ieip [new_cnt] = pend_mem_ieip [fi];
+      pend_mem_oeip [new_cnt] = pend_mem_oeip [fi];
       new_cnt = new_cnt + 1;
     end
   end
@@ -417,7 +420,7 @@ endtask
 task print_arch_snapshot;
   input integer is_hlt_status;
 begin
-  flush_pending_for_ieip(arch_snap_ieip);
+  flush_pending_for_oeip(arch_snap_oeip);
 
   $fdisplay(file_handle_cmp,"Architectural State %0d", NUM_TESTS);
 
@@ -511,7 +514,7 @@ always @(posedge clk) begin
         pend_mem_va   [pend_mem_cnt] = dut.inst_stage_mem.to_mem_ld_addr[31:0] + ((k-starting_point)+difference);
         pend_mem_pa   [pend_mem_cnt] = (dut.inst_stage_mem.to_mem_ld_addr[14:0] + ((k-starting_point)+difference)) & 16'h7FFF;
         pend_mem_pa   [pend_mem_cnt][14:12] = D_RD_TLB_PFN_OUT[2:0];
-        pend_mem_ieip [pend_mem_cnt] = dut.to_mem_ieip;
+        pend_mem_oeip [pend_mem_cnt] = dut.to_mem_oeip;
         pend_mem_cnt = pend_mem_cnt + 1;
       end
     end
@@ -524,7 +527,7 @@ always @(posedge clk) begin
           pend_mem_val  [pend_mem_cnt] = (WB_SHF_ST_DATA_L0 >> (8*m)) & 8'hFF;
           pend_mem_va   [pend_mem_cnt] = saved_st_addr[31:0] + m;
           pend_mem_pa   [pend_mem_cnt] = {WB_PR_ST_ADDR_L0[14:4], saved_st_addr[3:0]} + m;
-          pend_mem_ieip [pend_mem_cnt] = dut.to_wb_ieip;
+          pend_mem_oeip [pend_mem_cnt] = dut.to_wb_oeip;
           pend_mem_cnt = pend_mem_cnt + 1;
         end
       end
@@ -542,7 +545,7 @@ always @(posedge clk) begin
           pend_mem_pa   [pend_mem_cnt] = {dut.inst_stage_wb.to_wb_store_addr_line_0[14:4], 4'd0} + n;
           if (n >= 16) 
             pend_mem_pa   [pend_mem_cnt] = {dut.inst_stage_wb.to_wb_store_addr_line_1[14:4], 4'd0} + (n-16);
-          pend_mem_ieip [pend_mem_cnt] = dut.to_wb_ieip;
+          pend_mem_oeip [pend_mem_cnt] = dut.to_wb_oeip;
           pend_mem_cnt = pend_mem_cnt + 1;
         end
       end
@@ -742,7 +745,7 @@ begin
     end
 
     else begin
-      drive_idle();
+      drive_testcase(cur_test);
     end
   end
 
@@ -756,12 +759,14 @@ endtask
 
 reg wb_commit_pending;
 reg [31:0] wb_commit_ieip;
+reg [31:0] wb_commit_oeip;
 reg [31:0] wb_commit_eflags;
 
 always @(posedge clk) begin
   if (!rst_n) begin
     wb_commit_pending <= 1'b0;
     wb_commit_ieip    <= 32'b0;
+    wb_commit_oeip    <= 32'b0;
     wb_commit_eflags  <= 32'b0;
     arch_snap_valid   <= 1'b0;
     pend_mem_cnt      = 0;
@@ -771,11 +776,11 @@ always @(posedge clk) begin
     if (wb_commit_pending) begin
       if (!arch_snap_valid) begin
         // first commit, only take a snapshot
-        take_arch_snapshot(wb_commit_ieip, wb_commit_eflags);
-      end else if (arch_snap_ieip == wb_commit_ieip) begin
+        take_arch_snapshot(wb_commit_oeip, wb_commit_ieip, wb_commit_eflags);
+      end else if (arch_snap_oeip == wb_commit_oeip) begin
         // if it's the same ieip, it's the same instruction
         // only update snapshot, don't print
-        take_arch_snapshot(wb_commit_ieip, wb_commit_eflags);
+        take_arch_snapshot(wb_commit_oeip, wb_commit_ieip, wb_commit_eflags);
       end else begin
         // if ieip changes, it means the rep has ended
         // $display("[ARCH COMMIT] time=%0t ieip=%08x", $time, arch_snap_ieip);
@@ -783,7 +788,7 @@ always @(posedge clk) begin
         NUM_TESTS = NUM_TESTS + 1;
 
         // start recording new instructions
-        take_arch_snapshot(wb_commit_ieip, wb_commit_eflags);
+        take_arch_snapshot(wb_commit_oeip, wb_commit_ieip, wb_commit_eflags);
       end
     end
 
@@ -793,6 +798,7 @@ always @(posedge clk) begin
     if (dut.inst_stage_wb.to_wb_valid_buf16 && dut.inst_stage_wb.no_exception) begin
       wb_commit_pending <= 1'b1;
       wb_commit_ieip    <= dut.to_wb_ieip;
+      wb_commit_oeip    <= dut.to_wb_oeip;
       wb_commit_eflags  <= dut.inst_stage_ex.eflags_out;
     end
   end
@@ -840,6 +846,11 @@ initial begin
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
   $finish;
 end
+
+// initial begin 
+//   #(5000 * CYCLE_TIME);
+//   $finish;
+// end
 
 // Auto-generated memory initialization (Verilog-2005)
 

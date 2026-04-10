@@ -35,6 +35,7 @@
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/mem_sig.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/rr_to_ag/reg_rr_to_ag.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/rr_to_ag/rr_to_ag.v
+~/MICROARCH/project/hdl/stages/rr/pending_int.v
 ~/MICROARCH/project/hdl/stages/rr/stage_rr.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_const.v
 ~/MICROARCH/project/hdl/local-lib/gates/xor3LL.v

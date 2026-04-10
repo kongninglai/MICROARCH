@@ -22,6 +22,10 @@ module ucode_fsm(
     output cmps0,
     output cmps1,
     output cmps2,
+    output iret0,
+    output clear_int,
+    output intex,
+    output handling_intex,
     output ucode_stall,
     output ucode_valid,
     output [95:0] ucode_sig
@@ -75,7 +79,7 @@ module ucode_fsm(
     always @(posedge clk) begin
         if (!rst_n) begin 
             state <= S_IDLE;
-        end else if (~stall) begin 
+        end else if ((~stall) | exception) begin 
             state <= next_state;
         end
     end
@@ -188,7 +192,7 @@ module ucode_fsm(
     assign counter_dec          = ((state == S_REP_CMPS0) | (state == S_REP_MOVS0));
     // stall: state=S_IDLE & next_state != S_IDLE || state != S_IDLE & next_state != S_IDLE
     assign ucode_stall          = (next_state != S_IDLE);
-    assign ucode_valid          = 1'b1;
+    assign ucode_valid          = (state == S_IDLE) ? to_rr_valid : 1'b1;
     wire [95:0] sig_reg_rm, sig_ext_rm, sig_idle;
     wire addr_mode; // 1 for mem mode, 1 for reg mode
     nand2$ nand_addrmode(addr_mode, modrm[1], modrm[0]);
@@ -204,6 +208,10 @@ module ucode_fsm(
     assign cmps0 = (state == S_REP_CMPS0);
     assign cmps1 = (state == S_REP_CMPS1);
     assign cmps2 = (state == S_REP_CMPS2);
+    assign iret0 = (state == S_IRET0);
+    assign intex = (state == S_INTEX_INIT1);
+    assign clear_int = (state == S_INTEX_INIT1);
+    assign handling_intex = (state == S_INTEX_INIT0) | (state == S_INTEX_INIT1);
 endmodule
 
 module ecx_counter(

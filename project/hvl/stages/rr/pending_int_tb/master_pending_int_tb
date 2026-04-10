@@ -1,0 +1,6 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+~/MICROARCH/project/hdl/stages/rr/pending_int.v
+~/MICROARCH/project/hvl/stages/rr/pending_int_tb/pending_int_bh.v
+~/MICROARCH/project/hvl/stages/rr/pending_int_tb/pending_int_tb.v

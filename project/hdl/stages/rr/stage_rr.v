@@ -1,4 +1,6 @@
-module stage_rr(
+module stage_rr #(
+  parameter AG_CONTROL_SIGS_WIDTH=69
+)(
     input       clk,
     input       rst_n,
 
@@ -23,7 +25,8 @@ module stage_rr(
     input from_wb_flush,
     input from_ex_cmps_found,
     input interrupt,
-
+    input [1:0] temp_exception,
+    input [31:0] temp_eip,
     output from_rr_we_pipe_reg,
 
     output [7:0]  to_regunit_opcode,
@@ -62,7 +65,7 @@ module stage_rr(
 
     output [10:0] to_dep_needREGS,
 
-    output [67:0] from_rr_control_sigs,
+    output [AG_CONTROL_SIGS_WIDTH-1:0] from_rr_control_sigs,
     output [2:0] from_rr_dstidA,
     output [2:0] from_rr_dstidB,
     output [31:0] from_rr_srcregA,
@@ -88,9 +91,19 @@ module stage_rr(
     output [31:0] from_rr_pred_eip,
     output [1:0] from_rr_exception,
     output from_rr_valid,
-
+    output from_rr_ucode_valid,
     output from_rr_stall
 ); 
+
+    wire clear_int, pending_int;
+    pending_int pending_int_inst(
+        .clk(clk),
+        .rst_n(rst_n),
+        .set_int(interrupt),
+        .clear_int(clear_int),
+        .pending_int(pending_int)
+    ); 
+
     wire [95:0] ucode_sig;
 
     wire movs_8, movs_32, movs, cmps, iret;
@@ -101,10 +114,10 @@ module stage_rr(
     big_eq #(.WIDTH(8)) eq_cf(.eq(iret), .in0(to_rr_opcode), .in1(8'hcf));
     
     wire        ucode_stall;
-    wire        ucode_valid;
 
     wire cmps0, cmps1, cmps2;
-    wire fsm_stall;
+    wire iret0;
+    wire fsm_stall, intex, handling_intex;
     or2$ or2_fsm_stall(fsm_stall, from_ag_stall, from_dep_unit_data_dep);
     ucode_fsm ucode_fsm_inst (
         .clk(clk),
@@ -112,7 +125,7 @@ module stage_rr(
         .to_rr_valid(to_rr_valid),
         .rep(to_rr_prefix[5]),
         .stall(fsm_stall),
-        .interrupt(interrupt),
+        .interrupt(pending_int),
         .exception(from_wb_flush),
         .movs(movs),
         .cmps(cmps),
@@ -126,8 +139,12 @@ module stage_rr(
         .cmps0(cmps0),
         .cmps1(cmps1),
         .cmps2(cmps2),
+        .iret0(iret0),
+        .clear_int(clear_int),
+        .intex(intex),
+        .handling_intex(handling_intex),
         .ucode_stall(ucode_stall),
-        .ucode_valid(ucode_valid),
+        .ucode_valid(from_rr_ucode_valid),
         .ucode_sig(ucode_sig)
     );
 
@@ -151,19 +168,17 @@ module stage_rr(
     wire ds1_inv, ds_is_32, set_ds_16;
     inv1$ inv_ds1(ds1_inv, ds[1]);
     nor2$ nor2_ds32(ds_is_32, ds1_inv, ds[0]);
-    and2$ and_ds16(set_ds_16, ds_is_32, to_rr_prefix[4]);
+    and3$ and_ds16(set_ds_16, ds_is_32, to_rr_prefix[4], to_rr_valid);
     mux2$ mux_ds_override[1:0](ds_with_override, ds, 2'b01, set_ds_16);
     mux2$ mux_mem_ds_override16[1:0](mem_ds_override_16, mem_ds, 2'b01, set_ds_16);
 
     wire mem_ds_is_64, set_mem_ds_32;
     wire [1:0] mem_ds_with_override;
     and2$ and_mem_ds_64(mem_ds_is_64, mem_ds[1], mem_ds[0]);
-    and2$ and_ds32(set_mem_ds_32, mem_ds_is_64, to_rr_prefix[4]);
+    and3$ and_ds32(set_mem_ds_32, mem_ds_is_64, to_rr_prefix[4], to_rr_valid);
     mux2$ mux_mem_ds_override[1:0](mem_ds_with_override, mem_ds_override_16, 2'b10, set_mem_ds_32);
 
-    wire intex, stack_push;
-
-    assign intex = 1'b0; // TODO: FIX intex
+    wire stack_push;
     
     wire gp_dstb_mux1_inv, gp_dstb_mux_is_010;
     inv1$ inv_gp_dstb_mux(gp_dstb_mux1_inv, gp_dstb_mux[1]);
@@ -223,7 +238,7 @@ module stage_rr(
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
                      mmx_op, alu_op, shf_op, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
                      gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, from_rr_store_data_mux, from_rr_rw, ds_with_override, 
-                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir};
+                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir, iret0};
 
     assign mmx_op = {to_rr_opcode[7], to_rr_opcode[2]};
     wire pack_size, padd_size, pavg_size;
@@ -307,8 +322,17 @@ module stage_rr(
     assign from_rr_sreg2=from_regunit_SREG2;
     // assign from_rr_slim2=from_regunit_SLIM2;
     assign from_rr_base2=from_regunit_basereg2;
-    assign from_rr_intex_vec=4'b0; // TODO: ASSIGN intex
-    assign from_rr_oeip=to_rr_oeip;
+    // assign from_rr_intex_vec=4'b0; // TODO: ASSIGN intex
+
+    /*** intex_vec ***/
+    wire is_exception;
+    or2$ or2_is_exception(is_exception, temp_exception[1], temp_exception[0]);
+    wire [3:0] exception_vec;
+    mux2$ mux2_exception_vec[3:0](exception_vec, 4'b1110, 4'b1101, temp_exception[1]);
+    mux2$ mux2_intex_vec[3:0](from_rr_intex_vec, 4'b0010, exception_vec, is_exception);
+
+    mux2_32 mux2_oeip(from_rr_oeip, to_rr_oeip, temp_eip, handling_intex);
+    // assign from_rr_oeip=to_rr_oeip;
     assign from_rr_ieip=to_rr_ieip;
     assign from_rr_cs = from_regunit_CS;
     
@@ -327,7 +351,7 @@ module stage_rr(
       .eq(is_hlt)
     );
 
-    and2$ and2$_is_hlt_valid(is_hlt_valid, is_hlt, to_rr_valid);
+    and2$ and2$_is_hlt_valid(is_hlt_valid, is_hlt, from_rr_ucode_valid);
 
     big_neq #(
       .WIDTH(8)
@@ -336,7 +360,7 @@ module stage_rr(
       .neq(is_not_hlt)
     );
 
-    and3$ and_valid(from_rr_valid, ucode_valid, no_dep, to_rr_valid);
+    and2$ and_valid(from_rr_valid, from_rr_ucode_valid, no_dep);
 
     /* TODO: ADD STALL LOGIC */
     or4$ or_from_rr_stall(from_rr_stall, ucode_stall, from_ag_stall, from_dep_unit_data_dep, is_hlt_valid);

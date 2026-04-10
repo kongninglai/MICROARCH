@@ -1,9 +1,12 @@
-module rr_to_ag(
+module rr_to_ag #(
+    parameter AG_CONTROL_SIGS_WIDTH=69,
+    parameter REG_SIZE=623+AG_CONTROL_SIGS_WIDTH
+)(
     input clk,
     input rst_n,
     input we,
     input flush_bar, // flush=1 -> write valid = 0; flush=0 -> write valid = valid; valid = ~flush & valid
-    input [67:0] from_rr_control_sigs,
+    input [AG_CONTROL_SIGS_WIDTH-1:0] from_rr_control_sigs,
     input [2:0] from_rr_dstidA,
     input [2:0] from_rr_dstidB,
     input [31:0] from_rr_srcregA,
@@ -29,7 +32,7 @@ module rr_to_ag(
     input [31:0] from_rr_pred_eip,
     input [1:0]  from_rr_exception,
     input from_rr_valid,
-    output [67:0] to_ag_control_sigs,
+    output [AG_CONTROL_SIGS_WIDTH-1:0] to_ag_control_sigs,
     output [2:0] to_ag_dstidA,
     output [2:0] to_ag_dstidB,
     output [31:0] to_ag_srcregA,
@@ -57,7 +60,7 @@ module rr_to_ag(
     output to_ag_valid
 );
 
-wire [690:0] reg_din, reg_q, reg_qb;
+wire [REG_SIZE-1:0] reg_din, reg_q, reg_qb;
 wire valid_with_flush;
 and2$ and2_valid(valid_with_flush, flush_bar, from_rr_valid);
 assign reg_din = {from_rr_control_sigs, from_rr_dstidA, from_rr_dstidB, from_rr_srcregA, from_rr_srcregB, from_rr_srcregC, from_rr_srcSREG, from_rr_MMA, from_rr_MMB, from_rr_imm, from_rr_sreg1, from_rr_slim1, from_rr_base1, from_rr_index1, from_rr_disp, from_rr_scale_mux, from_rr_sreg2, from_rr_slim2, from_rr_base2, from_rr_intex_vec, from_rr_cs, from_rr_oeip, from_rr_ieip, 
@@ -65,7 +68,10 @@ assign reg_din = {from_rr_control_sigs, from_rr_dstidA, from_rr_dstidB, from_rr_
 assign {to_ag_control_sigs, to_ag_dstidA, to_ag_dstidB, to_ag_srcregA, to_ag_srcregB, to_ag_srcregC, to_ag_srcSREG, to_ag_MMA, to_ag_MMB, to_ag_imm, to_ag_sreg1, to_ag_slim1, to_ag_base1, to_ag_index1, to_ag_disp, to_ag_scale_mux, to_ag_sreg2, to_ag_slim2, to_ag_base2, to_ag_intex_vec, to_ag_cs, to_ag_oeip, to_ag_ieip, 
             to_ag_pred_eip, to_ag_exception, to_ag_valid} = reg_q;
 
-reg_rr_to_ag reg_inst(clk, reg_din, reg_q, reg_qb, rst_n, 1'b1, we);
+wire flush, we_with_flush;
+inv1$ inv_flush_bar(flush, flush_bar);
+or2$ or2_we_with_flush(we_with_flush, flush, we);
+reg_rr_to_ag #(.REG_SIZE(REG_SIZE)) reg_inst(clk, reg_din, reg_q, reg_qb, rst_n, 1'b1, we_with_flush);
 
 endmodule
 

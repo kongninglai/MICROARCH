@@ -10,7 +10,7 @@ module reg_ag_to_mem #(
     output [REG_SIZE-1:0] QBAR;
 
     wire [767:0] din_padded, q_padded, qbar_padded;
-    assign din_padded = {11'b0, Din};
+    assign din_padded = {{(768-REG_SIZE){1'b0}}, Din};
     assign Q = q_padded[REG_SIZE-1:0];
     assign QBAR = qbar_padded[REG_SIZE-1:0];
     

@@ -5,6 +5,7 @@ module ex_control(
     input [31:0] rel_eip,
     input [31:0] pred_eip,
     input [31:0] ieip,
+    input [31:0] iret_eip,
     input [1:0] sig_con_jump,
     input [2:0] sig_eip_mux,
     input sig_op_ovr,
@@ -16,7 +17,7 @@ module ex_control(
     output mispredict
 ); 
     wire [31:0] unmasked_eip, eip_mask, masked_eip;
-    mux8_32 mux_eip(unmasked_eip, r_m, imm, rel_eip, load_result[31:0], {load_result[63:48], load_result[15:0]}, , , , sig_eip_mux[0], sig_eip_mux[1], sig_eip_mux[2]);
+    mux8_32 mux_eip(unmasked_eip, r_m, imm, rel_eip, load_result[31:0], {load_result[63:48], load_result[15:0]}, iret_eip, , , sig_eip_mux[0], sig_eip_mux[1], sig_eip_mux[2]);
     mux2_32 mux_eip_mask(eip_mask, 32'hffff_ffff, 32'h0000_ffff, sig_op_ovr);
     and2$ and2_masked_eip[31:0](masked_eip, unmasked_eip, eip_mask);
 

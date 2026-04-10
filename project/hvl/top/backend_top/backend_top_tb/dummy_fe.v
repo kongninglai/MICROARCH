@@ -108,7 +108,7 @@ module dummy_fe_to_be(
 );
 
     always @(posedge clk) begin
-        if ((!rst_n) | from_ex_flush | from_wb_flush) begin
+        if (!rst_n) begin
             to_rr_prefix    <= 7'b0;
             to_rr_opcode    <= 8'b0;
             to_rr_modrm     <= 8'b0;
@@ -122,6 +122,8 @@ module dummy_fe_to_be(
             to_rr_ieip      <= 32'b0;
             to_rr_pred_eip  <= 32'b0;
             to_rr_exception <= 2'b0;
+            to_rr_valid     <= 1'b0;
+        end else if (from_ex_flush | from_wb_flush) begin 
             to_rr_valid     <= 1'b0;
         end else if (~from_rr_stall) begin 
             to_rr_prefix    <= from_de_prefix;   
