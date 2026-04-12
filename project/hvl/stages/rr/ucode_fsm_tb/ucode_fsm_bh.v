@@ -1,4 +1,4 @@
-module ucode_fsm(
+module ucode_fsm_bh(
     input clk,
     input rst_n,
 
@@ -64,7 +64,7 @@ module ucode_fsm(
 
 
     wire counter_start, counter_dec, counter_finish;
-    ecx_counter ecx_counter_inst(
+    ecx_counter_bh ecx_counter_inst(
         .clk(clk),
         .rst_n(rst_n),
         .start(counter_start),
@@ -214,7 +214,7 @@ module ucode_fsm(
     assign handling_intex = (state == S_INTEX_INIT0) | (state == S_INTEX_INIT1);
 endmodule
 
-module ecx_counter(
+module ecx_counter_bh(
     input clk,
     input rst_n,
 
