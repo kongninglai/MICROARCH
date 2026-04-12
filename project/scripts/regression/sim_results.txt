@@ -14,7 +14,7 @@ address_adder_tb               FAILURES=0      SUCCESSES=256
 arbiter_tb                     FAILURES=0      SUCCESSES=16    
 backend_top_tb                 FAILURES=0      SUCCESSES=0     
 
-Regression run: Sat Apr 11 21:39:14 CDT 2026
+Regression run: Sun Apr 12 18:41:25 CDT 2026
 ========================================
 PASS: AAA/aaa0.txt
 PASS: AAA/aaa1.txt
@@ -26,6 +26,8 @@ PASS: CACHE/CACHE_tests.proc.txt
 PASS: CLD/CLD_tests_proc.txt
 PASS: CMOVC/CMOVC_tests_proc.txt
 PASS: CMPXCHG/CMPXCHG_tests_proc.txt
+PASS: CONTROL/cond_tests_proc.txt
+PASS: CONTROL/uncond_tests_proc.txt
 PASS: DEPS/DEPS_tests_proc.txt
 PASS: HLT/HLT_tests_proc.txt
 PASS: MISC/MISC1_tests_proc.txt
@@ -52,8 +54,8 @@ PASS: dcache_test.txt
 PASS: exception_test_correct_format.txt
 PASS: touch_all_regs.txt
 ========================================
-Total: 35  PASSED: 35  FAILED: 0
-backend_top_tb_instructions    FAILURES=0      SUCCESSES=35    
+Total: 37  PASSED: 37  FAILED: 0
+backend_top_tb_instructions    FAILURES=0      SUCCESSES=37    
 big_and_tb                     FAILURES=0      SUCCESSES=4096  
 big_decrement_tb               FAILURES=0      SUCCESSES=4097  
 big_eq_tb                      FAILURES=0      SUCCESSES=267   
