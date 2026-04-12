@@ -63,7 +63,7 @@ module dummy_fe(
 
     assign from_de_oeip = EIP;
     assign from_de_ieip = EIP + instr_len;
-    assign from_de_pred = EIP + instr_len;
+    assign from_de_pred_eip = EIP + instr_len;
     assign from_de_exception = 2'b0;
     assign #(3) from_de_valid = to_de_valid;
 
