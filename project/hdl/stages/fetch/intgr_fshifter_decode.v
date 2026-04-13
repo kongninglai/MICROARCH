@@ -22,7 +22,7 @@ module intgr_fshifter_decode(
     output wire [31:0] to_rr_bp_target, //after latch
     output wire [31:0] to_pr_bp_target, //before latch
     output wire to_rr_pr_valid, 
-    output wire [5:0] to_rr_prefixes, //{prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
+    output wire [6:0] to_rr_prefixes, //{prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
     output wire [7:0] to_rr_opcode,
     output wire [7:0] to_rr_modrm,
     output wire [7:0] to_rr_sib, 
@@ -68,7 +68,7 @@ module intgr_fshifter_decode(
     wire to_pr_ld_pr_rr;
     wire [31:0] to_pr_bp_target;
     wire to_f_ld_eip;
-    wire to_pr_prefix_rep, to_pr_prefix_op_size, to_pr_prefix_ext;
+    wire to_pr_prefix_rep, to_pr_prefix_op_size, to_pr_prefix_ext, to_pr_prefix_seg;
     wire [2:0] to_pr_prefix_seg_ov_id, to_pr_imm_size;
     wire [7:0] to_pr_opcode, to_pr_modrm, to_pr_sib;
     wire [1:0] to_pr_disp_size_mux, to_pr_addressing_mode, to_pr_exception_flags;
@@ -104,6 +104,7 @@ module intgr_fshifter_decode(
         .prefix_rep(to_pr_prefix_rep),
         .prefix_op_size(to_pr_prefix_op_size),
         .prefix_seg_ov_id(to_pr_prefix_seg_ov_id),
+        .prefix_seg(to_pr_prefix_seg),
         .prefix_ext(to_pr_prefix_ext),
         .opcode(to_pr_opcode),
         .modrm(to_pr_modrm),
@@ -138,6 +139,7 @@ module intgr_fshifter_decode(
         .from_de_prefix_rep(to_pr_prefix_rep),
         .from_de_prefix_op_size(to_pr_prefix_op_size),
         .from_de_prefix_seg_ov_id(to_pr_prefix_seg_ov_id),
+        .from_de_prefix_seg(to_pr_prefix_seg),
         .from_de_prefix_ext(to_pr_prefix_ext),
         .from_de_opcode(to_pr_opcode),
         .from_de_modrm(to_pr_modrm),
@@ -157,7 +159,7 @@ module intgr_fshifter_decode(
         .to_rr_pr_valid(to_rr_pr_valid), 
 
         //to rr output
-        .to_rr_prefixes(to_rr_prefixes), //{prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
+        .to_rr_prefixes(to_rr_prefixes), //{prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
         .to_rr_opcode(to_rr_opcode),
         .to_rr_modrm(to_rr_modrm),
         .to_rr_sib(to_rr_sib), 

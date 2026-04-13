@@ -35,7 +35,7 @@ module de_to_rr_tb;
     wire        ld_eip;           
     wire [31:0] eip_true;  
     
-    wire        prefix_rep, prefix_op_size, prefix_ext;
+    wire        prefix_rep, prefix_op_size, prefix_seg, prefix_ext;
     wire [2:0]  prefix_seg_ov_id;
     wire [7:0]  opcode, modrm, sib;
     wire [1:0]  disp_size_mux; 
@@ -51,7 +51,7 @@ module de_to_rr_tb;
     wire [1:0]  to_rr_exception_flags;
     wire [31:0] to_rr_i_eip, to_rr_o_eip, to_rr_bp_target;
     wire        to_rr_pr_valid;
-    wire [5:0]  to_rr_prefixes;
+    wire [6:0]  to_rr_prefixes;
     wire [7:0]  to_rr_opcode, to_rr_modrm, to_rr_sib;
     wire [1:0]  to_rr_disp_size_mux;
     wire [2:0]  to_rr_imm_size;       
@@ -89,7 +89,7 @@ module de_to_rr_tb;
         .prefix_rep(prefix_rep), 
         .prefix_op_size(prefix_op_size),
         .prefix_seg_ov_id(prefix_seg_ov_id), 
-        .prefix_seg(), 
+        .prefix_seg(prefix_seg), 
         .prefix_ext(prefix_ext),
         .opcode(opcode), 
         .modrm(modrm), 
@@ -112,6 +112,7 @@ module de_to_rr_tb;
         .from_de_i_eip(i_eip), .from_de_o_eip(o_eip_in), .from_de_bp_target(32'h0),
         .from_de_pr_valid(pr_de_rr_valid), .from_de_prefix_rep(prefix_rep),
         .from_de_prefix_op_size(prefix_op_size), .from_de_prefix_seg_ov_id(prefix_seg_ov_id),
+        .from_de_prefix_seg(prefix_seg),
         .from_de_prefix_ext(prefix_ext), .from_de_opcode(opcode), .from_de_modrm(modrm),
         .from_de_sib(sib), .from_de_disp_size_mux(disp_size_mux), .from_de_disp(disp),
         .from_de_imm_size(imm_size), // FIXED: Removed hacky 0-padding
@@ -138,7 +139,7 @@ module de_to_rr_tb;
         $display("************* DE_TO_RR PIPE OUT ****************");
         $display("************************************************");
         $display("to_rr_valid=%b, to_rr_opcode=%h, to_rr_modrm=%h", to_rr_pr_valid, to_rr_opcode, to_rr_modrm);
-        $display("to_rr_prefixes={rep:%b, opsz:%b, segid:%b, ext:%b}", to_rr_prefixes[5], to_rr_prefixes[4], to_rr_prefixes[3:1], to_rr_prefixes[0]);
+        $display("to_rr_prefixes={seg:%b, rep:%b, opsz:%b, segid:%b, ext:%b}", to_rr_prefixes[6], to_rr_prefixes[5], to_rr_prefixes[4], to_rr_prefixes[3:1], to_rr_prefixes[0]);
         $display("to_rr_sib=%h, to_rr_disp=%h, to_rr_imm=%h", to_rr_sib, to_rr_disp, to_rr_imm);
         $display("to_rr_i_eip=%h, to_rr_o_eip=%h, instr_len=%d", to_rr_i_eip, to_rr_o_eip, to_rr_instr_length);
         $display("addressing_mode=%b, imm_size=%b, disp_size_mux=%b", to_rr_addressing_mode, to_rr_imm_size, to_rr_disp_size_mux);
@@ -146,7 +147,7 @@ module de_to_rr_tb;
     end
     endtask
 
-    task check_results(input [7:0] exp_op, input [7:0] exp_mod, input [5:0] exp_pref, input exp_valid, input [255:0] name);
+    task check_results(input [7:0] exp_op, input [7:0] exp_mod, input [6:0] exp_pref, input exp_valid, input [255:0] name);
     begin
         @(posedge clk); #2; 
         if (to_rr_opcode !== exp_op || to_rr_modrm !== exp_mod || to_rr_prefixes !== exp_pref || to_rr_pr_valid !== exp_valid) begin
@@ -178,19 +179,19 @@ module de_to_rr_tb;
         // TEST 1: ADD EAX, EBX
         @(negedge clk);
         cache_line = 128'h0000_0000_0000_0000_0000_0000_0000_C301;
-        check_results(8'h01, 8'hC3, 6'b000110, 1'b1, "ADD EAX, EBX");
+        check_results(8'h01, 8'hC3, 7'b0000110, 1'b1, "ADD EAX, EBX");
 
         // TEST 2: Stall Test
         @(negedge clk);
         stall_rr = 1;
         cache_line = 128'h0000_0000_0000_0000_0000_0000_0000_01D1;
-        check_results(8'h01, 8'hC3, 6'b000110, 1'b1, "Stall Test (Register Held)");
+        check_results(8'h01, 8'hC3, 7'b0000110, 1'b1, "Stall Test (Register Held)");
 
         // TEST 3: Prefix Test (CS + REP)
         @(negedge clk);
         stall_rr = 0;
         cache_line = 128'h0000_0000_0000_0000_0000_0000_C301F32E; 
-        check_results(8'h01, 8'hC3, 6'b100010, 1'b1, "Prefix Bundle Test (CS + REP)");
+        check_results(8'h01, 8'hC3, 7'b1100010, 1'b1, "Prefix Bundle Test (CS + REP)");
        
         $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
         $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);

@@ -28,7 +28,7 @@ module tb_intgr_fshifter_decode_rigorous();
     wire [1:0] to_rr_exception_flags;
     wire [31:0] to_rr_i_eip, to_rr_o_eip, to_rr_bp_target;
     wire to_rr_pr_valid;
-    wire [5:0] to_rr_prefixes;
+    wire [6:0] to_rr_prefixes;
     wire [7:0] to_rr_opcode, to_rr_modrm, to_rr_sib;
     wire [1:0] to_rr_disp_size_mux, to_rr_addressing_mode;
     wire [31:0] to_rr_disp;

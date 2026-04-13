@@ -42,7 +42,7 @@ reg from_wb_flush;
 wire [VPN_BIT_WIDTH-1:0] ITLB_VPN;
 wire [PAGE_BIT_WIDTH-1:0] F_PAGE_OFFSET;
 
-wire [5:0] to_rr_prefix;
+wire [6:0] to_rr_prefix;
 wire [7:0] to_rr_opcode;
 wire [7:0] to_rr_modrm;
 wire [7:0] to_rr_sib;

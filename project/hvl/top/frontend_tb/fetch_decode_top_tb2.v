@@ -52,7 +52,7 @@ reg from_ex_br_valid;
 reg [3:0] from_ex_pht_idx;
 reg from_wb_flush;
 
-wire [5:0] to_rr_prefix;
+wire [6:0] to_rr_prefix;
 wire [7:0] to_rr_opcode;
 wire [7:0] to_rr_modrm;
 wire [7:0] to_rr_sib;
@@ -415,7 +415,7 @@ task assert_all_fields;
     input [8*40:1] inst_name;
     input [31:0]   exp_ieip;
     input [31:0]   exp_oeip;
-    input [5:0]    exp_prefix;    // {rep, opsize, seg_ov[2:0], ext}
+  input [6:0]    exp_prefix;    // {seg, rep, opsize, seg_ov[2:0], ext}
     input [7:0]    exp_opcode;
     input          exp_has_modrm;
     input [7:0]    exp_modrm;
@@ -446,7 +446,7 @@ task assert_all_fields;
         // Per-field checks
         check_output("to_rr_ieip",     {32'd0, exp_ieip},     {32'd0, to_rr_ieip},     passed);
         check_output("to_rr_oeip",     {32'd0, exp_oeip},     {32'd0, to_rr_oeip},     passed);
-        check_output("to_rr_prefix",   {58'd0, exp_prefix},   {58'd0, to_rr_prefix},   passed);
+        check_output("to_rr_prefix",   {57'd0, exp_prefix},   {57'd0, to_rr_prefix},   passed);
         check_output("to_rr_opcode",   {56'd0, exp_opcode},   {56'd0, to_rr_opcode},   passed);
         check_output("to_rr_imm_size", {61'd0, exp_imm_size}, {61'd0, to_rr_imm_size}, passed);
 
@@ -497,7 +497,7 @@ task verify_instruction;
     input [8*40:1] inst_name;
     input [31:0]   exp_ieip;
     input [31:0]   exp_oeip;
-    input [5:0]    exp_prefix;
+  input [6:0]    exp_prefix;
     input [7:0]    exp_opcode;
     input          exp_has_modrm;
     input [7:0]    exp_modrm;
@@ -544,7 +544,7 @@ endtask
 integer trace_file;
 integer scan_res;
 reg [31:0] exp_ieip, exp_oeip;
-reg [5:0]  exp_prefix;
+reg [6:0]  exp_prefix;
 reg [7:0]  exp_opcode, exp_modrm;
 reg        exp_has_modrm;
 reg [2:0]  exp_imm_size;

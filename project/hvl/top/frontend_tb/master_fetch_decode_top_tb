@@ -37,9 +37,9 @@
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/off-core/arbiter
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/encoders
 
-
+/home/ecelrc/students/aak3265/MICROARCH/project/hdl/top/frontend/fetch_decode_top.v
 
 // Testbench for Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/fetch_decode_top_tb/fetch_decode_top_tb.v
-// /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/fetch_decode_top_tb/fetch_decode_top_tb2.v
-// /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/fetch_decode_top_tb/fetch_decode_top_tb3.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/frontend_tb/fetch_decode_top_tb.v
+// /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/frontend_tb/fetch_decode_top_tb2.v
+// /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/frontend_tb/fetch_decode_top_tb3.v

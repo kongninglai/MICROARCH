@@ -26,10 +26,10 @@ rom32b32w$   rom32b32w$_out_10({Q2,Q1,Q0,T1,T0}, rst, out_10);
 rom32b32w$   rom32b32w$_out_11({Q2,Q1,Q0,T1,T0}, rst, out_11);
 
 initial begin
-  $readmemb("/home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/tag_stores/lru_rom_00.txt", rom32b32w$_out_00.mem);
-  $readmemb("/home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/tag_stores/lru_rom_01.txt", rom32b32w$_out_01.mem);
-  $readmemb("/home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/tag_stores/lru_rom_10.txt", rom32b32w$_out_10.mem);
-  $readmemb("/home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/tag_stores/lru_rom_11.txt", rom32b32w$_out_11.mem);
+  $readmemb("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/tag_stores/lru_rom_00.txt", rom32b32w$_out_00.mem);
+  $readmemb("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/tag_stores/lru_rom_01.txt", rom32b32w$_out_01.mem);
+  $readmemb("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/tag_stores/lru_rom_10.txt", rom32b32w$_out_10.mem);
+  $readmemb("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/tag_stores/lru_rom_11.txt", rom32b32w$_out_11.mem);
 end
 
 assign V1 = Q4;

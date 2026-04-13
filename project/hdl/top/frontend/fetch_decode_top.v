@@ -26,7 +26,7 @@ module fetch_decode_top(
     input wire from_wb_flush,
 
     //Outputs
-    output wire [5:0] to_rr_prefix,
+    output wire [6:0] to_rr_prefix,
     output wire [7:0] to_rr_opcode,
     output wire [7:0] to_rr_modrm,
     output wire [7:0] to_rr_sib,
@@ -89,7 +89,7 @@ module fetch_decode_top(
         .to_rr_bp_target(to_rr_pred_eip), //post de latch
         .to_pr_bp_target(to_pr_pred_eip), //pre de latch
         .to_rr_pr_valid(to_rr_valid),
-        .to_rr_prefixes(to_rr_prefix), //{prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
+        .to_rr_prefixes(to_rr_prefix), //{prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
         .to_rr_opcode(to_rr_opcode),
         .to_rr_modrm(to_rr_modrm),
         .to_rr_sib(to_rr_sib),

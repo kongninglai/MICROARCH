@@ -1,0 +1,183 @@
+Architectural State 0
+EAX: 0x00000000    ECX: 0x00000000    EDX: 0x00000a00    EBX: 0x00000000
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0000 FS: 0x0000 GS: 0x0000
+ CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000005
+----------------------------------------
+Architectural State 1
+EAX: 0x00000000    ECX: 0x00000000    EDX: 0x00000a00    EBX: 0x00000000
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0000 GS: 0x0000
+ CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000008
+----------------------------------------
+Architectural State 2
+EAX: 0x00000000    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0000 GS: 0x0000
+ CF: 0      PF: 1      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x0000000d
+----------------------------------------
+Architectural State 3
+EAX: 0x00000000    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 0      PF: 1      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000010
+----------------------------------------
+Architectural State 4
+EAX: 0x08090a0b    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 0      PF: 1      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000015
+----------------------------------------
+Architectural State 5
+EAX: 0x08090a0b    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x000000fd
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 0      PF: 1      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x0000001a
+----------------------------------------
+Wrote 0x06 to   va = 0x0a0000fc and pa = 0x50fc
+Wrote 0x05 to   va = 0x0a0000fd and pa = 0x50fd
+Wrote 0x04 to   va = 0x0a0000fe and pa = 0x50fe
+Wrote 0x03 to   va = 0x0a0000ff and pa = 0x50ff
+Architectural State 6
+EAX: 0x08090a0b    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x000000fd
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 0      PF: 1      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000021
+----------------------------------------
+Wrote 0x0b to   va = 0x0a000100 and pa = 0x5100
+Wrote 0x0a to   va = 0x0a000101 and pa = 0x5101
+Wrote 0x09 to   va = 0x0a000102 and pa = 0x5102
+Wrote 0x08 to   va = 0x0a000103 and pa = 0x5103
+Architectural State 7
+EAX: 0x08090a0b    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x000000fd
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 0      PF: 1      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000024
+----------------------------------------
+Read  0x05 from va = 0x0a0000fd and pa = 0x50fd
+Read  0x04 from va = 0x0a0000fe and pa = 0x50fe
+Read  0x03 from va = 0x0a0000ff and pa = 0x50ff
+Read  0x0b from va = 0x0a000100 and pa = 0x5100
+Wrote 0x02 to   va = 0x0a0000fd and pa = 0x50fd
+Wrote 0x82 to   va = 0x0a0000fe and pa = 0x50fe
+Wrote 0x81 to   va = 0x0a0000ff and pa = 0x50ff
+Wrote 0x05 to   va = 0x0a000100 and pa = 0x5100
+Architectural State 8
+EAX: 0x08090a0b    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x000000fd
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 1      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000026
+----------------------------------------
+Wrote 0x0a to   va = 0x0a0000ff and pa = 0x50ff
+Architectural State 9
+EAX: 0x08090a0b    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x000000fd
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 1      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000029
+----------------------------------------
+Wrote 0x0b to   va = 0x0a0008fd and pa = 0x58fd
+Wrote 0x0a to   va = 0x0a0008fe and pa = 0x58fe
+Wrote 0x09 to   va = 0x0a0008ff and pa = 0x58ff
+Wrote 0x08 to   va = 0x0a000900 and pa = 0x5900
+Architectural State 10
+EAX: 0x08090a0b    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x000000fd
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 1      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x0000002f
+----------------------------------------
+Wrote 0x00 to   va = 0x0b0000fd and pa = 0x40fd
+Wrote 0x0b to   va = 0x0b0000fe and pa = 0x40fe
+Wrote 0x00 to   va = 0x0b0000ff and pa = 0x40ff
+Wrote 0x00 to   va = 0x0b000100 and pa = 0x4100
+Architectural State 11
+EAX: 0x08090a0b    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x000000fd
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 1      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000032
+----------------------------------------
+Read  0x02 from va = 0x0a0000fd and pa = 0x50fd
+Read  0x82 from va = 0x0a0000fe and pa = 0x50fe
+Read  0x0a from va = 0x0a0000ff and pa = 0x50ff
+Read  0x05 from va = 0x0a000100 and pa = 0x5100
+Architectural State 12
+EAX: 0x0d138c0d    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x000000fd
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000034
+----------------------------------------
+Architectural State 13
+EAX: 0x0d138c0d    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x000000fd
+ESP: 0x00000000    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+ ES: 0x0000 CS: 0x0000 SS: 0x0000 DS: 0x0a00 FS: 0x0b00 GS: 0x0000
+ CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+EIP: 0x00000034
+----------------------------------------

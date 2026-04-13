@@ -22,6 +22,7 @@ module backend_top #(
 
     /*** To FRONTEND ***/
     output from_rr_stall,
+    output [15:0] from_regunit_CS,
     output [31:0] from_regunit_cs_limit,
     output from_ex_flush,
     output from_ex_br_t_nt,
@@ -132,7 +133,6 @@ module backend_top #(
     wire [15:0]     from_regunit_SREG2;
     wire [31:0]     from_regunit_SLIM1;
     wire [31:0]     from_regunit_SLIM2;
-    wire [15:0]     from_regunit_CS;
     wire [63:0]     from_regunit_MMA;
     wire [63:0]     from_regunit_MMB;
     wire [31:0]     from_regunit_srcregA;
