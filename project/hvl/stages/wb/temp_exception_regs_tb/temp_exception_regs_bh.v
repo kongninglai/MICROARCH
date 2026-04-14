@@ -8,7 +8,8 @@ module temp_exception_regs_bh(
     input        from_wb_flush,
 
     output [15:0] to_ex_tempCS,
-    output [31:0] to_ex_tempEIP
+    output [31:0] to_ex_tempEIP,
+    output [1:0]  to_rr_temp_exception
 );  
     reg [15:0] temp_cs;
     reg [31:0] temp_eip;
@@ -16,7 +17,7 @@ module temp_exception_regs_bh(
 
     assign to_ex_tempCS = temp_cs;
     assign to_ex_tempEIP = temp_eip;
-    
+    assign to_rr_temp_exception = temp_exception;
     always @(posedge clk) begin 
         if (~rst_n) begin
             temp_cs <= 16'b0;

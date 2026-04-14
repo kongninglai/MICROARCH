@@ -200,8 +200,10 @@ class Executor:
             self.mmu.write_byte(
                 2, self.state.gpr[4] + 1, (val >> 8) & 0xFF, check_lim=0
             )
-        else:
+        elif size ==4:
             self.mmu.write_dword(2, self.state.gpr[4], val, check_lim=0)
+        else:
+            self.mmu.write_qword(2, self.state.gpr[4], val, check_lim=0)
 
     def pop(self, size):
         if size == 2:
@@ -223,14 +225,21 @@ class Executor:
             | (self.state.eflags["DF"] << 10)
             | (self.state.eflags["OF"] << 11)
         )
-        self.push(eflags_val, 4)
-        self.push(self.state.seg[1], 4)
-        self.push(self.state.eip, 4)
+        self.push(eflags_val & 0xFFFFFFFF, 4)
         idt_addr = self.state.idtr_base + (vector * 8)
         low = self.mmu.read_dword(1, idt_addr, check_lim=0)
         high = self.mmu.read_dword(1, idt_addr + 4, check_lim=0)
-        self.state.eip = (low & 0xFFFF) | (high & 0xFFFF0000)
-        self.state.seg[1] = (low >> 16) & 0xFFFF
+
+        old_eip = self.state.eip & 0xFFFFFFFF
+        old_cs = self.state.seg[1] & 0xFFFF
+
+        self.push(((old_cs << 32) | old_eip), 8)
+
+        new_eip = (low & 0xFFFF) | (high & 0xFFFF0000)
+        new_cs = (low >> 16) & 0xFFFF
+
+        self.state.eip = new_eip
+        self.state.seg[1] = new_cs
 
     def check_cond(self, cond):
         cf = self.state.eflags["CF"]
@@ -898,10 +907,10 @@ class Executor:
 
         except Exception as e:
             if str(e) == "GP_FAULT":
-                print("GP_FAULT")
+                # print("GP_FAULT")
                 self.state.eip = self.oeip
                 self.do_int(13)
             elif str(e) == "PAGE_FAULT":
-                print("PAGE_FAULT")
+                # print("PAGE_FAULT")
                 self.state.eip = self.oeip
                 self.do_int(14)

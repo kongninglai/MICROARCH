@@ -6,8 +6,6 @@
 ~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux4_32.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_32.v
-~/MICROARCH/project/hvl/local-lib/muxes/mux8_32_tb/mux8_32_behav.v
-~/MICROARCH/project/hvl/local-lib/muxes/mux8_32_tb/mux8_32_tb.v
 ~/MICROARCH/project/hdl/stages/execute/eflags/ex_eflags.v
 ~/MICROARCH/project/hvl/stages/execute/eflags/ex_eflags_tb/ex_eflags_bh.v
 ~/MICROARCH/project/hvl/stages/execute/eflags/ex_eflags_tb/ex_eflags_tb.v

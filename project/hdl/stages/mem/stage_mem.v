@@ -53,14 +53,15 @@ module stage_mem #(
   parameter MMXR_DATA_BIT_WIDTH=64,
   parameter SLIM_BIT_WIDTH=32,
 
-  parameter MEM_CONTROL_SIGS_BIT_WIDTH=58
+  parameter MEM_CONTROL_SIGS_WIDTH=61,
+  parameter EX_CONTROL_SIGS_WIDTH=59
 
 ) (
   input                                       clk,
   input                                       rst_n,
 
   /*** Inputs from pipeline registers (memory-related) ***/
-  input   [MEM_CONTROL_SIGS_BIT_WIDTH-1:0]    to_mem_control_sigs,
+  input   [MEM_CONTROL_SIGS_WIDTH-1:0]    to_mem_control_sigs,
   input   [GPR_ID_BIT_WIDTH-1:0]              to_mem_dstidA,
   input   [GPR_ID_BIT_WIDTH-1:0]              to_mem_dstidB,
   input   [GENERAL_DATA_BIT_WIDTH-1:0]        to_mem_srcregA,
@@ -127,7 +128,7 @@ module stage_mem #(
   output                                      from_mem_valid_store_inst,
 
   /*** Outputs to pipeline registers ***/
-  output  [MEM_CONTROL_SIGS_BIT_WIDTH-1-2:0]  from_mem_control_sigs,
+  output  [EX_CONTROL_SIGS_WIDTH-1:0]         from_mem_control_sigs,
   output  [GPR_ID_BIT_WIDTH-1:0]              from_mem_dstidA,
   output  [GPR_ID_BIT_WIDTH-1:0]              from_mem_dstidB,
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_srcregA,
@@ -172,32 +173,32 @@ bufferH16$    bufferH16$_to_mem_valid_buf16(to_mem_valid_buf16, to_mem_valid);
 
 /*** CONTROL SIGNALS ***/
 
-wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux, rm, op_ovr, palu_size, sbb_dir;
+wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux, rm, op_ovr, palu_size, sbb_dir, iret0;
 wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds;
 wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
 wire [3:0] gp_dsta_mux, store_data_mux;
 
-mem_sig mem_sig_inst (
+mem_sig #(.MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH)) mem_sig_inst (
   .ucode_sig(to_mem_control_sigs),
   .ldAB(ldAB), .dstA_size(dstA_size), .dstB_size(dstB_size), .ldREGS(ldREGS),
   .ldEFLAGS(ldEFLAGS), .ldEIP(ldEIP), .ldCS(ldCS),
   .alu_srcb_mux(alu_srcb_mux), .shf_srcb_mux(shf_srcb_mux), .eflags_mux(eflags_mux),
   .eip_mux(eip_mux), .cs_mux(cs_mux),
-  .mmx_op(mmx_op), .alu_op(alu_op), .shf_op(shf_op), .cmps(cmps), .con_jmp(con_jmp),
+  .mmx_op(mmx_op), .alu_op(alu_op), .shf_op(shf_op), .cmps0(cmps0), .cmps1(cmps1), .cmps2(cmps2), .con_jmp(con_jmp),
   .cmpxchg(cmpxchg), .cmovc(cmovc),
   .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
   .store_data_mux(store_data_mux), .rw(rw),
-  .ds(ds), .mem_ds(mem_ds), .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir)
+  .ds(ds), .mem_ds(mem_ds), .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir), .iret0(iret0)
 );
 
 wire [1:0] rw_buf16;
 bufferH16$    bufferH16$_rw_buf16[1:0](rw_buf16, rw);
 
 assign from_mem_control_sigs = {
-    ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
+    ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
     ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw_buf16, ds, shf_srcb_mux,
     ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-    gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir
+    gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0
 };
 
 /*** TWO-CYCLE ACCESSES ***/

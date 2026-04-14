@@ -1,5 +1,7 @@
-module mem_sig(
-    input [57:0] ucode_sig,
+module mem_sig #(
+    parameter MEM_CONTROL_SIGS_WIDTH=61
+)(
+    input [MEM_CONTROL_SIGS_WIDTH-1:0] ucode_sig,
     output [1:0] ldAB,
     output [1:0] dstA_size,
     output [1:0] dstB_size,
@@ -15,7 +17,9 @@ module mem_sig(
     output [1:0] mmx_op,
     output [2:0] alu_op,
     output shf_op,
-    output cmps,
+    output cmps0,
+    output cmps1,
+    output cmps2,
     output [1:0] con_jmp,
     output cmpxchg,
     output cmovc,
@@ -30,12 +34,13 @@ module mem_sig(
     output rm, 
     output op_ovr,
     output palu_size,
-    output sbb_dir
+    output sbb_dir,
+    output iret0
 ); 
     assign {
-        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
+        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir
+        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0
     } = ucode_sig;
 endmodule

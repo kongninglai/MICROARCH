@@ -15,10 +15,11 @@ reg        from_wb_flush;
 
 wire [15:0] to_ex_tempCS, to_ex_tempCS_bh;
 wire [31:0] to_ex_tempEIP, to_ex_tempEIP_bh;
+wire [1:0]  to_rr_temp_exception, to_rr_temp_exception_bh;
 
-wire [47:0] dout, dout_exp;
-assign dout = {to_ex_tempCS, to_ex_tempEIP};
-assign dout_exp = {to_ex_tempCS_bh, to_ex_tempEIP_bh};
+wire [49:0] dout, dout_exp;
+assign dout = {to_ex_tempCS, to_ex_tempEIP, to_rr_temp_exception};
+assign dout_exp = {to_ex_tempCS_bh, to_ex_tempEIP_bh, to_rr_temp_exception_bh};
 
 temp_exception_regs_bh REF(
     .clk(clk),
@@ -28,7 +29,8 @@ temp_exception_regs_bh REF(
     .from_wb_temp_exception(from_wb_temp_exception),
     .from_wb_flush(from_wb_flush),
     .to_ex_tempCS(to_ex_tempCS_bh),
-    .to_ex_tempEIP(to_ex_tempEIP_bh)
+    .to_ex_tempEIP(to_ex_tempEIP_bh),
+    .to_rr_temp_exception(to_rr_temp_exception_bh)
 ); 
 
 temp_exception_regs DUT(
@@ -39,7 +41,8 @@ temp_exception_regs DUT(
     .from_wb_temp_exception(from_wb_temp_exception),
     .from_wb_flush(from_wb_flush),
     .to_ex_tempCS(to_ex_tempCS),
-    .to_ex_tempEIP(to_ex_tempEIP)
+    .to_ex_tempEIP(to_ex_tempEIP),
+    .to_rr_temp_exception(to_rr_temp_exception)
 ); 
 
 initial begin
@@ -50,7 +53,7 @@ integer FAILURES  = 0;
 integer SUCCESSES = 0;
 
 task check;
-  input [47:0] out, out_exp;
+  input [49:0] out, out_exp;
   input [8*80:1]    msg; // string
   if (out !== out_exp) begin
     FAILURES = FAILURES + 1;
