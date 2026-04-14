@@ -35,6 +35,13 @@ module stage_ag #(
     input           from_wb_stall_if_mem_en,
     input           from_wb_valid_store_inst,
 
+    input [31:0] from_wb_gpwr0_data,
+    input [1:0]  from_wb_gpwr0_size,
+    input [31:0] from_wb_gpwr1_data,
+    input [1:0]  from_wb_gpwr1_size,
+    input [15:0] from_wb_segwr_data,
+    input [15:0] from_ex_cs_wr_data,
+    
     output [MEM_CONTROL_SIGS_WIDTH-1:0]    from_ag_control_sigs,
     output [2:0]     from_ag_dstidA,
     output [2:0]     from_ag_dstidB,
@@ -78,6 +85,12 @@ module stage_ag #(
     wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds, imm_mux, addr_mux;
     wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
     wire [3:0] gp_dsta_mux, store_data_mux;
+    wire [8:0] AG_FW_CONTROL_SIGS, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
+
+    wire [1:0] fw_A, fw_B, fw_C;
+    wire fw_SREG, fw_MMA, fw_MMB;
+
+    assign {fw_A, fw_B, fw_C, fw_SREG, fw_MMA, fw_MMB} = AG_FW_CONTROL_SIGS;
 
     wire store_addr_mux, load_addr_mux;
 
@@ -87,7 +100,7 @@ module stage_ag #(
         ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0
+        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS
     };
     
     assign from_ag_dstidA = to_ag_dstidA;

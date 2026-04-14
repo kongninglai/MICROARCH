@@ -45,9 +45,35 @@ module dep_unit(
     input   [2:0]   from_regunit_srcMMB_id,
     input   [10:0]  from_rr_src_needREGS,
     input           rr_valid,
+    input           from_rr_load_en,
 
-    output          data_dep
+    output          data_dep,
+    output  [8:0]   AG_FW_CONTROL_SIGS,
+    output  [8:0]   MEM_FW_CONTROL_SIGS,
+    output  [8:0]   EX_FW_CONTROL_SIGS
+    output  [1:0]   AG_FW_A,
+    output  [1:0]   AG_FW_B,
+    output  [1:0]   AG_FW_C,
+    output          AG_FW_SREG,
+    output          AG_FW_MMA,
+    output          AG_FW_MMB,
+
+    output  [1:0]   MEM_FW_A,
+    output  [1:0]   MEM_FW_B,
+    output  [1:0]   MEM_FW_C,
+    output          MEM_FW_SREG,
+    output          MEM_FW_MMA,
+    output          MEM_FW_MMB,
+
+    output  [1:0]   EX_FW_A,
+    output  [1:0]   EX_FW_B,
+    output  [1:0]   EX_FW_C,
+    output          EX_FW_SREG,
+    output          EX_FW_MMA,
+    output          EX_FW_MMB
 );
+    wire [1:0] AG_FW_A, AG_FW_B, AG_FW_C, MEM_FW_A, MEM_FW_B, MEM_FW_C, EX_FW_A, EX_FW_B, EX_FW_C;
+    wire AG_FW_SREG, AG_FW_MMA, AG_FW_MMB, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB
     wire from_ag_ld_gp0, from_ag_ld_gp1, from_ag_ld_seg, from_ag_ld_mmx;
     wire from_mem_ld_gp0, from_mem_ld_gp1, from_mem_ld_seg, from_mem_ld_mmx;
 
@@ -66,6 +92,10 @@ module dep_unit(
     and2$ and_from_mem_ld_mmx(from_mem_ld_mmx, from_mem_ldAB[1], from_mem_ldREGS[0]);
 
     wire dep_ag, dep_mem, dep_ex;
+
+    wire addr_src_dep_ag, addr_src_dep_mem, addr_src_dep_ex;
+    wire [1:0] mem_fw_A_temp, mem_fw_B_temp, mem_fw_C_temp;
+    wire mem_fw_SREG_temp, mem_fw_MMA_temp, mem_fw_MMB_temp;
 
     single_stage_dep check_dep_from_ag(
         .dstA_id(from_ag_dstidA),
@@ -93,7 +123,14 @@ module dep_unit(
         .srcMMA_id(from_regunit_srcMMA_id),
         .srcMMB_id(from_regunit_srcMMB_id),
         .src_needREGS(from_rr_src_needREGS),
-        .dep(dep_ag)
+        .dep(dep_ag),
+        .addr_src_dep(addr_src_dep_ag),
+        .fw_mux_A(AG_FW_A),
+        .fw_mux_B(AG_FW_B),
+        .fw_mux_C(AG_FW_C),
+        .fw_SREG(AG_FW_SREG),
+        .fw_MMA(AG_FW_MMA),
+        .fw_MMB(AG_FW_MMB)
     ); 
 
     single_stage_dep check_dep_from_mem(
@@ -122,7 +159,14 @@ module dep_unit(
         .srcMMA_id(from_regunit_srcMMA_id),
         .srcMMB_id(from_regunit_srcMMB_id),
         .src_needREGS(from_rr_src_needREGS),
-        .dep(dep_mem)
+        .dep(dep_mem),
+        .addr_src_dep(addr_src_dep_mem),
+        .fw_mux_A(mem_fw_A_temp),
+        .fw_mux_B(mem_fw_B_temp),
+        .fw_mux_C(mem_fw_C_temp),
+        .fw_SREG(mem_fw_SREG_temp),
+        .fw_MMA(mem_fw_MMA_temp),
+        .fw_MMB(mem_fw_MMB_temp)
     ); 
 
     single_stage_dep check_dep_from_ex(
@@ -151,10 +195,26 @@ module dep_unit(
         .srcMMA_id(from_regunit_srcMMA_id),
         .srcMMB_id(from_regunit_srcMMB_id),
         .src_needREGS(from_rr_src_needREGS),
-        .dep(dep_ex)
+        .dep(dep_ex),
+        .addr_src_dep(addr_src_dep_ex),
+        .fw_mux_A(EX_FW_A),
+        .fw_mux_B(EX_FW_B),
+        .fw_mux_C(EX_FW_C),
+        .fw_SREG(EX_FW_SREG),
+        .fw_MMA(EX_FW_MMA),
+        .fw_MMB(EX_FW_MMB)
     ); 
 
-    wire any_dep;
-    or3$ or3_any_dep(any_dep, dep_ag, dep_mem, dep_ex);
-    and2$ and2_dep_stall(data_dep, any_dep, rr_valid);
+    wire dep_with_mem_and_load_en, buffered_dep_with_mem_and_load_en;
+    
+    and2$ and2_dep_with_mem_and_load_en(dep_with_mem_and_load_en, dep_mem, from_rr_load_en);
+    bufferH16$ buffer_dep_with_mem_and_load_en(buffered_dep_with_mem_and_load_en, dep_with_mem_and_load_en);
+    wire addr_dep_or_mem_dep;
+    or4$ or3_addr_dep_or_mem_dep(addr_dep_or_mem_dep, addr_src_dep_ag, addr_src_dep_mem, addr_src_dep_ex, buffered_dep_with_mem_and_load_en);
+    and2$ and2_dep_stall(data_dep, addr_dep_or_mem_dep, rr_valid);
+
+    mux2$ mux2_mem_fw_A[8:0](MEM_FW_CONTROL_SIGS, {MEM_FW_A, MEM_FW_B, MEM_FW_C, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB}, 9'b0, buffered_dep_with_mem_and_load_en);
+    
+    assign AG_FW_CONTROL_SIGS = {AG_FW_A, AG_FW_B, AG_FW_C, AG_FW_SREG, AG_FW_MMA, AG_FW_MMB};
+    assign EX_FW_CONTROL_SIGS = {EX_FW_A, EX_FW_B, EX_FW_C, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB};
 endmodule

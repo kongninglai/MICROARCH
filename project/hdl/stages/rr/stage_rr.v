@@ -21,6 +21,9 @@ module stage_rr #(
 
     input from_ag_stall,
     input from_dep_unit_data_dep,
+    input [8:0] from_dep_ag_fw_control_sigs,
+    input [8:0] from_dep_mem_fw_control_sigs,
+    input [8:0] from_dep_ex_fw_control_sigs,
 
     input from_wb_flush,
     input from_ex_cmps_found,
@@ -64,6 +67,7 @@ module stage_rr #(
     input [63:0] from_regunit_MMB,
 
     output [10:0] to_dep_needREGS,
+    output        from_rr_load_en,
 
     output [AG_CONTROL_SIGS_WIDTH-1:0] from_rr_control_sigs,
     output [2:0] from_rr_dstidA,
@@ -238,7 +242,8 @@ module stage_rr #(
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
                      mmx_op, alu_op, shf_op, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
                      gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, from_rr_store_data_mux, from_rr_rw, ds_with_override, 
-                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir, iret0};
+                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir, iret0,
+                     from_dep_ag_fw_control_sigs, from_dep_mem_fw_control_sigs, from_dep_ex_fw_control_sigs};
 
     assign mmx_op = {to_rr_opcode[7], to_rr_opcode[2]};
     wire pack_size, padd_size, pavg_size;
