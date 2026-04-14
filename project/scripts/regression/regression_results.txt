@@ -1,36 +1,41 @@
-Regression run: Thu Apr  9 15:42:55 CDT 2026
+Regression run: Sun Apr 12 18:41:25 CDT 2026
 ========================================
-FAIL: AAA/aaa0.txt
-FAIL: AAA/aaa1.txt
-FAIL: ADC/adc.txt
-FAIL: ADD/add.txt
-FAIL: AND/and.txt
-FAIL: BSF/BSF_tests_proc.txt
-FAIL: CACHE/CACHE_tests.proc.txt
-FAIL: CLD/CLD_tests_proc.txt
-FAIL: CMOVC/CMOVC_tests_proc.txt
-FAIL: CMPXCHG/CMPXCHG_tests_proc.txt
-FAIL: cross_cache_line_2x_wb.txt
-FAIL: dcache_test.txt
-FAIL: DEPS/DEPS_tests_proc.txt
-FAIL: HLT/HLT_tests_proc.txt
-FAIL: MISC/MISC1_tests_proc.txt
-FAIL: MISC/MISC2_tests_proc.txt
-FAIL: MISC/MISC3_tests_proc.txt
-FAIL: MOV/MOV_tests_proc.txt
-FAIL: MOVQ/MOVQ_tests_proc.txt
-FAIL: MOVS/MOVS_tests_proc.txt
-FAIL: NOT/NOT_tests_proc.txt
-FAIL: OR/OR_tests_proc.txt
-FAIL: PACKSS/PACKSS_tests_proc.txt
-FAIL: PADD/PADD_tests_proc.txt
-FAIL: PAVG/PAVG_tests_proc.txt
-FAIL: PUSH_POP/PUSH_POP_tests_proc.txt
-FAIL: SAL/SAL_tests_proc.txt
-FAIL: SAR/SAR_tests_proc.txt
-FAIL: SBB/SBB_tests_proc.txt
-FAIL: STD/STD_tests_proc.txt
-FAIL: touch_all_regs.txt
-FAIL: XCHG/XCHG_tests_proc.txt
+PASS: AAA/aaa0.txt
+PASS: AAA/aaa1.txt
+PASS: ADC/adc.txt
+PASS: ADD/add.txt
+PASS: AND/and.txt
+PASS: BSF/BSF_tests_proc.txt
+PASS: CACHE/CACHE_tests.proc.txt
+PASS: CLD/CLD_tests_proc.txt
+PASS: CMOVC/CMOVC_tests_proc.txt
+PASS: CMPXCHG/CMPXCHG_tests_proc.txt
+PASS: CONTROL/cond_tests_proc.txt
+PASS: CONTROL/uncond_tests_proc.txt
+PASS: DEPS/DEPS_tests_proc.txt
+PASS: HLT/HLT_tests_proc.txt
+PASS: MISC/MISC1_tests_proc.txt
+PASS: MISC/MISC2_tests_proc.txt
+PASS: MISC/MISC3_tests_proc.txt
+PASS: MOV/MOV_tests_proc.txt
+PASS: MOVQ/MOVQ_tests_proc.txt
+PASS: MOVS/MOVS_tests_proc.txt
+PASS: NOT/NOT_tests_proc.txt
+PASS: OR/OR_tests_proc.txt
+PASS: PACKSS/PACKSS_tests_proc.txt
+PASS: PADD/PADD_tests_proc.txt
+PASS: PAVG/PAVG_tests_proc.txt
+PASS: PUSH_POP/PUSH_POP_tests_proc.txt
+PASS: REPE_CMPS/REPE_CMPS_tests_proc.txt
+PASS: REP_MOVS/REP_MOVS_tests_proc.txt
+PASS: SAL/SAL_tests_proc.txt
+PASS: SAR/SAR_tests_proc.txt
+PASS: SBB/SBB_tests_proc.txt
+PASS: STD/STD_tests_proc.txt
+PASS: XCHG/XCHG_tests_proc.txt
+PASS: cross_cache_line_2x_wb.txt
+PASS: dcache_test.txt
+PASS: exception_test_correct_format.txt
+PASS: touch_all_regs.txt
 ========================================
-Total: 32  PASSED: 0  FAILED: 32
+Total: 37  PASSED: 37  FAILED: 0

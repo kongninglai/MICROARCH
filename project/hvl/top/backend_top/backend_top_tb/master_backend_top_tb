@@ -7,6 +7,7 @@
 -v /home/projects/courses/spring_22/ee382n19_16785/lib/lib6
 ~/MICROARCH/project/hdl/local-lib/gates/big_and.v
 ~/MICROARCH/project/hdl/local-lib/gates/big_or.v
+~/MICROARCH/project/hdl/local-lib/adders/big_decrement.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_16.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v
@@ -16,6 +17,7 @@
 ~/MICROARCH/project/hdl/local-lib/muxes/mux2_64.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux4_64.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_64.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_8b.v
 ~/MICROARCH/project/hdl/local-lib/extenders/ze.v
 ~/MICROARCH/project/hdl/local-lib/extenders/se.v
 ~/MICROARCH/project/hdl/local-lib/comparators/big_eq.v
@@ -29,11 +31,13 @@
 ~/MICROARCH/project/hdl/stages/rr/regunit.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucoderom.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_controller.v
+~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_fsm.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/rr_sig.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ag_sig.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/mem_sig.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/rr_to_ag/reg_rr_to_ag.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/rr_to_ag/rr_to_ag.v
+~/MICROARCH/project/hdl/stages/rr/pending_int.v
 ~/MICROARCH/project/hdl/stages/rr/stage_rr.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_const.v
 ~/MICROARCH/project/hdl/local-lib/gates/xor3LL.v
@@ -44,10 +48,9 @@
 ~/MICROARCH/project/hdl/stages/ag/stage_ag.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/ag_to_mem/reg_ag_to_mem.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/ag_to_mem/ag_to_mem.v
-~/MICROARCH/project/hvl/stages/wb/stage_wb_reg_tb/dummy_mem.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/mem_to_ex/reg_mem_to_ex.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/mem_to_ex/mem_to_ex.v
-/home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_32b.v
+~/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_32b.v
 ~/MICROARCH/project/hdl/local-lib/comparators/gt9_4b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_32.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_64.v
@@ -77,7 +80,6 @@
 ~/MICROARCH/project/hdl/stages/execute/eflags/ex_eflags.v
 ~/MICROARCH/project/hdl/stages/execute/inc/ex_inc.v
 ~/MICROARCH/project/hdl/stages/execute/not/ex_not.v
-~/MICROARCH/project/hdl/local-lib/adders/big_decrement.v
 ~/MICROARCH/project/hdl/local-lib/shifters/rshfa_const.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux32.v
 ~/MICROARCH/project/hdl/local-lib/shifters/rshfa_var_32b.v
@@ -99,7 +101,6 @@
 ~/MICROARCH/project/hdl/cache/controllers/cache_controller.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_16b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
-~/MICROARCH/project/hdl/local-lib/muxes/mux16_8b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_16b.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_256b.v
 ~/MICROARCH/project/hdl/off-core/io/dma_disk_buffer.v

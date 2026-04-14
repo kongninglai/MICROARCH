@@ -16,6 +16,7 @@ reg [31:0] shf_eflags_mask;
 reg [31:0] bsf_eflags_mask;
 reg [31:0] aaa_eflags_mask;
 reg [31:0] cmp_eflags_mask;
+reg [31:0] LR;
 reg [2:0] sig_eflags_mux;
 reg ldEFLAGS;
 wire [31:0] eflags, eflags_bh;
@@ -33,6 +34,7 @@ ex_eflags dut (
     .bsf_eflags_mask(bsf_eflags_mask),
     .aaa_eflags_mask(aaa_eflags_mask),
     .cmp_eflags_mask(cmp_eflags_mask),
+    .LR(LR),
     .sig_eflags_mux(sig_eflags_mux),
     .ldEFLAGS(ldEFLAGS),
     .eflags(eflags)
@@ -51,6 +53,7 @@ ex_eflags_bh dut_bh (
     .bsf_eflags_mask(bsf_eflags_mask),
     .aaa_eflags_mask(aaa_eflags_mask),
     .cmp_eflags_mask(cmp_eflags_mask),
+    .LR(LR),
     .sig_eflags_mux(sig_eflags_mux),
     .ldEFLAGS(ldEFLAGS),
     .eflags(eflags_bh)
@@ -70,6 +73,7 @@ begin
         bsf_eflags_mask = 32'd0;
         aaa_eflags_mask = 32'd0;
         cmp_eflags_mask = 32'd0;
+        LR = 32'd0;
         sig_eflags_mux = 3'd0;
         ldEFLAGS = 1'b0;
 end
@@ -82,6 +86,7 @@ begin
         bsf_eflags = $random;
         aaa_eflags = $random;
         cmp_eflags = $random;
+        LR         = $random;
         alu_eflags_mask = $random;
         shf_eflags_mask = $random;
         bsf_eflags_mask = $random;
@@ -120,11 +125,16 @@ initial begin
     @(posedge clk);
     rst_n = 1'b1;
 
+    @(posedge clk);
     set_random_inputs();
     repeat (1 << 12) begin
-    #5; 
+    @(posedge clk);
+    #4
     check(eflags, eflags_bh);
     set_random_inputs();
-  end
+    end
+    $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+    $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+    $finish;
 end
 endmodule

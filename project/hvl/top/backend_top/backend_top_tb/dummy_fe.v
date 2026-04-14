@@ -6,6 +6,8 @@ module dummy_fe(
     input         to_de_valid,
 
     input         from_rr_stall,
+    input         from_ex_flush,
+    input [31:0]  from_ex_eip_target,
 
     output [6:0]  from_de_prefix,
     output [7:0]  from_de_opcode,
@@ -52,6 +54,8 @@ module dummy_fe(
     always @(posedge clk) begin
         if (!rst_n) begin 
             EIP <= 32'b0;
+        end else if (from_ex_flush) begin 
+            EIP <= from_ex_eip_target;
         end else if (from_de_valid & ~from_rr_stall) begin 
             EIP <= EIP + instr_len;
         end
@@ -70,7 +74,8 @@ module dummy_fe_to_be(
     input rst_n,
 
     input from_rr_stall,
-
+    input from_ex_flush,
+    input from_wb_flush,
     input [6:0]  from_de_prefix,
     input [7:0]  from_de_opcode,
     input [7:0]  from_de_modrm,
@@ -117,6 +122,8 @@ module dummy_fe_to_be(
             to_rr_ieip      <= 32'b0;
             to_rr_pred_eip  <= 32'b0;
             to_rr_exception <= 2'b0;
+            to_rr_valid     <= 1'b0;
+        end else if (from_ex_flush | from_wb_flush) begin 
             to_rr_valid     <= 1'b0;
         end else if (~from_rr_stall) begin 
             to_rr_prefix    <= from_de_prefix;   

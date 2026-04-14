@@ -1,5 +1,8 @@
-module stage_ag(
-    input [65:0]    to_ag_control_sigs,
+module stage_ag #(
+    parameter AG_CONTROL_SIGS_WIDTH=69,
+    parameter MEM_CONTROL_SIGS_WIDTH=61
+)(
+    input [AG_CONTROL_SIGS_WIDTH-1:0]    to_ag_control_sigs,
     input [2:0]     to_ag_dstidA,
     input [2:0]     to_ag_dstidB,
     input [31:0]    to_ag_srcregA,
@@ -32,7 +35,7 @@ module stage_ag(
     input           from_wb_stall_if_mem_en,
     input           from_wb_valid_store_inst,
 
-    output [57:0]    from_ag_control_sigs,
+    output [MEM_CONTROL_SIGS_WIDTH-1:0]    from_ag_control_sigs,
     output [2:0]     from_ag_dstidA,
     output [2:0]     from_ag_dstidB,
     output [31:0]    from_ag_srcregA,
@@ -71,7 +74,7 @@ module stage_ag(
     output [2:0]     from_ag_ldREGS
 );
 
-    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size, sbb_dir;
+    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size, sbb_dir, iret0;
     wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds, imm_mux, addr_mux;
     wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
     wire [3:0] gp_dsta_mux, store_data_mux;
@@ -81,10 +84,10 @@ module stage_ag(
     assign {load_addr_mux, store_addr_mux} = addr_mux;
 
     assign from_ag_control_sigs = {
-        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps, cmpxchg, cmovc, seg_dst_mux,
+        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir
+        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0
     };
     
     assign from_ag_dstidA = to_ag_dstidA;
@@ -118,18 +121,18 @@ module stage_ag(
     and2$   and2$_from_ag_valid(from_ag_valid, to_ag_valid, from_ag_valid_gate);
 
     // TODO: Add control signals into the ag_sig module
-    ag_sig dut_sig (
+    ag_sig #(.AG_CONTROL_SIGS_WIDTH(AG_CONTROL_SIGS_WIDTH)) dut_sig (
         .ucode_sig(to_ag_control_sigs),
         .ldAB(ldAB), .dstA_size(dstA_size), .dstB_size(dstB_size), .ldREGS(ldREGS),
         .ldEFLAGS(ldEFLAGS), .ldEIP(ldEIP), .ldCS(ldCS),
         .alu_srcb_mux(alu_srcb_mux), .shf_srcb_mux(shf_srcb_mux), .eflags_mux(eflags_mux),
         .eip_mux(eip_mux), .cs_mux(cs_mux),
-        .mmx_op(mmx_op), .alu_op(alu_op), .shf_op(shf_op), .cmps(cmps), .con_jmp(con_jmp),
+        .mmx_op(mmx_op), .alu_op(alu_op), .shf_op(shf_op), .cmps0(cmps0), .cmps1(cmps1), .cmps2(cmps2), .con_jmp(con_jmp),
         .cmpxchg(cmpxchg), .cmovc(cmovc),
         .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
         .store_data_mux(store_data_mux), .rw(rw),
         .ds(ds), .mem_ds(mem_ds), .imm_mux(imm_mux), .addr_mux(addr_mux), .stack_push(stack_push), .intex(intex), .ret_with_imm(ret_with_imm),
-        .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir)
+        .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir), .iret0(iret0)
     );
 
 
@@ -163,10 +166,11 @@ module stage_ag(
     lshf_const #(.WIDTH(32), .SHF_AMT(3)) lshf3_intex_vec(.in(ze32_intex_vec), .out(shifted_intex_vec));
     PA_32b PA_intex_idtr(.s(addr_intex_idtr), .in0(32'h02000000), .in1(shifted_intex_vec));
 
-    wire [31:0] ld_addr1_or_2, ld_slim1_or_2;
+    wire [31:0] ld_addr1_or_2, ld_offset_1_or_2, ld_slim1_or_2;
     mux2_32 mux_ld_addr(ld_addr1_or_2, addr1, addr2, load_addr_mux);
     mux2_32 mux_ld_addr_with_intex(from_ag_ld_addr, ld_addr1_or_2, addr_intex_idtr, intex);
-    mux2_32 mux_ld_offset(from_ag_ld_offset, offset1, offset2, load_addr_mux);
+    mux2_32 mux_ld_offset(ld_offset_1_or_2, offset1, offset2, load_addr_mux);
+    mux2_32 mux_ld_offset_with_intex(from_ag_ld_offset, ld_offset_1_or_2, addr_intex_idtr, intex);
     mux2_32 mux_ld_slim(ld_slim1_or_2, to_ag_slim1, to_ag_slim2, load_addr_mux);
     mux2_32 mux_ld_slim_with_intex(from_ag_ld_slim, ld_slim1_or_2, 32'hffff_ffff, intex);
 

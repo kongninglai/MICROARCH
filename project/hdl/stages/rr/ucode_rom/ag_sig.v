@@ -1,5 +1,7 @@
-module ag_sig(
-    input [65:0] ucode_sig,
+module ag_sig #(
+    parameter AG_CONTROL_SIGS_WIDTH=69
+)(
+    input [AG_CONTROL_SIGS_WIDTH-1:0] ucode_sig,
     output [1:0] ldAB,
     output [1:0] dstA_size,
     output [1:0] dstB_size,
@@ -15,7 +17,9 @@ module ag_sig(
     output [1:0] mmx_op,
     output [2:0] alu_op,
     output shf_op,
-    output cmps,
+    output cmps0,
+    output cmps1,
+    output cmps2,
     output [1:0] con_jmp,
     output cmpxchg,
     output cmovc,
@@ -35,11 +39,12 @@ module ag_sig(
     output rm, 
     output op_ovr,
     output palu_size,
-    output sbb_dir
+    output sbb_dir,
+    output iret0
 ); 
     assign {ldAB, dstA_size, dstB_size, ldREGS, ldEFLAGS,
             ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
-            mmx_op, alu_op, shf_op, cmps, con_jmp, cmpxchg, cmovc,
+            mmx_op, alu_op, shf_op, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
             gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, store_data_mux, rw, ds,
-            mem_ds, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, op_ovr, palu_size, sbb_dir} = ucode_sig;
+            mem_ds, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, op_ovr, palu_size, sbb_dir, iret0} = ucode_sig;
 endmodule

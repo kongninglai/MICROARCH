@@ -1,6 +1,10 @@
 module backend_top #(
   parameter CYCLE_TIME_X10=98,
-  parameter TRUE_LRU=1
+  parameter TRUE_LRU=1,
+  parameter AG_CONTROL_SIGS_WIDTH=69,
+  parameter MEM_CONTROL_SIGS_WIDTH=61,
+  parameter EX_CONTROL_SIGS_WIDTH=59,
+  parameter WB_CONTROL_SIGS_WIDTH=12
 ) (
     input clk,
     input rst_n,
@@ -96,7 +100,7 @@ module backend_top #(
     wire [2:0]      to_regunit_seg_prefix;
     wire            to_regunit_has_seg_prefix;
     
-    wire [65:0]     from_rr_control_sigs;
+    wire [AG_CONTROL_SIGS_WIDTH-1:0]     from_rr_control_sigs;
     wire [2:0]      from_rr_dstidA;
     wire [2:0]      from_rr_dstidB;
     wire [31:0]     from_rr_srcregA;
@@ -124,7 +128,7 @@ module backend_top #(
     wire            from_rr_valid;
     wire            from_rr_we_pipe_reg;
     // wire            from_rr_stall;
-
+    wire            from_rr_ucode_valid;
     wire [10:0]     to_dep_needREGS;
 
     /*** REGUNIT OUTPUTS ***/
@@ -160,7 +164,7 @@ module backend_top #(
     wire [1:0]      to_dep_srcC_size;
 
     /*** RR TO AG ***/
-    wire [65:0]     to_ag_control_sigs;
+    wire [AG_CONTROL_SIGS_WIDTH-1:0]     to_ag_control_sigs;
     wire [2:0]      to_ag_dstidA;
     wire [2:0]      to_ag_dstidB;
     wire [31:0]     to_ag_srcregA;
@@ -188,7 +192,7 @@ module backend_top #(
     wire            to_ag_valid;
 
     /*** AG OUTPUTS ***/
-    wire [57:0]     from_ag_control_sigs;
+    wire [MEM_CONTROL_SIGS_WIDTH-1:0]     from_ag_control_sigs;
     wire [2:0]      from_ag_dstidA;
     wire [2:0]      from_ag_dstidB;
     wire [31:0]     from_ag_srcregA;
@@ -226,7 +230,7 @@ module backend_top #(
     wire [2:0]     from_ag_ldREGS;
 
     /*** AG TO MEM  ***/
-    wire [57:0]     to_mem_control_sigs;
+    wire [MEM_CONTROL_SIGS_WIDTH-1:0]     to_mem_control_sigs;
     wire [2:0]      to_mem_dstidA;
     wire [2:0]      to_mem_dstidB;
     wire [31:0]     to_mem_srcregA;
@@ -261,7 +265,7 @@ module backend_top #(
     
 
     /*** MEM OUTPUTS ***/
-    wire [55:0]     from_mem_control_sigs;
+    wire [EX_CONTROL_SIGS_WIDTH-1:0]     from_mem_control_sigs;
     wire [2:0]      from_mem_dstidA;
     wire [2:0]      from_mem_dstidB;
     wire [31:0]     from_mem_srcregA;
@@ -300,7 +304,7 @@ module backend_top #(
     wire [2:0]      from_mem_ldREGS;
 
     /*** MEM TO EX ***/
-    wire [55:0]     to_ex_control_sigs;
+    wire [EX_CONTROL_SIGS_WIDTH-1:0]     to_ex_control_sigs;
     wire [2:0]      to_ex_dstidA;
     wire [2:0]      to_ex_dstidB;
     wire [31:0]     to_ex_srcregA;
@@ -335,7 +339,7 @@ module backend_top #(
     // wire            from_ex_br_t_nt;
     // wire            from_ex_br_valid;
     // wire [31:0]     from_ex_eip_target;
-    wire [11:0]     from_ex_control_sigs;
+    wire [WB_CONTROL_SIGS_WIDTH-1:0]     from_ex_control_sigs;
     wire [2:0]      from_ex_dstidA;
     wire [2:0]      from_ex_dstidB;
     wire [31:0]     from_ex_gp_wr_data_1;
@@ -353,10 +357,12 @@ module backend_top #(
     wire [4:0]      from_ex_store_data_shf_amt;
     wire [15:0]     from_ex_cs;
     wire [31:0]     from_ex_oeip;
+    wire [31:0]     from_ex_ieip;
     wire            from_ex_valid;
     wire [1:0]      from_ex_exception;
 
     wire            from_ex_valid_store_inst;
+    wire            from_ex_cmps_found;
 
     /* EX TO DEP */
     wire  [1:0]     from_ex_dstA_size;
@@ -367,7 +373,7 @@ module backend_top #(
     wire            from_ex_ld_mmx;
 
     /*** EX TO WB ***/
-    wire [11:0]     to_wb_control_sigs;
+    wire [WB_CONTROL_SIGS_WIDTH-1:0]     to_wb_control_sigs;
     wire [2:0]      to_wb_dstidA;
     wire [2:0]      to_wb_dstidB;
     wire [31:0]     to_wb_gp_wr_data_1;
@@ -385,6 +391,7 @@ module backend_top #(
     wire [4:0]      to_wb_store_data_shf_amt;
     wire [15:0]     to_wb_cs;
     wire [31:0]     to_wb_oeip;
+    wire [31:0]     to_wb_ieip;
     wire            to_wb_valid;
     wire [1:0]      to_wb_exception;
 
@@ -424,9 +431,14 @@ module backend_top #(
     /*** TEMP EXCEPTION REGS ***/
     wire [31:0] to_ex_tempEIP;
     wire [15:0] to_ex_tempCS;
-
+    wire [1:0]  to_rr_temp_exception;
     /*** DEP UNIT ***/
     wire from_dep_unit_data_dep;
+
+    /*** FLUSH LOGIC ***/
+    wire ex_or_wb_flush_bar, wb_flush_bar;
+    nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar, from_ex_flush, from_wb_flush);
+    inv1$ inv1_wb_flush_bar(wb_flush_bar, from_wb_flush);
 
     dep_unit dut (
         .from_ag_dstidA(from_ag_dstidA),
@@ -467,11 +479,15 @@ module backend_top #(
         .from_regunit_srcMMA_id(to_dep_MMA_idx),
         .from_regunit_srcMMB_id(to_dep_MMB_idx),
         .from_rr_src_needREGS(to_dep_needREGS),
-        .rr_valid(to_rr_valid),
+        .rr_valid(from_rr_ucode_valid),
         .data_dep(from_dep_unit_data_dep)
     );
     
-    stage_rr inst_rr (
+    stage_rr #(
+        .AG_CONTROL_SIGS_WIDTH(AG_CONTROL_SIGS_WIDTH)
+    )inst_rr(
+        .clk(clk),
+        .rst_n(rst_n),
         .to_rr_prefix(to_rr_prefix),
         .to_rr_opcode(to_rr_opcode),
         .to_rr_modrm(to_rr_modrm),
@@ -487,6 +503,11 @@ module backend_top #(
         .to_rr_exception(to_rr_exception),
         .to_rr_valid(to_rr_valid),
         .from_ag_stall(from_ag_stall),
+        .from_wb_flush(from_wb_flush),
+        .from_ex_cmps_found(from_ex_cmps_found),
+        .interrupt(DMA_INT),
+        .temp_exception(to_rr_temp_exception),
+        .temp_eip(to_ex_tempEIP),
         .to_regunit_opcode(to_regunit_opcode),
         .to_regunit_modrm(to_regunit_modrm),
         .to_regunit_sib(to_regunit_sib),
@@ -545,12 +566,16 @@ module backend_top #(
         .from_rr_stall(from_rr_stall),
         .to_dep_needREGS(to_dep_needREGS),
         .from_dep_unit_data_dep(from_dep_unit_data_dep),
-        .from_rr_we_pipe_reg(from_rr_we_pipe_reg)
+        .from_rr_we_pipe_reg(from_rr_we_pipe_reg),
+        .from_rr_ucode_valid(from_rr_ucode_valid)
     );
 
-    rr_to_ag inst_rr_to_ag (
+    rr_to_ag #(
+        .AG_CONTROL_SIGS_WIDTH(AG_CONTROL_SIGS_WIDTH)
+    )inst_rr_to_ag (
         .clk(clk),
         .rst_n(rst_n),
+        .flush_bar(ex_or_wb_flush_bar),
         .we(from_rr_we_pipe_reg),
         .from_rr_control_sigs(from_rr_control_sigs),
         .from_rr_dstidA(from_rr_dstidA),
@@ -671,7 +696,10 @@ module backend_top #(
         .from_wb_mmxwr_en(from_wb_mmxwr_en)
     );
 
-    stage_ag inst_ag(
+    stage_ag #(
+        .AG_CONTROL_SIGS_WIDTH(AG_CONTROL_SIGS_WIDTH),
+        .MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH)
+    )inst_ag(
         .to_ag_control_sigs(to_ag_control_sigs),
         .to_ag_dstidA(to_ag_dstidA),
         .to_ag_dstidB(to_ag_dstidB),
@@ -743,9 +771,12 @@ module backend_top #(
         .from_ag_ldREGS(from_ag_ldREGS)
     );
 
-    ag_to_mem inst_ag_to_mem (
+    ag_to_mem #(
+        .MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH)
+    )inst_ag_to_mem (
         .clk(clk),
         .rst_n(rst_n),
+        .flush_bar(ex_or_wb_flush_bar),
         .we(from_ag_we_pipe_reg),
         .from_ag_control_sigs(from_ag_control_sigs),
         .from_ag_dstidA(from_ag_dstidA),
@@ -801,7 +832,10 @@ module backend_top #(
         .to_mem_valid(to_mem_valid)
     );
 
-    stage_mem inst_stage_mem (
+    stage_mem #(
+        .MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH),
+        .EX_CONTROL_SIGS_WIDTH(EX_CONTROL_SIGS_WIDTH)
+    )inst_stage_mem (
       .clk(clk),
       .rst_n(rst_n),
 
@@ -896,10 +930,13 @@ module backend_top #(
       .MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST)
     );
 
-    mem_to_ex inst_mem_to_ex (
+    mem_to_ex #(
+        .EX_CONTROL_SIGS_WIDTH(EX_CONTROL_SIGS_WIDTH)
+    )inst_mem_to_ex (
         .clk(clk),
         .rst_n(rst_n),
         .we(1'b1),
+        .flush_bar(ex_or_wb_flush_bar),
         .from_mem_control_sigs(from_mem_control_sigs),
         .from_mem_dstidA(from_mem_dstidA),
         .from_mem_dstidB(from_mem_dstidB),
@@ -960,7 +997,9 @@ module backend_top #(
         .to_ex_valid(to_ex_valid)
     );
 
-    stage_ex inst_stage_ex (
+    stage_ex #(
+        .EX_CONTROL_SIGS_WIDTH(EX_CONTROL_SIGS_WIDTH)
+    )inst_stage_ex (
         .clk(clk),
         .rst_n(rst_n),
         .to_ex_control_sigs(to_ex_control_sigs),
@@ -997,6 +1036,7 @@ module backend_top #(
         .to_ex_tempEIP(to_ex_tempEIP),
         .to_ex_tempCS(to_ex_tempCS),
         .to_ex_cs_limit(from_regunit_cs_limit),
+        .from_wb_flush(from_wb_flush),
         .from_ex_flush(from_ex_flush),
         .from_ex_ld_cs(from_ex_ld_cs),
         .from_ex_br_t_nt(from_ex_br_t_nt),
@@ -1021,6 +1061,7 @@ module backend_top #(
         .from_ex_store_data_shf_amt(from_ex_store_data_shf_amt),
         .from_ex_cs(from_ex_cs),
         .from_ex_oeip(from_ex_oeip),
+        .from_ex_ieip(from_ex_ieip),
         .from_ex_valid_store_inst(from_ex_valid_store_inst),
         .from_ex_valid(from_ex_valid),
         .from_ex_exception(from_ex_exception),
@@ -1029,13 +1070,15 @@ module backend_top #(
         .from_ex_ld_gp0(from_ex_ld_gp0),
         .from_ex_ld_gp1(from_ex_ld_gp1),
         .from_ex_ld_seg(from_ex_ld_seg),
-        .from_ex_ld_mmx(from_ex_ld_mmx)
+        .from_ex_ld_mmx(from_ex_ld_mmx),
+        .from_ex_cmps_found(from_ex_cmps_found)
     );
 
     ex_to_wb inst_ex_to_wb (
         .clk(clk),
         .rst_n(rst_n),
         .we(1'b1),
+        .flush_bar(wb_flush_bar),
         .from_ex_control_sigs(from_ex_control_sigs),
         .from_ex_dstidA(from_ex_dstidA),
         .from_ex_dstidB(from_ex_dstidB),
@@ -1054,6 +1097,7 @@ module backend_top #(
         .from_ex_store_data_shf_amt(from_ex_store_data_shf_amt),
         .from_ex_cs(from_ex_cs),
         .from_ex_oeip(from_ex_oeip),
+        .from_ex_ieip(from_ex_ieip),
         .from_ex_valid(from_ex_valid),
         .from_ex_exception(from_ex_exception),
         .to_wb_control_sigs(to_wb_control_sigs),
@@ -1074,6 +1118,7 @@ module backend_top #(
         .to_wb_store_data_shf_amt(to_wb_store_data_shf_amt),
         .to_wb_cs(to_wb_cs),
         .to_wb_oeip(to_wb_oeip),
+        .to_wb_ieip(to_wb_ieip),
         .to_wb_valid(to_wb_valid),
         .to_wb_exception(to_wb_exception)
     );
@@ -1155,7 +1200,8 @@ module backend_top #(
         .from_wb_temp_exception(from_wb_temp_exception),
         .from_wb_flush(from_wb_flush),
         .to_ex_tempCS(to_ex_tempCS),
-        .to_ex_tempEIP(to_ex_tempEIP)
+        .to_ex_tempEIP(to_ex_tempEIP),
+        .to_rr_temp_exception(to_rr_temp_exception)
     ); 
 
 

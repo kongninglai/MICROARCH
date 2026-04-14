@@ -12,12 +12,15 @@ module ex_eflags_bh(
     input [31:0] bsf_eflags_mask,
     input [31:0] aaa_eflags_mask,
     input [31:0] cmp_eflags_mask,
+    input [31:0] LR,
     input [2:0]  sig_eflags_mux,
     input        ldEFLAGS,
 
     output [31:0] eflags
 ); 
     reg [31:0] eflags_in, eflags_reg;
+    assign eflags = eflags_reg;
+    
     always @(*) begin 
         case (sig_eflags_mux)
             3'b000: eflags_in = ((~alu_eflags_mask) & eflags_reg) | (alu_eflags_mask & alu_eflags);
@@ -27,7 +30,7 @@ module ex_eflags_bh(
             3'b100: eflags_in = ((~cmp_eflags_mask) & eflags_reg) | (cmp_eflags_mask & cmp_eflags);
             3'b101: eflags_in = {eflags_reg[31:11], 1'b0, eflags_reg[9:0]};
             3'b110: eflags_in = {eflags_reg[31:11], 1'b1, eflags_reg[9:0]};
-            3'b111: eflags_in = eflags_reg;
+            3'b111: eflags_in = LR;
         endcase
     end
 
