@@ -10,33 +10,33 @@
 +libext+.v
 
 // Automatic Directory Search
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/adders
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/comparators
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/extenders
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/gates
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/muxes
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/regs
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/shifters
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/shift_reg
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/adders
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/comparators
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/extenders
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/gates
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/muxes
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/regs
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shifters
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shift_reg
 
 // Test Logic
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/decoder
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/fetch
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/cache/tlb
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/cache/top
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/cache/tag_stores
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/cache/data_stores
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/cache/controllers
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/cache/integration
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/off-core/top
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/off-core/memory
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/off-core/io
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/off-core/arbiter
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/encoders
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/fetch
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/tlb
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/top
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/tag_stores
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/data_stores
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/controllers
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/integration
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/off-core/top
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/off-core/memory
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/off-core/io
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/off-core/arbiter
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/encoders
 
-/home/ecelrc/students/kl38888/MICROARCH/project/hdl/top/frontend/fetch_decode_top.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hdl/top/frontend/fetch_decode_top.v
 
 ~/MICROARCH/project/hdl/local-lib/gates/big_and.v
 ~/MICROARCH/project/hdl/local-lib/gates/big_or.v
@@ -80,7 +80,7 @@
 ~/MICROARCH/project/hvl/stages/wb/stage_wb_reg_tb/dummy_mem.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/mem_to_ex/reg_mem_to_ex.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/mem_to_ex/mem_to_ex.v
-/home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_32b.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_32b.v
 ~/MICROARCH/project/hdl/local-lib/comparators/gt9_4b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_32.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_64.v

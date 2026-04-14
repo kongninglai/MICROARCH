@@ -11,16 +11,16 @@
 +libext+.v
 
 // Automatic Directory Search 
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/adders
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/comparators
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/extenders
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/gates
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/muxes
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/regs
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/shifters
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/adders
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/comparators
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/extenders
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/gates
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/muxes
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/regs
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shifters
 
 // Test Logic 
-/home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/muxes/mux4_48.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/muxes/mux4_48.v
 
 // Testbench for Test Logic 
-/home/ecelrc/students/kl38888/MICROARCH/project/hvl/local-lib/muxes/mux4_48_tb/mux4_48_tb.v
+/home/ecelrc/students/aak3265/MICROARCH/project/hvl/local-lib/muxes/mux4_48_tb/mux4_48_tb.v

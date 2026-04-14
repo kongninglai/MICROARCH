@@ -3,8 +3,8 @@ import argparse
 import re
 from pathlib import Path
 
-INPUT_FILE="/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/program.txt"
-OUTPUT_FILE="/home/ecelrc/students/var2427/MICROARCH/project/scripts/verification/program_eip_idx_map.txt"
+INPUT_FILE="/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/program.txt"
+OUTPUT_FILE="/home/ecelrc/students/aak3265/MICROARCH/project/scripts/verification/program_eip_idx_map.txt"
 
 # Match lines like:
 # 0x214:  f3 a7  // repz cmps DWORD PTR ds:[esi],DWORD PTR es:[edi]
