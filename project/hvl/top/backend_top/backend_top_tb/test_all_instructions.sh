@@ -1,9 +1,9 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TESTCASES_DIR="/home/ecelrc/students/aak3265/MICROARCH/project/scripts/verification/testcases"
-PROGRAM_TXT="/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/program.txt"
-RESULTS_DIR="/home/ecelrc/students/aak3265/MICROARCH/project/scripts/regression"
+TESTCASES_DIR="/home/ecelrc/students/kl38888/MICROARCH/project/scripts/verification/testcases"
+PROGRAM_TXT="/home/ecelrc/students/kl38888/MICROARCH/project/scripts/readmemh/program.txt"
+RESULTS_DIR="/home/ecelrc/students/kl38888/MICROARCH/project/scripts/regression"
 RESULTS_FILE="$RESULTS_DIR/regression_results.txt"
 
 mkdir -p "$RESULTS_DIR"
