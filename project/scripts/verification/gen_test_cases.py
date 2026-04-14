@@ -1,7 +1,7 @@
 import re
 
-INPUT_FILE = "/home/ecelrc/students/kl38888/MICROARCH/project/scripts/readmemh/program.txt"
-OUTPUT_FILE = "/home/ecelrc/students/kl38888/MICROARCH/project/scripts/verification/gen_testcases.mem"
+INPUT_FILE = "/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/program.txt"
+OUTPUT_FILE = "/home/ecelrc/students/var2427/MICROARCH/project/scripts/verification/gen_testcases.mem"
 
 
 def parse_test_file(filename):

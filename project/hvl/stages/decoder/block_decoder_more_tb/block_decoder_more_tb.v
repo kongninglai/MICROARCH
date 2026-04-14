@@ -80,8 +80,8 @@ module tb_block_decoder_more();
         // $vcdpluson(0, tb_block_decoder_more.mem_exp);
 
         // Read input and expected output memories
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/testcases.mem", mem_in);
-        $readmemh("/home/ecelrc/students/kl38888/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/decoder_mem.mem", mem_exp);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/testcases.mem", mem_in);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/decoder_mem.mem", mem_exp);
 
         // Iterate through all tests
         for (i = 0; i < NUM_TESTS; i = i + 1) begin
