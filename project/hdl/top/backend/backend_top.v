@@ -1,9 +1,9 @@
 module backend_top #(
   parameter CYCLE_TIME_X10=98,
   parameter TRUE_LRU=1,
-  parameter AG_CONTROL_SIGS_WIDTH=69,
-  parameter MEM_CONTROL_SIGS_WIDTH=61,
-  parameter EX_CONTROL_SIGS_WIDTH=59,
+  parameter AG_CONTROL_SIGS_WIDTH=93,
+  parameter MEM_CONTROL_SIGS_WIDTH=77,
+  parameter EX_CONTROL_SIGS_WIDTH=67,
   parameter WB_CONTROL_SIGS_WIDTH=12
 ) (
     input clk,

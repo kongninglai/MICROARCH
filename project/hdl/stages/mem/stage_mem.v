@@ -164,7 +164,19 @@ module stage_mem #(
   output  [1:0]                               from_mem_dstA_size,
   output  [1:0]                               from_mem_dstB_size,
   output  [1:0]                               from_mem_ldAB,
-  output  [2:0]                               from_mem_ldREGS
+  output  [2:0]                               from_mem_ldREGS,
+
+  /* FROM WB FORWARDING */
+  input        from_wb_gpwr0_idx_bit_2,
+  input [31:0] from_wb_gpwr0_data,
+  input [1:0]  from_wb_gpwr0_size,
+  input        from_wb_gpwr0_en,
+  input [31:0] from_wb_gpwr1_data,
+  input [1:0]  from_wb_gpwr1_size,
+  input        from_wb_gpwr1_en,
+
+  input [15:0] from_wb_segwr_data,
+  input [63:0] from_wb_mmxwr_data
 
 );
 
@@ -177,6 +189,12 @@ wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, 
 wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds;
 wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
 wire [3:0] gp_dsta_mux, store_data_mux;
+wire [8:0] MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
+
+wire [1:0] fw_A, fw_B, fw_C;
+wire fw_SREG, fw_MMA, fw_MMB;
+
+assign {fw_A, fw_B, fw_C, fw_SREG, fw_MMA, fw_MMB} = MEM_FW_CONTROL_SIGS;
 
 mem_sig #(.MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH)) mem_sig_inst (
   .ucode_sig(to_mem_control_sigs),
@@ -188,8 +206,62 @@ mem_sig #(.MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH)) mem_sig_inst (
   .cmpxchg(cmpxchg), .cmovc(cmovc),
   .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
   .store_data_mux(store_data_mux), .rw(rw),
-  .ds(ds), .mem_ds(mem_ds), .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir), .iret0(iret0)
+  .ds(ds), .mem_ds(mem_ds), .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir), .iret0(iret0),
+  .MEM_FW_CONTROL_SIGS(MEM_FW_CONTROL_SIGS), .EX_FW_CONTROL_SIGS(EX_FW_CONTROL_SIGS)
 );
+
+wire [31:0] f_srcregA, f_srcregB, f_srcregC;
+wire [15:0] f_srcSREG;
+wire [63:0] f_MMA, f_MMB;
+gp_forwarding gp_forward_A(
+    .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
+    .from_wb_gpwr0_data(from_wb_gpwr0_data),
+    .from_wb_gpwr0_size(from_wb_gpwr0_size),
+    .from_wb_gpwr0_en(from_wb_gpwr0_en),
+    .from_wb_gpwr1_data(from_wb_gpwr1_data),
+    .from_wb_gpwr1_size(from_wb_gpwr1_size),
+    .from_wb_gpwr1_en(from_wb_gpwr1_en),
+    .srcreg(to_mem_srcregA),
+    .fw_mux(fw_A),
+    .f_reg(f_srcregA)
+);
+
+gp_forwarding gp_forward_B(
+    .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
+    .from_wb_gpwr0_data(from_wb_gpwr0_data),
+    .from_wb_gpwr0_size(from_wb_gpwr0_size),
+    .from_wb_gpwr0_en(from_wb_gpwr0_en),
+    .from_wb_gpwr1_data(from_wb_gpwr1_data),
+    .from_wb_gpwr1_size(from_wb_gpwr1_size),
+    .from_wb_gpwr1_en(from_wb_gpwr1_en),
+    .srcreg(to_mem_srcregB),
+    .fw_mux(fw_B),
+    .f_reg(f_srcregB)
+);
+
+gp_forwarding gp_forward_C(
+    .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
+    .from_wb_gpwr0_data(from_wb_gpwr0_data),
+    .from_wb_gpwr0_size(from_wb_gpwr0_size),
+    .from_wb_gpwr0_en(from_wb_gpwr0_en),
+    .from_wb_gpwr1_data(from_wb_gpwr1_data),
+    .from_wb_gpwr1_size(from_wb_gpwr1_size),
+    .from_wb_gpwr1_en(from_wb_gpwr1_en),
+    .srcreg(to_mem_srcregC),
+    .fw_mux(fw_C),
+    .f_reg(f_srcregC)
+);
+
+mux2_16$ mux2_f_srcSREG(f_srcSREG, to_mem_srcSREG, from_wb_segwr_data, fw_SREG);
+mux2_64  mux2_f_MMA(f_MMA, to_mem_MMA, from_wb_mmxwr_data, fw_MMA);
+mux2_64  mux2_f_MMB(f_MMB, to_mem_MMB, from_wb_mmxwr_data, fw_MMB);
+
+assign from_mem_srcregA     = f_srcregA  ;    
+assign from_mem_srcregB     = f_srcregB  ;    
+assign from_mem_srcregC     = f_srcregC  ;    
+assign from_mem_srcSREG     = f_srcSREG  ;    
+assign from_mem_MMA         = f_MMA      ;
+assign from_mem_MMB         = f_MMB      ;
 
 wire [1:0] rw_buf16;
 bufferH16$    bufferH16$_rw_buf16[1:0](rw_buf16, rw);
@@ -198,7 +270,8 @@ assign from_mem_control_sigs = {
     ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
     ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw_buf16, ds, shf_srcb_mux,
     ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-    gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0
+    gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0,
+    EX_FW_CONTROL_SIGS
 };
 
 /*** TWO-CYCLE ACCESSES ***/
@@ -530,12 +603,6 @@ or2$    or2$_from_mem_stall(from_mem_stall, STALL_REASON_0, STALL_REASON_1);
 
 assign from_mem_dstidA      = to_mem_dstidA   ;  
 assign from_mem_dstidB      = to_mem_dstidB   ;  
-assign from_mem_srcregA     = to_mem_srcregA  ;    
-assign from_mem_srcregB     = to_mem_srcregB  ;    
-assign from_mem_srcregC     = to_mem_srcregC  ;    
-assign from_mem_srcSREG     = to_mem_srcSREG  ;    
-assign from_mem_MMA         = to_mem_MMA      ;
-assign from_mem_MMB         = to_mem_MMB      ;
 assign from_mem_target_cs   = to_mem_target_cs;      
 
 assign from_mem_inc_esp     = to_mem_inc_esp ;     

@@ -35,12 +35,16 @@ module stage_ag #(
     input           from_wb_stall_if_mem_en,
     input           from_wb_valid_store_inst,
 
+    input        from_wb_gpwr0_idx_bit_2,
     input [31:0] from_wb_gpwr0_data,
     input [1:0]  from_wb_gpwr0_size,
+    input        from_wb_gpwr0_en,
     input [31:0] from_wb_gpwr1_data,
     input [1:0]  from_wb_gpwr1_size,
+    input        from_wb_gpwr1_en,
+
     input [15:0] from_wb_segwr_data,
-    input [15:0] from_ex_cs_wr_data,
+    input [63:0] from_wb_mmxwr_data,
     
     output [MEM_CONTROL_SIGS_WIDTH-1:0]    from_ag_control_sigs,
     output [2:0]     from_ag_dstidA,
@@ -103,14 +107,60 @@ module stage_ag #(
         gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS
     };
     
+    wire [31:0] f_srcregA, f_srcregB, f_srcregC;
+    wire [15:0] f_srcSREG;
+    wire [63:0] f_MMA, f_MMB;
+    gp_forwarding gp_forward_A(
+        .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
+        .from_wb_gpwr0_data(from_wb_gpwr0_data),
+        .from_wb_gpwr0_size(from_wb_gpwr0_size),
+        .from_wb_gpwr0_en(from_wb_gpwr0_en),
+        .from_wb_gpwr1_data(from_wb_gpwr1_data),
+        .from_wb_gpwr1_size(from_wb_gpwr1_size),
+        .from_wb_gpwr1_en(from_wb_gpwr1_en),
+        .srcreg(to_ag_srcregA),
+        .fw_mux(fw_A),
+        .f_reg(f_srcregA)
+    );
+
+    gp_forwarding gp_forward_B(
+        .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
+        .from_wb_gpwr0_data(from_wb_gpwr0_data),
+        .from_wb_gpwr0_size(from_wb_gpwr0_size),
+        .from_wb_gpwr0_en(from_wb_gpwr0_en),
+        .from_wb_gpwr1_data(from_wb_gpwr1_data),
+        .from_wb_gpwr1_size(from_wb_gpwr1_size),
+        .from_wb_gpwr1_en(from_wb_gpwr1_en),
+        .srcreg(to_ag_srcregB),
+        .fw_mux(fw_B),
+        .f_reg(f_srcregB)
+    );
+
+    gp_forwarding gp_forward_C(
+        .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
+        .from_wb_gpwr0_data(from_wb_gpwr0_data),
+        .from_wb_gpwr0_size(from_wb_gpwr0_size),
+        .from_wb_gpwr0_en(from_wb_gpwr0_en),
+        .from_wb_gpwr1_data(from_wb_gpwr1_data),
+        .from_wb_gpwr1_size(from_wb_gpwr1_size),
+        .from_wb_gpwr1_en(from_wb_gpwr1_en),
+        .srcreg(to_ag_srcregC),
+        .fw_mux(fw_C),
+        .f_reg(f_srcregC)
+    );
+    
+    mux2_16$ mux2_f_srcSREG(f_srcSREG, to_ag_srcSREG, from_wb_segwr_data, fw_SREG);
+    mux2_64  mux2_f_MMA(f_MMA, to_ag_MMA, from_wb_mmxwr_data, fw_MMA);
+    mux2_64  mux2_f_MMB(f_MMB, to_ag_MMB, from_wb_mmxwr_data, fw_MMB);
+
     assign from_ag_dstidA = to_ag_dstidA;
     assign from_ag_dstidB = to_ag_dstidB;
-    assign from_ag_srcregA = to_ag_srcregA;
-    assign from_ag_srcregB = to_ag_srcregB;
-    assign from_ag_srcregC = to_ag_srcregC;
-    assign from_ag_srcSREG = to_ag_srcSREG;
-    assign from_ag_MMA = to_ag_MMA;
-    assign from_ag_MMB = to_ag_MMB;
+    assign from_ag_srcregA = f_srcregA;
+    assign from_ag_srcregB = f_srcregB;
+    assign from_ag_srcregC = f_srcregC;
+    assign from_ag_srcSREG = f_srcSREG;
+    assign from_ag_MMA = f_MMA;
+    assign from_ag_MMB = f_MMB;
     assign from_ag_target_cs = to_ag_disp[15:0];
     assign from_ag_intex_vec = to_ag_intex_vec;
     assign from_ag_cs = to_ag_cs;
