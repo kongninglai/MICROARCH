@@ -525,10 +525,24 @@ endtask
 
 integer load_iters, k, m, n, difference, starting_point;
 
+reg handle_hlt;
+initial begin
+  handle_hlt = 0;
+end
+
+reg [31:0] halt_ieip;
 always @(posedge clk) begin
+  
   saved_ieip <= dut.to_ex_ieip;
-  if (dut.inst_rr.is_hlt_valid && dut.to_ag_valid === 1'b0 && dut.to_mem_valid === 1'b0 &&
-      dut.to_ex_valid === 1'b0 && dut.to_wb_valid === 1'b0) begin
+  if (!rst_n) begin 
+    halt_ieip <= 32'b0;
+  end else if (to_rr_opcode == 8'hF4) begin 
+    halt_ieip <= to_rr_ieip;
+  end
+  saved_ieip <= dut.to_ex_ieip;
+
+  if ((dut.to_wb_ieip == halt_ieip) && dut.to_wb_valid === 1'b1 && handle_hlt == 1'b0) begin
+    handle_hlt = 1;
     #(10 * CYCLE_TIME);
     print_arch_status(1);
 `ifdef AUTO_CHECKER

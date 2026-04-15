@@ -231,13 +231,17 @@ module ucode_fsm(
     and3$ and_counter_start(counter_start, state_is_IDLE, rep, to_rr_valid);
     or2$ or_counter_dec(counter_dec, state_is_REP_CMPS0, state_is_REP_MOVS0);
     or4$ or_ucode_stall(ucode_stall, d3_in, d2_in, d1_in, d0_in);
-    mux2$ mux_valid(ucode_valid, 1'b1, to_rr_valid, state_is_IDLE);
+
+    wire next_state_is_IDLE, idle_valid;
+    nor4$ nor_next_state_is_IDLE(next_state_is_IDLE, d3_in, d2_in, d1_in, d0_in);
+    and2$ and2_idle_valid(idle_valid, to_rr_valid, next_state_is_IDLE);
+    mux2$ mux_valid(ucode_valid, 1'b1, idle_valid, state_is_IDLE);
 
     // assign counter_start        = (state == S_IDLE) & rep & to_rr_valid;
     // assign counter_dec          = ((state == S_REP_CMPS0) | (state == S_REP_MOVS0));
     // stall: state=S_IDLE & next_state != S_IDLE || state != S_IDLE & next_state != S_IDLE
     // assign ucode_stall          = (next_state != S_IDLE);
-    // assign ucode_valid          = (state == S_IDLE) ? to_rr_valid : 1'b1;
+    // assign ucode_valid          = (state == S_IDLE) ? (to_rr_valid & next_state == S_IDLE) : 1'b1;
     wire [95:0] sig_reg_rm, sig_ext_rm, sig_idle;
     wire addr_mode; // 1 for mem mode, 1 for reg mode
     nand2$ nand_addrmode(addr_mode, modrm[1], modrm[0]);
