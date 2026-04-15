@@ -23,7 +23,7 @@ module tb_block_decoder_more();
     wire [7:0]  sib;
     wire [1:0]  disp_size_mux;
     wire [31:0] disp;
-    wire [1:0]  imm_size;
+    wire [2:0]  imm_size;
     wire [47:0] imm;
     wire [1:0]  addressing_mode;
     wire [3:0]  incr_amt;
@@ -80,8 +80,8 @@ module tb_block_decoder_more();
         // $vcdpluson(0, tb_block_decoder_more.mem_exp);
 
         // Read input and expected output memories
-        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/testcases.mem", mem_in);
-        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/decoder_mem.mem", mem_exp);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/testcases.mem", mem_in);
+        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/decoder/block_decoder_more_tb/decoder_mem.mem", mem_exp);
 
         // Iterate through all tests
         for (i = 0; i < NUM_TESTS; i = i + 1) begin

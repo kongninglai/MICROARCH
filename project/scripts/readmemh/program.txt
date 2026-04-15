@@ -1,27 +1,33 @@
-// Dcache Public Test Program
-// EE 382N Spring 2018
-//
-0x0:	ba 00 0a 00 00	//movl    $0xa00, %edx			// EDX = 0x00000A00
-0x5:	66 8e da        //movw    %dx, %ds                      // DS = 0x0A00, DS_base = 0x0A000000
-0x8:	66 81 c2 00 01  //addw    $0x100, %dx                   // DX = 0x0B00 CF=0, OF=0, AF=0, PF=1, ZF=0, SF=0
-0xd:	66 8e e2        //movw    %dx, %fs                      // FS = 0x0B00, FS_base = 0x0B000000
-0x10:	b8 0b 0a 09 08  //movl    $0x08090a0b, %eax             // EAX = 0x08090A0B
-0x15:	bb fd 00 00 00  //movl    $0xfd, %ebx                   // EBX = 0x000000FD
-0x1a:	c7 43 ff 06 05  //movl    $0x03040506, 0xffffffff(%ebx)	// M[VA=0x0A000000 + 0xFD - 0x1 (0x0A0000FC)] = 0x03040506 
-	04 03                                                   //
-0x21:	89 43 03	//movl    %eax, 0x3(%ebx)               // M[VA=0x0A000000 + 0xFD + 0x3 (0x0A000100)] = 0x08090A0B
-                                                                //
-0x24:	d1 3b		//sarl-1  (%ebx)			// M[VA=0x0A000000 + 0xFD (0x0A0000FD)] = 0x05818202
-                                                                // CF=1, OF=0, AF=0/1(undefined), PF=0, ZF=0, SF=0 
-                                                                // 
-0x26:	88 63 02        //movb    %ah, 0x2(%ebx)                // M[VA=0x0A000000 + 0xFD + 0x2 (0x0A0000FF)] = 0A
-                                                                //
-0x29:	89 83 00 08 00  //movl    %eax, 0x0800(%ebx)            // M[VA=0x0A000000 + 0xFD + 0x800 (0x0A0008FD)] = 0x08090A0B
-	00                                                      // 
-0x2f:	64 89 13	//movl    %edx, %fs:(%ebx)              // M[VA=0x0B000000 + 0xFD (0x0B0000FD)] = 0x00000b00
-                                                                //
-0x32:	03 03		//addl    (%ebx), %eax                  // EAX += M[VA=0x0A000000 + 0xFD (0x0A0000FD)]
-                                                                //
-								// EAX = 0x08090a0b + 0x050a8202 = 0x0d138c0d					
-								// CF=0, OF=0, AF=0, PF=0, ZF=0, SF=0
-0x34:	f4		//hlt                                  
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  b8 11 11 11 11  // mov    eax,0x11111111
+0x29:  b9 22 22 22 22  // mov    ecx,0x22222222
+0x2e:  91  // xchg   ecx,eax
+0x2f:  b8 aa aa aa aa  // mov    eax,0xaaaaaaaa
+0x34:  ba bb bb bb bb  // mov    edx,0xbbbbbbbb
+0x39:  92  // xchg   edx,eax
+0x3a:  be 78 56 34 12  // mov    esi,0x12345678
+0x3f:  bf 21 43 65 87  // mov    edi,0x87654321
+0x44:  87 fe  // xchg   esi,edi
+0x46:  c7 03 ef be ad de  // mov    DWORD PTR [ebx],0xdeadbeef
+0x4c:  b8 78 56 34 12  // mov    eax,0x12345678
+0x51:  87 03  // xchg   DWORD PTR [ebx],eax
+0x53:  b8 aa 00 00 00  // mov    eax,0xaa
+0x58:  b9 55 00 00 00  // mov    ecx,0x55
+0x5d:  86 c8  // xchg   al,cl
+0x5f:  66 66 b8 34 12  // data16 mov ax,0x1234
+0x64:  66 66 b9 78 56  // data16 mov cx,0x5678
+0x69:  66 87 c8  // xchg   ax,cx
+0x6c:  66 66 b8 cd ab  // data16 mov ax,0xabcd
+0x71:  66 66 b9 34 12  // data16 mov cx,0x1234
+0x76:  66 91  // xchg   cx,ax
+0x78:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

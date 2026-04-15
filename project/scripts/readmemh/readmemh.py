@@ -9,12 +9,12 @@ ROW_COUNT  = 1 << ROW_BITS
 RANK_COUNT = 1 << RANK_BITS
 CHIP_COUNT = 1 << CHIP_BITS
 
-OUT_DIR = "/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/mem_init" 
+OUT_DIR = "/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init" 
 
 mem = {}
 for r in range(RANK_COUNT):
     for c in range(CHIP_COUNT):
-        mem[(r, c)] = ["xx"] * ROW_COUNT
+        mem[(r, c)] = ["00"] * ROW_COUNT
 
 def decode_addr(addr):
     chip = addr & 0xF
@@ -92,6 +92,6 @@ def generate_verilog_file():
 
 
 if __name__ == "__main__":
-    parse_file("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/program.txt")
+    parse_file("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/program.txt")
     dump_hex_files()
     generate_verilog_file()

@@ -45,6 +45,7 @@ module stage_decode(
 );
 
     wire modrm_v;
+    wire [1:0] addressing_mode_prebuf;
     block_decoder DECODER(
         .cache_line(cache_line),
         .prefix_rep(prefix_rep),
@@ -60,9 +61,11 @@ module stage_decode(
         .disp(disp),
         .imm_size(imm_size),
         .imm(imm),
-        .addressing_mode(addressing_mode),
+        .addressing_mode(addressing_mode_prebuf),
         .instr_length(instr_length)
     );     
+
+    bufferH16$   bufferH16$_addressing_mode[1:0](addressing_mode, addressing_mode_prebuf);
 
     logic_stall_flush LOGIC_STALL_FLUSH(
         .i_eip(i_eip),

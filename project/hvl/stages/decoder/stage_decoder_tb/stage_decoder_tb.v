@@ -71,7 +71,7 @@ module tb_stage_decode();
     // 4. Clock and Helpers
     // --------------------------------------------------------
     initial begin
-        clk = 0;
+        clk = 1;
         forever #10 clk = ~clk;
     end
 
@@ -151,7 +151,7 @@ module tb_stage_decode();
         br_t_nt_ex_d = 0; br_valid_ex_d = 0; pht_idx_ex_d = 0;
 
         rst_bar = 0;
-        #15;
+        #20;
         rst_bar = 1;
 
         // --------------------------------------------------------

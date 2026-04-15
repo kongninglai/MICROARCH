@@ -23,10 +23,10 @@ module logic_prefix_combadder(
 
 	//Layer 1: 0.15ns
 	wire P0_bar, P1_bar, P2_bar, P3_bar;
-	inv1$ inv_0(P0_bar, P0_buf);
-	inv1$ inv_1(P1_bar, P1_buf);
-	inv1$ inv_2(P2_bar, P2_buf);
-	inv1$ inv_3(P3_bar, P3);
+	bufferHInv16$ inv_0(P0_bar, P0_buf);
+	bufferHInv16$ inv_1(P1_bar, P1_buf);
+	bufferHInv16$ inv_2(P2_bar, P2_buf);
+	bufferHInv16$ inv_3(P3_bar, P3);
 
 	// Layer 2: 0.4ns 
 	wire and_0_0_out;

@@ -1,0 +1,213 @@
+address_adder_tb               FAILURES=0      SUCCESSES=256   
+arbiter_tb                     FAILURES=0      SUCCESSES=16    
+
+Regression run: Wed Apr 15 18:13:51 CDT 2026
+========================================
+PASS: AAA/aaa0.txt
+PASS: AAA/aaa1.txt
+PASS: ADC/adc.txt
+PASS: ADD/add.txt
+PASS: AND/and.txt
+PASS: BSF/BSF_tests_proc.txt
+PASS: CACHE/CACHE_tests.proc.txt
+PASS: CLD/CLD_tests_proc.txt
+PASS: CMOVC/CMOVC_tests_proc.txt
+PASS: CMPXCHG/CMPXCHG_tests_proc.txt
+PASS: cross_cache_line_2x_wb.txt
+PASS: dcache_test.txt
+PASS: DEPS/DEPS_tests_proc.txt
+PASS: HLT/HLT_tests_proc.txt
+PASS: MISC/MISC1_tests_proc.txt
+PASS: MISC/MISC2_tests_proc.txt
+PASS: MISC/MISC3_tests_proc.txt
+PASS: MOV/MOV_tests_proc.txt
+PASS: MOVQ/MOVQ_tests_proc.txt
+PASS: MOVS/MOVS_tests_proc.txt
+PASS: NOT/NOT_tests_proc.txt
+PASS: OR/OR_tests_proc.txt
+PASS: PACKSS/PACKSS_tests_proc.txt
+PASS: PADD/PADD_tests_proc.txt
+PASS: PAVG/PAVG_tests_proc.txt
+PASS: PUSH_POP/PUSH_POP_tests_proc.txt
+PASS: SAL/SAL_tests_proc.txt
+PASS: SAR/SAR_tests_proc.txt
+PASS: SBB/SBB_tests_proc.txt
+PASS: STD/STD_tests_proc.txt
+PASS: touch_all_regs.txt
+PASS: XCHG/XCHG_tests_proc.txt
+========================================
+Total: 32  PASSED: 32  FAILED: 0
+backend_top_tb_instructions    FAILURES=0      SUCCESSES=32    
+backend_top_tb                 FAILURES=0      SUCCESSES=0     
+big_and_tb                     FAILURES=0      SUCCESSES=4096  
+big_decrement_tb               FAILURES=0      SUCCESSES=4097  
+big_eq_tb                      FAILURES=0      SUCCESSES=267   
+big_increment_cout_tb          FAILURES=0      SUCCESSES=4098  
+big_increment_tb               FAILURES=0      SUCCESSES=4097  
+big_neq_tb                     FAILURES=0      SUCCESSES=264   
+big_or_tb                      FAILURES=0      SUCCESSES=4096  
+bit_duplicator_tb              FAILURES=0      SUCCESSES=66560 
+block_decoder_more_tb          FAILURES=0      SUCCESSES=10217 
+block_decoder_tb               FAILURES=0      SUCCESSES=59    
+bp_tb                          FAILURES=0      SUCCESSES=5     
+br_target_tb                   FAILURES=0      SUCCESSES=4     
+cache_controller_tb            FAILURES=0      SUCCESSES=90112 
+cc_off_core_tb                 FAILURES=0      SUCCESSES=30720 
+choose_eip_tb                  FAILURES=0      SUCCESSES=11    
+cmp_gen_20b_tb                 FAILURES=0      SUCCESSES=4103  
+cmp_gen_32b_tb                 FAILURES=0      SUCCESSES=4103  
+cmp_gt_32b_tb                  FAILURES=0      SUCCESSES=4104  
+comb_choose_eip_tb             FAILURES=0      SUCCESSES=8     
+csa_bitslice_tb                FAILURES=0      SUCCESSES=8     
+csa_tb                         FAILURES=0      SUCCESSES=32768 
+data_store_tb                  FAILURES=0      SUCCESSES=1032  
+dcache_controller_wbe_tb       FAILURES=0      SUCCESSES=10240 
+decoder4_16_tb                 FAILURES=0      SUCCESSES=16    
+decoder5_32_tb                 FAILURES=0      SUCCESSES=32    
+de_to_rr_tb                    FAILURES=0      SUCCESSES=3     
+dmac_tb                        FAILURES=0      SUCCESSES=1040  
+dma_disk_buffer_tb             FAILURES=0      SUCCESSES=256   
+dmu_tb                         FAILURES=0      SUCCESSES=4     
+eip_incr_tb                    FAILURES=0      SUCCESSES=1680  
+encoder4_2_tb                  FAILURES=0      SUCCESSES=5     
+ex_aaa_tb                      FAILURES=0      SUCCESSES=311   
+ex_alu_tb                      FAILURES=0      SUCCESSES=525   
+ex_bsf_tb                      FAILURES=0      SUCCESSES=512   
+ex_cmp_tb                      FAILURES=0      SUCCESSES=508   
+ex_eflags_tb                   FAILURES=0      SUCCESSES=256   
+ex_inc_tb                      FAILURES=0      SUCCESSES=4096  
+ex_not_tb                      FAILURES=0      SUCCESSES=4096  
+ex_pack_tb                     FAILURES=0      SUCCESSES=204   
+ex_padd_tb                     FAILURES=0      SUCCESSES=208   
+ex_pavg_tb                     FAILURES=0      SUCCESSES=212   
+ex_shf_tb                      FAILURES=0      SUCCESSES=512   
+FA_16b_tb                      FAILURES=0      SUCCESSES=4096  
+FA_32b_tb                      FAILURES=0      SUCCESSES=518   
+FA_4b_tb                       FAILURES=0      SUCCESSES=512   
+FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
+fetch_buffer_tb                FAILURES=0      SUCCESSES=4      WARNINGS=1     
+fetch_pointer_tb               FAILURES=0      SUCCESSES=4     
+frontend_tb                    FAILURES=0      SUCCESSES=14     WARNINGS=2     
+full_cache_init_tb             FAILURES=0      SUCCESSES=0     
+full_cache_tb                  FAILURES=0      SUCCESSES=6155  
+full_cc_off_core_tb            FAILURES=0      SUCCESSES=32063 
+gen_prop_2_tb                  FAILURES=0      SUCCESSES=16    
+gen_prop_tb                    FAILURES=0      SUCCESSES=4     
+ghr_tb                         FAILURES=0      SUCCESSES=5     
+gt9_4b_tb                      FAILURES=0      SUCCESSES=16    
+gt99_8b_tb                     FAILURES=0      SUCCESSES=256   
+HA_16b_tb                      FAILURES=0      SUCCESSES=1024  
+HA_32b_tb                      FAILURES=0      SUCCESSES=262   
+HA_8b_tb                       FAILURES=0      SUCCESSES=65536 
+hash_tb                        FAILURES=0      SUCCESSES=6     
+intgr_fshifter_decode_tb       FAILURES=0      SUCCESSES=7      WARNINGS=3     
+io_addr_logic_block_tb         FAILURES=0      SUCCESSES=512   
+kb_tb                          FAILURES=0      SUCCESSES=28    
+le_5b_tb                       FAILURES=0      SUCCESSES=256   
+logic_branch_tb                FAILURES=0      SUCCESSES=8     
+logic_cl_shifter_tb            FAILURES=0      SUCCESSES=4      WARNINGS=1     
+logic_disp_bytes_tb            FAILURES=0      SUCCESSES=5     
+logic_disp_size_tb             FAILURES=0      SUCCESSES=5     
+logic_imm_tb                   FAILURES=0      SUCCESSES=4     
+logic_incr_amt_tb              FAILURES=0      SUCCESSES=512   
+logic_is_prefix_tb             FAILURES=0      SUCCESSES=12    
+logic_is_sib_tb                FAILURES=0      SUCCESSES=5     
+logic_prefix_combadder_tb      FAILURES=0      SUCCESSES=15    
+logic_seg_ov_tb                FAILURES=0      SUCCESSES=6     
+logic_sib_byte_tb              FAILURES=0      SUCCESSES=5     
+logic_stall_flush_tb           FAILURES=0      SUCCESSES=5     
+logic_tail_ptr_tb              FAILURES=0      SUCCESSES=35    
+logic_true_modrm_tb            FAILURES=0      SUCCESSES=5     
+logic_true_prefix_tb           FAILURES=0      SUCCESSES=15    
+lru_store_per_set_tb           FAILURES=0      SUCCESSES=8416  
+lru_store_tb                   FAILURES=0      SUCCESSES=1280  
+lshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096  
+lshf_bytes_var_256b_tb         FAILURES=0      SUCCESSES=4096  
+lshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
+lshf_chunks_var_128b_tb        FAILURES=0      SUCCESSES=4096  
+lshf_chunks_var_16b_tb         FAILURES=0      SUCCESSES=4096  
+lshf_chunks_var_256b_tb        FAILURES=0      SUCCESSES=4096  
+lshf_chunks_var_64b_tb         FAILURES=0      SUCCESSES=32768 
+lshf_const_tb                  FAILURES=0      SUCCESSES=4096  
+lshf_var_16b_tb                FAILURES=0      SUCCESSES=4096  
+lshf_var_32b_tb                FAILURES=0      SUCCESSES=4096  
+main_memory_tb                 FAILURES=0      SUCCESSES=32768 
+mcu_ctrl_tb                    FAILURES=0      SUCCESSES=0     
+mcu_tb                         FAILURES=0      SUCCESSES=24568 
+mux16_16b_tb                   FAILURES=0      SUCCESSES=524288
+mux16_16_tb                    FAILURES=0      SUCCESSES=16    
+mux16_32_tb                    FAILURES=0      SUCCESSES=1024  
+mux16_48_tb                    FAILURES=0      SUCCESSES=16    
+mux16_64_tb                    FAILURES=0      SUCCESSES=1024  
+mux16_8b_tb                    FAILURES=0      SUCCESSES=524288
+mux16_tb                       FAILURES=0      SUCCESSES=1048576
+mux2_128_tb                    FAILURES=0      SUCCESSES=256   
+mux2_256_tb                    FAILURES=0      SUCCESSES=256   
+mux2_32_tb                     FAILURES=0      SUCCESSES=256   
+mux2_64_tb                     FAILURES=0      SUCCESSES=256   
+mux32_16b_tb                   FAILURES=0      SUCCESSES=1048576
+mux32_tb                       FAILURES=0      SUCCESSES=256   
+mux4_32_tb                     FAILURES=0      SUCCESSES=256   
+mux4_48_tb                     FAILURES=0      SUCCESSES=4     
+mux4_64_tb                     FAILURES=0      SUCCESSES=256   
+mux64_tb                       FAILURES=0      SUCCESSES=256   
+mux8_16b_tb                    FAILURES=0      SUCCESSES=524288
+mux8_16_tb                     FAILURES=0      SUCCESSES=524288
+mux8_32_tb                     FAILURES=0      SUCCESSES=256   
+mux8_64_tb                     FAILURES=0      SUCCESSES=256   
+mux8_8_tb                      FAILURES=0      SUCCESSES=8     
+mux8_tb                        FAILURES=0      SUCCESSES=2048  
+negate_32b_tb                  FAILURES=0      SUCCESSES=258   
+off_core_top_tb                FAILURES=0      SUCCESSES=18468 
+PA_16b_tb                      FAILURES=0      SUCCESSES=1024  
+PA_32b_tb                      FAILURES=0      SUCCESSES=1030  
+PA_4b_tb                       FAILURES=0      SUCCESSES=258   
+PA_8b_tb                       FAILURES=0      SUCCESSES=65536 
+pf_expn_tb                     FAILURES=0      SUCCESSES=10009 
+pipeline_top_tb                FAILURES=0      SUCCESSES=0      WARNINGS=2     
+p_m_s_d_adder_tb               FAILURES=0      SUCCESSES=64    
+predictor_tb                   FAILURES=0      SUCCESSES=4     
+prefix_modrm_sib_adder_tb      FAILURES=0      SUCCESSES=20    
+rank_tb                        FAILURES=0      SUCCESSES=2048  
+regfile_2r1w_tb                FAILURES=0      SUCCESSES=520   
+regfile_gp_tb                  FAILURES=0      SUCCESSES=1043  
+regfile_mmx_tb                 FAILURES=0      SUCCESSES=520   
+regfile_seg_tb                 FAILURES=0      SUCCESSES=19    
+reg_n_tb                       FAILURES=0      SUCCESSES=1000  
+regunit_tb                     FAILURES=0      SUCCESSES=0     
+rom_modrm_imm_tb               FAILURES=0      SUCCESSES=1024  
+rshfa_const_tb                 FAILURES=0      SUCCESSES=1024  
+rshfa_var_32b_tb               FAILURES=0      SUCCESSES=1024  
+rshf_bytes_var_128b_tb         FAILURES=0      SUCCESSES=4096  
+rshf_chunks_tb                 FAILURES=0      SUCCESSES=4096  
+sat_signed_narrow_tb           FAILURES=0      SUCCESSES=234   
+seg_limit_cmp_tb               FAILURES=0      SUCCESSES=4103  
+se_tb                          FAILURES=0      SUCCESSES=258   
+shift_reg_tb                   FAILURES=0      SUCCESSES=4     
+shift_reg_tiny_tb              FAILURES=0      SUCCESSES=5388  
+stage_decoder_tb               FAILURES=0      SUCCESSES=13     WARNINGS=1     
+stage_fetch_a_tb               FAILURES=0      SUCCESSES=4     
+stage_mem_tb                   FAILURES=0      SUCCESSES=4326  
+stage_rr_tb                    FAILURES=0      SUCCESSES=0     
+stage_wb_reg_tb                FAILURES=0      SUCCESSES=0     
+stage_wb_tb                    FAILURES=0      SUCCESSES=1642  
+sticky_bit_fsm_tb              FAILURES=0      SUCCESSES=4112  
+sticky_bit_load_fsm_tb         FAILURES=0      SUCCESSES=8     
+store_queue_entry_tb           FAILURES=0      SUCCESSES=4112  
+store_queue_full_cache_tb      FAILURES=0      SUCCESSES=3072  
+store_queue_tb                 FAILURES=0      SUCCESSES=2049  
+stream_buffer_tb               FAILURES=0      SUCCESSES=4130  
+SUB_32b_tb                     FAILURES=0      SUCCESSES=518   
+tag_hit_logic_tb               FAILURES=0      SUCCESSES=5200  
+tag_store_tb                   FAILURES=0      SUCCESSES=160   
+temp_exception_regs_tb         FAILURES=0      SUCCESSES=256   
+tlb_tb                         FAILURES=0      SUCCESSES=65538 
+tlb_wrapper_tb                 FAILURES=0      SUCCESSES=65794 
+ucode_rom_tb                   FAILURES=0      SUCCESSES=0     
+valid_or_dirty_store_tb        FAILURES=0      SUCCESSES=1056  
+wb_full_cache_tb               FAILURES=0      SUCCESSES=1538  
+we_logic_block_tb              FAILURES=0      SUCCESSES=132   
+xor3LL_tb                      FAILURES=0      SUCCESSES=8     
+xor4LL_tb                      FAILURES=0      SUCCESSES=16    
+xor8LL_tb                      FAILURES=0      SUCCESSES=16    
+ze_tb                          FAILURES=0      SUCCESSES=258   
