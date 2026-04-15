@@ -1,5 +1,5 @@
 module reg_de_to_rr #(
-  parameter WIDTH=220
+  parameter WIDTH=221
 ) (
     input wire CLK,
     input wire CLR,

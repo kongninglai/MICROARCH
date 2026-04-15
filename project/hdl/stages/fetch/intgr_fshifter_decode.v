@@ -66,7 +66,6 @@ module intgr_fshifter_decode(
     );    
 
     wire to_pr_ld_pr_rr;
-    wire [31:0] to_pr_bp_target;
     wire to_f_ld_eip;
     wire to_pr_prefix_rep, to_pr_prefix_op_size, to_pr_prefix_ext, to_pr_prefix_seg;
     wire [2:0] to_pr_prefix_seg_ov_id, to_pr_imm_size;

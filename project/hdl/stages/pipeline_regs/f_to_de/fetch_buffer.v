@@ -39,7 +39,7 @@ module fetch_buffer(
     wire [4:0] wr_cl_byte_cnt;
     wire flush, flush_bar;
     and2$ and_eip_redir_valid(from_de_eip_redirection_valid, from_de_eip_redirection, from_de_valid);
-    or3$ or_flush(flush, from_wb_flush, from_ex_flush, from_de_eip_redirection_valid); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid data
+    or2$ or_flush(flush, from_ex_flush, from_de_eip_redirection_valid); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid data
     inv1$ inv_flush_bar(flush_bar, flush);
     
     //Shift Enable Register Logic (WE = ~IF_FULL && ICACHE_VALID)

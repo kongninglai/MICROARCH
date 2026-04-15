@@ -26,6 +26,7 @@ module ucode_fsm(
     output clear_int,
     output intex,
     output handling_intex,
+    output not_intex_or_iret,
     output ucode_stall,
     output ucode_valid,
     output [95:0] ucode_sig
@@ -216,7 +217,7 @@ module ucode_fsm(
 
     // state==S_IDLE: state=0000
     wire state_is_IDLE, state_is_REP_CMPS0, state_is_REP_CMPS1, state_is_REP_CMPS2, state_is_REP_MOVS0, next_state_not_IDLE;
-    wire state_is_IRET0, state_is_INTEX_INIT1, state_is_INTEX_INIT0;
+    wire state_is_IRET0, state_is_IRET1, state_is_INTEX_INIT1, state_is_INTEX_INIT0;
     nor4$ nor_state_is_IDLE(state_is_IDLE, state[0], state[1], state[2], state[3]);
     nor4$ nor_state_is_REP_MOVS0(state_is_REP_MOVS0, Q3, Q2, Q1, Q0_bar);
     nor4$ nor_state_is_REP_CMPS0(state_is_REP_CMPS0, Q3, Q2, Q1_bar, Q0_bar);
@@ -225,7 +226,8 @@ module ucode_fsm(
     nor4$ nor_state_is_INTEX_INIT0(state_is_INTEX_INIT0, Q3, Q2_bar, Q1_bar, Q0);
     nor4$ nor_state_is_INTEX_INIT1(state_is_INTEX_INIT1, Q3, Q2_bar, Q1_bar, Q0_bar);
     nor4$ nor_state_is_IRET0(state_is_IRET0, Q3_bar, Q2, Q1, Q0);
-
+    nor4$ nor_state_is_IRET1(state_is_IRET1, Q3_bar, Q2, Q1, Q0_bar);
+    nor4$ nor_not_intex_or_iret(not_intex_or_iret, state_is_INTEX_INIT0, state_is_INTEX_INIT1, state_is_IRET0, state_is_IRET1);
     and3$ and_counter_start(counter_start, state_is_IDLE, rep, to_rr_valid);
     or2$ or_counter_dec(counter_dec, state_is_REP_CMPS0, state_is_REP_MOVS0);
     or4$ or_ucode_stall(ucode_stall, d3_in, d2_in, d1_in, d0_in);

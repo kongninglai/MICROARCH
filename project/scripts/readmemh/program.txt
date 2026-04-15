@@ -1,27 +1,72 @@
-// Dcache Public Test Program
-// EE 382N Spring 2018
+// Exception Test Public Test Program
+// EE382N Spring 2018
 //
-0x0:	ba 00 0a 00 00	//movl    $0xa00, %edx			// EDX = 0x00000A00
-0x5:	66 8e da        //movw    %dx, %ds                      // DS = 0x0A00, DS_base = 0x0A000000
-0x8:	66 81 c2 00 01  //addw    $0x100, %dx                   // DX = 0x0B00 CF=0, OF=0, AF=0, PF=1, ZF=0, SF=0
-0xd:	66 8e e2        //movw    %dx, %fs                      // FS = 0x0B00, FS_base = 0x0B000000
-0x10:	b8 0b 0a 09 08  //movl    $0x08090a0b, %eax             // EAX = 0x08090A0B
-0x15:	bb fd 00 00 00  //movl    $0xfd, %ebx                   // EBX = 0x000000FD
-0x1a:	c7 43 ff 06 05  //movl    $0x03040506, 0xffffffff(%ebx)	// M[VA=0x0A000000 + 0xFD - 0x1 (0x0A0000FC)] = 0x03040506 
-	04 03                                                   //
-0x21:	89 43 03	//movl    %eax, 0x3(%ebx)               // M[VA=0x0A000000 + 0xFD + 0x3 (0x0A000100)] = 0x08090A0B
-                                                                //
-0x24:	d1 3b		//sarl-1  (%ebx)			// M[VA=0x0A000000 + 0xFD (0x0A0000FD)] = 0x05818202
-                                                                // CF=1, OF=0, AF=0/1(undefined), PF=0, ZF=0, SF=0 
-                                                                // 
-0x26:	88 63 02        //movb    %ah, 0x2(%ebx)                // M[VA=0x0A000000 + 0xFD + 0x2 (0x0A0000FF)] = 0A
-                                                                //
-0x29:	89 83 00 08 00  //movl    %eax, 0x0800(%ebx)            // M[VA=0x0A000000 + 0xFD + 0x800 (0x0A0008FD)] = 0x08090A0B
-	00                                                      // 
-0x2f:	64 89 13	//movl    %edx, %fs:(%ebx)              // M[VA=0x0B000000 + 0xFD (0x0B0000FD)] = 0x00000b00
-                                                                //
-0x32:	03 03		//addl    (%ebx), %eax                  // EAX += M[VA=0x0A000000 + 0xFD (0x0A0000FD)]
-                                                                //
-								// EAX = 0x08090a0b + 0x050a8202 = 0x0d138c0d					
-								// CF=0, OF=0, AF=0, PF=0, ZF=0, SF=0
-0x34:	f4		//hlt                                  
+// Set IDTR = 0x02000000 for this test program
+//
+0x0:	bc 00 03 00 00	//movl    $0x300, %esp			// esp = 0x300
+0x5:	bf 00 04 00 00	//movl    $0x400, %edi                  // edi = 0x400
+0xa:	66 8e d7	//movw    %di, %ss                      // ss = 0x400 (SS base VA=0x04000000)
+0xd:	b8 00 0b 00 00	//movl    $0xb00, %eax                  // eax = 0xb00
+0x12:	66 8e c0	//movw    %ax, %es                      // es = 0xb00 (ES base VA=0x0b000000)
+0x15:	bb b7 03 00 00	//movl    $0x03b7, %ebx                 // ebx = 0x03b7
+0x1a:	bd 10 00 00 00	//movl    $0x10, %ebp                   // ebp = 0x10
+0x1f:	66 c1 e0 08	//salw	  $0x8, %ax                     // ax=0 (eax=0),CF=1,SF=0,ZF=1,PF=1,others undef
+0x23:	66 26 c7 44 ab 
+0x28:	08 09 0a	//movw    $0x0a09, %es:0x8(%ebx, %ebp, 4)  // tries M[VA=0x0b000000+0x03b7+4*0x10+0x8=0x0b0003ff]
+								// takes exception on this
+								// push eflags, cs, eip at 
+								// stack addresses 0x040002fc, 0x040002f8, 0x040002f4
+								// get IDT entry at 0x02000068
+								// new cs=0x0, eip=0x52 (fetch addr is VA=0x52)
+								// service routine:	
+								// bx = 0x03b6, modify eflags
+								// iretd:  pop eip, cs, eflags 
+								// second time trying movw:	
+								// M[VA=0x0b000000+0x03b6+4*0x10+0x8=0x0b0003fe (PA=0x43fe)] = 0x0a90 (little-endian)
+								//
+0x2b:	bf 00 0b 00 00	//movl    $0xb00, %edi                  // edi = 0xb00
+0x30:	66 8e ef	//movw    %di, %gs                      // gs = 0xb00 (GS base VA=0x0b000000)
+0x33:	be 00 04 00 00	//movl    $0x400, %esi			// esi = 0x400
+0x38:	65 01 5e fd	//addl    %ebx, %gs:-3(%esi)		// M[VA=0x0b000000+0x400+0xfffffffd (PA=0x43fd)] = 0x03b6 + 0x050a0902
+
+0x3c:	f4 90 90 90	//hlt                                   
+0x40:	90 90 90 90
+0x44:	90 90 90 90
+0x48:	90 90 90 90
+0x4c:	90 90 90 90	
+0x50:	f4 f4 66 83	//addw	  $-1, %bx			//ebx = 0x03b6
+0x54:	c3 ff cf f4	//iretd
+		
+0x2000:	 00 00 00 00
+0x2004:	 00 00 00 00
+0x2008:	 00 00 00 00
+0x200c:	 00 00 00 00
+0x2010:	 00 00 00 00
+0x2014:	 00 00 00 00
+0x2018:	 00 00 00 00
+0x201c:	 00 00 00 00
+0x2020:	 00 00 00 00
+0x2024:	 00 00 00 00
+0x2028:	 00 00 00 00
+0x202c:	 00 00 00 00
+0x2030:	 00 00 00 00
+0x2034:	 00 00 00 00
+0x2038:	 00 00 00 00
+0x203c:	 00 00 00 00
+0x2040:	 00 00 00 00
+0x2044:	 00 00 00 00
+0x2048:	 00 00 00 00
+0x204c:	 00 00 00 00
+0x2050:	 00 00 00 00
+0x2054:	 00 00 00 00
+0x2058:	 00 00 00 00
+0x205c:	 00 00 00 00
+0x2060:	 00 00 00 00
+0x2064:	 00 00 00 00
+0x2068:	 52 00 00 00    //cs=0x0, eip=0x52 (protection fault routine address)
+0x206c:	 00 00 00 00
+0x2070:	 00 00 00 00	//cs=0x5, eip=0x200 (not used)
+0x2074:	 00 00 00 00
+
+0x43fc:	 01 02 03 04	//data
+0x4400:	 05 06 07 08

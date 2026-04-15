@@ -60,8 +60,10 @@
 ~/MICROARCH/project/hdl/PRF/regfile_seg.v
 ~/MICROARCH/project/hdl/stages/rr/get_segreg_idx.v
 ~/MICROARCH/project/hdl/stages/rr/regunit.v
+~/MICROARCH/project/hdl/stages/rr/pending_int.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucoderom.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_controller.v
+~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_fsm.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/rr_sig.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ag_sig.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/mem_sig.v
@@ -77,7 +79,6 @@
 ~/MICROARCH/project/hdl/stages/ag/stage_ag.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/ag_to_mem/reg_ag_to_mem.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/ag_to_mem/ag_to_mem.v
-~/MICROARCH/project/hvl/stages/wb/stage_wb_reg_tb/dummy_mem.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/mem_to_ex/reg_mem_to_ex.v
 ~/MICROARCH/project/hdl/stages/pipeline_regs/mem_to_ex/mem_to_ex.v
 /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/comparators/cmp_gen_32b.v
@@ -199,5 +200,6 @@
 ~/MICROARCH/project/hdl/stages/rr/dep_unit/dep_unit.v
 ~/MICROARCH/project/hdl/top/backend/backend_top.v
 ~/MICROARCH/project/hvl/top/backend_top/backend_top_tb/dummy_fe.v
-// ~/MICROARCH/project/hvl/top/backend_top/backend_top_tb/backend_top_tb.v
+
+//Test bench
 ~/MICROARCH/project/hvl/top/pipeline_top_tb/pipeline_top_tb.v

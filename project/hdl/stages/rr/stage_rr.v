@@ -118,6 +118,7 @@ module stage_rr #(
     wire cmps0, cmps1, cmps2;
     wire iret0;
     wire fsm_stall, intex, handling_intex;
+    wire not_intex_or_iret;
     or2$ or2_fsm_stall(fsm_stall, from_ag_stall, from_dep_unit_data_dep);
     ucode_fsm ucode_fsm_inst (
         .clk(clk),
@@ -145,7 +146,8 @@ module stage_rr #(
         .handling_intex(handling_intex),
         .ucode_stall(ucode_stall),
         .ucode_valid(from_rr_ucode_valid),
-        .ucode_sig(ucode_sig)
+        .ucode_sig(ucode_sig),
+        .not_intex_or_iret(not_intex_or_iret)
     );
 
     wire [1:0] ldAB, dstidB_mux, gprd0_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds, mem_ds, imm_mux, addr_mux;
@@ -168,14 +170,19 @@ module stage_rr #(
     wire ds1_inv, ds_is_32, set_ds_16;
     inv1$ inv_ds1(ds1_inv, ds[1]);
     nor2$ nor2_ds32(ds_is_32, ds1_inv, ds[0]);
-    and3$ and_ds16(set_ds_16, ds_is_32, to_rr_prefix[4], to_rr_valid);
+    and4$ and_ds16(set_ds_16, ds_is_32, to_rr_prefix[4], to_rr_valid, not_intex_or_iret);
     mux2$ mux_ds_override[1:0](ds_with_override, ds, 2'b01, set_ds_16);
-    mux2$ mux_mem_ds_override16[1:0](mem_ds_override_16, mem_ds, 2'b01, set_ds_16);
+
+    wire mem_ds1_inv, mem_ds_is_32, set_mem_ds_16;
+    inv1$ inv_mem_ds1(mem_ds1_inv, mem_ds[1]);
+    nor2$ nor2_mem_ds32(mem_ds_is_32, mem_ds1_inv, mem_ds[0]);
+    and4$ and_mem_ds16(set_mem_ds_16, mem_ds_is_32, to_rr_prefix[4], to_rr_valid, not_intex_or_iret);
+    mux2$ mux_mem_ds_override16[1:0](mem_ds_override_16, mem_ds, 2'b01, set_mem_ds_16);
 
     wire mem_ds_is_64, set_mem_ds_32;
     wire [1:0] mem_ds_with_override;
     and2$ and_mem_ds_64(mem_ds_is_64, mem_ds[1], mem_ds[0]);
-    and3$ and_ds32(set_mem_ds_32, mem_ds_is_64, to_rr_prefix[4], to_rr_valid);
+    and4$ and_ds32(set_mem_ds_32, mem_ds_is_64, to_rr_prefix[4], to_rr_valid, not_intex_or_iret);
     mux2$ mux_mem_ds_override[1:0](mem_ds_with_override, mem_ds_override_16, 2'b10, set_mem_ds_32);
 
     wire stack_push;
