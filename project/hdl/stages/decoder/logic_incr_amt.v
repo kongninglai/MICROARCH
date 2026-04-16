@@ -13,13 +13,20 @@ module logic_incr_amt(
     input wire [1:0] prefix_amount, //Ready at 3.38ns
     output wire [3:0] incr_amt
 );
-    wire [3:0] sum_1;
+    wire [3:0] sum_1_rom, sum_1_true;
+    rom4b32w$ ROM_sum_1 (.A({rom_sum, prefix_amount}), .OE(1'b1), .DOUT(sum_1_rom));
+
+    initial begin
+        $readmemb("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_sum_1.data", ROM_sum_1.mem);
+    end
+
     PA_4b PA_4b_sum1 (
       .in0({1'b0,rom_sum}), .in1({2'd0,prefix_amount}),
-      .s(sum_1)
+      .s(sum_1_true)
     );
+    
     PA_4b PA_4b_incr_amt (
-      .in0(sum_1), .in1({1'b0,disp_plus_sib}),
+      .in0({sum_1_rom[3:2], sum_1_true[1:0]}), .in1({1'b0,disp_plus_sib}),
       .s(incr_amt)
     );
 

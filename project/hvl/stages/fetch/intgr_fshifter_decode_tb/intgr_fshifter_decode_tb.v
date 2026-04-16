@@ -2,6 +2,13 @@
 
 module intgr_fshifter_decode_tb();
 
+
+initial begin
+  // $vcdplusfile("intgr_fshifter_decode_tb.dump.vpd");
+  // $vcdpluson(0, intgr_fshifter_decode_tb); 
+  // $vcdpluson(0, intgr_fshifter_decode_tb.uut);
+end
+
     // ---------------------------------------------------------
     // 0. Parameters 
     // ---------------------------------------------------------

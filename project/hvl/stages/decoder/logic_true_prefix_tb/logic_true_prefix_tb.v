@@ -6,7 +6,6 @@ module logic_true_prefix_tb();
     reg [7:0] candidate_prefix0;
     reg [7:0] candidate_prefix1;
     reg [7:0] candidate_prefix2;
-    reg [7:0] candidate_prefix3;
 
     // Outputs
     wire is_rep_true;
@@ -26,7 +25,6 @@ module logic_true_prefix_tb();
         .candidate_prefix0(candidate_prefix0),
         .candidate_prefix1(candidate_prefix1),
         .candidate_prefix2(candidate_prefix2),
-        .candidate_prefix3(candidate_prefix3),
         .is_rep_true(is_rep_true),
         .is_operand_size_override_true(is_operand_size_override_true),
         .is_seg_ov(is_seg_ov),
@@ -50,7 +48,6 @@ module logic_true_prefix_tb();
             candidate_prefix0 = b0;
             candidate_prefix1 = b1;
             candidate_prefix2 = b2;
-            candidate_prefix3 = b3;
             
             #5; // Wait for combinational logic to settle (2.04ns + margin)
             
@@ -69,12 +66,12 @@ module logic_true_prefix_tb();
                 
                 // --- INTERNAL WIRE DEBUGGING FOR FAILURES ---
                 $display("\n  >>> INTERNAL HARDWARE STATE <<<");
-                $display("  Stage 1 (is_any)        : [0]:%b [1]:%b [2]:%b [3]:%b", 
-                         uut.is_any0, uut.is_any1, uut.is_any2, uut.is_any3);
-                $display("  Stage 2 (is_any_actual) : [0]:%b [1]:%b [2]:%b [3]:%b", 
-                         uut.is_any0_actual, uut.is_any1_actual, uut.is_any2_actual, uut.is_any3_actual);
-                $display("  CS Override Bits        : [0]:%b [1]:%b [2]:%b [3]:%b",
-                         uut.is_cs0, uut.is_cs1, uut.is_cs2, uut.is_cs3);
+                $display("  Stage 1 (is_any)        : [0]:%b [1]:%b [2]:%b", 
+                         uut.is_any0, uut.is_any1, uut.is_any2);
+                $display("  Stage 2 (is_any_actual) : [0]:%b [1]:%b [2]:%b", 
+                         uut.is_any0_actual, uut.is_any1_actual, uut.is_any2_actual);
+                $display("  CS Override Bits        : [0]:%b [1]:%b [2]:%b",
+                         uut.is_cs0, uut.is_cs1, uut.is_cs2);
                 $display("  ------------------------------------------------\n");
 
                 errors = errors + 1;

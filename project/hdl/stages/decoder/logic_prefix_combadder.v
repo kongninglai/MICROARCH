@@ -10,7 +10,7 @@ Delay: 1.24 ns
 */
 
 module logic_prefix_combadder(
-    input P0,P1,P2,P3,
+    input P0,P1,P2,
 	output OUT1,OUT0
 );
 
@@ -29,7 +29,6 @@ wire nand_2_0_0_out;
 nand2$ nand_2_0_0(nand_2_0_0_out,P1_bar,P0);
 
 /* Sum Expressions */
-assign OUT2 = 1'b0;
 nor2$ nand_1_0_0(OUT1,P1_bar,P0_bar);
 nand2$ nand_2_0_1(OUT0,nand_0_0_0_out,nand_2_0_0_out);
 

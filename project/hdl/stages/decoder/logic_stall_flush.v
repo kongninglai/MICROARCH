@@ -31,24 +31,21 @@ module logic_stall_flush(
         output wire instr_valid
 );
 
-    wire instr_invalid, instr_valid_w;
+    wire instr_invalid;
     mag_comp8$ INSTR_VALID( 
         .A({4'b0, incr_amt}), 
         .B({3'b0, tail_ptr}),
         .AGB(instr_invalid), 
         .BGA() 
     );
-    inv1$ INV_INSTR_VALID(instr_valid_w, instr_invalid);
 
 
     wire ld_pr_rr_bar; //load register read pipeline registers signal
-    wire any_flush_condition; 
-    wire no_flush;
+    wire any_flush_condition;
     wire ld_pr_rr_w;
     assign ld_pr_rr_bar = stall_rr; //stall if register read stage is stalled (we don't want to load new instruction into register read stage if it's stalled)
     inv1$ INV_LD_PR_RR(ld_pr_rr, ld_pr_rr_bar);
     
-    inv1$ INV_FLUSH(no_flush, flush_ex);
 
-    and2$ AND_VALID(instr_valid,  no_flush, instr_valid_w);
+    nor2$ AND_VALID(instr_valid,  flush_ex, instr_invalid);
 endmodule

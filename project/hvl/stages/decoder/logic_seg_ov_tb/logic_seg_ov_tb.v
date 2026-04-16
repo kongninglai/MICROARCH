@@ -2,13 +2,13 @@
 
 module tb_logic_seg_ov();
 
-    reg is_es0, is_es1, is_es2, is_es3;
-    reg is_cs0, is_cs1, is_cs2, is_cs3;
-    reg is_ss0, is_ss1, is_ss2, is_ss3;
-    reg is_ds0, is_ds1, is_ds2, is_ds3;
-    reg is_fs0, is_fs1, is_fs2, is_fs3;
-    reg is_gs0, is_gs1, is_gs2, is_gs3;
-    reg is_any_p0, is_any_p1, is_any_p2, is_any_p3;
+    reg is_es0, is_es1, is_es2;
+    reg is_cs0, is_cs1, is_cs2;
+    reg is_ss0, is_ss1, is_ss2;
+    reg is_ds0, is_ds1, is_ds2;
+    reg is_fs0, is_fs1, is_fs2;
+    reg is_gs0, is_gs1, is_gs2;
+    reg is_any_p0, is_any_p1;
     
     wire is_seg_ov;
     wire [2:0] seg_id;
@@ -17,14 +17,13 @@ module tb_logic_seg_ov();
     integer SUCCESSES = 0;
 
     logic_seg_ov dut (
-        .is_es0(is_es0), .is_es1(is_es1), .is_es2(is_es2), .is_es3(is_es3),
-        .is_cs0(is_cs0), .is_cs1(is_cs1), .is_cs2(is_cs2), .is_cs3(is_cs3),
-        .is_ss0(is_ss0), .is_ss1(is_ss1), .is_ss2(is_ss2), .is_ss3(is_ss3),
-        .is_ds0(is_ds0), .is_ds1(is_ds1), .is_ds2(is_ds2), .is_ds3(is_ds3),
-        .is_fs0(is_fs0), .is_fs1(is_fs1), .is_fs2(is_fs2), .is_fs3(is_fs3),
-        .is_gs0(is_gs0), .is_gs1(is_gs1), .is_gs2(is_gs2), .is_gs3(is_gs3),
+        .is_es0(is_es0), .is_es1(is_es1), .is_es2(is_es2),
+        .is_cs0(is_cs0), .is_cs1(is_cs1), .is_cs2(is_cs2),
+        .is_ss0(is_ss0), .is_ss1(is_ss1), .is_ss2(is_ss2),
+        .is_ds0(is_ds0), .is_ds1(is_ds1), .is_ds2(is_ds2),
+        .is_fs0(is_fs0), .is_fs1(is_fs1), .is_fs2(is_fs2),
+        .is_gs0(is_gs0), .is_gs1(is_gs1), .is_gs2(is_gs2),
         .is_any_prefix0(is_any_p0), .is_any_prefix1(is_any_p1), 
-        .is_any_prefix2(is_any_p2), .is_any_prefix3(is_any_p3),
         .is_seg_ov(is_seg_ov),
         .segment_override_reg_id(seg_id)
     );
@@ -46,13 +45,13 @@ module tb_logic_seg_ov();
 
     initial begin
         // Reset all inputs
-        {is_es0, is_es1, is_es2, is_es3} = 4'b0;
-        {is_cs0, is_cs1, is_cs2, is_cs3} = 4'b0;
-        {is_ss0, is_ss1, is_ss2, is_ss3} = 4'b0;
-        {is_ds0, is_ds1, is_ds2, is_ds3} = 4'b0;
-        {is_fs0, is_fs1, is_fs2, is_fs3} = 4'b0;
-        {is_gs0, is_gs1, is_gs2, is_gs3} = 4'b0;
-        {is_any_p0, is_any_p1, is_any_p2, is_any_p3} = 4'b0;
+        {is_es0, is_es1, is_es2} = 3'b0;
+        {is_cs0, is_cs1, is_cs2} = 3'b0;
+        {is_ss0, is_ss1, is_ss2} = 3'b0;
+        {is_ds0, is_ds1, is_ds2} = 3'b0;
+        {is_fs0, is_fs1, is_fs2} = 3'b0;
+        {is_gs0, is_gs1, is_gs2} = 3'b0;
+        {is_any_p0, is_any_p1} = 2'b0;
 
         $display("Starting Segment Override Tests...");
 
@@ -74,11 +73,11 @@ module tb_logic_seg_ov();
 
         // TEST 5: Verify segment override bit triggers for FS
         is_gs0 = 0; is_any_p0 = 0; is_es1 = 0; is_cs2 = 0; is_any_p1 = 0;
-        is_fs3 = 1; is_any_p0 = 1; is_any_p1 = 1; is_any_p2 = 1;
+        is_fs2 = 1; is_any_p0 = 1; is_any_p1 = 1;
         check_results(1'b1, 3'd4, "FS Override");
 
         // TEST 6: Transition back to default (Clear all inputs)
-        {is_fs3, is_any_p0, is_any_p1, is_any_p2} = 4'b0;
+        {is_fs2, is_any_p0, is_any_p1} = 3'b0;
         check_results(1'b0, 3'd3, "Return to Default DS");
 
         $display("----------------------------------------");

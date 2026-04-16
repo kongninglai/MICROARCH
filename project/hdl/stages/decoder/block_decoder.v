@@ -48,7 +48,6 @@ module block_decoder(
         .candidate_prefix0(cache_bytes[0]),
         .candidate_prefix1(cache_bytes[1]),
         .candidate_prefix2(cache_bytes[2]),
-        .candidate_prefix3(cache_bytes[3]),
         .is_rep_true(is_rep),
         .is_operand_size_override_true(is_op_size),
         .is_seg_ov(is_seg_ov),
