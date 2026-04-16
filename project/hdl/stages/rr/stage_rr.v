@@ -348,7 +348,8 @@ module stage_rr #(
 
     // if data_dep: bubble -> valid = 0
     // from_rr_valid = to_rr_valid & ~data_dep
-    wire no_dep, is_hlt, is_hlt_valid, is_not_hlt;
+    wire no_dep, is_hlt, is_hlt_valid, is_not_hlt, valid_dep;
+    and2$ valid_data_dep(valid_dep, from_rr_ucode_valid, from_dep_unit_data_dep);
     inv1$ inv_dep(no_dep, from_dep_unit_data_dep);
 
     big_eq #(
@@ -370,7 +371,7 @@ module stage_rr #(
     and2$ and_valid(from_rr_valid, from_rr_ucode_valid, no_dep);
 
     /* TODO: ADD STALL LOGIC */
-    or4$ or_from_rr_stall(from_rr_stall, ucode_stall, from_ag_stall, from_dep_unit_data_dep, is_hlt_valid);
+    or4$ or_from_rr_stall(from_rr_stall, ucode_stall, from_ag_stall, valid_dep, is_hlt_valid);
 
     assign to_dep_needREGS = {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]};
     inv1$  inv1$_from_rr_we_pipe_reg(from_rr_we_pipe_reg, from_ag_stall);
