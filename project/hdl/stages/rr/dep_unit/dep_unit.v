@@ -156,5 +156,6 @@ module dep_unit(
 
     wire any_dep;
     or3$ or3_any_dep(any_dep, dep_ag, dep_mem, dep_ex);
-    and2$ and2_dep_stall(data_dep, any_dep, rr_valid);
+    assign data_dep = any_dep;
+    // and2$ and2_dep_stall(data_dep, any_dep, rr_valid);
 endmodule
