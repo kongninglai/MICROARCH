@@ -23,7 +23,7 @@ module logic_true_prefix(
     output wire is_seg_ov,
     output wire [2:0] seg_id,
     output wire ext_op_true,
-    output wire [2:0] prefix_num
+    output wire [1:0] prefix_num
 );
 
     //Stage 1 - 1.74ns
@@ -97,9 +97,10 @@ module logic_true_prefix(
     //Layer 2 - 2.04ns (longest through segment)
 
     //Block takes 0.4ns
-    wire is_any0_actual, is_any1_actual, is_any2_actual, is_any3_actual;
+    wire is_any0_actual, is_any1_actual, is_any1_actual_bar, is_any2_actual, is_any3_actual;
     assign is_any0_actual = is_any0;
-    and2$ isany1actual(is_any1_actual, is_any0, is_any1);
+    nand2$ isany1actualbar(is_any1_actual_bar, is_any0, is_any1);
+    bufferHInv16$ isany1actual(is_any1_actual, is_any1_actual_bar);
     and3$ isany2actual(is_any2_actual, is_any0, is_any1, is_any2);
     and4$ isany3actual(is_any3_actual, is_any0, is_any1, is_any2, is_any3);
     
@@ -108,7 +109,6 @@ module logic_true_prefix(
         .P1(is_any1_actual),
         .P2(is_any2_actual),
         .P3(is_any3_actual),
-        .OUT2(prefix_num[2]),
         .OUT1(prefix_num[1]),
         .OUT0(prefix_num[0])
     );

@@ -1,7 +1,7 @@
 address_adder_tb               FAILURES=0      SUCCESSES=256   
 arbiter_tb                     FAILURES=0      SUCCESSES=16    
 
-Regression run: Wed Apr 15 18:13:51 CDT 2026
+Regression run: Thu Apr 16 02:23:56 CDT 2026
 ========================================
 PASS: AAA/aaa0.txt
 PASS: AAA/aaa1.txt
@@ -107,12 +107,11 @@ le_5b_tb                       FAILURES=0      SUCCESSES=256
 logic_branch_tb                FAILURES=0      SUCCESSES=8     
 logic_cl_shifter_tb            FAILURES=0      SUCCESSES=4      WARNINGS=1     
 logic_disp_bytes_tb            FAILURES=0      SUCCESSES=5     
-logic_disp_size_tb             FAILURES=0      SUCCESSES=5     
 logic_imm_tb                   FAILURES=0      SUCCESSES=4     
-logic_incr_amt_tb              FAILURES=0      SUCCESSES=512   
+logic_incr_amt_tb              FAILURES=0      SUCCESSES=256   
 logic_is_prefix_tb             FAILURES=0      SUCCESSES=12    
 logic_is_sib_tb                FAILURES=0      SUCCESSES=5     
-logic_prefix_combadder_tb      FAILURES=0      SUCCESSES=15    
+logic_prefix_combadder_tb      FAILURES=0      SUCCESSES=8     
 logic_seg_ov_tb                FAILURES=0      SUCCESSES=6     
 logic_sib_byte_tb              FAILURES=0      SUCCESSES=5     
 logic_stall_flush_tb           FAILURES=0      SUCCESSES=5     
@@ -167,7 +166,7 @@ pf_expn_tb                     FAILURES=0      SUCCESSES=10009
 pipeline_top_tb                FAILURES=0      SUCCESSES=0      WARNINGS=2     
 p_m_s_d_adder_tb               FAILURES=0      SUCCESSES=64    
 predictor_tb                   FAILURES=0      SUCCESSES=4     
-prefix_modrm_sib_adder_tb      FAILURES=0      SUCCESSES=20    
+prefix_modrm_sib_adder_tb      FAILURES=0      SUCCESSES=16    
 rank_tb                        FAILURES=0      SUCCESSES=2048  
 regfile_2r1w_tb                FAILURES=0      SUCCESSES=520   
 regfile_gp_tb                  FAILURES=0      SUCCESSES=1043  

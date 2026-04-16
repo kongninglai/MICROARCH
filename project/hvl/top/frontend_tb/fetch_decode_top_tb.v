@@ -28,7 +28,7 @@ reg clk;
 reg rst_n;
 
 initial begin
-  clk = 0;
+  clk = 1;
   forever #(CYCLE_TIME/2.0) clk = ~clk;
 end
 

@@ -12,9 +12,9 @@ module logic_disp_bytes(
     input wire [7:0] modrm_byte,
     input wire is_modrm_true,
     input wire has_sib,
-    input wire [2:0] prefix_num,
-    output wire [2:0] disp_size_inbytes,
-    output wire [1:0] disp_size, 
+    input wire [1:0] prefix_num,
+    input wire [2:0] disp_size_inbytes,
+    input wire [1:0] disp_size, 
     output wire [31:0] disp_bytes,
     output wire [3:0] disp_offset //offset with displacement 
 );
@@ -29,23 +29,16 @@ module logic_disp_bytes(
         end
     endgenerate
 
-    //Layer 1: 4.55ns for disp_size to be ready
-    logic_disp_size LOGIC_DISP_SIZE(
-        .modrm_byte(modrm_byte),
-        .is_modrm_true(is_modrm_true),
-        .prefix_num(prefix_num),
-        .disp_size_inbytes(disp_size_inbytes), //ready at 5.05
-        .disp_size(disp_size) //ready after 4.55ns
-    );
-
     //Is done within Layer 1 because starts running at 3.49 and takes 1 ns to complete (4.49ns total < 4.55ns)
-    wire [2:0] total_offset;  //sum of prefix_num, modrm, and sib bytes
+    wire [2:0] total_offset, total_offset_prebuf;  //sum of prefix_num, modrm, and sib bytes
     prefix_modrm_sib_adder PREFIX_MODRM_SIB_ADDER ( // 1ns
         .prefix_num(prefix_num),
         .has_modrm(is_modrm_true), //ready at 4.2ns
         .has_sib(has_sib), //ready at 3.49 ns
-        .total_offset(total_offset) //ready at 6.2ns 
+        .total_offset(total_offset_prebuf) //ready at 6.2ns 
     );
+
+    bufferH16$    bufferH16$_total_offset[2:0](total_offset, total_offset_prebuf);
 
     //Layer 2: takes 0.8ns (starts running at 4.49 + 0.8ns = 5.29ns done)
     wire [31:0] disp_bytes8, disp_bytes32;

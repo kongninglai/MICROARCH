@@ -10,12 +10,12 @@ Delay: 3.1ns
 module logic_incr_amt(
     input wire [2:0] rom_sum, //Ready at 4.2ns
     input wire [2:0] disp_plus_sib, //Ready at 5.05ns
-    input wire [2:0] prefix_amount, //Ready at 3.38ns
+    input wire [1:0] prefix_amount, //Ready at 3.38ns
     output wire [3:0] incr_amt
 );
     wire [3:0] sum_1;
     PA_4b PA_4b_sum1 (
-      .in0({1'b0,rom_sum}), .in1({1'b0,prefix_amount}),
+      .in0({1'b0,rom_sum}), .in1({2'd0,prefix_amount}),
       .s(sum_1)
     );
     PA_4b PA_4b_incr_amt (

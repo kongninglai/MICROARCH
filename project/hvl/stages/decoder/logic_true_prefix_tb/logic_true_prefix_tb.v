@@ -14,7 +14,7 @@ module logic_true_prefix_tb();
     wire is_seg_ov;
     wire [2:0] seg_id;
     wire ext_op_true;
-    wire [2:0] prefix_num;
+    wire [1:0] prefix_num;
 
     // Error Tracking
     integer errors;
@@ -113,7 +113,7 @@ module logic_true_prefix_tb();
         
         $display("\n--- Testing 3 & 4 Prefix Combinations ---");
         test_instruction(8'h66, 8'hF3, 8'h2E, 8'h90,  3'd3, 1, 1, 0, 1, 3'd1, "3 Contiguous Prefixes");
-        test_instruction(8'h66, 8'hF3, 8'h2E, 8'h0F,  3'd4, 1, 1, 1, 1, 3'd1, "4 Contiguous Prefixes");
+        test_instruction(8'h66, 8'h2E, 8'h0F, 8'hA0,  3'd3, 0, 1, 1, 1, 3'd1, "3 Contiguous Prefixes");
 
         if (errors == 0) begin
             $display("\n************************************");
