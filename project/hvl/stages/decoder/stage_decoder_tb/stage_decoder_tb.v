@@ -54,13 +54,13 @@ module tb_stage_decode();
         .stall_rr(stall_rr), 
         .clk(clk), .rst_bar(rst_bar), .br_t_nt_ex_d(br_t_nt_ex_d), 
         .br_valid_ex_d(br_valid_ex_d), .pht_idx_ex_d(pht_idx_ex_d),
-        .i_eip(i_eip), 
+        .from_f_pf_expn_bytes_out(), .i_eip(i_eip), 
         .o_eip(), .bp_eip_target(), //unused
         .pr_de_rr_valid(pr_de_rr_valid),
         .ld_eip(ld_eip), .eip_true(eip_true), 
         .to_f_take_branch(), //unused
         .prefix_rep(prefix_rep), 
-        .prefix_op_size(prefix_op_size), .prefix_seg_ov_id(prefix_seg_ov_id), 
+        .prefix_op_size(prefix_op_size), .prefix_seg_ov_id(prefix_seg_ov_id), .prefix_seg(),
         .prefix_ext(prefix_ext), .opcode(opcode), .modrm(modrm), .sib(sib),
         .disp_size_mux(disp_size_mux), .disp(disp), .imm_size(imm_size), 
         .imm(imm), .addressing_mode(addressing_mode), .instr_length(instr_length),

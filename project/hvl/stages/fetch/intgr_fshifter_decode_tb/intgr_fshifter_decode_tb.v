@@ -69,6 +69,7 @@ end
         .to_rr_i_eip(to_rr_i_eip),
         .to_rr_o_eip(to_rr_o_eip),
         .to_rr_bp_target(to_rr_bp_target),
+        .to_pr_bp_target(),
         .to_rr_pr_valid(to_rr_pr_valid),
         .to_rr_prefixes(to_rr_prefixes),
         .to_rr_opcode(to_rr_opcode),
@@ -81,7 +82,7 @@ end
         .to_rr_addressing_mode(to_rr_addressing_mode),
         .to_rr_instr_length(to_rr_instr_length),
         .from_de_eip_redirection(), //unused
-        .to_pr_bp_target() //unused
+        .shft_reg_we() //unused
     );
     
     // ---------------------------------------------------------

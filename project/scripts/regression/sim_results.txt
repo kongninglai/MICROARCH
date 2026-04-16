@@ -1,7 +1,7 @@
 address_adder_tb               FAILURES=0      SUCCESSES=256   
 arbiter_tb                     FAILURES=0      SUCCESSES=16    
 
-Regression run: Thu Apr 16 15:42:39 CDT 2026
+Regression run: Thu Apr 16 16:30:53 CDT 2026
 ========================================
 PASS: AAA/aaa0.txt
 PASS: AAA/aaa1.txt
@@ -85,9 +85,9 @@ FA_16b_tb                      FAILURES=0      SUCCESSES=4096
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_4b_tb                       FAILURES=0      SUCCESSES=512   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
-fetch_buffer_tb                FAILURES=0      SUCCESSES=4      WARNINGS=1     
+fetch_buffer_tb                FAILURES=0      SUCCESSES=4     
 fetch_pointer_tb               FAILURES=0      SUCCESSES=4     
-frontend_tb                    FAILURES=0      SUCCESSES=14     WARNINGS=2     
+frontend_tb                    FAILURES=0      SUCCESSES=14    
 full_cache_init_tb             FAILURES=0      SUCCESSES=0     
 full_cache_tb                  FAILURES=0      SUCCESSES=6155  
 full_cc_off_core_tb            FAILURES=0      SUCCESSES=32063 
@@ -100,12 +100,12 @@ HA_16b_tb                      FAILURES=0      SUCCESSES=1024
 HA_32b_tb                      FAILURES=0      SUCCESSES=262   
 HA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 hash_tb                        FAILURES=0      SUCCESSES=6     
-intgr_fshifter_decode_tb       FAILURES=0      SUCCESSES=7      WARNINGS=3     
+intgr_fshifter_decode_tb       FAILURES=0      SUCCESSES=7     
 io_addr_logic_block_tb         FAILURES=0      SUCCESSES=512   
 kb_tb                          FAILURES=0      SUCCESSES=28    
 le_5b_tb                       FAILURES=0      SUCCESSES=256   
 logic_branch_tb                FAILURES=0      SUCCESSES=8     
-logic_cl_shifter_tb            FAILURES=0      SUCCESSES=4      WARNINGS=1     
+logic_cl_shifter_tb            FAILURES=0      SUCCESSES=4     
 logic_disp_bytes_tb            FAILURES=0      SUCCESSES=5     
 logic_imm_tb                   FAILURES=0      SUCCESSES=4     
 logic_incr_amt_tb              FAILURES=0      SUCCESSES=256   
@@ -163,7 +163,7 @@ PA_32b_tb                      FAILURES=0      SUCCESSES=1030
 PA_4b_tb                       FAILURES=0      SUCCESSES=258   
 PA_8b_tb                       FAILURES=0      SUCCESSES=65536 
 pf_expn_tb                     FAILURES=0      SUCCESSES=10009 
-pipeline_top_tb                FAILURES=0      SUCCESSES=0      WARNINGS=2     
+pipeline_top_tb                FAILURES=0      SUCCESSES=0     
 p_m_s_d_adder_tb               FAILURES=0      SUCCESSES=64    
 predictor_tb                   FAILURES=0      SUCCESSES=4     
 prefix_modrm_sib_adder_tb      FAILURES=0      SUCCESSES=16    
@@ -184,7 +184,7 @@ seg_limit_cmp_tb               FAILURES=0      SUCCESSES=4103
 se_tb                          FAILURES=0      SUCCESSES=258   
 shift_reg_tb                   FAILURES=0      SUCCESSES=4     
 shift_reg_tiny_tb              FAILURES=0      SUCCESSES=5388  
-stage_decoder_tb               FAILURES=0      SUCCESSES=13     WARNINGS=1     
+stage_decoder_tb               FAILURES=0      SUCCESSES=13    
 stage_fetch_a_tb               FAILURES=0      SUCCESSES=4     
 stage_mem_tb                   FAILURES=0      SUCCESSES=4326  
 stage_rr_tb                    FAILURES=0      SUCCESSES=0     
