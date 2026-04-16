@@ -48,7 +48,7 @@ module single_stage_dep(
         .src_size  (srcA_size),
         .ld_src    (src_needREGS[10]),
         .dep       (depA),
-        .fw_mux    (fw_muxA)
+        .fw_mux    (fw_mux_A)
     );
 
     gp_dep gp_depB (
@@ -62,7 +62,7 @@ module single_stage_dep(
         .src_size  (srcB_size),
         .ld_src    (src_needREGS[9]),
         .dep       (depB),
-        .fw_mux    (fw_muxB)
+        .fw_mux    (fw_mux_B)
     );
 
     gp_dep gp_depC (
@@ -76,7 +76,7 @@ module single_stage_dep(
         .src_size  (srcC_size),
         .ld_src    (src_needREGS[8]),
         .dep       (depC),
-        .fw_mux    (fw_muxC)
+        .fw_mux    (fw_mux_C)
     );
 
     gp_dep gp_depBS1 (

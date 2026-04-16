@@ -39,6 +39,7 @@ module stage_ag #(
     input [31:0] from_wb_gpwr0_data,
     input [1:0]  from_wb_gpwr0_size,
     input        from_wb_gpwr0_en,
+    input        from_wb_gpwr1_idx_bit_2,
     input [31:0] from_wb_gpwr1_data,
     input [1:0]  from_wb_gpwr1_size,
     input        from_wb_gpwr1_en,
@@ -115,6 +116,7 @@ module stage_ag #(
         .from_wb_gpwr0_data(from_wb_gpwr0_data),
         .from_wb_gpwr0_size(from_wb_gpwr0_size),
         .from_wb_gpwr0_en(from_wb_gpwr0_en),
+        .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx_bit_2),
         .from_wb_gpwr1_data(from_wb_gpwr1_data),
         .from_wb_gpwr1_size(from_wb_gpwr1_size),
         .from_wb_gpwr1_en(from_wb_gpwr1_en),
@@ -128,6 +130,7 @@ module stage_ag #(
         .from_wb_gpwr0_data(from_wb_gpwr0_data),
         .from_wb_gpwr0_size(from_wb_gpwr0_size),
         .from_wb_gpwr0_en(from_wb_gpwr0_en),
+        .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx_bit_2),
         .from_wb_gpwr1_data(from_wb_gpwr1_data),
         .from_wb_gpwr1_size(from_wb_gpwr1_size),
         .from_wb_gpwr1_en(from_wb_gpwr1_en),
@@ -141,6 +144,7 @@ module stage_ag #(
         .from_wb_gpwr0_data(from_wb_gpwr0_data),
         .from_wb_gpwr0_size(from_wb_gpwr0_size),
         .from_wb_gpwr0_en(from_wb_gpwr0_en),
+        .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx_bit_2),
         .from_wb_gpwr1_data(from_wb_gpwr1_data),
         .from_wb_gpwr1_size(from_wb_gpwr1_size),
         .from_wb_gpwr1_en(from_wb_gpwr1_en),
@@ -195,7 +199,8 @@ module stage_ag #(
         .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
         .store_data_mux(store_data_mux), .rw(rw),
         .ds(ds), .mem_ds(mem_ds), .imm_mux(imm_mux), .addr_mux(addr_mux), .stack_push(stack_push), .intex(intex), .ret_with_imm(ret_with_imm),
-        .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir), .iret0(iret0)
+        .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir), .iret0(iret0),
+        .AG_FW_CONTROL_SIGS(AG_FW_CONTROL_SIGS), .MEM_FW_CONTROL_SIGS(MEM_FW_CONTROL_SIGS), .EX_FW_CONTROL_SIGS(EX_FW_CONTROL_SIGS)
     );
 
 

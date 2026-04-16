@@ -51,29 +51,9 @@ module dep_unit(
     output  [8:0]   AG_FW_CONTROL_SIGS,
     output  [8:0]   MEM_FW_CONTROL_SIGS,
     output  [8:0]   EX_FW_CONTROL_SIGS
-    output  [1:0]   AG_FW_A,
-    output  [1:0]   AG_FW_B,
-    output  [1:0]   AG_FW_C,
-    output          AG_FW_SREG,
-    output          AG_FW_MMA,
-    output          AG_FW_MMB,
-
-    output  [1:0]   MEM_FW_A,
-    output  [1:0]   MEM_FW_B,
-    output  [1:0]   MEM_FW_C,
-    output          MEM_FW_SREG,
-    output          MEM_FW_MMA,
-    output          MEM_FW_MMB,
-
-    output  [1:0]   EX_FW_A,
-    output  [1:0]   EX_FW_B,
-    output  [1:0]   EX_FW_C,
-    output          EX_FW_SREG,
-    output          EX_FW_MMA,
-    output          EX_FW_MMB
 );
     wire [1:0] AG_FW_A, AG_FW_B, AG_FW_C, MEM_FW_A, MEM_FW_B, MEM_FW_C, EX_FW_A, EX_FW_B, EX_FW_C;
-    wire AG_FW_SREG, AG_FW_MMA, AG_FW_MMB, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB
+    wire AG_FW_SREG, AG_FW_MMA, AG_FW_MMB, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB;
     wire from_ag_ld_gp0, from_ag_ld_gp1, from_ag_ld_seg, from_ag_ld_mmx;
     wire from_mem_ld_gp0, from_mem_ld_gp1, from_mem_ld_seg, from_mem_ld_mmx;
 

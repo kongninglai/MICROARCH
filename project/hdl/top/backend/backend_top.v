@@ -129,6 +129,7 @@ module backend_top #(
     // wire            from_rr_stall;
     wire            from_rr_ucode_valid;
     wire [10:0]     to_dep_needREGS;
+    wire            from_rr_load_en;
 
     /*** REGUNIT OUTPUTS ***/
     wire [15:0]     from_regunit_srcSREG;
@@ -432,9 +433,10 @@ module backend_top #(
     wire [31:0] to_ex_tempEIP;
     wire [15:0] to_ex_tempCS;
     wire [1:0]  to_rr_temp_exception;
+
     /*** DEP UNIT ***/
     wire from_dep_unit_data_dep;
-
+    wire [8:0] AG_FW_CONTROL_SIGS, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
     /*** FLUSH LOGIC ***/
     wire ex_or_wb_flush_bar, wb_flush_bar;
     nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar, from_ex_flush, from_wb_flush);
@@ -480,7 +482,11 @@ module backend_top #(
         .from_regunit_srcMMB_id(to_dep_MMB_idx),
         .from_rr_src_needREGS(to_dep_needREGS),
         .rr_valid(from_rr_ucode_valid),
-        .data_dep(from_dep_unit_data_dep)
+        .from_rr_load_en(from_rr_load_en),
+        .data_dep(from_dep_unit_data_dep),
+        .AG_FW_CONTROL_SIGS(AG_FW_CONTROL_SIGS),
+        .MEM_FW_CONTROL_SIGS(MEM_FW_CONTROL_SIGS),
+        .EX_FW_CONTROL_SIGS(EX_FW_CONTROL_SIGS)
     );
     
     stage_rr #(
@@ -565,7 +571,11 @@ module backend_top #(
         .from_rr_valid(from_rr_valid),
         .from_rr_stall(from_rr_stall),
         .to_dep_needREGS(to_dep_needREGS),
+        .from_rr_load_en(from_rr_load_en),
         .from_dep_unit_data_dep(from_dep_unit_data_dep),
+        .from_dep_ag_fw_control_sigs(AG_FW_CONTROL_SIGS),
+        .from_dep_mem_fw_control_sigs(MEM_FW_CONTROL_SIGS),
+        .from_dep_ex_fw_control_sigs(EX_FW_CONTROL_SIGS),
         .from_rr_we_pipe_reg(from_rr_we_pipe_reg),
         .from_rr_ucode_valid(from_rr_ucode_valid)
     );
@@ -733,6 +743,17 @@ module backend_top #(
         .from_wb_stall_if_mem_en(from_wb_stall_if_mem_en),
         .from_wb_valid_store_inst(from_wb_valid_store_inst),
 
+        .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx[2]),
+        .from_wb_gpwr0_data(from_wb_gpwr0_data),
+        .from_wb_gpwr0_size(from_wb_gpwr0_size),
+        .from_wb_gpwr0_en(from_wb_gpwr0_en),
+        .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx[2]),
+        .from_wb_gpwr1_data(from_wb_gpwr1_data),
+        .from_wb_gpwr1_size(from_wb_gpwr1_size),
+        .from_wb_gpwr1_en(from_wb_gpwr1_en),
+        .from_wb_segwr_data(from_wb_segwr_data),
+        .from_wb_mmxwr_data(from_wb_mmxwr_data),
+
         .from_ag_control_sigs(from_ag_control_sigs),
         .from_ag_dstidA(from_ag_dstidA),
         .from_ag_dstidB(from_ag_dstidB),
@@ -865,6 +886,17 @@ module backend_top #(
       .to_mem_pred_eip(to_mem_pred_eip),
       .to_mem_exception(to_mem_exception),
       .to_mem_valid(to_mem_valid),
+
+      .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx[2]),
+      .from_wb_gpwr0_data(from_wb_gpwr0_data),
+      .from_wb_gpwr0_size(from_wb_gpwr0_size),
+      .from_wb_gpwr0_en(from_wb_gpwr0_en),
+      .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx[2]),
+      .from_wb_gpwr1_data(from_wb_gpwr1_data),
+      .from_wb_gpwr1_size(from_wb_gpwr1_size),
+      .from_wb_gpwr1_en(from_wb_gpwr1_en),
+      .from_wb_segwr_data(from_wb_segwr_data),
+      .from_wb_mmxwr_data(from_wb_mmxwr_data),
 
       .from_mem_control_sigs(from_mem_control_sigs),
       .from_mem_dstidA(from_mem_dstidA),
@@ -1037,6 +1069,18 @@ module backend_top #(
         .to_ex_tempCS(to_ex_tempCS),
         .to_ex_cs_limit(from_regunit_cs_limit),
         .from_wb_flush(from_wb_flush),
+
+        .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx[2]),
+        .from_wb_gpwr0_data(from_wb_gpwr0_data),
+        .from_wb_gpwr0_size(from_wb_gpwr0_size),
+        .from_wb_gpwr0_en(from_wb_gpwr0_en),
+        .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx[2]),
+        .from_wb_gpwr1_data(from_wb_gpwr1_data),
+        .from_wb_gpwr1_size(from_wb_gpwr1_size),
+        .from_wb_gpwr1_en(from_wb_gpwr1_en),
+        .from_wb_segwr_data(from_wb_segwr_data),
+        .from_wb_mmxwr_data(from_wb_mmxwr_data),
+
         .from_ex_flush(from_ex_flush),
         .from_ex_ld_cs(from_ex_ld_cs),
         .from_ex_br_t_nt(from_ex_br_t_nt),
