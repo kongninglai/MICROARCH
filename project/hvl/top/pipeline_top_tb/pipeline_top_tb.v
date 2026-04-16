@@ -1,9 +1,9 @@
 module pipeline_top_tb;
 
-initial begin
-  $vcdplusfile("pipeline_top_tb.dump.vpd");
-  $vcdpluson(0, pipeline_top_tb); 
-end
+// initial begin
+//   $vcdplusfile("pipeline_top_tb.dump.vpd");
+//   $vcdpluson(0, pipeline_top_tb); 
+// end
 
 integer i;
 integer NUM_TESTS = 0;
@@ -375,47 +375,82 @@ reg [31:0] combined_mask;
 reg [31:0] saved_ieip, halt_ieip;
 
 // Pending Read/Wrote buffer: each entry tagged with the ieip of the instruction
-localparam MAX_PENDING_MEM = 64;
+localparam MAX_PENDING_MEM = 128;
 reg        pend_mem_is_wr [0:MAX_PENDING_MEM-1]; // 0=Read, 1=Wrote
 reg [7:0]  pend_mem_val   [0:MAX_PENDING_MEM-1];
 reg [31:0] pend_mem_va    [0:MAX_PENDING_MEM-1];
 reg [15:0] pend_mem_pa    [0:MAX_PENDING_MEM-1];
-reg [31:0] pend_mem_ieip  [0:MAX_PENDING_MEM-1]; // which instruction this belongs to
+reg [31:0] pend_mem_oeip  [0:MAX_PENDING_MEM-1]; // which instruction this belongs to
 integer    pend_mem_cnt;
 
-// Snapshot buffer: holds the Read/Wrote lines to print after the separator
-reg        snap_is_wr [0:MAX_PENDING_MEM-1];
-reg [7:0]  snap_val   [0:MAX_PENDING_MEM-1];
-reg [31:0] snap_va    [0:MAX_PENDING_MEM-1];
-reg [15:0] snap_pa    [0:MAX_PENDING_MEM-1];
-integer    snap_cnt;
+
+reg        arch_snap_valid;
+reg [31:0] arch_snap_oeip;
+reg [31:0] arch_snap_ieip;
+reg [31:0] arch_snap_eflags;
+reg [31:0] arch_snap_gpr [0:7];
+reg [63:0] arch_snap_mmx [0:7];
+reg [15:0] arch_snap_seg [0:4];
+reg [15:0] arch_snap_cs;
+
+task take_arch_snapshot;
+  input [31:0] snap_oeip;
+  input [31:0] snap_ieip;
+  input [31:0] snap_eflags;
+  integer si;
+begin
+  arch_snap_valid  = 1'b1;
+  arch_snap_oeip   = snap_oeip;
+  arch_snap_ieip   = snap_ieip;
+  arch_snap_eflags = snap_eflags;
+
+  // IMPORTANT: Make sure `dut.inst_regunit...` matches your actual pipeline hierarchy!
+  // If your regunit is inside a backend wrapper, it might be `dut.backend.inst_regunit...`
+  for (si = 0; si < 8; si = si + 1)
+    arch_snap_gpr[si] = dut.inst_regunit.gprf.q[si];
+
+  for (si = 0; si < 8; si = si + 1)
+    arch_snap_mmx[si] = dut.inst_regunit.mmxrf.mmx_regs.q[si];
+
+  arch_snap_seg[0] = dut.inst_regunit.segrf.seg_rf.q[0]; // ES
+  arch_snap_cs     = dut.inst_regunit.segrf.cs_q;        // CS
+  arch_snap_seg[1] = dut.inst_regunit.segrf.seg_rf.q[2]; // SS
+  arch_snap_seg[2] = dut.inst_regunit.segrf.seg_rf.q[3]; // DS
+  arch_snap_seg[3] = dut.inst_regunit.segrf.seg_rf.q[4]; // FS
+  arch_snap_seg[4] = dut.inst_regunit.segrf.seg_rf.q[5]; // GS
+end
+endtask
+
 
 integer flush_i;
-// Print and remove all pending entries whose ieip matches the given ieip
-task flush_pending_for_ieip;
-  input [31:0] target_ieip;
+// Print and remove all pending entries whose oeip matches the given oeip
+task flush_pending_for_oeip;
+  input [31:0] target_oeip;
   integer fi, new_cnt;
 begin
   // First pass: print matching entries
   for (fi = 0; fi < pend_mem_cnt; fi = fi + 1) begin
-    if (pend_mem_ieip[fi] === target_ieip) begin
+    if (pend_mem_oeip[fi] === target_oeip) begin
       if (pend_mem_is_wr[fi] === 1'b0)
+        // EXACT FORMATTING FOR READS
         $fdisplay(file_handle_cmp,"Read  0x%02x from va = 0x%08x and pa = 0x%04x",
           pend_mem_val[fi], pend_mem_va[fi], pend_mem_pa[fi]);
       else
+        // EXACT FORMATTING FOR WRITES
         $fdisplay(file_handle_cmp,"Wrote 0x%02x to   va = 0x%08x and pa = 0x%04x",
           pend_mem_val[fi], pend_mem_va[fi], pend_mem_pa[fi]);
     end
   end
+  
   // Second pass: compact out matched entries
   new_cnt = 0;
   for (fi = 0; fi < pend_mem_cnt; fi = fi + 1) begin
-    if (pend_mem_ieip[fi] !== target_ieip) begin
+    if (pend_mem_oeip[fi] !== target_oeip) begin
       pend_mem_is_wr[new_cnt] = pend_mem_is_wr[fi];
       pend_mem_val  [new_cnt] = pend_mem_val  [fi];
       pend_mem_va   [new_cnt] = pend_mem_va   [fi];
       pend_mem_pa   [new_cnt] = pend_mem_pa   [fi];
-      pend_mem_ieip [new_cnt] = pend_mem_ieip [fi];
+      pend_mem_oeip [new_cnt] = pend_mem_oeip [fi];
       new_cnt = new_cnt + 1;
     end
   end
@@ -426,62 +461,62 @@ endtask
 task print_arch_status;
   input integer is_hlt_status;
 begin
-  flush_pending_for_ieip(wb_ieip);
+  flush_pending_for_oeip(arch_snap_oeip);
   $fdisplay(file_handle_cmp,"Architectural State %0d", NUM_TESTS);
 
   // ---------------- GPR ----------------
   $fdisplay(file_handle_cmp,"EAX: 0x%08X    ECX: 0x%08X    EDX: 0x%08X    EBX: 0x%08X",
-           dut.inst_regunit.gprf.q[0],
-           dut.inst_regunit.gprf.q[1],
-           dut.inst_regunit.gprf.q[2],
-           dut.inst_regunit.gprf.q[3]);
+           arch_snap_gpr[0],
+           arch_snap_gpr[1],
+           arch_snap_gpr[2],
+           arch_snap_gpr[3]);
 
   $fdisplay(file_handle_cmp,"ESP: 0x%08X    EBP: 0x%08X    ESI: 0x%08X    EDI: 0x%08X",
-           dut.inst_regunit.gprf.q[4],
-           dut.inst_regunit.gprf.q[5],
-           dut.inst_regunit.gprf.q[6],
-           dut.inst_regunit.gprf.q[7]);
+           arch_snap_gpr[4],
+           arch_snap_gpr[5],
+           arch_snap_gpr[6],
+           arch_snap_gpr[7]);
 
   // ---------------- MMX ----------------
   $fdisplay(file_handle_cmp,"MM0: 0x%016X               MM1: 0x%016X          ",
-           dut.inst_regunit.mmxrf.mmx_regs.q[0],
-           dut.inst_regunit.mmxrf.mmx_regs.q[1]);
+           arch_snap_mmx[0],
+           arch_snap_mmx[1]);
 
   $fdisplay(file_handle_cmp,"MM2: 0x%016X               MM3: 0x%016X          ",
-           dut.inst_regunit.mmxrf.mmx_regs.q[2],
-           dut.inst_regunit.mmxrf.mmx_regs.q[3]);
+           arch_snap_mmx[2],
+           arch_snap_mmx[3]);
 
   $fdisplay(file_handle_cmp,"MM4: 0x%016X               MM5: 0x%016X          ",
-           dut.inst_regunit.mmxrf.mmx_regs.q[4],
-           dut.inst_regunit.mmxrf.mmx_regs.q[5]);
+           arch_snap_mmx[4],
+           arch_snap_mmx[5]);
 
   $fdisplay(file_handle_cmp,"MM6: 0x%016X               MM7: 0x%016X          ",
-           dut.inst_regunit.mmxrf.mmx_regs.q[6],
-           dut.inst_regunit.mmxrf.mmx_regs.q[7]);
+           arch_snap_mmx[6],
+           arch_snap_mmx[7]);
 
   // ---------------- Segment Registers ----------------
   $fdisplay(file_handle_cmp," ES: 0x%04X CS: 0x%04X SS: 0x%04X DS: 0x%04X FS: 0x%04X GS: 0x%04X",
-           dut.inst_regunit.segrf.seg_rf.q[0], // ES
-           dut.inst_regunit.segrf.cs_q,        // CS
-           dut.inst_regunit.segrf.seg_rf.q[2], // SS
-           dut.inst_regunit.segrf.seg_rf.q[3], // DS
-           dut.inst_regunit.segrf.seg_rf.q[4], // FS
-           dut.inst_regunit.segrf.seg_rf.q[5]  // GS
+           arch_snap_seg[0], // ES
+           arch_snap_cs,     // CS
+           arch_snap_seg[1], // SS
+           arch_snap_seg[2], // DS
+           arch_snap_seg[3], // FS
+           arch_snap_seg[4]  // GS
   );
 
   // ---------------- EFLAGS ----------------
   $fdisplay(file_handle_cmp," CF: %0d      PF: %0d      AF: %0d      ZF: %0d      SF: %0d      OF: %0d      DF: %0d",
-           wb_eflags[0],   // CF
-           wb_eflags[2],   // PF
-           wb_eflags[4],   // AF
-           wb_eflags[6],   // ZF
-           wb_eflags[7],   // SF
-           wb_eflags[11],  // OF
-           wb_eflags[10]   // DF
+           arch_snap_eflags[0],   // CF
+           arch_snap_eflags[2],   // PF
+           arch_snap_eflags[4],   // AF
+           arch_snap_eflags[6],   // ZF
+           arch_snap_eflags[7],   // SF
+           arch_snap_eflags[11],  // OF
+           arch_snap_eflags[10]   // DF
   );
 
   // ---------------- EIP ----------------
-  $fdisplay(file_handle_cmp,"EIP: 0x%08X", (is_hlt_status === 1'b1 ? dut.to_rr_ieip : wb_ieip));
+  $fdisplay(file_handle_cmp,"EIP: 0x%08X", (is_hlt_status === 1'b1 ? dut.to_rr_ieip : arch_snap_ieip));
 
   $fdisplay(file_handle_cmp,"----------------------------------------");
 end
@@ -533,13 +568,12 @@ end
 reg [31:0] halt_ieip;
 always @(posedge clk) begin
   
-  saved_ieip <= dut.to_ex_ieip;
   if (!rst_n) begin 
     halt_ieip <= 32'b0;
   end else if (to_rr_opcode == 8'hF4) begin 
     halt_ieip <= to_rr_ieip;
   end
-  saved_ieip <= dut.to_ex_ieip;
+  //saved_ieip <= dut.from_wb_ieip;
 
   if ((dut.to_wb_ieip == halt_ieip) && dut.to_wb_valid === 1'b1 && handle_hlt == 1'b0) begin
     handle_hlt = 1;
@@ -581,7 +615,7 @@ always @(posedge clk) begin
         pend_mem_va   [pend_mem_cnt] = dut.inst_stage_mem.to_mem_ld_addr[31:0] + ((k-starting_point)+difference);
         pend_mem_pa   [pend_mem_cnt] = (dut.inst_stage_mem.to_mem_ld_addr[14:0] + ((k-starting_point)+difference)) & 16'h7FFF;
         pend_mem_pa   [pend_mem_cnt][14:12] = D_RD_TLB_PFN_OUT[2:0];
-        pend_mem_ieip [pend_mem_cnt] = dut.to_mem_ieip;
+        pend_mem_oeip [pend_mem_cnt] = dut.to_mem_oeip;
         pend_mem_cnt = pend_mem_cnt + 1;
       end
     end
@@ -594,7 +628,7 @@ always @(posedge clk) begin
           pend_mem_val  [pend_mem_cnt] = (WB_SHF_ST_DATA_L0 >> (8*m)) & 8'hFF;
           pend_mem_va   [pend_mem_cnt] = saved_st_addr[31:0] + m;
           pend_mem_pa   [pend_mem_cnt] = {WB_PR_ST_ADDR_L0[14:4], saved_st_addr[3:0]} + m;
-          pend_mem_ieip [pend_mem_cnt] = saved_ieip;
+          pend_mem_oeip [pend_mem_cnt] = dut.to_wb_oeip;
           pend_mem_cnt = pend_mem_cnt + 1;
         end
       end
@@ -612,7 +646,7 @@ always @(posedge clk) begin
           pend_mem_pa   [pend_mem_cnt] = {dut.inst_stage_wb.to_wb_store_addr_line_0[14:4], 4'd0} + n;
           if (n >= 16) 
             pend_mem_pa   [pend_mem_cnt] = {dut.inst_stage_wb.to_wb_store_addr_line_1[14:4], 4'd0} + (n-16);
-          pend_mem_ieip [pend_mem_cnt] = saved_ieip;
+          pend_mem_oeip [pend_mem_cnt] = dut.to_wb_oeip;
           pend_mem_cnt = pend_mem_cnt + 1;
         end
       end
@@ -734,27 +768,51 @@ endtask
 
 reg print_pending;
 
+reg wb_commit_pending;
+reg [31:0] wb_commit_ieip;
+reg [31:0] wb_commit_oeip;
+reg [31:0] wb_commit_eflags;
+
 always @(posedge clk) begin
   if (!rst_n) begin
-    print_pending  <= 1'b0;
-    wb_ieip        <= 32'b0;
-    wb_eflags      <= 32'b0;
-    pend_mem_cnt    = 0;
+    wb_commit_pending <= 1'b0;
+    wb_commit_ieip    <= 32'b0;
+    wb_commit_oeip    <= 32'b0;
+    wb_commit_eflags  <= 32'b0;
+    arch_snap_valid   <= 1'b0;
   end else begin
-    if (print_pending) begin
-      // $display("[WB COMMIT+1] time=%0t", $time);
-      print_arch_status(0);
-      NUM_TESTS <= NUM_TESTS + 1;
-    end
+    #1; // wait until the next cycle of the wb commit
     
-    print_pending <= 1'b0;
+    // ----------- THE SQUISH LOGIC -----------
+    if (wb_commit_pending) begin
+      if (!arch_snap_valid) begin
+        // First commit, only take a snapshot
+        take_arch_snapshot(wb_commit_oeip, wb_commit_ieip, wb_commit_eflags);
+      end else if (arch_snap_oeip == wb_commit_oeip) begin
+        // If it's the same OEIP, it's just another micro-op for the same instruction.
+        // Update the snapshot with the new state, but DO NOT print to file!
+        take_arch_snapshot(wb_commit_oeip, wb_commit_ieip, wb_commit_eflags);
+      end else begin
+        // If OEIP changes, the previous macro-instruction is fully done.
+        // Print the finalized snapshot to the text file.
+        flush_pending_for_oeip(arch_snap_oeip);
+        print_arch_status(0); 
+        NUM_TESTS = NUM_TESTS + 1;
 
-    if (dut.inst_stage_wb.to_wb_valid_buf16) begin
-      if (dut.inst_stage_wb.no_exception) begin
-        print_pending <= 1'b1;
-        wb_ieip       <= saved_ieip;
-        wb_eflags     <= dut.inst_stage_ex.eflags_out;
+        // Start recording the new instruction's snapshot
+        take_arch_snapshot(wb_commit_oeip, wb_commit_ieip, wb_commit_eflags);
       end
+    end
+
+    wb_commit_pending <= 1'b0;
+
+    // ----------- YOUR LATCH LOGIC -----------
+    // check if there's new commit, latch it to next cycle
+    if (dut.inst_stage_wb.to_wb_valid_buf16 && dut.inst_stage_wb.no_exception) begin
+      wb_commit_pending <= 1'b1;
+      wb_commit_ieip    <= dut.to_wb_ieip;
+      wb_commit_oeip    <= dut.to_wb_oeip;
+      wb_commit_eflags  <= dut.inst_stage_ex.eflags_out;
     end
   end
 end
