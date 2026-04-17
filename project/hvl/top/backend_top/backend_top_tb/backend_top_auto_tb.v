@@ -1,9 +1,9 @@
 module backend_top_auto_tb;
 
-initial begin
-  $vcdplusfile("backend_top_auto_tb.dump.vpd");
-  $vcdpluson(0, backend_top_auto_tb); 
-end
+// initial begin
+//   $vcdplusfile("backend_top_auto_tb.dump.vpd");
+//   $vcdpluson(0, backend_top_auto_tb); 
+// end
 
 integer i;
 integer NUM_TESTS = 0;

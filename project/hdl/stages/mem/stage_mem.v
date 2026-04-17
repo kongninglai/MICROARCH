@@ -165,7 +165,7 @@ module stage_mem #(
   output  [1:0]                               from_mem_dstB_size,
   output  [1:0]                               from_mem_ldAB,
   output  [2:0]                               from_mem_ldREGS,
-
+  output                                      from_mem_valid_mem_inst,
   /* FROM WB FORWARDING */
   input        from_wb_gpwr0_idx_bit_2,
   input [31:0] from_wb_gpwr0_data,
@@ -269,6 +269,10 @@ assign from_mem_MMB         = f_MMB      ;
 
 wire [1:0] rw_buf16;
 bufferH16$    bufferH16$_rw_buf16[1:0](rw_buf16, rw);
+
+wire is_mem_inst;
+or2$    or2$_is_mem_inst(is_mem_inst, rw_buf16[1], rw_buf16[0]);
+and2$ and2_from_mem_valid_mem_inst(from_mem_valid_mem_inst, to_mem_valid, is_mem_inst);
 
 assign from_mem_control_sigs = {
     ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,

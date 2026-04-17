@@ -83,7 +83,8 @@ module stage_ag #(
     output [1:0]     from_ag_dstA_size,
     output [1:0]     from_ag_dstB_size,
     output [1:0]     from_ag_ldAB,
-    output [2:0]     from_ag_ldREGS
+    output [2:0]     from_ag_ldREGS,
+    output           from_ag_valid_mem_inst
 );
 
     wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size, sbb_dir, iret0;
@@ -180,6 +181,8 @@ module stage_ag #(
     and2$   and2$_mem_inst_needs_stall(mem_inst_needs_stall, is_mem_inst, stall_if_mem_inst);
     or2$    or2$_from_ag_stall(from_ag_stall, from_mem_stall, mem_inst_needs_stall);
     inv1$   inv1$_from_ag_we_pipe_reg(from_ag_we_pipe_reg, from_mem_stall);
+
+    and2$ and2_from_ag_valid_mem_inst(from_ag_valid_mem_inst, to_ag_valid, is_mem_inst);
 
     /* Insert bubbles if mem_inst_needs_stall and NOT from_mem_stall */
     wire from_ag_valid_gate, from_mem_stall_bar;
