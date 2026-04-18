@@ -14,7 +14,7 @@ OUT_DIR = "/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/mem_
 mem = {}
 for r in range(RANK_COUNT):
     for c in range(CHIP_COUNT):
-        mem[(r, c)] = ["xx"] * ROW_COUNT
+        mem[(r, c)] = ["00"] * ROW_COUNT
 
 def decode_addr(addr):
     chip = addr & 0xF
