@@ -41,9 +41,11 @@ module choose_eip(
     */
     wire not_flush;
     wire nand_valid_ld;
+    wire ld_eip_prebuf;
     inv1$ INV_FLUSH(not_flush, flush_ex);
     nand2$ NAND_VALID_LD(nand_valid_ld, instr_valid, ld_pr_rr);
-    nand2$ NAND_FINAL(ld_eip, not_flush, nand_valid_ld);
+    nand2$ NAND_FINAL(ld_eip_prebuf, not_flush, nand_valid_ld);
+    bufferH64$ bufferH64$_ld_eip(ld_eip, ld_eip_prebuf);
 
     //Generating Signals for Mux Select
     wire [1:0] eip_sel; 
@@ -63,10 +65,14 @@ module choose_eip(
         .out(eip_true) //Output EIP to be used in the rest of the decode logic
     );
 
+    wire [31:0] o_eip_prebuf;
+
     reg_n #(.WIDTH(32)) EIP_REG(
         .clk(clk), .rst(rst_bar),
         .en({32{ld_eip}}), .d(eip_true),
-        .q(o_eip)
+        .q(o_eip_prebuf)
     );
+
+    bufferH64$    bufferH64$_o_eip[31:0](o_eip, o_eip_prebuf);
 
 endmodule

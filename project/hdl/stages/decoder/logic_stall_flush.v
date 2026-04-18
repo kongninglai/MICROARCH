@@ -15,6 +15,8 @@ invalidate once exception is handled in wb.
 */
 
 module logic_stall_flush(
+        input wire clk,
+        input wire rst_bar,
 
         //Protection Exception Logic
         input wire [31:0] i_eip,
@@ -25,31 +27,43 @@ module logic_stall_flush(
 
         //Other Inputs
         input wire flush_ex, //comes from execute stage
+        input wire flush_wb, //comes from writeback stage
         input wire stall_rr, //comes from register read stage
 
         output wire ld_pr_rr, //to load register read pipeline registers signal
         output wire instr_valid
 );
 
-    wire instr_invalid, instr_valid_w;
+    wire instr_invalid;
     mag_comp8$ INSTR_VALID( 
         .A({4'b0, incr_amt}), 
         .B({3'b0, tail_ptr}),
         .AGB(instr_invalid), 
         .BGA() 
     );
-    inv1$ INV_INSTR_VALID(instr_valid_w, instr_invalid);
 
-
-    wire ld_pr_rr_bar; //load register read pipeline registers signal
     wire any_flush_condition; 
     wire no_flush;
     wire ld_pr_rr_w, ld_pr_rr_without_flush;
-    assign ld_pr_rr_bar = stall_rr; //stall if register read stage is stalled (we don't want to load new instruction into register read stage if it's stalled)
-    inv1$ INV_LD_PR_RR(ld_pr_rr_without_flush, ld_pr_rr_bar);
-    or2$ ld_pr_rr_or(ld_pr_rr, ld_pr_rr_without_flush, flush_ex); //also stall if we need to flush because of execute stage
-    
-    inv1$ INV_FLUSH(no_flush, flush_ex);
 
-    and2$ AND_VALID(instr_valid,  no_flush, instr_valid_w);
+    inv1$ INV_FLUSH(no_flush, flush_ex);
+    nand2$ nand_ld_pr_rr(ld_pr_rr, stall_rr, no_flush); //also stall if we need to flush because of execute stage
+    
+    wire pending_intex;
+    wire either_flush;
+    or2$    or2$_either_flush(either_flush, flush_ex, flush_wb);
+
+    // Start out not pending (rst --> 1'b0)
+    // any flush_ex will remain not pending
+    // if flush_wb, then becomes pending
+    // the next flush_ex will clear pending
+    reg_n #(
+      .WIDTH(1)
+    ) reg_n_Q_CC_DATA_WR_MASK_OUT_10 (
+      .clk(clk), .rst(rst_bar),
+      .en(either_flush), .d(flush_wb),
+      .q(pending_intex)
+    );
+
+    nor3$ AND_VALID(instr_valid,  flush_ex, instr_invalid, pending_intex);
 endmodule

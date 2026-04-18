@@ -23,7 +23,7 @@ module de_to_rr_tb;
     reg [4:0]   tail_ptr; 
     reg [31:0]  eip_target_ex; 
     reg         flush_ex; 
-    reg         v_excptn_src_wb; 
+    reg         from_wb_flush; 
     reg         stall_rr; 
     reg         br_t_nt_ex_d, br_valid_ex_d;
     reg [3:0]   pht_idx_ex_d;
@@ -68,7 +68,7 @@ module de_to_rr_tb;
         .tail_ptr(tail_ptr),
         .eip_target_ex(eip_target_ex),
         .flush_ex(flush_ex), 
-        .v_excptn_src_wb(v_excptn_src_wb),
+        .from_wb_flush(from_wb_flush),
         .stall_rr(stall_rr), 
         .clk(clk), 
         .rst_bar(rst_bar), 
@@ -165,7 +165,7 @@ module de_to_rr_tb;
     begin
         cache_line = 128'h0; tail_ptr = 5'h1F; // Max tail ptr
         eip_target_ex = 32'h0; pf_expn_bytes = 16'd0;
-        flush_ex = 0; v_excptn_src_wb = 0;
+        flush_ex = 0; from_wb_flush = 0;
         stall_rr = 0; 
         br_t_nt_ex_d = 0; br_valid_ex_d = 0; pht_idx_ex_d = 0;
     end

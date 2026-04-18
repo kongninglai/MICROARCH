@@ -9,7 +9,7 @@ module tb_stage_decode();
     reg [4:0] tail_ptr;
     reg [31:0] eip_target_ex;
     reg mispredict_src_ex;
-    reg v_excptn_src_wb;
+    reg from_wb_flush;
     reg v_ld_cs_src_ex; 
     reg stall_ex, stall_rr, stall_mem, stall_wb;
     
@@ -50,17 +50,17 @@ module tb_stage_decode();
         .cache_line(cache_line), .tail_ptr(tail_ptr), 
         .eip_target_ex(eip_target_ex), 
         .flush_ex(mispredict_src_ex),       
-        .v_excptn_src_wb(v_excptn_src_wb), 
+        .from_wb_flush(from_wb_flush), 
         .stall_rr(stall_rr), 
         .clk(clk), .rst_bar(rst_bar), .br_t_nt_ex_d(br_t_nt_ex_d), 
         .br_valid_ex_d(br_valid_ex_d), .pht_idx_ex_d(pht_idx_ex_d),
-        .i_eip(i_eip), 
+        .from_f_pf_expn_bytes_out(), .i_eip(i_eip), 
         .o_eip(), .bp_eip_target(), //unused
         .pr_de_rr_valid(pr_de_rr_valid),
         .ld_eip(ld_eip), .eip_true(eip_true), 
         .to_f_take_branch(), //unused
         .prefix_rep(prefix_rep), 
-        .prefix_op_size(prefix_op_size), .prefix_seg_ov_id(prefix_seg_ov_id), 
+        .prefix_op_size(prefix_op_size), .prefix_seg_ov_id(prefix_seg_ov_id), .prefix_seg(),
         .prefix_ext(prefix_ext), .opcode(opcode), .modrm(modrm), .sib(sib),
         .disp_size_mux(disp_size_mux), .disp(disp), .imm_size(imm_size), 
         .imm(imm), .addressing_mode(addressing_mode), .instr_length(instr_length),
@@ -71,7 +71,7 @@ module tb_stage_decode();
     // 4. Clock and Helpers
     // --------------------------------------------------------
     initial begin
-        clk = 0;
+        clk = 1;
         forever #10 clk = ~clk;
     end
 
@@ -146,12 +146,12 @@ module tb_stage_decode();
         o_eip = 32'h0000_0000;
         tail_ptr = 5'd0; 
         eip_target_ex = 32'h0000_0000;
-        mispredict_src_ex = 0; v_excptn_src_wb = 0; v_ld_cs_src_ex = 0;
+        mispredict_src_ex = 0; from_wb_flush = 0; v_ld_cs_src_ex = 0;
         stall_ex = 0; stall_rr = 0; stall_mem = 0; stall_wb = 0;
         br_t_nt_ex_d = 0; br_valid_ex_d = 0; pht_idx_ex_d = 0;
 
         rst_bar = 0;
-        #15;
+        #20;
         rst_bar = 1;
 
         // --------------------------------------------------------

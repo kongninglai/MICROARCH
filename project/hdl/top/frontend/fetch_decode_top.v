@@ -44,7 +44,8 @@ module fetch_decode_top(
 );
 
     //Internal Wires
-    wire from_fetch_buffer_shft_reg_we, from_de_take_branch;
+    wire from_fetch_buffer_shft_reg_we, from_de_take_branch, from_de_take_branch_prebuf;
+    bufferH16$    bufferH16$_from_de_take_branch(from_de_take_branch, from_de_take_branch_prebuf);
 
     stage_fetch_a STAGE_FETCH_FRONT_HALF(
         .clk(clk),
@@ -99,7 +100,7 @@ module fetch_decode_top(
         .to_rr_imm(to_rr_imm),
         .to_rr_addressing_mode(to_rr_addr_mode),
         .to_rr_instr_length(), //unused in top
-        .from_de_eip_redirection(from_de_take_branch),
+        .from_de_eip_redirection(from_de_take_branch_prebuf),
         .shft_reg_we(from_fetch_buffer_shft_reg_we)
     );  
 

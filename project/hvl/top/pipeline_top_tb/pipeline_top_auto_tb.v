@@ -1,8 +1,8 @@
 module pipeline_top_auto_tb;
 
 initial begin
-  $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
-  $vcdpluson(0, pipeline_top_auto_tb); 
+  // $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
+  // $vcdpluson(0, pipeline_top_auto_tb); 
 end
 
 integer i;
@@ -16,7 +16,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 160;
+localparam CYCLE_TIME_X10 = 130;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -372,7 +372,7 @@ end
 reg [31:0] saved_st_addr;
 reg [255:0] combined_data;
 reg [31:0] combined_mask;
-reg [31:0] saved_ieip, halt_ieip;
+reg [31:0] saved_ieip, halt_oeip;
 
 // Pending Read/Wrote buffer: each entry tagged with the ieip of the instruction
 localparam MAX_PENDING_MEM = 128;
@@ -561,6 +561,7 @@ endtask
 integer load_iters, k, m, n, difference, starting_point;
 
 reg handle_hlt;
+
 initial begin
   handle_hlt = 0;
 end
@@ -568,13 +569,13 @@ end
 always @(posedge clk) begin
   
   if (!rst_n) begin 
-    halt_ieip <= 32'b0;
-  end else if (to_rr_opcode == 8'hF4) begin 
-    halt_ieip <= to_rr_ieip;
+    halt_oeip <= 32'hFFFFFFFF;
+  end else if (to_rr_opcode == 8'hF4 && to_rr_valid === 1'b1) begin 
+    halt_oeip <= to_rr_oeip;
   end
   //saved_ieip <= dut.from_wb_ieip;
 
-  if ((dut.to_wb_ieip == halt_ieip) && dut.to_wb_valid === 1'b1 && handle_hlt == 1'b0) begin
+  if ((dut.to_wb_oeip == halt_oeip) && dut.to_wb_valid === 1'b1 && handle_hlt == 1'b0) begin
     handle_hlt = 1;
     #(10 * CYCLE_TIME);
     print_arch_status(1);
@@ -747,9 +748,9 @@ begin
       stalled_cnt = stalled_cnt + 1;
     end
 
-    if (dut.inst_rr.is_hlt_valid && dut.to_ag_valid === 1'b0 && dut.to_mem_valid === 1'b0 &&
-        dut.to_ex_valid === 1'b0 && dut.to_wb_valid === 1'b0)
-      stream_done = 1'b1;
+    // if (dut.inst_rr.is_hlt_valid && dut.to_ag_valid === 1'b0 && dut.to_mem_valid === 1'b0 &&
+    //     dut.to_ex_valid === 1'b0 && dut.to_wb_valid === 1'b0)
+    //   stream_done = 1'b1;
   end
 
   if (stream_done) begin
@@ -855,7 +856,7 @@ initial begin
   check_results_against_golden();
 `endif
                   
-  $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+  $display("FAILURESSSSSSS = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
   $finish;
 end

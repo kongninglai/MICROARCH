@@ -9,7 +9,7 @@ module tb_stage_decode_rigorous();
     reg [4:0]   tail_ptr;
     reg [31:0]  eip_target_ex;
     reg         flush_ex;
-    reg         v_excptn_src_wb;
+    reg         from_wb_flush;
     reg         stall_rr; 
     reg         clk;
     reg         rst_bar;
@@ -52,7 +52,7 @@ module tb_stage_decode_rigorous();
         .tail_ptr(tail_ptr), 
         .eip_target_ex(eip_target_ex), 
         .flush_ex(flush_ex),       
-        .v_excptn_src_wb(v_excptn_src_wb), 
+        .from_wb_flush(from_wb_flush), 
         .stall_rr(stall_rr), 
         .clk(clk), 
         .rst_bar(rst_bar), 
@@ -153,7 +153,7 @@ module tb_stage_decode_rigorous();
         cache_line = 128'd0;
         tail_ptr = 5'd0; 
         eip_target_ex = 32'h0;
-        flush_ex = 0; v_excptn_src_wb = 0; stall_rr = 0;
+        flush_ex = 0; from_wb_flush = 0; stall_rr = 0;
         br_t_nt_ex_d = 0; br_valid_ex_d = 0; pht_idx_ex_d = 0;
         from_f_pf_expn_bytes_out = 16'd0;
 

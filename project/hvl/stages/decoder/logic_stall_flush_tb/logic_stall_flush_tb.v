@@ -8,10 +8,12 @@ module tb_logic_instr_valid();
     reg [3:0]  incr_amt;
     
     reg mispredict_src_ex;
-    reg v_excptn_src_wb;
+    reg from_wb_flush;
     reg v_ld_cs_src_ex; // Kept so test cases remain untouched
     
     reg stall_ex, stall_rr, stall_mem, stall_wb;
+
+    reg clk, rst_bar;
 
     // 2. Outputs
     wire ld_pr_rr;
@@ -20,14 +22,17 @@ module tb_logic_instr_valid();
     // --- Signal Mapping Logic ---
     // Combine the granular testbench signals into the consolidated signals expected by the new module.
     wire combined_stall = stall_ex | stall_rr | stall_mem | stall_wb;
-    wire combined_flush = mispredict_src_ex | v_excptn_src_wb;
+    wire combined_flush = mispredict_src_ex | from_wb_flush;
 
     // 3. Instantiate UUT (Updated to match new port list)
     logic_stall_flush uut (
+        .clk(clk),
+        .rst_bar(rst_bar),
         .i_eip(i_eip),
         .tail_ptr(tail_ptr),
         .incr_amt(incr_amt),
         .flush_ex(combined_flush),    // Maps mispredicts/exceptions to flush_ex
+        .flush_wb(1'b0),    // Maps mispredicts/exceptions to flush_wb
         .stall_rr(combined_stall),    // Maps any pipeline stall to stall_rr
         .ld_pr_rr(ld_pr_rr),
         .instr_valid(instr_valid)
@@ -52,7 +57,7 @@ module tb_logic_instr_valid();
             $display("-------------------------------------------------------------------------------------------------------");
             $display("TEST   : %0s", test_name);
             $display("INPUTS : EIP=%h | Incr=%0d | Tail=%0d | Stalls(ERMW)=%b%b%b%b | Flushes(MEL)=%b%b%b", 
-                     i_eip, incr_amt, tail_ptr, stall_ex, stall_rr, stall_mem, stall_wb, mispredict_src_ex, v_excptn_src_wb, v_ld_cs_src_ex);
+                     i_eip, incr_amt, tail_ptr, stall_ex, stall_rr, stall_mem, stall_wb, mispredict_src_ex, from_wb_flush, v_ld_cs_src_ex);
             $display("EXPECT : LD_PR_RR=%b | INSTR_VALID=%b" , exp_ld_pr_rr, exp_valid);
             $display("ACTUAL : LD_PR_RR=%b | INSTR_VALID=%b ", ld_pr_rr, instr_valid);
 
@@ -74,12 +79,13 @@ module tb_logic_instr_valid();
         $display("=======================================================================================================");
         $display("                         INSTRUCTION VALIDITY & EXCEPTION LOGIC TEST SUITE                             ");
         $display("=======================================================================================================");
-
+        rst_bar = 1'b0;
+        clk = 1'b0;
         // DEFAULT STATE: All good. (Load = 1, Valid = 1)
         i_eip = 32'h0000_1000; 
         incr_amt = 4'd4; tail_ptr = 5'd10;
         {stall_ex, stall_rr, stall_mem, stall_wb} = 4'b0000;
-        {mispredict_src_ex, v_excptn_src_wb, v_ld_cs_src_ex} = 3'b000;
+        {mispredict_src_ex, from_wb_flush, v_ld_cs_src_ex} = 3'b000;
         #10;
         check_result(1'b1, 1'b1, "DEFAULT STATE");
 

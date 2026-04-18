@@ -1,8 +1,8 @@
 module ucode_fsm_tb;
 
     // initial begin
-    //     $vcdplusfile("ucode_fsm_tb.dump.vpd");
-    //     $vcdpluson(0, ucode_fsm_tb); 
+    //     // $vcdplusfile("ucode_fsm_tb.dump.vpd");
+    //     // $vcdpluson(0, ucode_fsm_tb); 
     // end
     // ----------------------------
     // inputs
@@ -118,6 +118,7 @@ module ucode_fsm_tb;
         .clear_int(st_clear_int),
         .intex(st_intex),
         .handling_intex(st_handling_intex),
+        .not_intex_or_iret(),
         .ucode_stall(st_ucode_stall),
         .ucode_valid(st_ucode_valid),
         .ucode_sig(st_ucode_sig)

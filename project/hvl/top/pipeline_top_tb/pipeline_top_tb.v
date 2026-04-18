@@ -1,8 +1,8 @@
 module pipeline_top_tb;
 
 // initial begin
-//   $vcdplusfile("pipeline_top_tb.dump.vpd");
-//   $vcdpluson(0, pipeline_top_tb); 
+//   // $vcdplusfile("pipeline_top_tb.dump.vpd");
+//   // $vcdpluson(0, pipeline_top_tb); 
 // end
 
 integer i;

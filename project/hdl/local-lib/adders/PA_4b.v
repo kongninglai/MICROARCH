@@ -53,26 +53,18 @@ module PA_4b (
 					Gi_i[4*j + 1],
 					Gi_im1[2*j]
 			  );
-
-			  // ---- i : i-3  (Gi_im3 / Pi_im3)
-			  
-			  // j = 0 should be 2:-1
-
-			  gen_prop_2 gp2_im3 (
-					Gi_im3[j],
-					Pi_im3[j],
-					Pi_im1[2*j + 1],
-					Pi_im1[2*j],
-					Gi_im1[2*j + 1],
-					Gi_im1[2*j]
-			  );
-
 		 end
 	endgenerate
 	
 	// Sums
-	
-	xor3LL xor3LL_28(s[3], Gi_im3[0], in0[3], in1[3]);
+
+  // Optimize s[3] for instruction length
+	wire s3_t0, s3_t1, s3_t2, s3_c3;
+	and2$  and2$_s3_t0(s3_t0, Pi_i[2], Gi_i[1]);
+	and3$  and3$_s3_t1(s3_t1, Pi_i[2], Pi_i[1], Gi_i[0]);
+	or3$   or3$_s3_c3 (s3_c3, Gi_i[2], s3_t0, s3_t1);
+	xor3LL xor3LL_28(s[3], s3_c3, in0[3], in1[3]);
+
 	xor3LL xor3LL_29(s[2], Gi_im2[0], in0[2], in1[2]);
 	xor3LL xor3LL_30(s[1], Gi_im1[0], in0[1], in1[1]);
 	xor3LL xor3LL_31(s[0], Gi_i[-1], in0[0], in1[0]);	
