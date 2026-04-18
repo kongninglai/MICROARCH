@@ -1,8 +1,8 @@
 module backend_top_auto_tb;
 
 // initial begin
-//   // $vcdplusfile("backend_top_auto_tb.dump.vpd");
-//   // $vcdpluson(0, backend_top_auto_tb); 
+//   $vcdplusfile("backend_top_auto_tb.dump.vpd");
+//   $vcdpluson(0, backend_top_auto_tb); 
 // end
 
 integer i;
@@ -821,7 +821,7 @@ initial begin
     $display("Error: Failed to open results_cmp.txt!");
   end
   clear_inputs();
-  load_eip_idx_map("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/verification/program_eip_idx_map.txt");
+  load_eip_idx_map("/home/ecelrc/students/var2427/MICROARCH/project/scripts/verification/program_eip_idx_map.txt");
 
   for (map_i = 0; map_i < NUM_TESTS_MEM; map_i = map_i + 1) begin
     testcase_seen[map_i] = 1'b0;

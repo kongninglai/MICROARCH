@@ -36,7 +36,10 @@ PASS: SAL/SAL_tests_proc.txt
 PASS: SAR/SAR_tests_proc.txt
 PASS: SBB/SBB_tests_proc.txt
 PASS: STD/STD_tests_proc.txt
-PASS: touch_all_regs.txt
 PASS: XCHG/XCHG_tests_proc.txt
+PASS: cross_cache_line_2x_wb.txt
+PASS: dcache_test.txt
+PASS: exception_test_correct_format.txt
+PASS: touch_all_regs.txt
 ========================================
 Total: 37  PASSED: 37  FAILED: 0
