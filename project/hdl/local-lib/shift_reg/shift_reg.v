@@ -12,7 +12,8 @@ module shift_reg(
     wire [7:0] q[30:0];
 
     wire [7:0] d[30:0];
-    wire [30:0] en;
+    wire [30:0] en, en_buf16;
+    bufferH16$  bufferH16$_en_buf16[30:0](en_buf16, en);
 
     genvar i;
     generate 
@@ -29,40 +30,30 @@ module shift_reg(
         end
     endgenerate
 
-    wire debug_en;
-    wire [7:0] debug_d, debug_q, debug_inbytes;
-    assign debug_en = en[1];
-    assign debug_d = d[1];
-    assign debug_q = q[1];
-    assign debug_inbytes = inbytes_i[1];
     generate 
         for (i = 0; i < 31; i=i+1) begin
             localparam [4:0] i_31 = 5'd30 - i;
-            wire [3:0] update_idx;
-            wire le, shift_en, not_shift, not_shift_and_wr;
-            mux2$ mux2_update[7:0](updated_q[i], q[i], inbytes_i[i], wr_en[i]);
+            wire [3:0] update_idx, update_idx_dummy;
+            wire not_shift, not_shift_and_wr_bar;
+            mux2_8$ mux2_8_update(updated_q[i], q[i], inbytes_i[i], wr_en[i]);
     
-            mux2$ mux_update_idx[3:0](update_idx, 4'b0, instr_len, shift);
-            mux16 mux16_shift[7:0](d[i], updated_q[i], updated_q[i+1], updated_q[i+2], updated_q[i+3], 
+            mux2_8$ mux_update_idx({update_idx_dummy, update_idx}, 8'd0, {4'd0, instr_len}, shift);
+            mux16_8b mux16_8b_shift(d[i], updated_q[i], updated_q[i+1], updated_q[i+2], updated_q[i+3], 
                                         updated_q[i+4], updated_q[i+5], updated_q[i+6], updated_q[i+7], 
                                         updated_q[i+8], updated_q[i+9], updated_q[i+10], updated_q[i+11], 
                                         updated_q[i+12], updated_q[i+13], updated_q[i+14], updated_q[i+15], 
                                         update_idx[0], update_idx[1], update_idx[2], update_idx[3]);
-            // en[i] = (shift & instr_len < 32-i) | (~shift & wr_en[i])
-            le_5b le5_instrlen(le, {1'b0, instr_len}, i_31);
-            and2$ and_shift_en(shift_en, le, shift);
-            inv1$ inv_shift(not_shift, shift);
-            and2$ and_not_shift_and_wr(not_shift_and_wr, not_shift, wr_en[i]);
 
-            wire rst;
-            inv1$ inv_debug_en(rst, rst_n);
-            or3$ or_en(en[i], shift_en, not_shift_and_wr, rst);
+            inv1$ inv_shift(not_shift, shift);
+            nand2$ nand_not_shift_and_wr_bar(not_shift_and_wr_bar, not_shift, wr_en[i]);
+
+            nand2$ nand_en(en[i], not_shift, not_shift_and_wr_bar);
             reg_n #(
                 .WIDTH(8),
                 .USE_EN_BAR(0)
             ) reg_n_disk_addr (
                 .clk(clk), .rst(rst_n),
-                .en({8{en[i]}}), .d(d[i]),
+                .en({8{en_buf16[i]}}), .d(d[i]),
                 .q(q[i])
             );
         end

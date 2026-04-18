@@ -16,20 +16,20 @@ module logic_cl_shifter(
 
     //Jump Middle of Cache Line Signal Logic (If tail_ptr zero - there was a flush, and eip is unaligned, then middle of cache line jump)
     //Use tail pointer instead of eip redirection signal bc tail pointer is latched and eip redir is combinational
-    wire tail_ptr_zero_4bit, tail_ptr_zero, tail_ptr_zero_1bit, eip_unaligned;
+    wire tail_ptr_zero_4bit, tail_ptr_zero_bar, tail_ptr_zero_1bit, eip_unaligned_bar;
     inv1$ inv_tail_ptr_zero(.in(tail_ptr[4]), .out(tail_ptr_zero_1bit));
     nor4$ nor_tail_ptr_zero( //if offset bits are all 0, then flush has occured or startup
         .in0(tail_ptr[3]), .in1(tail_ptr[2]), .in2(tail_ptr[1]), .in3(tail_ptr[0]),
         .out(tail_ptr_zero_4bit)
     );
-    and2$ and_tail_ptr_zero(.in0(tail_ptr_zero_4bit), .in1(tail_ptr_zero_1bit), .out(tail_ptr_zero));
+    nand2$ nand_tail_ptr_zero(.in0(tail_ptr_zero_4bit), .in1(tail_ptr_zero_1bit), .out(tail_ptr_zero_bar));
 
-    or4$ or_eip_unaligned(
+    nor4$ nor_eip_unaligned_bar(
         .in0(offset[0]), .in1(offset[1]), .in2(offset[2]), .in3(offset[3]),
-        .out(eip_unaligned)
+        .out(eip_unaligned_bar)
     );
 
-    and2$ and_middle_jmp(.in0(eip_unaligned), .in1(tail_ptr_zero), .out(unaligned_eip_redir));
+    nor2$ and_middle_jmp(.in0(eip_unaligned_bar), .in1(tail_ptr_zero_bar), .out(unaligned_eip_redir));
 
 
     //Jump to Middle of Cache Line Shift (Shift CL right - little endian)
