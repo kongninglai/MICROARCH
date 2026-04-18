@@ -53,7 +53,7 @@ module logic_tail_ptr_tb;
                           test_name, target, tail_ptr, stall, fb_req_cl, flush, incr_amt, offset, unaligned_eip_redir);
                 
                 $display("       Internal Wires: cl_incr_only=%d, out=%d, cl_incr=%d, decr=%d", 
-                          dut.tail_ptr_cl_incr_only_w, dut.tail_ptr_out, 
+                          dut.tail_ptr_cl_incr_only_w, dut.tail_ptr, 
                           dut.tail_ptr_cl_incr_w, dut.tail_ptr_decr_w);
                 
                 errors = errors + 1;

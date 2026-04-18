@@ -37,19 +37,20 @@ module shift_reg(
         end
     endgenerate
 
+    wire [3:0] update_idx, update_idx_buf256, update_idx_dummy;
+    mux2_8$ mux_update_idx({update_idx_dummy, update_idx}, 8'd0, {4'd0, instr_len}, shift);
+    bufferH256$   bufferH256$_update_idx_buf256[3:0](update_idx_buf256, update_idx);
+
     generate 
         for (i = 0; i < 31; i=i+1) begin : shifted_input_gen
-            localparam [4:0] i_31 = 5'd30 - i;
-            wire [3:0] update_idx, update_idx_dummy;
             wire not_shift, not_shift_and_wr_bar;
             mux2_8$ mux2_8_update(updated_q[i], q[i], inbytes_i[i], wr_en[i]);
     
-            mux2_8$ mux_update_idx({update_idx_dummy, update_idx}, 8'd0, {4'd0, instr_len}, shift);
             mux16_8b mux16_8b_shift(d[i], updated_q_buf16[i],     updated_q_buf16[i+1],   updated_q_buf16[i+2],   updated_q_buf16[i+3], 
                                           updated_q_buf16[i+4],   updated_q_buf16[i+5],   updated_q_buf16[i+6],   updated_q_buf16[i+7], 
                                           updated_q_buf16[i+8],   updated_q_buf16[i+9],   updated_q_buf16[i+10],  updated_q_buf16[i+11], 
                                           updated_q_buf16[i+12],  updated_q_buf16[i+13],  updated_q_buf16[i+14],  updated_q_buf16[i+15], 
-                                          update_idx[0], update_idx[1], update_idx[2], update_idx[3]);
+                                          update_idx_buf256[0], update_idx_buf256[1], update_idx_buf256[2], update_idx_buf256[3]);
 
             inv1$ inv_shift(not_shift, shift);
             nand2$ nand_not_shift_and_wr_bar(not_shift_and_wr_bar, not_shift, wr_en[i]);

@@ -1,7 +1,7 @@
 address_adder_tb               FAILURES=0      SUCCESSES=256   
 arbiter_tb                     FAILURES=0      SUCCESSES=16    
 
-Regression run: Sat Apr 18 00:28:12 CDT 2026
+Regression run: Sat Apr 18 01:19:18 CDT 2026
 ========================================
 PASS: AAA/aaa0.txt
 PASS: AAA/aaa1.txt
@@ -85,7 +85,7 @@ FA_16b_tb                      FAILURES=0      SUCCESSES=4096
 FA_32b_tb                      FAILURES=0      SUCCESSES=518   
 FA_4b_tb                       FAILURES=0      SUCCESSES=512   
 FA_8b_tb                       FAILURES=0      SUCCESSES=65536 
-fetch_buffer_tb                FAILURES=0      SUCCESSES=4     
+fetch_buffer_tb                FAILURES=0      SUCCESSES=1     
 fetch_pointer_tb               FAILURES=0      SUCCESSES=4     
 frontend_tb                    FAILURES=0      SUCCESSES=14    
 full_cache_init_tb             FAILURES=0      SUCCESSES=0     
@@ -183,7 +183,6 @@ sat_signed_narrow_tb           FAILURES=0      SUCCESSES=234
 seg_limit_cmp_tb               FAILURES=0      SUCCESSES=4103  
 se_tb                          FAILURES=0      SUCCESSES=258   
 shift_reg_tb                   FAILURES=0      SUCCESSES=4     
-shift_reg_tiny_tb              FAILURES=0      SUCCESSES=5388  
 stage_decoder_tb               FAILURES=0      SUCCESSES=13    
 stage_fetch_a_tb               FAILURES=0      SUCCESSES=4     
 stage_mem_tb                   FAILURES=0      SUCCESSES=4326  

@@ -14,6 +14,9 @@ module logic_cl_shifter(
     output wire [247:0] cl_aligned
 );
 
+    wire [127:0] cl_buf64;
+    bufferH64$    bufferH64$_cl_buf64[127:0](cl_buf64, cl);
+
     //Jump Middle of Cache Line Signal Logic (If tail_ptr zero - there was a flush, and eip is unaligned, then middle of cache line jump)
     //Use tail pointer instead of eip redirection signal bc tail pointer is latched and eip redir is combinational
     wire tail_ptr_zero_4bit, tail_ptr_zero_bar, tail_ptr_zero_1bit, eip_unaligned_bar;
@@ -29,13 +32,15 @@ module logic_cl_shifter(
         .out(eip_unaligned_bar)
     );
 
-    nor2$ and_middle_jmp(.in0(eip_unaligned_bar), .in1(tail_ptr_zero_bar), .out(unaligned_eip_redir));
+    wire unaligned_eip_redir_prebuf;
+    nor2$ and_middle_jmp(.in0(eip_unaligned_bar), .in1(tail_ptr_zero_bar), .out(unaligned_eip_redir_prebuf));
+    bufferH64$    bufferH64$_unaligned_eip_redir(unaligned_eip_redir, unaligned_eip_redir_prebuf);
 
 
     //Jump to Middle of Cache Line Shift (Shift CL right - little endian)
     wire [127:0] rshft_cl_jmp;
     rshf_bytes_var_128b #(.WIDTH(128), .SHF_ZEROS(1)) rshf_cl(
-        .in(cl),
+        .in(cl_buf64),
         .shf_amt(offset),
         .out(rshft_cl_jmp)
     );
@@ -43,7 +48,7 @@ module logic_cl_shifter(
     //Regular Cache line (only align with tailpointer)
     wire [255:0] lshft_cl;
     lshf_bytes_var_256b #(.WIDTH(256), .SHF_ZEROS(1)) lshf_cl_aligned( //align with tail pointer
-        .in({128'd0, cl}),
+        .in({128'd0, cl_buf64}),
         .shf_amt(tail_ptr), //when doing this shifting logic, tail_ptr < 16 bc we req cl
         .out(lshft_cl)
     );

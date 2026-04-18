@@ -12,9 +12,9 @@ module logic_tail_ptr(
 );
 
     wire tail_ptr_en;
-    wire [7:0] tail_ptr_in_w, tail_ptr_decr_w, tail_ptr_cl_incr_w, tail_ptr_cl_incr_only_w, tail_ptr_out_w;
+    wire [7:0] tail_ptr_in_w, tail_ptr_decr_w, tail_ptr_cl_incr_w, tail_ptr_cl_incr_only_w, tail_ptr_w;
     wire [1:0] tail_ptr_cl_incr_2bit, tail_ptr_cl_incr_only_2bit;
-    wire [4:0] tail_ptr_in, tail_ptr_out;
+    wire [4:0] tail_ptr_in;
     wire [3:0] we_cl_byte_cnt_w, we_cl_byte_cnt;
 
     //Choose Tail Pointer input (00 decr, 01 cl_incr, 10 same, 11 cl_incr_only)/* Decrement by instruction length */
@@ -79,32 +79,39 @@ module logic_tail_ptr(
     mux2_8$ mux2_8$_tail_ptr_cl_incr_only_w
     (
       tail_ptr_cl_incr_only_w,
-      {3'd0, 1'b1, tail_ptr_out[3:0]},
+      {3'd0, 1'b1, tail_ptr[3:0]},
       {3'd0, 1'b0, we_cl_byte_cnt[3:0]},
       unaligned_eip_redir
     );
 
     mux4_8$ mux_tail_ptr_in(
         .Y(tail_ptr_in_w), 
-        .IN0(tail_ptr_decr_w), .IN1(tail_ptr_cl_incr_w), .IN2(tail_ptr_out_w), .IN3(tail_ptr_cl_incr_only_w),
+        .IN0(tail_ptr_decr_w), .IN1(tail_ptr_cl_incr_w), .IN2(tail_ptr_w), .IN3(tail_ptr_cl_incr_only_w),
         .S0(fb_req_cl), .S1(stall)
     );
-    assign tail_ptr_out_w = {3'd0, tail_ptr_out};
+    assign tail_ptr_w = {3'd0, tail_ptr};
     assign tail_ptr_in = tail_ptr_in_w[4:0];
 
     //Tail pointer
-    wire CLR_BAR, flush_bar;
-    or2$ or_tail_ptr_en(tail_ptr_en, shft_reg_we, flush);
+    wire CLR, CLR_BAR, flush_bar;
+    wire tail_ptr_en_bar;
+    nor2$ or_tail_ptr_en_bar(tail_ptr_en_bar, shft_reg_we, flush);
+    bufferHInv16$ bufferHInv16$_tail_ptr_en(tail_ptr_en, tail_ptr_en_bar);
+
     inv1$ inv_flush(flush_bar, flush);
-    and2$ and_clear(CLR_BAR, rst_bar, flush_bar); //(if either rst of flush is a 0, we want to clear)
+    nand2$ nand_clear(CLR, rst_bar, flush_bar); //(if either rst of flush is a 0, we want to clear)
+    bufferHInv16$ bufferHInv16$_CLR_BAR(CLR_BAR, CLR);
+
+    wire [4:0] tail_ptr_prebuf;
     reg_n #(.WIDTH(5)) tail_ptr_reg (
         .clk(clk),
         .rst(CLR_BAR),
         .en({5{tail_ptr_en}}),
         .d(tail_ptr_in),
-        .q(tail_ptr_out)
+        .q(tail_ptr_prebuf)
     );
-    assign tail_ptr = tail_ptr_out;
+
+    bufferH64$    bufferH64$_tail_ptr[4:0](tail_ptr, tail_ptr_prebuf);
 
     //Number of Bytes to write from Cache Line Logic
     wire [3:0] offset_bar;

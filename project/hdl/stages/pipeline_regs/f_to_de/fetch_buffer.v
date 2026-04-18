@@ -40,23 +40,26 @@ module fetch_buffer(
     inv1$ inv_flush_bar(flush_bar, flush);
     
     //Shift Enable Register Logic (WE = ~IF_FULL && ICACHE_VALID)
-    wire shft_reg_we_internal;
-    nand3$ nand_shft_reg_we_internal(shft_reg_we_internal, v_cl_ld_bar, from_de_valid_bar, flush_bar); //also shift when consuming instructions (branch taken or flush in execute)
+    wire shft_reg_we_internal, shft_reg_we_internal_prebuf;
+    nand3$ nand_shft_reg_we_internal(shft_reg_we_internal_prebuf, v_cl_ld_bar, from_de_valid_bar, flush_bar); //also shift when consuming instructions (branch taken or flush in execute)
+    bufferH64$    bufferH64$_shft_reg_we_internal(shft_reg_we_internal, shft_reg_we_internal_prebuf);
 
     //Generate fetch buffer enable signal
     nand2$ nand_shft_reg_we(shft_reg_we, v_cl_ld_bar, flush_bar); //do not enable any time there is a valid instruction in decodeto prevent shifting by a cache line each time
 
     //True Consume Logic
-    wire [3:0] gated_instr_len;
+    wire [3:0] gated_instr_len, gated_instr_len_prebuf;
     wire true_consume, stall_bar; 
     inv1$ inv_stall_bar(stall_bar, from_de_stall);
     and2$ and_true_consume(true_consume, from_de_valid, stall_bar); //only consume instruction (decr tail ptr) if de is valid and not stalled
     
     //Correct Instruction Length
-    and2$ gate_len0(gated_instr_len[0], from_de_instr_len[0], true_consume);
-    and2$ gate_len1(gated_instr_len[1], from_de_instr_len[1], true_consume);
-    and2$ gate_len2(gated_instr_len[2], from_de_instr_len[2], true_consume);
-    and2$ gate_len3(gated_instr_len[3], from_de_instr_len[3], true_consume);
+    and2$ gate_len0(gated_instr_len_prebuf[0], from_de_instr_len[0], true_consume);
+    and2$ gate_len1(gated_instr_len_prebuf[1], from_de_instr_len[1], true_consume);
+    and2$ gate_len2(gated_instr_len_prebuf[2], from_de_instr_len[2], true_consume);
+    and2$ gate_len3(gated_instr_len_prebuf[3], from_de_instr_len[3], true_consume);
+
+    bufferH16$    bufferH16$_gated_instr_len[3:0](gated_instr_len, gated_instr_len_prebuf);
 
     //Cache Line Load Sign Generation
     wire tail_ptr_less_than_16;
@@ -71,7 +74,7 @@ module fetch_buffer(
         .rst_bar(rst_bar),
         .incr_amt(gated_instr_len),
         .offset(offset),
-        .shft_reg_we(shft_reg_we_internal),
+        .shft_reg_we(shft_reg_we_internal_prebuf),
         .flush(flush),
         .stall(from_de_stall),
         .fb_req_cl(v_cl_ld), //input, fetch buffer request cache line signal (if there is space in the fetch buffer)
@@ -124,10 +127,8 @@ module fetch_buffer(
     );
 
     //Fetch Buffer
-    wire shft_reg_clr_bar;
-    and2$ and_shft_reg_clr_bar(shft_reg_clr_bar, rst_bar, flush_bar); 
     shift_reg FETCH_BUFFER(
-        .clk(clk), .rst_n(shft_reg_clr_bar), 
+        .clk(clk), .rst_n(rst_bar), 
         .shift(shft_reg_we_internal), .instr_len(gated_instr_len), 
         .inbytes(cl_aligned), .wr_en(wr_en), 
         .outbytes(to_de_outbytes[127:0]), .ready()
@@ -141,7 +142,7 @@ module fetch_buffer(
     assign pf_expn_bits_in[0] = from_f_cl_pf;
     assign pf_expn_bits_in[247:1] = {247{1'b1}};
 
-    shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(shft_reg_clr_bar), .shift(shft_reg_we_internal), .instr_len(gated_instr_len), .inbytes(pf_expn_bits_in), 
+    shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(rst_bar), .shift(shft_reg_we_internal), .instr_len(gated_instr_len), .inbytes(pf_expn_bits_in), 
         .wr_en(wr_en), .outbytes(pf_expn_bits_out), .ready()
     ); 
 
