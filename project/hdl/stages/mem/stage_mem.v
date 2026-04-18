@@ -519,12 +519,12 @@ endgenerate
 
 and2$   and2$_from_mem_valid(from_mem_valid, from_mem_stall_bar, to_mem_valid_buf16);
 
-wire  STALL_REASON_0, STALL_REASON_1;
+wire  STALL_REASON_0_bar, STALL_REASON_1_bar;
 
-and2$   and2$_STALL_REASON_0(STALL_REASON_0, MEM_VALID_LOAD_INST, DCACHE_STALL);
-and3$   and3$_STALL_REASON_1(STALL_REASON_1, MEM_VALID_LOAD_INST, NEEDS_LINE_1_LOAD, DOING_LINE_1_LOAD_BAR);
+nand2$  nand2$_STALL_REASON_0_bar(STALL_REASON_0_bar, MEM_VALID_LOAD_INST, DCACHE_STALL);
+nand3$  nand3$_STALL_REASON_1_bar(STALL_REASON_1_bar, MEM_VALID_LOAD_INST, NEEDS_LINE_1_LOAD, DOING_LINE_1_LOAD_BAR);
 
-or2$    or2$_from_mem_stall(from_mem_stall, STALL_REASON_0, STALL_REASON_1);
+nand2$  nand2$_from_mem_stall(from_mem_stall, STALL_REASON_0_bar, STALL_REASON_1_bar);
 
 /*** EASY ASSIGN STATEMENTS ***/
 

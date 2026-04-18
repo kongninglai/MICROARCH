@@ -220,7 +220,7 @@ module backend_top #(
     wire [31:0]     from_ag_pred_eip;
     wire [1:0]      from_ag_exception;
     wire            from_ag_valid;
-    wire            from_ag_stall;
+    wire            from_ag_stall_bar;
     wire            from_ag_we_pipe_reg;
 
     /* AG TO DEP */
@@ -502,7 +502,7 @@ module backend_top #(
         .to_rr_pred_eip(to_rr_pred_eip),
         .to_rr_exception(to_rr_exception),
         .to_rr_valid(to_rr_valid),
-        .from_ag_stall(from_ag_stall),
+        .from_ag_stall_bar(from_ag_stall_bar),
         .from_wb_flush(from_wb_flush),
         .from_ex_cmps_found(from_ex_cmps_found),
         .interrupt(DMA_INT),
@@ -762,7 +762,7 @@ module backend_top #(
         .from_ag_exception(from_ag_exception),
         .from_ag_valid(from_ag_valid),
 
-        .from_ag_stall(from_ag_stall),
+        .from_ag_stall_bar(from_ag_stall_bar),
         .from_ag_we_pipe_reg(from_ag_we_pipe_reg),
 
         .from_ag_dstA_size(from_ag_dstA_size),

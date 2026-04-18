@@ -19,7 +19,7 @@ module stage_rr #(
     input [1:0]  to_rr_exception,
     input to_rr_valid,
 
-    input from_ag_stall,
+    input from_ag_stall_bar,
     input from_dep_unit_data_dep,
 
     input from_wb_flush,
@@ -113,13 +113,14 @@ module stage_rr #(
     big_eq #(.WIDTH(8)) eq_a7(.eq(cmps), .in0(to_rr_opcode), .in1(8'ha7));
     big_eq #(.WIDTH(8)) eq_cf(.eq(iret), .in0(to_rr_opcode), .in1(8'hcf));
     
-    wire        ucode_stall;
+    wire        ucode_stall_bar;
 
     wire cmps0, cmps1, cmps2;
     wire iret0;
     wire fsm_stall, intex, handling_intex;
     wire not_intex_or_iret;
-    or2$ or2_fsm_stall(fsm_stall, from_ag_stall, from_dep_unit_data_dep);
+    wire no_dep;
+    nand2$ nand2_fsm_stall(fsm_stall, from_ag_stall_bar, no_dep);
     ucode_fsm ucode_fsm_inst (
         .clk(clk),
         .rst_n(rst_n),
@@ -144,7 +145,7 @@ module stage_rr #(
         .clear_int(clear_int),
         .intex(intex),
         .handling_intex(handling_intex),
-        .ucode_stall(ucode_stall),
+        .ucode_stall_bar(ucode_stall_bar),
         .ucode_valid(from_rr_ucode_valid),
         .ucode_sig(ucode_sig),
         .not_intex_or_iret(not_intex_or_iret)
@@ -348,8 +349,8 @@ module stage_rr #(
 
     // if data_dep: bubble -> valid = 0
     // from_rr_valid = to_rr_valid & ~data_dep
-    wire no_dep, is_hlt, is_hlt_valid, is_not_hlt, valid_dep;
-    and2$ valid_data_dep(valid_dep, from_rr_ucode_valid, from_dep_unit_data_dep);
+    wire is_hlt, is_hlt_valid_bar, is_not_hlt, valid_dep_bar;
+    nand2$ valid_data_dep_bar(valid_dep_bar, from_rr_ucode_valid, from_dep_unit_data_dep);
     inv1$ inv_dep(no_dep, from_dep_unit_data_dep);
 
     big_eq #(
@@ -359,7 +360,7 @@ module stage_rr #(
       .eq(is_hlt)
     );
 
-    and2$ and2$_is_hlt_valid(is_hlt_valid, is_hlt, from_rr_ucode_valid);
+    nand2$ nand2$_is_hlt_valid_bar(is_hlt_valid_bar, is_hlt, from_rr_ucode_valid);
 
     big_neq #(
       .WIDTH(8)
@@ -371,8 +372,8 @@ module stage_rr #(
     and2$ and_valid(from_rr_valid, from_rr_ucode_valid, no_dep);
 
     /* TODO: ADD STALL LOGIC */
-    or4$ or_from_rr_stall(from_rr_stall, ucode_stall, from_ag_stall, valid_dep, is_hlt_valid);
+    nand4$ nand_from_rr_stall(from_rr_stall, ucode_stall_bar, from_ag_stall_bar, valid_dep_bar, is_hlt_valid_bar);
 
     assign to_dep_needREGS = {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]};
-    inv1$  inv1$_from_rr_we_pipe_reg(from_rr_we_pipe_reg, from_ag_stall);
+    assign from_rr_we_pipe_reg = from_ag_stall_bar;
 endmodule
