@@ -17,7 +17,7 @@ module logic_incr_amt(
     rom4b32w$ ROM_sum_1 (.A({rom_sum, prefix_amount}), .OE(1'b1), .DOUT(sum_1_rom));
 
     initial begin
-        $readmemb("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_sum_1.data", ROM_sum_1.mem);
+        $readmemb("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_sum_1.data", ROM_sum_1.mem);
     end
 
     PA_4b PA_4b_sum1 (
