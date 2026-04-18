@@ -49,9 +49,8 @@ module fetch_buffer(
 
     //True Consume Logic
     wire [3:0] gated_instr_len, gated_instr_len_prebuf;
-    wire true_consume, stall_bar; 
-    inv1$ inv_stall_bar(stall_bar, from_de_stall);
-    and2$ and_true_consume(true_consume, from_de_valid, stall_bar); //only consume instruction (decr tail ptr) if de is valid and not stalled
+    wire true_consume; 
+    nor2$ nor_true_consume(true_consume, from_de_valid_bar, from_de_stall); //only consume instruction (decr tail ptr) if de is valid and not stalled
     
     //Correct Instruction Length
     and2$ gate_len0(gated_instr_len_prebuf[0], from_de_instr_len[0], true_consume);

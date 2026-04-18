@@ -65,7 +65,7 @@ module intgr_fshifter_decode(
         .ready() //unused
     );    
 
-    wire to_pr_ld_pr_rr;
+    wire to_pr_ld_pr_rr, to_pr_ld_pr_rr_prebuf;
     wire to_f_ld_eip;
     wire to_pr_prefix_rep, to_pr_prefix_op_size, to_pr_prefix_ext, to_pr_prefix_seg;
     wire [2:0] to_pr_prefix_seg_ov_id, to_pr_imm_size;
@@ -115,10 +115,12 @@ module intgr_fshifter_decode(
         .addressing_mode(to_pr_addressing_mode),
         .instr_length(to_pr_instr_length),
 
-        .ld_pr_rr(to_pr_ld_pr_rr),
+        .ld_pr_rr(to_pr_ld_pr_rr_prebuf),
         .exception_flags(to_pr_exception_flags)
 
     );
+
+    bufferH256$   bufferH256$_to_pr_ld_pr_rr(to_pr_ld_pr_rr, to_pr_ld_pr_rr_prebuf);
 
     
     //decoder output

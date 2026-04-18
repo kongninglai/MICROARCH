@@ -43,7 +43,8 @@ module stage_decode(
     output wire [1:0] exception_flags
 
 );
-
+    wire [7:0] modrm_prebuf;
+    bufferH16$  bufferH16$_modrm[7:0](modrm, modrm_prebuf);
     wire modrm_v;
     wire [1:0] addressing_mode_prebuf;
     block_decoder DECODER(
@@ -54,7 +55,7 @@ module stage_decode(
         .prefix_seg(prefix_seg),
         .prefix_ext(prefix_ext),
         .opcode(opcode),
-        .modrm(modrm),
+        .modrm(modrm_prebuf),
         .modrm_v(modrm_v),
         .sib(sib),
         .disp_size_mux(disp_size_mux),
