@@ -1,0 +1,461 @@
+# Preference setting overrides
+gui_create_pref_key -category {Globals} -key {load_detail_for_funcov} -value_type {bool} -value {false}
+gui_create_pref_category -category {schem_obj_name}
+gui_create_pref_key -category {schem_obj_name} -key {show_cell_and_pin_with_symbol_name} -value_type {bool} -value {false}
+gui_create_pref_key -category {schem_pin_hc} -key {textExtFont} -value_type {string} -value {Helvetica,10,-1,5,50,0,0,0,0,0}
+
+# State setting overrides
+gui_state_default_create -off -ini
+gui_set_state_value -category Globals -key recent_databases -value {{gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/sim/pipeline_top_tb.dump.vpd -design V2} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/sim/pipeline_top_tb.dump.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/fetch_decode_top_tb/sim/fetch_decode_top_tb.dump.vpd -design V1} {gui_open_db -file fetch_decode_top_tb.dump.vpd -design V1} {gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/fetch_decode_top_tb/sim/fetch_decode_top_tb.dump.vpd -design V2}}
+gui_set_state_value -category Globals -key recent_sessions -value {{gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/sim/session.pipeline_top_tb.dump.vpd.tcl} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/fetch_decode_top_tb/sim/session.fetch_decode_top_tb.dump.vpd.tcl} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/fetch_decode_top_tb/sim/session.fetch_decode_top_tb.dump.vpd.tcl -ignore_errors} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl -ignore_errors} {gui_load_session -ignore_errors -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/session.intgr_fshifter_decode.vpd.tcl}}
+gui_set_state_value -category Layout -key child_console_size_x -value 1533
+gui_set_state_value -category Layout -key child_console_size_y -value 170
+gui_set_state_value -category Layout -key child_data_coltype -value 145
+gui_set_state_value -category Layout -key child_data_colvalue -value 169
+gui_set_state_value -category Layout -key child_data_colvariable -value 214
+gui_set_state_value -category Layout -key child_data_size_x -value 534
+gui_set_state_value -category Layout -key child_data_size_y -value 617
+gui_set_state_value -category Layout -key child_driver_size_x -value 1141
+gui_set_state_value -category Layout -key child_driver_size_y -value 332
+gui_set_state_value -category Layout -key child_hier_col3 -value {-1}
+gui_set_state_value -category Layout -key child_hier_colhier -value 289
+gui_set_state_value -category Layout -key child_hier_colpd -value 0
+gui_set_state_value -category Layout -key child_hier_coltype -value 54
+gui_set_state_value -category Layout -key child_hier_size_x -value 346
+gui_set_state_value -category Layout -key child_hier_size_y -value 617
+gui_set_state_value -category Layout -key child_hier_sort_column -value 1
+gui_set_state_value -category Layout -key child_schematic_docknewline -value false
+gui_set_state_value -category Layout -key child_schematic_pos_x -value {-2}
+gui_set_state_value -category Layout -key child_schematic_pos_y -value {-15}
+gui_set_state_value -category Layout -key child_schematic_size_x -value 654
+gui_set_state_value -category Layout -key child_schematic_size_y -value 612
+gui_set_state_value -category Layout -key child_source_docknewline -value false
+gui_set_state_value -category Layout -key child_source_pos_x -value {-2}
+gui_set_state_value -category Layout -key child_source_pos_y -value {-15}
+gui_set_state_value -category Layout -key child_source_size_x -value 656
+gui_set_state_value -category Layout -key child_source_size_y -value 612
+gui_set_state_value -category Layout -key child_wave_colname -value 183
+gui_set_state_value -category Layout -key child_wave_colvalue -value 183
+gui_set_state_value -category Layout -key child_wave_left -value 370
+gui_set_state_value -category Layout -key child_wave_right -value 904
+gui_set_state_value -category Layout -key main_pos_x -value 8
+gui_set_state_value -category Layout -key main_pos_y -value 31
+gui_set_state_value -category Layout -key main_size_x -value 1541
+gui_set_state_value -category Layout -key main_size_y -value 917
+gui_set_state_value -category Layout -key stand_wave_child_docknewline -value false
+gui_set_state_value -category Layout -key stand_wave_child_pos_x -value {-2}
+gui_set_state_value -category Layout -key stand_wave_child_pos_y -value {-15}
+gui_set_state_value -category Layout -key stand_wave_child_size_x -value 1284
+gui_set_state_value -category Layout -key stand_wave_child_size_y -value 544
+gui_set_state_value -category Layout -key stand_wave_top_pos_x -value 1536
+gui_set_state_value -category Layout -key stand_wave_top_pos_y -value 23
+gui_set_state_value -category Layout -key stand_wave_top_size_x -value 2815
+gui_set_state_value -category Layout -key stand_wave_top_size_y -value 671
+gui_set_state_value -category Driver -key driver_add_to_wave -value true
+gui_set_state_value -category SaveSession -key single_view_name -value Wave.1
+gui_set_state_value -category SaveSession -key toplevel_window_name -value TopLevel.2
+gui_create_state_key -category FindDialog -key m_pMatchCase -value_type bool -value false
+gui_create_state_key -category FindDialog -key m_pMatchWord -value_type bool -value false
+gui_create_state_key -category FindDialog -key m_pUseCombo -value_type string -value {}
+gui_create_state_key -category FindDialog -key m_pWrapAround -value_type bool -value true
+gui_create_state_key -category Widget_History -key TopLevel.1|qt_left_dock|DockWnd1|HSPane.1|pages|Hier.1|hbox|textfilter -value_type string -value {full* *full full mux2_16}
+gui_create_state_key -category Widget_History -key TopLevel.1|qt_left_dock|DockWnd2|DLPane.1|pages|Data.1|hbox|textfilter -value_type string -value {*tail* *tail *tail_ptr *valid}
+gui_create_state_key -category Widget_History -key TopLevel.1|qt_left_dock|DockWnd3|HSPane.1|pages|Hier.1|hbox|textfilter -value_type string -value {mux4_16_ICACHE_RD_DATA* full_cc* {}}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|BuildTab|m_rebuildBtnGroup|m_customCmdCombo} -value_type string -value {{vcs -full64 -v2005 -debug_all -f ../master*; ./simv} {vcs -debug_all -f master}}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|BuildTab|m_rebuildBtnGroup|m_customDirCombo} -value_type string -value {/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/ /home/ecelrc/students/aak3265/Spring2026/pset1b/}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_VPDCombo} -value_type string -value {inter.vpd intgr_fshifter_decode.vpd TOP.dump.vpd}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_argsCombo} -value_type string -value {{-ucligui  } {-ucligui }}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_curDirCombo} -value_type string -value {/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv /home/ecelrc/students/aak3265/Spring2026/pset1b /home/ecelrc/students/aak3265/vlsi1/lab3_temp/rtl /home/ecelrc/students/aak3265/vlsi1/lab3}
+gui_create_state_key -category Widget_History -key {dlgSimSetup|m_setupTab|tab pages|SimTab|m_exeCombo} -value_type string -value {simv /home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/intgr_fshifter_decode_tb/simv/simv /home/ecelrc/students/aak3265/Spring2026/pset1b/simv /home/ecelrc/students/aak3265/vlsi1/lab3_temp/rtl/simv ./simv}
+gui_state_default_create -off
+
+# Begin command logging
+gui_open_db -file /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/sim/pipeline_top_auto_tb.dump.vpd -design V1
+gui_list_expand -id  Hier.1   pipeline_top_auto_tb
+gui_list_collapse -id  Hier.1   pipeline_top_auto_tb
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.clk   }
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.clk  pipeline_top_auto_tb.rst_n   }
+gui_open_window Wave
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.clk pipeline_top_auto_tb.rst_n } -insertionbar
+gui_list_set_filter -id Data.1 -text {*stream_done}
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.stream_done   }
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.stream_done } -insertionbar
+gui_list_set_filter -id Data.1 -text {*to_rr_}
+gui_list_expand -id  Hier.1   pipeline_top_auto_tb
+gui_list_action -id  Hier.1 pipeline_top_auto_tb
+gui_list_set_filter -id Data.1 -reset
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.halt_ieip[31:0]}   }
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.to_de_valid   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.stalled_cnt[31:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.stalled_cnt[31:0]}  {pipeline_top_auto_tb.accepted_cnt[31:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.accepted_cnt[31:0]} {pipeline_top_auto_tb.stalled_cnt[31:0]} } -insertionbar
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.to_rr_opcode[7:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.to_rr_opcode[7:0]} } -insertionbar
+gui_list_set_filter -id Data.1 -text {*halt*}
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.halt_ieip[31:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.halt_ieip[31:0]} } -insertionbar
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP   }
+gui_list_expand -id Hier.1   pipeline_top_auto_tb.FRONTEND_TOP
+gui_list_action -id  Hier.1 pipeline_top_auto_tb.FRONTEND_TOP
+gui_list_action -id  Hier.1 pipeline_top_auto_tb.FRONTEND_TOP
+gui_list_collapse -id  Hier.1   pipeline_top_auto_tb.FRONTEND_TOP
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.full_cache_inst -current_item_type Scope  -selected  { pipeline_top_auto_tb.full_cache_inst   }
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.dut -current_item_type Scope  -selected  { pipeline_top_auto_tb.dut   }
+gui_list_set_filter -id Data.1 -text {*to_wb*}
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.dut.to_wb_ieip[31:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.dut.to_wb_ieip[31:0]} } -insertionbar
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.dut.to_wb_valid   }
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.dut.to_wb_valid } -insertionbar
+gui_list_set_filter -id Data.1 -text {*to_ag_valid*}
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.dut.to_ag_valid   }
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.dut.to_ag_valid } -insertionbar
+gui_list_set_filter -id Data.1 -text {*to_mem_valid*}
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.dut.to_mem_valid   }
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.dut.to_mem_valid } -insertionbar
+gui_list_set_filter -id Data.1 -text {*to_ex_valid*}
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.dut.to_ex_valid   }
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.dut.to_ex_valid } -insertionbar
+gui_list_set_filter -id Data.1 -text {*to_wb_valid*}
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.dut.to_wb_valid   }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.dut.to_wb_valid   }
+gui_list_move  -id  Wave.1    -sid  Wave.1   -after pipeline_top_auto_tb.dut.to_ex_valid {{pipeline_top_auto_tb.dut.to_wb_valid}} 
+gui_list_set_filter -id Data.1 -text {**}
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb -current_item_type Scope  -selected  { pipeline_top_auto_tb   }
+gui_list_set_filter -id Data.1 -text {*ITLB_*}
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.ITLB_VPN[19:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.ITLB_VPN[19:0]}  {pipeline_top_auto_tb.ITLB_PFN_OUT[2:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.ITLB_VPN[19:0]}  {pipeline_top_auto_tb.ITLB_PFN_OUT[2:0]}  pipeline_top_auto_tb.ITLB_PAGE_FAULT_OUT   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.ITLB_VPN[19:0]} {pipeline_top_auto_tb.ITLB_PFN_OUT[2:0]} pipeline_top_auto_tb.ITLB_PAGE_FAULT_OUT } -insertionbar
+gui_list_set_filter -id Data.1 -text {*ICACHE*}
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.ITLB_VPN[19:0]}  {pipeline_top_auto_tb.ITLB_PFN_OUT[2:0]}  pipeline_top_auto_tb.ITLB_PAGE_FAULT_OUT  pipeline_top_auto_tb.ICACHE_VALID   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.ITLB_VPN[19:0]}  {pipeline_top_auto_tb.ITLB_PFN_OUT[2:0]}  pipeline_top_auto_tb.ITLB_PAGE_FAULT_OUT  pipeline_top_auto_tb.ICACHE_VALID  {pipeline_top_auto_tb.ICACHE_HIT_DATA[127:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.ICACHE_VALID {pipeline_top_auto_tb.ICACHE_HIT_DATA[127:0]} } -insertionbar
+gui_list_set_filter -id Data.1 -text {*F_PAGE*}
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.F_PAGE_OFFSET[11:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.F_PAGE_OFFSET[11:0]} } -insertionbar
+gui_list_set_filter -id Data.1 -text {*to_rr*}
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.to_rr_ieip[31:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.to_rr_ieip[31:0]} } -insertionbar
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.to_rr_opcode[7:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.to_rr_opcode[7:0]}  pipeline_top_auto_tb.to_rr_valid   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.to_rr_opcode[7:0]} pipeline_top_auto_tb.to_rr_valid } -insertionbar
+gui_list_set_filter -id Data.1 -text {*from_rr_cs*}
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.from_rr_cs[15:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.from_rr_cs[15:0]} } -insertionbar
+gui_list_set_filter -id Data.1 -text {*from_rr_stall*}
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.from_rr_stall   }
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.from_rr_stall } -insertionbar
+gui_list_set_filter -id Data.1 -text {*from_ex_flush*}
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.from_ex_flush   }
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.from_ex_flush } -insertionbar
+gui_list_set_filter -id Data.1 -text {*from_ex_eip_*}
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.from_ex_eip_target[31:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.from_ex_eip_target[31:0]} } -insertionbar
+gui_list_set_filter -id Data.1 -text {*from_ex_br*}
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.from_ex_br_t_nt   }
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.from_ex_br_t_nt  pipeline_top_auto_tb.from_ex_br_valid   }
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.from_ex_br_t_nt pipeline_top_auto_tb.from_ex_br_valid } -insertionbar
+gui_list_set_filter -id Data.1 -text {*from_wb_flush}
+gui_list_select -id Data.1 -selected  { pipeline_top_auto_tb.from_wb_flush   }
+gui_list_add -id Wave.1 -from Data.1 { pipeline_top_auto_tb.from_wb_flush } -insertionbar
+gui_marker_move -id  Wave.1 C1 102
+gui_zoom -window Wave.1 -factor 0.5
+gui_zoom -window Wave.1 -factor 0.5
+gui_zoom -window Wave.1 -factor 0.5
+gui_zoom -window Wave.1 -factor 0.5
+gui_zoom -window Wave.1 -factor 0.5
+gui_zoom -window Wave.1 -factor 0.5
+gui_zoom -window Wave.1 -factor 0.5
+gui_zoom -window Wave.1 -factor 0.5
+gui_set_time_units 1ns
+gui_marker_move -id  Wave.1 C1 11.422
+gui_zoom -window Wave.1 -factor 0.5
+gui_zoom -window Wave.1 -factor 0.5
+gui_zoom -window Wave.1 -factor 0.5
+gui_zoom -window Wave.1 -factor 0.5
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.from_ex_eip_target[31:0]}   }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.from_ex_br_t_nt   }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.from_ex_br_valid   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.from_ex_eip_target[31:0]}   }
+gui_marker_move -id  Wave.1 C1 598.703
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_marker_move -id  Wave.1 C1 384.32
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_marker_move -id  Wave.1 C1 7416.274
+gui_zoom -window Wave.1 -full
+gui_marker_move -id  Wave.1 C1 1083589.545
+gui_marker_move -id  Wave.1 C1 413141.164
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.4
+gui_wv_zoom_timerange -id  Wave.1 25368.317 137713.721
+gui_wv_scroll_hslidermove -id  Wave.1 0
+gui_wv_zoom_timerange -id  Wave.1 18957.492 27482.001
+gui_marker_move -id  Wave.1 C1 23536.08
+gui_list_select -id Data.1 -selected  {  }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.stream_done   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.dut.to_wb_ieip[31:0]}   }
+gui_marker_move -id  Wave.1 C1 23424.32
+gui_zoom -window Wave.1 -factor 2
+gui_zoom -window Wave.1 -factor 2
+gui_marker_move -id  Wave.1 C1 23780.299
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_marker_move -id  Wave.1 C1 23920.08
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.to_rr_ieip[31:0]}   }
+gui_list_move  -id  Wave.1    -sid  Wave.1   -after {pipeline_top_auto_tb.accepted_cnt[31:0]} {{pipeline_top_auto_tb.to_rr_ieip[31:0]}} 
+gui_list_move  -id  Wave.1    -sid  Wave.1   -after {pipeline_top_auto_tb.dut.to_wb_ieip[31:0]} {{pipeline_top_auto_tb.to_rr_ieip[31:0]}} 
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.dut.to_wb_ieip[31:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.to_rr_ieip[31:0]}   }
+gui_marker_move -id  Wave.1 C1 23536.08
+gui_marker_move -id  Wave.1 C1 23907.47
+gui_marker_move -id  Wave.1 C1 23927.83
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.from_rr_stall   }
+gui_marker_move -id  Wave.1 C1 23621.008
+gui_marker_move -id  Wave.1 C1 23442.408
+gui_marker_move -id  Wave.1 C1 23548.602
+gui_marker_move -id  Wave.1 C1 23606.527
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP   }
+gui_list_expand -id Hier.1   pipeline_top_auto_tb.FRONTEND_TOP
+gui_list_action -id  Hier.1 pipeline_top_auto_tb.FRONTEND_TOP
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR   }
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.STAGE_FETCH_FRONT_HALF -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.STAGE_FETCH_FRONT_HALF   }
+gui_list_expand -id Hier.1   pipeline_top_auto_tb.FRONTEND_TOP.STAGE_FETCH_FRONT_HALF
+gui_list_action -id  Hier.1 pipeline_top_auto_tb.FRONTEND_TOP.STAGE_FETCH_FRONT_HALF
+gui_list_expand -id Hier.1   pipeline_top_auto_tb.FRONTEND_TOP.STAGE_FETCH_FRONT_HALF.FETCH_POINTER
+gui_list_action -id  Hier.1 pipeline_top_auto_tb.FRONTEND_TOP.STAGE_FETCH_FRONT_HALF.FETCH_POINTER
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.STAGE_FETCH_FRONT_HALF.FETCH_POINTER -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.STAGE_FETCH_FRONT_HALF.FETCH_POINTER   }
+gui_list_collapse -id  Hier.1   pipeline_top_auto_tb.FRONTEND_TOP.STAGE_FETCH_FRONT_HALF
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR   }
+gui_list_expand -id  Hier.1   pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR
+gui_list_expand -id  Hier.1   pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC   }
+gui_list_expand -id  Hier.1   pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP   }
+gui_list_expand -id  Hier.1   pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP
+gui_list_action -id  Hier.1 pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.mux0 -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.mux0   }
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP   }
+gui_list_set_filter -id Data.1 -reset
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in0[31:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in0[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in1[31:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in0[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in1[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in2[31:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in0[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in1[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in2[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in3[31:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in0[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in1[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in2[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in3[31:0]}  pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s0   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in0[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in1[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in2[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in3[31:0]}  pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s0  pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s1   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in0[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in1[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in2[31:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in3[31:0]}  pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s0  pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s1  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.out[31:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.out[31:0]} {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in0[31:0]} {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in1[31:0]} {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in2[31:0]} {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in3[31:0]} pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s0 pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s1 } -insertionbar
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in2[31:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in3[31:0]}   }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s0   }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s1   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in0[31:0]}   }
+gui_marker_move -id  Wave.1 C1 23396.27
+gui_marker_move -id  Wave.1 C1 23319.319
+gui_marker_move -id  Wave.1 C1 23396.49
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s0   }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s1   }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s0   }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s1   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.in0[31:0]}   }
+gui_marker_move -id  Wave.1 C1 23396.27
+gui_list_collapse -id  Hier.1   pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.instr_length[3:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.instr_length[3:0]} } -insertionbar
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.o_eip[31:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.o_eip[31:0]} } -insertionbar
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.i_eip[31:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.i_eip[31:0]} } -insertionbar
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.instr_length[3:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.i_eip[31:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.instr_length[3:0]}   }
+gui_marker_move -id  Wave.1 C1 23268.635
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel -.2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_scroll -window Wave.1 -hrel .2
+gui_marker_move -id  Wave.1 C1 23396.68
+gui_marker_move -id  Wave.1 C1 23278.289
+gui_marker_move -id  Wave.1 C1 23395.53
+gui_list_collapse -id  Hier.1   pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC
+gui_list_expand -id  Hier.1   pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER   }
+gui_list_select -id Hier.1 -current_item_name pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT -current_item_type Scope  -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.rom_sum[2:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.rom_sum[2:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.prefix_amount[2:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.rom_sum[2:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.prefix_amount[2:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.disp_plus_sib[2:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.rom_sum[2:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.prefix_amount[2:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.disp_plus_sib[2:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.sum_1[3:0]}   }
+gui_list_select -id Data.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.rom_sum[2:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.prefix_amount[2:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.disp_plus_sib[2:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.sum_1[3:0]}  {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.incr_amt[3:0]}   }
+gui_list_add -id Wave.1 -from Data.1 { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.rom_sum[2:0]} {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.disp_plus_sib[2:0]} {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.prefix_amount[2:0]} {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.incr_amt[3:0]} {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.sum_1[3:0]} } -insertionbar
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.rom_sum[2:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.disp_plus_sib[2:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.prefix_amount[2:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.incr_amt[3:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.sum_1[3:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.i_eip[31:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.o_eip[31:0]}   }
+gui_delete_selected -id  Wave.1
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.i_eip[31:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.instr_length[3:0]}   }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s1   }
+gui_list_select -id Wave.1 -selected  { pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.EIP_LOGIC.MUX_CHOOSE_EIP.s0   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.STAGE_DECODE.DECODER.EIP_INCR_AMT.rom_sum[2:0]}   }
+gui_list_select -id Wave.1 -selected  { {pipeline_top_auto_tb.to_rr_opcode[7:0]}   }
+gui_marker_move -id  Wave.1 C1 22462.524

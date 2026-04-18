@@ -565,7 +565,6 @@ initial begin
   handle_hlt = 0;
 end
 
-reg [31:0] halt_ieip;
 always @(posedge clk) begin
   
   if (!rst_n) begin 

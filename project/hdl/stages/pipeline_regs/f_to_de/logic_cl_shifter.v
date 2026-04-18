@@ -16,7 +16,7 @@ module logic_cl_shifter(
 
     //Jump Middle of Cache Line Signal Logic (If tail_ptr zero - there was a flush, and eip is unaligned, then middle of cache line jump)
     //Use tail pointer instead of eip redirection signal bc tail pointer is latched and eip redir is combinational
-    wire tail_ptr_zero_4bit, tail_ptr_zero, tail_ptr_zero_1bit, eip_unaligned, unaligned_eip_redir;
+    wire tail_ptr_zero_4bit, tail_ptr_zero, tail_ptr_zero_1bit, eip_unaligned;
     inv1$ inv_tail_ptr_zero(.in(tail_ptr[4]), .out(tail_ptr_zero_1bit));
     nor4$ nor_tail_ptr_zero( //if offset bits are all 0, then flush has occured or startup
         .in0(tail_ptr[3]), .in1(tail_ptr[2]), .in2(tail_ptr[1]), .in3(tail_ptr[0]),

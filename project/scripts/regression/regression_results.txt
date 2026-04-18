@@ -1,21 +1,25 @@
-Regression run: Sun Apr 12 18:41:25 CDT 2026
+Regression run: Fri Apr 17 20:55:22 CDT 2026
 ========================================
+Total tests: 37
 PASS: AAA/aaa0.txt
 PASS: AAA/aaa1.txt
 PASS: ADC/adc.txt
 PASS: ADD/add.txt
 PASS: AND/and.txt
 PASS: BSF/BSF_tests_proc.txt
-PASS: CACHE/CACHE_tests.proc.txt
+FAIL: CACHE/CACHE_tests.proc.txt
 PASS: CLD/CLD_tests_proc.txt
-PASS: CMOVC/CMOVC_tests_proc.txt
+FAIL: CMOVC/CMOVC_tests_proc.txt
 PASS: CMPXCHG/CMPXCHG_tests_proc.txt
 PASS: CONTROL/cond_tests_proc.txt
 PASS: CONTROL/uncond_tests_proc.txt
-PASS: DEPS/DEPS_tests_proc.txt
+PASS: cross_cache_line_2x_wb.txt
+PASS: dcache_test.txt
+FAIL: DEPS/DEPS_tests_proc.txt
+FAIL: exception_test_correct_format.txt
 PASS: HLT/HLT_tests_proc.txt
 PASS: MISC/MISC1_tests_proc.txt
-PASS: MISC/MISC2_tests_proc.txt
+FAIL: MISC/MISC2_tests_proc.txt
 PASS: MISC/MISC3_tests_proc.txt
 PASS: MOV/MOV_tests_proc.txt
 PASS: MOVQ/MOVQ_tests_proc.txt
@@ -32,10 +36,7 @@ PASS: SAL/SAL_tests_proc.txt
 PASS: SAR/SAR_tests_proc.txt
 PASS: SBB/SBB_tests_proc.txt
 PASS: STD/STD_tests_proc.txt
-PASS: XCHG/XCHG_tests_proc.txt
-PASS: cross_cache_line_2x_wb.txt
-PASS: dcache_test.txt
-PASS: exception_test_correct_format.txt
 PASS: touch_all_regs.txt
+PASS: XCHG/XCHG_tests_proc.txt
 ========================================
-Total: 37  PASSED: 37  FAILED: 0
+Total: 37  PASSED: 32  FAILED: 5
