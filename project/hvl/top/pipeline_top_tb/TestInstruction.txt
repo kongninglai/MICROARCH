@@ -8,9 +8,9 @@ Changes you must make to run the correct program:
 do a global search and replace to change the file location of the memory to 
 the one that you are currently using. 
 - For example, if you are testing the dcache, the file path should be:
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_dcache/mem_rank0_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/testcase_dcache/mem_rank0_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem);
 - If you are testing the exception, the file path should be:
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_exception/mem_rank0_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/testcase_exception/mem_rank0_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem);
 - In either of these cases, you need to generate the correct memory file by running the readmemh.py script in project/scripts/readmemh directory. Then, take the generated memory, which will be in 
 mem_init and move into a different directory that you can name after your testcase. 
 
