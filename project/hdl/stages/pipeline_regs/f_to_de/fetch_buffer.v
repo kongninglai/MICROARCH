@@ -139,7 +139,7 @@ module fetch_buffer(
 
     wire from_f_cl_pf_buf16;
     assign pf_expn_bits_in[0] = from_f_cl_pf;
-    assign pf_expn_bits_in[247:1] = {247{1'bX}};
+    assign pf_expn_bits_in[247:1] = {247{1'b1}};
 
     shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(shft_reg_clr_bar), .shift(shft_reg_we_internal), .instr_len(gated_instr_len), .inbytes(pf_expn_bits_in), 
         .wr_en(wr_en), .outbytes(pf_expn_bits_out), .ready()
