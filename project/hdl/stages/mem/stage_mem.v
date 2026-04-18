@@ -516,7 +516,7 @@ endgenerate
 
 /*** VALID AND STALL ***/
 
-and2$   and2$_from_mem_valid(from_mem_valid, from_mem_stall_bar, to_mem_valid_buf16);
+and3$   and3$_from_mem_valid(from_mem_valid, from_mem_stall_bar, to_mem_valid_buf16, FLUSH_BAR);
 
 wire  STALL_REASON_0, STALL_REASON_1;
 
