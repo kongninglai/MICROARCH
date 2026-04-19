@@ -10,3 +10,4 @@ mem*.hex
 **logs**
 *.lock
 **provided_modules**
+**init_mem**
