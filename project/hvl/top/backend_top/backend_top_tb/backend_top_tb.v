@@ -80,6 +80,7 @@ wire [2:0] DMA_PFN;
 
 /*** OUTPUTS FROM DUT ***/
 wire from_rr_stall;
+wire [15:0] from_regunit_CS;
 wire [31:0] from_regunit_cs_limit;
 wire from_ex_flush;
 wire from_ex_br_t_nt;
@@ -108,6 +109,7 @@ backend_top dut (
   .to_rr_valid(to_rr_valid),
 
   .from_rr_stall(from_rr_stall),
+  .from_regunit_CS(from_regunit_CS),
   .from_regunit_cs_limit(from_regunit_cs_limit),
   .from_ex_flush(from_ex_flush),
   .from_ex_br_t_nt(from_ex_br_t_nt),

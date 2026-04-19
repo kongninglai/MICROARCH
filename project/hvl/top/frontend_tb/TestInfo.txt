@@ -1,0 +1,16 @@
+Each testcase_<name>.txt file should contain the following information in this exact order:
+    Format for Dcache Test Case: i_eip o_eip prefix opcode has_modrm modrm imm_sz imm
+    Format for Exception Test Case: i_eip o_eip prefix opcode has_modrm modrm imm_sz imm exception
+    
+    i.e.
+    00000000 00000005 00 ba 0 00 4 000000000A00
+    00000005 00000008 10 8e 1 da 0 000000000000
+    00000008 0000000d 10 81 1 c2 2 000000000100
+This file is used as an input to trace file parser, which figures out the expected 
+decoded values and compares them directly against the output of the integrated fetch
+and decode (which is done by the verify function).
+
+You can change the name of this file in the tb by searching for <trace_file>.
+
+If you get a file not found error when running, make sure to move your testcase_<name.txt> file 
+to the directory one above the sim directory or wherever you call vcs command from. 

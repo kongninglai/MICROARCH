@@ -26,6 +26,7 @@ module backend_top #(
 
     /*** To FRONTEND ***/
     output from_rr_stall,
+    output [15:0] from_regunit_CS,
     output [31:0] from_regunit_cs_limit,
     output from_ex_flush,
     output from_ex_br_t_nt,
@@ -137,7 +138,6 @@ module backend_top #(
     wire [15:0]     from_regunit_SREG2;
     wire [31:0]     from_regunit_SLIM1;
     wire [31:0]     from_regunit_SLIM2;
-    wire [15:0]     from_regunit_CS;
     wire [63:0]     from_regunit_MMA;
     wire [63:0]     from_regunit_MMB;
     wire [31:0]     from_regunit_srcregA;
@@ -221,7 +221,7 @@ module backend_top #(
     wire [31:0]     from_ag_pred_eip;
     wire [1:0]      from_ag_exception;
     wire            from_ag_valid;
-    wire            from_ag_stall;
+    wire            from_ag_stall_bar;
     wire            from_ag_we_pipe_reg;
 
     /* AG TO DEP */
@@ -433,10 +433,14 @@ module backend_top #(
     wire [31:0] to_ex_tempEIP;
     wire [15:0] to_ex_tempCS;
     wire [1:0]  to_rr_temp_exception;
-
     /*** DEP UNIT ***/
     wire from_dep_unit_data_dep;
     wire [8:0] AG_FW_CONTROL_SIGS, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
+    /*** FLUSH LOGIC ***/
+    wire ex_or_wb_flush_bar, wb_flush_bar;
+    nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar, from_ex_flush, from_wb_flush);
+    inv1$ inv1_wb_flush_bar(wb_flush_bar, from_wb_flush);
+
     /*** FLUSH LOGIC ***/
     wire ex_or_wb_flush_bar, wb_flush_bar;
     nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar, from_ex_flush, from_wb_flush);
@@ -511,7 +515,7 @@ module backend_top #(
         .to_rr_pred_eip(to_rr_pred_eip),
         .to_rr_exception(to_rr_exception),
         .to_rr_valid(to_rr_valid),
-        .from_ag_stall(from_ag_stall),
+        .from_ag_stall_bar(from_ag_stall_bar),
         .from_wb_flush(from_wb_flush),
         .from_ex_cmps_found(from_ex_cmps_found),
         .interrupt(DMA_INT),
@@ -787,7 +791,7 @@ module backend_top #(
         .from_ag_exception(from_ag_exception),
         .from_ag_valid(from_ag_valid),
 
-        .from_ag_stall(from_ag_stall),
+        .from_ag_stall_bar(from_ag_stall_bar),
         .from_ag_we_pipe_reg(from_ag_we_pipe_reg),
 
         .from_ag_dstA_size(from_ag_dstA_size),

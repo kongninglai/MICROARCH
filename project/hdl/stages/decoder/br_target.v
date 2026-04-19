@@ -5,6 +5,6 @@ module br_target(
 );
     //Hardcode to not hit and provide dummy target (can be same as o_eip since it won't be used)
     assign hit = 1'b0;
-    assign bp_eip_target = o_eip; //doesn't matter 
+    assign bp_eip_target = o_eip; //HARDCODE FOR TB (32'h00000015 for integration)
 
 endmodule

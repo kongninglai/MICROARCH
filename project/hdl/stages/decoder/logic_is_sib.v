@@ -2,8 +2,8 @@
 This module determines if a candidate modrm byte has an sib byte.
 
 Critical Path: through is_sib signal
-Delay: 0.75ns
-0.4 + 0.35ns
+Delay: 0.55ns
+0.2 + 0.35ns
 */
 
 module logic_is_sib(
@@ -16,18 +16,14 @@ module logic_is_sib(
     assign mod_bits = candidate_modrm[7:6];
     assign rm_bits = candidate_modrm[2:0];
 
-    //Layer 1: 0.4ns worst case
+    //Layer 1: 0.2ns worst case
     wire is_mod_not_11; //0.35ns
-    big_neq #(2) check_mod (
-        .in0(mod_bits), .in1(2'b11), .neq(is_mod_not_11)
-    );
+    nand2$    nand2$_is_mod_not_11(is_mod_not_11, mod_bits[0], mod_bits[1]);
 
-    wire is_rm_100; //0.4ns
-    big_eq #(3) check_rm (
-        .in0(rm_bits), .in1(3'b100), .eq(is_rm_100)
-    );
+    wire is_rm_X00; //0.2ns
+    nor2$     nor2$_is_rm_X00(is_rm_X00, rm_bits[0], rm_bits[1]);
 
     //Layer 2: 0.35ns
-    and2$ check_sib(.out(is_sib), .in0(is_mod_not_11), .in1(is_rm_100));
+    and3$ check_sib(.out(is_sib), .in0(is_mod_not_11), .in1(is_rm_X00), .in2(rm_bits[2]));
 
 endmodule

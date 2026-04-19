@@ -11,18 +11,16 @@
 +libext+.v
 
 // Automatic Directory Search 
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/adders
-
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/comparators
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/extenders
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/gates
-
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/muxes
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/regs
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/local-lib/shifters
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/adders
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/comparators
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/extenders
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/gates
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/muxes
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/regs
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shifters
 
 // Test Logic 
--y /home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/decoder
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/decoder
 
 // Testbench for Test Logic 
-/home/ecelrc/students/kl38888/MICROARCH/project/hvl/stages/decoder/logic_is_sib_tb/logic_is_sib_tb.v
+/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/decoder/logic_is_sib_tb/logic_is_sib_tb.v

@@ -26,7 +26,7 @@ module ucode_fsm_bh(
     output clear_int,
     output intex,
     output handling_intex,
-    output ucode_stall,
+    output ucode_stall_bar,
     output ucode_valid,
     output [95:0] ucode_sig
 ); 
@@ -57,10 +57,10 @@ module ucode_fsm_bh(
 
     reg [7:0] ucode_opcode;
     wire [95:0] sig_reg, sig_mem, sig_ext, sig_ext_mem;
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg64.data"), .MEMFILE32("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg32.data")) ucoderom_reg(.opcode(ucode_opcode), .sig(sig_reg));
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem64.data"), .MEMFILE32("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem32.data")) ucoderom_mem(.opcode(ucode_opcode), .sig(sig_mem));
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext64.data"), .MEMFILE32("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext32.data")) ucoderom_ext(.opcode(ucode_opcode), .sig(sig_ext));
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem64.data"), .MEMFILE32("/home/ecelrc/students/kl38888/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem32.data")) ucoderom_ext_mem(.opcode(ucode_opcode), .sig(sig_ext_mem));
+    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg32.data")) ucoderom_reg(.opcode(ucode_opcode), .sig(sig_reg));
+    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem32.data")) ucoderom_mem(.opcode(ucode_opcode), .sig(sig_mem));
+    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext32.data")) ucoderom_ext(.opcode(ucode_opcode), .sig(sig_ext));
+    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem32.data")) ucoderom_ext_mem(.opcode(ucode_opcode), .sig(sig_ext_mem));
 
 
     wire counter_start, counter_dec, counter_finish;
@@ -191,7 +191,7 @@ module ucode_fsm_bh(
     assign counter_start        = (state == S_IDLE) & rep & to_rr_valid;
     assign counter_dec          = ((state == S_REP_CMPS0) | (state == S_REP_MOVS0));
     // stall: state=S_IDLE & next_state != S_IDLE || state != S_IDLE & next_state != S_IDLE
-    assign ucode_stall          = (next_state != S_IDLE);
+    assign ucode_stall_bar          = ~(next_state != S_IDLE);
     assign ucode_valid          = (state == S_IDLE) ? to_rr_valid : 1'b1;
     wire [95:0] sig_reg_rm, sig_ext_rm, sig_idle;
     wire addr_mode; // 1 for mem mode, 1 for reg mode

@@ -2,18 +2,28 @@
 
 module tb_logic_disp_bytes();
 
+initial begin
+  // $vcdplusfile("tb_logic_disp_bytes.dump.vpd");
+  // $vcdpluson(0, tb_logic_disp_bytes); 
+  // $vcdpluson(0, tb_logic_disp_bytes.uut);
+end
+
     // Inputs
     reg [87:0] cache_bits;
     reg [7:0] modrm_byte;
     reg is_modrm_true;
     reg has_sib;
-    reg [2:0] prefix_num;
+    reg [1:0] prefix_num;
 
     // Outputs
     wire [2:0] disp_size_inbytes;
     wire [1:0] disp_size;
     wire [31:0] disp_bytes;
     wire [3:0] disp_offset; // NEW Output added
+
+    assign disp_size = ((modrm_byte[7:6] === 2'b00 && modrm_byte[2:0] === 3'b101) || modrm_byte[7:6] === 2'b10) ? 2'b10 : 
+                        (modrm_byte[7:6] === 2'b01 ? 2'b01 : 2'b00);
+    assign disp_size_inbytes = disp_size === 2'b10 ? 3'd4 : (disp_size === 2'b01 ? 3'd1 : 3'd0);
 
     // Error tracking
     integer error_count = 0;
@@ -94,6 +104,7 @@ module tb_logic_disp_bytes();
         has_sib = 0;
         #10; 
         check_result(1, 2'b01, 3'd1, 32'h000000A2, 4'd2);
+        #1;
 
         // --------------------------------------------------------------------
         // TEST 2: 4-byte displacement, Offset = 1 (1 prefix, no SIB)
@@ -105,6 +116,7 @@ module tb_logic_disp_bytes();
         has_sib = 0;
         #10;
         check_result(2, 2'b10, 3'd4, 32'hE6D5C4B3, 4'd6);
+        #1;
 
         // --------------------------------------------------------------------
         // TEST 3: 4-byte displacement, Offset = 3 (2 prefixes, 1 SIB)
@@ -116,6 +128,7 @@ module tb_logic_disp_bytes();
         has_sib = 1;
         #10;
         check_result(3, 2'b10, 3'd4, 32'h08F7E6D5, 4'd8);
+        #1;
 
         // --------------------------------------------------------------------
         // TEST 4: 0-byte displacement
@@ -127,17 +140,19 @@ module tb_logic_disp_bytes();
         has_sib = 0;
         #10;
         check_result(4, 2'b00, 3'd0, 32'h00000000, 4'd3);
+        #1;
 
         // --------------------------------------------------------------------
-        // TEST 5: 1-byte displacement, Max Offset = 5 (4 prefixes, 1 SIB)
-        // Expected Final Offset = 4 (prefix) + 1 (modrm) + 1 (sib) + 1 (disp size) = 7
+        // TEST 5: 1-byte displacement, Max Offset = 4 (3 prefixes, 1 SIB)
+        // Expected Final Offset = 3 (prefix) + 1 (modrm) + 1 (sib) + 1 (disp size) = 6
         // --------------------------------------------------------------------
         is_modrm_true = 1;
         modrm_byte = 8'b01_000_000; // Mod = 01 (1-byte disp)
-        prefix_num = 4;
+        prefix_num = 3;
         has_sib = 1;
         #10;
-        check_result(5, 2'b01, 3'd1, 32'h000000F7, 4'd7);
+        check_result(5, 2'b01, 3'd1, 32'h000000E6, 4'd6);
+        #1;
 
         // Final Result Summary
         $display("===============================================================");

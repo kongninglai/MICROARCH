@@ -61,8 +61,8 @@ module tb_predictor();
         clk = 0;
         rst_bar = 0;
         br_t_nt_in = 0;
-        ext_pht_idx = 0;
-        b_pht_idx = 0;
+        ext_pht_idx = 4'd0;
+        b_pht_idx = 4'd0;
         b_valid = 0;
 
         // Release Reset

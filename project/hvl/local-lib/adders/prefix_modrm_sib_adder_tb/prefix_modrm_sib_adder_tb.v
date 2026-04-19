@@ -3,7 +3,7 @@
 module tb_prefix_modrm_sib_adder();
 
     // Inputs
-    reg [2:0] prefix_num;
+    reg [1:0] prefix_num;
     reg has_modrm; // ADDED: Declare the missing input
     reg has_sib;
 
@@ -41,7 +41,7 @@ module tb_prefix_modrm_sib_adder();
         #10;
 
         // Test valid range of prefix_num (0 to 4)
-        for (i = 0; i <= 4; i = i + 1) begin
+        for (i = 0; i < 4; i = i + 1) begin
             
             // Test with has_modrm = 0 and 1
             for (k = 0; k <= 1; k = k + 1) begin

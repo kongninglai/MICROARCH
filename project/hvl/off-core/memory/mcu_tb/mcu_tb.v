@@ -4,7 +4,6 @@ initial begin
   // $vcdplusfile("mcu_tb.dump.vpd");
   // $vcdpluson(0, mcu_tb); 
   // $vcdpluson(0, mcu_tb.DUT); 
-  // $vcdpluson(0, mcu_tb.DUT.DIO_PER_RANK); 
 end
 
 localparam MEM_BYTE_CAPACITY=32768;
