@@ -3,3 +3,11 @@
 **/__pycache__/**
 session*
 **/timing/**
+.github/**
+**/*results*
+project/scripts
+mem*.hex
+**logs**
+*.lock
+**provided_modules**
+**init_mem**

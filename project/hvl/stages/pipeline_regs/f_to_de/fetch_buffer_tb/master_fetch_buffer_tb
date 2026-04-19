@@ -12,11 +12,9 @@
 
 // Automatic Directory Search 
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/adders
-
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/comparators
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/extenders
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/gates
-
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/muxes
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/regs
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shifters
@@ -27,6 +25,5 @@
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
 
 // Testbench for Test Logic 
-/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/f_to_de/fetch_buffer_tb/fetch_buffer_tail_tb.v
 // /home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/f_to_de/fetch_buffer_tb/fetch_buffer_tb.v
-// /home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/f_to_de/fetch_buffer_tb/fetch_buffer_simple_tb.v
+/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/f_to_de/fetch_buffer_tb/fetch_buffer_simple_tb.v

@@ -26,6 +26,7 @@ module backend_top #(
 
     /*** To FRONTEND ***/
     output from_rr_stall,
+    output [15:0] from_regunit_CS,
     output [31:0] from_regunit_cs_limit,
     output from_ex_flush,
     output from_ex_br_t_nt,
@@ -136,7 +137,6 @@ module backend_top #(
     wire [15:0]     from_regunit_SREG2;
     wire [31:0]     from_regunit_SLIM1;
     wire [31:0]     from_regunit_SLIM2;
-    wire [15:0]     from_regunit_CS;
     wire [63:0]     from_regunit_MMA;
     wire [63:0]     from_regunit_MMB;
     wire [31:0]     from_regunit_srcregA;
@@ -220,7 +220,7 @@ module backend_top #(
     wire [31:0]     from_ag_pred_eip;
     wire [1:0]      from_ag_exception;
     wire            from_ag_valid;
-    wire            from_ag_stall;
+    wire            from_ag_stall_bar;
     wire            from_ag_we_pipe_reg;
 
     /* AG TO DEP */
@@ -502,7 +502,7 @@ module backend_top #(
         .to_rr_pred_eip(to_rr_pred_eip),
         .to_rr_exception(to_rr_exception),
         .to_rr_valid(to_rr_valid),
-        .from_ag_stall(from_ag_stall),
+        .from_ag_stall_bar(from_ag_stall_bar),
         .from_wb_flush(from_wb_flush),
         .from_ex_cmps_found(from_ex_cmps_found),
         .interrupt(DMA_INT),
@@ -762,7 +762,7 @@ module backend_top #(
         .from_ag_exception(from_ag_exception),
         .from_ag_valid(from_ag_valid),
 
-        .from_ag_stall(from_ag_stall),
+        .from_ag_stall_bar(from_ag_stall_bar),
         .from_ag_we_pipe_reg(from_ag_we_pipe_reg),
 
         .from_ag_dstA_size(from_ag_dstA_size),

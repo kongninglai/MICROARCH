@@ -50,12 +50,12 @@ run_one_sim() {
       exit 0
     fi
 
-    if ! failures=$(grep -Eo 'FAILURES *= *[0-9]+' sim.log | awk '{print $NF}'); then
+    if ! failures=$(grep -Eo 'FAILURES *= *[0-9]+' sim.log | tail -1 | awk '{print $NF}'); then
       echo "No failure message found"
       failures=""
     fi
 
-    if ! successes=$(grep -Eo 'SUCCESSES *= *[0-9]+' sim.log | awk '{print $NF}'); then
+    if ! successes=$(grep -Eo 'SUCCESSES *= *[0-9]+' sim.log | tail -1 | awk '{print $NF}'); then
       echo "No success message found"
       successes=""
     fi

@@ -12,11 +12,9 @@
 
 // Automatic Directory Search 
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/adders
-
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/comparators
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/extenders
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/gates
-
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/muxes
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/regs
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shifters
@@ -26,5 +24,4 @@
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
 
 // Testbench for Test Logic 
-/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/f_to_de/logic_cl_shifter_tb/logic_cl_shifter_behav.v
 /home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/pipeline_regs/f_to_de/logic_cl_shifter_tb/logic_cl_shifter_tb.v

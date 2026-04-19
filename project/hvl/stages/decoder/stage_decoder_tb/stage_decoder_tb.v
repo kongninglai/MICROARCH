@@ -6,11 +6,10 @@ module tb_stage_decode();
     // 1. Inputs
     // --------------------------------------------------------
     reg [127:0] cache_line;
-    reg [3:0] tail_ptr;
-    reg [19:0] cs_limit_reg;
+    reg [4:0] tail_ptr;
     reg [31:0] eip_target_ex;
     reg mispredict_src_ex;
-    reg v_excptn_src_wb;
+    reg from_wb_flush;
     reg v_ld_cs_src_ex; 
     reg stall_ex, stall_rr, stall_mem, stall_wb;
     
@@ -33,9 +32,9 @@ module tb_stage_decode();
     wire [31:0] eip_true;
     
     wire prefix_rep, prefix_op_size, prefix_ext;
-    wire [2:0] prefix_seg_ov_id;
+    wire [2:0] prefix_seg_ov_id, imm_size;
     wire [7:0] opcode, modrm, sib;
-    wire [1:0] disp_size_mux, imm_size, addressing_mode;
+    wire [1:0] disp_size_mux, addressing_mode;
     wire [31:0] disp;
     wire [47:0] imm;
     wire [3:0] instr_length;
@@ -48,26 +47,31 @@ module tb_stage_decode();
     // 3. Instantiate UUT (o_eip removed)
     // --------------------------------------------------------
     stage_decode uut (
-        .cache_line(cache_line), .o_eip(), .tail_ptr(tail_ptr), .cs_limit_reg(cs_limit_reg),
+        .cache_line(cache_line), .tail_ptr(tail_ptr), 
         .eip_target_ex(eip_target_ex), 
         .flush_ex(mispredict_src_ex),       
-        .v_excptn_src_wb(v_excptn_src_wb), 
+        .from_wb_flush(from_wb_flush), 
         .stall_rr(stall_rr), 
         .clk(clk), .rst_bar(rst_bar), .br_t_nt_ex_d(br_t_nt_ex_d), 
         .br_valid_ex_d(br_valid_ex_d), .pht_idx_ex_d(pht_idx_ex_d),
-        .exptn_prot(exptn_prot), .i_eip(i_eip), .pr_de_rr_valid(pr_de_rr_valid),
-        .ld_eip(ld_eip), .eip_true(eip_true), .prefix_rep(prefix_rep), 
+        .from_f_pf_expn_bytes_out(), .i_eip(i_eip), 
+        .o_eip(), .bp_eip_target(), //unused
+        .pr_de_rr_valid(pr_de_rr_valid),
+        .ld_eip(ld_eip), .eip_true(eip_true), 
+        .to_f_take_branch(), //unused
+        .prefix_rep(prefix_rep), 
         .prefix_op_size(prefix_op_size), .prefix_seg_ov_id(prefix_seg_ov_id), .prefix_seg(),
         .prefix_ext(prefix_ext), .opcode(opcode), .modrm(modrm), .sib(sib),
         .disp_size_mux(disp_size_mux), .disp(disp), .imm_size(imm_size), 
-        .imm(imm), .addressing_mode(addressing_mode), .instr_length(instr_length)
+        .imm(imm), .addressing_mode(addressing_mode), .instr_length(instr_length),
+        .ld_pr_rr(), .exception_flags() //unused
     );
 
     // --------------------------------------------------------
     // 4. Clock and Helpers
     // --------------------------------------------------------
     initial begin
-        clk = 0;
+        clk = 1;
         forever #10 clk = ~clk;
     end
 
@@ -140,21 +144,20 @@ module tb_stage_decode();
         // --- Init (Keep tail_ptr=0 to prevent "Phantom" increments during reset) ---
         cache_line = 128'd0;
         o_eip = 32'h0000_0000;
-        tail_ptr = 4'd0; 
-        cs_limit_reg = 20'hFFFFF;
+        tail_ptr = 5'd0; 
         eip_target_ex = 32'h0000_0000;
-        mispredict_src_ex = 0; v_excptn_src_wb = 0; v_ld_cs_src_ex = 0;
+        mispredict_src_ex = 0; from_wb_flush = 0; v_ld_cs_src_ex = 0;
         stall_ex = 0; stall_rr = 0; stall_mem = 0; stall_wb = 0;
         br_t_nt_ex_d = 0; br_valid_ex_d = 0; pht_idx_ex_d = 0;
 
         rst_bar = 0;
-        #15;
+        #20;
         rst_bar = 1;
 
         // --------------------------------------------------------
         // TEST 1: Normal Sequential Instruction (MOV r/m32, r32 -> 89 C8)
         // --------------------------------------------------------
-        tail_ptr = 4'd4; // Wake up the pipeline!
+        tail_ptr = 5'd4; // Wake up the pipeline!
         cache_line = 128'd0;
         load_cache_byte(0, 8'h89); load_cache_byte(1, 8'hC8); 
         check_result("Normal Sequential Inst ", 1'b1, o_eip + 2, 1'b1);
@@ -181,7 +184,7 @@ module tb_stage_decode();
         load_cache_byte(0, 8'hEB); load_cache_byte(1, 8'h05); 
         check_result("JMP rel8 (No BTB Hit)  ", 1'b1, o_eip + 2, 1'b1);
 
-        tail_ptr = 4'd15; // Ensure high enough for rest of tests
+        tail_ptr = 5'd15; // Ensure high enough for rest of tests
 
         // --------------------------------------------------------
         // TEST 5: Length = 1 Byte Branch (RET -> C3)
@@ -217,13 +220,13 @@ module tb_stage_decode();
         cache_line = 128'd0;
         load_cache_byte(0, 8'hE9); load_cache_byte(1, 8'h44); load_cache_byte(2, 8'h33); load_cache_byte(3, 8'h22); load_cache_byte(4, 8'h11);
         
-        tail_ptr = 4'd2; // Force an invalid state
+        tail_ptr = 5'd2; // Force an invalid state
         check_result("Invalid (Len > tail)   ", 1'b0, o_eip, 1'b0);
 
         // --------------------------------------------------------
         // TEST 10: Valid Instruction Restored
         // --------------------------------------------------------
-        tail_ptr = 4'd15;
+        tail_ptr = 5'd15;
         check_result("Valid Inst Restored    ", 1'b1, o_eip + 5, 1'b1);
 
         // --------------------------------------------------------

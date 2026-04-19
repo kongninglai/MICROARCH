@@ -26,7 +26,8 @@ module ucode_fsm(
     output clear_int,
     output intex,
     output handling_intex,
-    output ucode_stall,
+    output not_intex_or_iret,
+    output ucode_stall_bar,
     output ucode_valid,
     output [95:0] ucode_sig
 );  
@@ -139,70 +140,70 @@ module ucode_fsm(
 	wire and_0_0_out;
 	wire and_0_1_out;
 	wire and_0_2_out;
-	and4$ and_0_0(and_0_0_out,and_0_1_out,and_0_2_out,Q3_bar,Q2);
-	and4$ and_0_1(and_0_1_out,Q1_bar,Q0,interrupt_bar,exception_bar);
-	and2$ and_0_2(and_0_2_out,counter_finish_bar,cmps_found_bar);
+	or2$ and_0_0(and_0_0_out,and_0_1_out,and_0_2_out);
+	nand4$ and_0_1(and_0_1_out,Q1_bar,Q0,interrupt_bar,exception_bar);
+	nand4$ and_0_2(and_0_2_out,counter_finish_bar,cmps_found_bar,Q3_bar,Q2);
 	wire and_1_0_out;
 	wire and_1_1_out;
 	wire and_1_2_out;
-	and4$ and_1_0(and_1_0_out,and_1_1_out,and_1_2_out,Q3_bar,Q2_bar);
-	and4$ and_1_1(and_1_1_out,Q1_bar,Q0_bar,interrupt_bar,exception_bar);
-	and2$ and_1_2(and_1_2_out,to_rr_valid,rep_cmps);
+	or2$ and_1_0(and_1_0_out,and_1_1_out,and_1_2_out);
+	nand4$ and_1_1(and_1_1_out,Q1_bar,Q0_bar,interrupt_bar,exception_bar);
+	nand4$ and_1_2(and_1_2_out,to_rr_valid,rep_cmps,Q3_bar,Q2_bar);
 	wire and_2_0_out;
 	wire and_2_1_out;
-	and4$ and_2_0(and_2_0_out,and_2_1_out,Q2_bar,Q1_bar,Q0_bar);
-	and4$ and_2_1(and_2_1_out,interrupt_bar,exception_bar,to_rr_valid,iret);
+	nand4$ and_2_0(and_2_0_out,and_2_1_out,exception_bar,to_rr_valid,iret);
+	and4$ and_2_1(and_2_1_out,interrupt_bar,Q2_bar,Q1_bar,Q0_bar);
 	wire and_3_0_out;
 	wire and_3_1_out;
-	and4$ and_3_0(and_3_0_out,and_3_1_out,Q2_bar,Q1_bar,Q0_bar);
-	and4$ and_3_1(and_3_1_out,interrupt_bar,exception_bar,to_rr_valid,rep_movs);
+	nand4$ and_3_0(and_3_0_out,and_3_1_out,rep_movs,interrupt_bar,exception_bar);
+	and4$ and_3_1(and_3_1_out,to_rr_valid,Q2_bar,Q1_bar,Q0_bar);
 	wire and_4_0_out;
 	wire and_4_1_out;
-	and4$ and_4_0(and_4_0_out,and_4_1_out,Q3_bar,Q1,Q0_bar);
+	nand4$ and_4_0(and_4_0_out,and_4_1_out,Q3_bar,Q1,Q0_bar);
 	and3$ and_4_1(and_4_1_out,interrupt_bar,exception_bar,counter_finish_bar);
 	wire and_5_0_out;
 	wire and_5_1_out;
-	and4$ and_5_0(and_5_0_out,and_5_1_out,Q3_bar,Q2_bar,Q1);
-	and2$ and_5_1(and_5_1_out,Q0,cmps_found_bar);
+	nand4$ and_5_0(and_5_0_out,and_5_1_out,cmps_found_bar,Q0,Q1);
+	and2$ and_5_1(and_5_1_out,Q3_bar,Q2_bar);
 	wire and_6_0_out;
 	wire and_6_1_out;
-	and4$ and_6_0(and_6_0_out,and_6_1_out,Q3_bar,Q2,Q0_bar);
-	and2$ and_6_1(and_6_1_out,exception_bar,cmps_found_bar);
+	nand4$ and_6_0(and_6_0_out,and_6_1_out,Q3_bar,cmps_found_bar,Q0_bar);
+	and2$ and_6_1(and_6_1_out,exception_bar,Q2);
 	wire and_7_0_out;
 	wire and_7_1_out;
-	and4$ and_7_0(and_7_0_out,and_7_1_out,Q3_bar,Q2,Q1_bar);
+	nand4$ and_7_0(and_7_0_out,and_7_1_out,Q3_bar,Q2,Q1_bar);
 	and2$ and_7_1(and_7_1_out,Q0,interrupt);
 	wire and_8_0_out;
-	and3$ and_8_0(and_8_0_out,Q3_bar,Q2_bar,exception);
+	nand3$ and_8_0(and_8_0_out,Q3_bar,Q2_bar,exception);
 	wire and_9_0_out;
-	and4$ and_9_0(and_9_0_out,Q3,Q2_bar,Q1_bar,Q0_bar);
+	nand4$ and_9_0(and_9_0_out,Q3,Q2_bar,Q1_bar,Q0_bar);
 	wire and_10_0_out;
-	and3$ and_10_0(and_10_0_out,Q3_bar,Q1_bar,exception);
+	nand3$ and_10_0(and_10_0_out,Q3_bar,Q1_bar,exception);
 	wire and_11_0_out;
-	and4$ and_11_0(and_11_0_out,Q3_bar,Q2_bar,Q0_bar,interrupt);
+	nand4$ and_11_0(and_11_0_out,Q3_bar,Q2_bar,Q0_bar,interrupt);
 	wire and_12_0_out;
-	and4$ and_12_0(and_12_0_out,Q3_bar,Q2_bar,Q1_bar,Q0);
+	nand4$ and_12_0(and_12_0_out,Q3_bar,Q2_bar,Q1_bar,Q0);
 	wire and_13_0_out;
-	and4$ and_13_0(and_13_0_out,Q3_bar,Q2,Q1,Q0_bar);
+	nand4$ and_13_0(and_13_0_out,Q3_bar,Q2,Q1,Q0_bar);
 
 	/* Sum Expressions */
-	or2$ or_0_0(D3,and_2_0_out,and_9_0_out);
+	nand2$ or_0_0(D3,and_2_0_out,and_9_0_out);
 	wire or_1_1_out;
-	or4$ or_1_0(D2,or_1_1_out,and_5_0_out,and_6_0_out,and_7_0_out);
-	or4$ or_1_1(or_1_1_out,and_8_0_out,and_10_0_out,and_11_0_out,and_13_0_out);
+	nand4$ or_1_0(D2,or_1_1_out,and_5_0_out,and_6_0_out,and_7_0_out);
+	and4$ or_1_1(or_1_1_out,and_8_0_out,and_10_0_out,and_11_0_out,and_13_0_out);
 	wire or_2_1_out;
 	wire or_2_2_out;
-	or4$ or_2_0(D1,or_2_1_out,or_2_2_out,and_0_0_out,and_1_0_out);
-	or4$ or_2_1(or_2_1_out,and_7_0_out,and_8_0_out,and_10_0_out,and_11_0_out);
-	or2$ or_2_2(or_2_2_out,and_12_0_out,and_13_0_out);
+	nand2$ or_2_0(D1,or_2_1_out,or_2_2_out);
+	and4$ or_2_1(or_2_1_out,and_7_0_out,and_8_0_out,and_10_0_out,and_11_0_out);
+	and4$ or_2_2(or_2_2_out,and_12_0_out,and_13_0_out,and_0_0_out,and_1_0_out);
 	wire or_3_1_out;
-	or4$ or_3_0(D0,or_3_1_out,and_0_0_out,and_1_0_out,and_3_0_out);
-	or4$ or_3_1(or_3_1_out,and_4_0_out,and_6_0_out,and_9_0_out,and_13_0_out);
+	nand4$ or_3_0(D0,or_3_1_out,and_0_0_out,and_1_0_out,and_3_0_out);
+	and4$ or_3_1(or_3_1_out,and_4_0_out,and_6_0_out,and_9_0_out,and_13_0_out);
 
 	/* State Flip Flops */
     wire inv_stall_out, we;
     inv1$ inv_stall(inv_stall_out, stall);
-    or2$ or_we(we, exception, inv_stall_out);
+    nand2$ nand_we(we, exception_bar, stall);
 
     mux2$ mux2_d0_in(d0_in, Q0, D0, we);
     mux2$ mux2_d1_in(d1_in, Q1, D1, we);
@@ -216,7 +217,7 @@ module ucode_fsm(
 
     // state==S_IDLE: state=0000
     wire state_is_IDLE, state_is_REP_CMPS0, state_is_REP_CMPS1, state_is_REP_CMPS2, state_is_REP_MOVS0, next_state_not_IDLE;
-    wire state_is_IRET0, state_is_INTEX_INIT1, state_is_INTEX_INIT0;
+    wire state_is_IRET0, state_is_IRET1, state_is_INTEX_INIT1, state_is_INTEX_INIT0;
     nor4$ nor_state_is_IDLE(state_is_IDLE, state[0], state[1], state[2], state[3]);
     nor4$ nor_state_is_REP_MOVS0(state_is_REP_MOVS0, Q3, Q2, Q1, Q0_bar);
     nor4$ nor_state_is_REP_CMPS0(state_is_REP_CMPS0, Q3, Q2, Q1_bar, Q0_bar);
@@ -225,17 +226,22 @@ module ucode_fsm(
     nor4$ nor_state_is_INTEX_INIT0(state_is_INTEX_INIT0, Q3, Q2_bar, Q1_bar, Q0);
     nor4$ nor_state_is_INTEX_INIT1(state_is_INTEX_INIT1, Q3, Q2_bar, Q1_bar, Q0_bar);
     nor4$ nor_state_is_IRET0(state_is_IRET0, Q3_bar, Q2, Q1, Q0);
-
+    nor4$ nor_state_is_IRET1(state_is_IRET1, Q3_bar, Q2, Q1, Q0_bar);
+    nor4$ nor_not_intex_or_iret(not_intex_or_iret, state_is_INTEX_INIT0, state_is_INTEX_INIT1, state_is_IRET0, state_is_IRET1);
     and3$ and_counter_start(counter_start, state_is_IDLE, rep, to_rr_valid);
     or2$ or_counter_dec(counter_dec, state_is_REP_CMPS0, state_is_REP_MOVS0);
-    or4$ or_ucode_stall(ucode_stall, d3_in, d2_in, d1_in, d0_in);
-    mux2$ mux_valid(ucode_valid, 1'b1, to_rr_valid, state_is_IDLE);
+    nor4$ nor_ucode_stall_bar(ucode_stall_bar, d3_in, d2_in, d1_in, d0_in);
+
+    wire next_state_is_IDLE, idle_valid;
+    nor4$ nor_next_state_is_IDLE(next_state_is_IDLE, d3_in, d2_in, d1_in, d0_in);
+    and2$ and2_idle_valid(idle_valid, to_rr_valid, next_state_is_IDLE);
+    mux2$ mux_valid(ucode_valid, 1'b1, idle_valid, state_is_IDLE);
 
     // assign counter_start        = (state == S_IDLE) & rep & to_rr_valid;
     // assign counter_dec          = ((state == S_REP_CMPS0) | (state == S_REP_MOVS0));
     // stall: state=S_IDLE & next_state != S_IDLE || state != S_IDLE & next_state != S_IDLE
-    // assign ucode_stall          = (next_state != S_IDLE);
-    // assign ucode_valid          = (state == S_IDLE) ? to_rr_valid : 1'b1;
+    // assign ucode_stall_bar          = ~(next_state != S_IDLE);
+    // assign ucode_valid          = (state == S_IDLE) ? (to_rr_valid & next_state == S_IDLE) : 1'b1;
     wire [95:0] sig_reg_rm, sig_ext_rm, sig_idle;
     wire addr_mode; // 1 for mem mode, 1 for reg mode
     nand2$ nand_addrmode(addr_mode, modrm[1], modrm[0]);

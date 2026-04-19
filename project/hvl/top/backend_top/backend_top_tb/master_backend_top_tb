@@ -147,7 +147,6 @@
 ~/MICROARCH/project/hdl/local-lib/adders/prefix_modrm_sib_adder.v
 ~/MICROARCH/project/hdl/local-lib/adders/p_m_s_d_adder.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_48.v
-~/MICROARCH/project/hdl/stages/decoder/logic_disp_size.v
 ~/MICROARCH/project/hdl/stages/decoder/logic_modrm_imm.v
 ~/MICROARCH/project/hdl/stages/decoder/logic_is_sib.v
 ~/MICROARCH/project/hdl/stages/decoder/logic_seg_ov.v

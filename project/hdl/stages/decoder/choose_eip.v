@@ -7,8 +7,7 @@ module choose_eip(
     input wire rst_bar, 
 
     //eip incr logic
-    input wire [3:0] instr_length,
-    output wire [31:0] i_eip,
+    input wire [3:0] instr_length,    
 
     input wire ld_pr_rr, //to load register read pipeline registers signal
     input wire instr_valid, 
@@ -20,12 +19,14 @@ module choose_eip(
     input wire [1:0] branch_type,
     input wire hit, //from btb to indicate if we have a bp target or not (currently hardcoded to 0)
 
+    output wire [31:0] i_eip,
+    output wire [31:0] o_eip,
     output wire ld_eip,
-    output wire [31:0] eip_true
+    output wire [31:0] eip_true,
+    output wire take_branch
 
 );  
 
-    wire [31:0] o_eip;
     eip_incr EIP_INCR_LOGIC(
         .incr_amt(instr_length),
         .eip(o_eip),
@@ -40,13 +41,15 @@ module choose_eip(
     */
     wire not_flush;
     wire nand_valid_ld;
+    wire ld_eip_prebuf;
     inv1$ INV_FLUSH(not_flush, flush_ex);
     nand2$ NAND_VALID_LD(nand_valid_ld, instr_valid, ld_pr_rr);
-    nand2$ NAND_FINAL(ld_eip, not_flush, nand_valid_ld);
+    nand2$ NAND_FINAL(ld_eip_prebuf, not_flush, nand_valid_ld);
+    bufferH64$ bufferH64$_ld_eip(ld_eip, ld_eip_prebuf);
 
     //Generating Signals for Mux Select
     wire [1:0] eip_sel; 
-    wire stall, is_branch, cond_take, uncond_take, take_branch, branch_type_0_bar;
+    wire stall, is_branch, cond_take, uncond_take, branch_type_0_bar;
     inv1$ INV_lower(branch_type_0_bar, branch_type[0]); //if branch type is not 00, then it's a branch
     and4$ AND_COND_PRED(cond_take, cur_instr_prediction, hit, branch_type[1], branch_type_0_bar); //if branch can be resolved AND predictor says taken AND unconditional
     and2$ AND_UNCOND_PRED(uncond_take, branch_type[0], hit); //if unconditional branch AND resolvable
@@ -62,10 +65,14 @@ module choose_eip(
         .out(eip_true) //Output EIP to be used in the rest of the decode logic
     );
 
+    wire [31:0] o_eip_prebuf;
+
     reg_n #(.WIDTH(32)) EIP_REG(
         .clk(clk), .rst(rst_bar),
         .en({32{ld_eip}}), .d(eip_true),
-        .q(o_eip)
+        .q(o_eip_prebuf)
     );
+
+    bufferH64$    bufferH64$_o_eip[31:0](o_eip, o_eip_prebuf);
 
 endmodule
