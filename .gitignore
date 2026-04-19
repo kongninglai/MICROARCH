@@ -3,3 +3,7 @@
 **/__pycache__/**
 session*
 **/timing/**
+.github/**
+**/*results*
+project/scripts
+mem*.hex
