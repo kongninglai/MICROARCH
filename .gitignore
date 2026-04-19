@@ -9,3 +9,4 @@ project/scripts
 mem*.hex
 **logs**
 *.lock
+**provided_modules**
