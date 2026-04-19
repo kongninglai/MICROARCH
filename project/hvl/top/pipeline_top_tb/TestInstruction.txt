@@ -18,3 +18,9 @@ mem_init and move into a different directory that you can name after your testca
 Make sure the cmp_script is the updated version: 
 1. Run ./setup_test_case.sh from the pipeline_top_tb directory. This will run the golden model and update its output, so when comparing to actual output of the verilog, it will be correct output for the script. 
 2. Run the ./execute_test_case.sh script to run the test case. This will run the verilog simulation and compare the output to the golden model output. If there are any differences, it will print them out.
+
+pipeline_top_auto_tb.v can be used to run all the test cases in one go. This includes each individual funcitonal unit test cases. 
+In order to run this do the following: 
+1. From the (/home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/sim) directory, run the command: vcs -full64 -v2005 -debug_all -f ../master*; ./simv_auto
+2. From the /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb) directory, run the command: ./test_all_instructions.sh
+- This will run all test cases with prints to identify whether the test case started running and if it passed or not. 

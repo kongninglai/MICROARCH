@@ -1,25 +1,29 @@
-/* AUTO GENERATED COMBINATIONAL LOGIC */
-module comb_logic_gen(P2,P1,P0,OUT1,OUT0);
+/* AUTO GENERATED NAND-NAND LOGIC */
+module comb_logic_gen(CurState1,CurState0,Incr_or_Decr,NextState1,NextState0);
 
 	/* I/Os */
-	input P2,P1,P0;
-	output OUT1,OUT0;
+	input CurState1,CurState0,Incr_or_Decr;
+	output NextState1,NextState0;
 
-	/* Inverters */
-	wire P1_bar;
-	inv1$ inv_0(P1_bar, P1);
+	/* Inverters (Delay: 0.15) */
+	wire CurState0_bar;
+	inv1$ inv_0(CurState0_bar, CurState0);
 
-	/* Product Expressions */
-	wire and_0_0_out;
-	and2$ and_0_0(and_0_0_out,P1_bar,P0);
-	wire and_1_0_out;
-	buffer$ buffer_and_1_0(and_1_0_out,P1);
-	wire and_2_0_out;
-	buffer$ buffer_and_2_0(and_2_0_out,P2);
+	/* Level 1: Product Terms (NAND Gates) */
+	wire nand_0_0_out;
+	nand2$ nand_0_0(nand_0_0_out,CurState1,CurState0);
+	wire nand_1_0_out;
+	nand2$ nand_1_0(nand_1_0_out,CurState0,Incr_or_Decr);
+	wire nand_2_0_out;
+	nand2$ nand_2_0(nand_2_0_out,CurState1,CurState0_bar);
+	wire nand_3_0_out;
+	nand2$ nand_3_0(nand_3_0_out,CurState0_bar,Incr_or_Decr);
+	wire nand_4_0_out;
+	nand2$ nand_4_0(nand_4_0_out,CurState1,Incr_or_Decr);
 
-	/* Sum Expressions */
-	or2$ or_0_0(OUT1,and_1_0_out,and_2_0_out);
-	or2$ or_1_0(OUT0,and_0_0_out,and_2_0_out);
+	/* Level 2: Sum Terms (NAND Gates - SOP Equivalence) */
+	nand3$ nand_0_0(NextState1,nand_0_0_out,nand_1_0_out,nand_4_0_out);
+	nand3$ nand_1_0(NextState0,nand_2_0_out,nand_3_0_out,nand_4_0_out);
 
 endmodule
 

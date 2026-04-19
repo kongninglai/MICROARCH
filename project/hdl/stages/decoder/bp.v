@@ -38,13 +38,14 @@ module bp(
         .hash_out(hash_out)
     );
 
-     predictor PREDICTOR(
+    predictor PREDICTOR(
         .clk(clk),
         .rst_bar(rst_bar),
         .br_t_nt_in(br_t_nt_ex_d), //to update pht for instr in execute stage
         .ext_pht_idx(ext_pht_idx), //to update pht for instr in execute stage
+        .from_ex_br_valid(br_valid_ex_d), //to update pht for instr in execute stage
         .b_pht_idx(hash_out), //to predict cur instruction in decode stage
-        .b_valid(is_branch), //to predict cur instruction in decode stage
+        .from_de_br_valid(is_branch), //to predict cur instruction in decode stage
         .br_t_nt_out(cur_instr_prediction)
     );
 
