@@ -53,7 +53,7 @@ module stage_mem #(
   parameter MMXR_DATA_BIT_WIDTH=64,
   parameter SLIM_BIT_WIDTH=32,
 
-  parameter MEM_CONTROL_SIGS_WIDTH=61,
+  parameter MEM_CONTROL_SIGS_WIDTH=79,
   parameter EX_CONTROL_SIGS_WIDTH=59
 
 ) (
