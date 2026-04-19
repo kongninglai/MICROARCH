@@ -156,6 +156,8 @@ module stage_rr #(
         .not_intex_or_iret(not_intex_or_iret)
     );
 
+    assign from_rr_rep = to_rr_prefix[5];
+    
     wire [1:0] ldAB, dstidB_mux, gprd0_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds, mem_ds, imm_mux, addr_mux;
     wire [2:0] dstidA_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
     wire gprd1_mux, srcregA_mux, srcregB_mux, ldEFLAGS, alu_srcb_mux, ldEIP, ldCS, seg_dst_mux, srcsreg_mux, segrd0_mux, segrd1_mux, rm;

@@ -182,6 +182,8 @@ module stage_ag #(
     nor2$   nor2$_from_ag_stall_bar(from_ag_stall_bar, from_mem_stall, mem_inst_needs_stall);
     inv1$   inv1$_from_ag_we_pipe_reg(from_ag_we_pipe_reg, from_mem_stall);
 
+    wire is_mem_inst;
+    or2$ or2_is_mem_inst(is_mem_inst, rw[1], rw[0]);
     and2$ and2_from_ag_valid_mem_inst(from_ag_valid_mem_inst, to_ag_valid, is_mem_inst);
 
     /* Insert bubbles if mem_inst_needs_stall and NOT from_mem_stall */
