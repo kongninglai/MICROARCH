@@ -35,12 +35,15 @@ module mem_sig #(
     output op_ovr,
     output palu_size,
     output sbb_dir,
-    output iret0
+    output iret0,
+    output [8:0] MEM_FW_CONTROL_SIGS,
+    output [8:0] EX_FW_CONTROL_SIGS
 ); 
     assign {
         ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0
+        gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0,
+        MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS
     } = ucode_sig;
 endmodule

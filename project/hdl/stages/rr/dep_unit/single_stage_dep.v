@@ -25,7 +25,15 @@ module single_stage_dep(
     input   [2:0]   srcMMB_id,
     input   [10:0]  src_needREGS,
 
-    output          dep
+    output          dep,
+
+    output          addr_src_dep,
+    output  [1:0]   fw_mux_A,
+    output  [1:0]   fw_mux_B,
+    output  [1:0]   fw_mux_C,
+    output          fw_SREG,
+    output          fw_MMA,
+    output          fw_MMB
 ); 
     wire depA, depB, depC, depBS1, depBS2, depIDX, depSREG, depSR1, depSR2, depMMA, depMMB;
 
@@ -39,7 +47,8 @@ module single_stage_dep(
         .src_id    (srcA_id),
         .src_size  (srcA_size),
         .ld_src    (src_needREGS[10]),
-        .dep       (depA)
+        .dep       (depA),
+        .fw_mux    (fw_mux_A)
     );
 
     gp_dep gp_depB (
@@ -52,7 +61,8 @@ module single_stage_dep(
         .src_id    (srcB_id),
         .src_size  (srcB_size),
         .ld_src    (src_needREGS[9]),
-        .dep       (depB)
+        .dep       (depB),
+        .fw_mux    (fw_mux_B)
     );
 
     gp_dep gp_depC (
@@ -65,7 +75,8 @@ module single_stage_dep(
         .src_id    (srcC_id),
         .src_size  (srcC_size),
         .ld_src    (src_needREGS[8]),
-        .dep       (depC)
+        .dep       (depC),
+        .fw_mux    (fw_mux_C)
     );
 
     gp_dep gp_depBS1 (
@@ -78,7 +89,8 @@ module single_stage_dep(
         .src_id    (srcBS1_id),
         .src_size  (2'b10),
         .ld_src    (src_needREGS[7]),
-        .dep       (depBS1)
+        .dep       (depBS1),
+        .fw_mux    ()
     );
 
     gp_dep gp_depBS2 (
@@ -91,7 +103,8 @@ module single_stage_dep(
         .src_id    (srcBS2_id),
         .src_size  (2'b10),
         .ld_src    (src_needREGS[6]),
-        .dep       (depBS2)
+        .dep       (depBS2),
+        .fw_mux    ()
     );
 
     gp_dep gp_depIDX (
@@ -104,7 +117,8 @@ module single_stage_dep(
         .src_id    (srcIDX_id),
         .src_size  (2'b10),
         .ld_src    (src_needREGS[5]),
-        .dep       (depIDX)
+        .dep       (depIDX),
+        .fw_mux    ()
     );
 
     check_dep check_depSREG(
@@ -147,7 +161,18 @@ module single_stage_dep(
         .dep(depMMB)
     );
 
-    wire any_dep;
+    assign fw_SREG  = depSREG;
+    assign fw_MMA   = depMMA;
+    assign fw_MMB   = depMMB;
+    
+    wire any_dep, addr_src_dep_without_valid;
+
+    big_or #(
+      .WIDTH(5)
+    ) or_addr_src_dep_without_valid (
+      .out(addr_src_dep_without_valid),
+      .in({depBS1, depBS2, depIDX, depSR1, depSR2})
+    );
 
     big_or #(
       .WIDTH(11)
@@ -159,4 +184,5 @@ module single_stage_dep(
     );
 
     and2$ and_valid_dep(dep, dst_valid, any_dep);
+    and2$ and_valid_addr_src_dep(addr_src_dep, addr_src_dep_without_valid, dst_valid);
 endmodule
