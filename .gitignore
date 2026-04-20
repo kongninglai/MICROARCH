@@ -11,3 +11,4 @@ mem*.hex
 *.lock
 **provided_modules**
 **init_mem**
+**diff_output**
