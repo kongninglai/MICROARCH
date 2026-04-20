@@ -14,7 +14,7 @@ import csv
 import os
 
 def rom_gen(input_csv):
-    folder_name = "/home/ecelrc/students/kl38888/MICROARCH/project/scripts/decode/rom_data"
+    folder_name = "/home/ecelrc/students/var2427/MICROARCH/project/scripts/decode/rom_data"
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 

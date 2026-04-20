@@ -201,8 +201,7 @@ module ucode_fsm(
 	and4$ or_3_1(or_3_1_out,and_4_0_out,and_6_0_out,and_9_0_out,and_13_0_out);
 
 	/* State Flip Flops */
-    wire inv_stall_out, we;
-    inv1$ inv_stall(inv_stall_out, stall);
+    wire we;
     nand2$ nand_we(we, exception_bar, stall);
 
     mux2$ mux2_d0_in(d0_in, Q0, D0, we);

@@ -77,7 +77,7 @@ module dep_unit(
 
     wire dep_ag, dep_mem, dep_ex;
 
-    wire addr_src_dep_ag, addr_src_dep_mem, addr_src_dep_ex;
+    wire addr_src_dep_bar_ag, addr_src_dep_bar_mem, addr_src_dep_bar_ex;
     wire [1:0] mem_fw_A_temp, mem_fw_B_temp, mem_fw_C_temp;
     wire mem_fw_SREG_temp, mem_fw_MMA_temp, mem_fw_MMB_temp;
 
@@ -107,8 +107,8 @@ module dep_unit(
         .srcMMA_id(from_regunit_srcMMA_id),
         .srcMMB_id(from_regunit_srcMMB_id),
         .src_needREGS(from_rr_src_needREGS),
-        .dep(dep_ag),
-        .addr_src_dep(addr_src_dep_ag),
+        .dep_bar(dep_ag_bar),
+        .addr_src_dep_bar(addr_src_dep_bar_ag),
         .fw_mux_A(AG_FW_A),
         .fw_mux_B(AG_FW_B),
         .fw_mux_C(AG_FW_C),
@@ -143,8 +143,8 @@ module dep_unit(
         .srcMMA_id(from_regunit_srcMMA_id),
         .srcMMB_id(from_regunit_srcMMB_id),
         .src_needREGS(from_rr_src_needREGS),
-        .dep(dep_mem),
-        .addr_src_dep(addr_src_dep_mem),
+        .dep_bar(dep_mem_bar),
+        .addr_src_dep_bar(addr_src_dep_bar_mem),
         .fw_mux_A(MEM_FW_A),
         .fw_mux_B(MEM_FW_B),
         .fw_mux_C(MEM_FW_C),
@@ -179,8 +179,8 @@ module dep_unit(
         .srcMMA_id(from_regunit_srcMMA_id),
         .srcMMB_id(from_regunit_srcMMB_id),
         .src_needREGS(from_rr_src_needREGS),
-        .dep(dep_ex),
-        .addr_src_dep(addr_src_dep_ex),
+        .dep_bar(dep_ex_bar),
+        .addr_src_dep_bar(addr_src_dep_bar_ex),
         .fw_mux_A(EX_FW_A),
         .fw_mux_B(EX_FW_B),
         .fw_mux_C(EX_FW_C),
@@ -189,27 +189,23 @@ module dep_unit(
         .fw_MMB(EX_FW_MMB)
     ); 
 
-    wire load_en_or_rep, dep_and_load_en, buffered_dep_and_load_en;
+    wire load_en_or_rep, dep_and_load_en_bar, buffered_dep_and_load_en;
     wire any_dep;
-    or3$ or3_any_dep(any_dep, dep_ag, dep_mem, dep_ex);
+    nand3$ nand3_any_dep(any_dep, dep_ag_bar, dep_mem_bar, dep_ex_bar);
     big_or #(
       .WIDTH(5)
     ) big_or_load_en_or_rep (
       .out(load_en_or_rep),
       .in({from_rr_rw[1], from_rr_rw[0], from_rr_rep, from_ag_valid_mem_inst, from_mem_valid_mem_inst})
     );
-    // or3$ or3_load_en_or_rep(load_en_or_rep, from_rr_rw[1], from_rr_rw[0], from_rr_rep);
-    and2$ and2_dep_and_load_en(dep_and_load_en, any_dep, load_en_or_rep);
-    bufferH16$ buffer16_dep_and_load_en(buffered_dep_and_load_en, dep_and_load_en);
+    nand2$ nand2_dep_and_load_en_bar(dep_and_load_en_bar, any_dep, load_en_or_rep);
     wire addr_dep_or_mem_dep;
-    or4$ or3_addr_dep_or_mem_dep(addr_dep_or_mem_dep, addr_src_dep_ag, addr_src_dep_mem, addr_src_dep_ex, buffered_dep_and_load_en);
-    // and2$ and2_dep_stall(data_dep, addr_dep_or_mem_dep, rr_valid);
+    nand4$ nand4_addr_dep_or_mem_dep(addr_dep_or_mem_dep, addr_src_dep_bar_ag, addr_src_dep_bar_mem, addr_src_dep_bar_ex, dep_and_load_en_bar);
     assign data_dep = addr_dep_or_mem_dep;
     wire inv_buffered_dep_and_load_en, mem_fw_en, ex_fw_en, ag_fw_en;
-    inv1$ inv_dep_and_load_en(inv_buffered_dep_and_load_en, buffered_dep_and_load_en);
-    nand2$ nand_mem_fw_en(mem_fw_en, from_mem_valid, inv_buffered_dep_and_load_en);
-    nand2$ nand_ex_fw_en(ex_fw_en, from_ex_valid, inv_buffered_dep_and_load_en);
-    nand2$ nand_ag_fw_en(ag_fw_en, from_ag_valid, inv_buffered_dep_and_load_en);
+    nand2$ nand_mem_fw_en(mem_fw_en, from_mem_valid, dep_and_load_en_bar);
+    nand2$ nand_ex_fw_en(ex_fw_en, from_ex_valid, dep_and_load_en_bar);
+    nand2$ nand_ag_fw_en(ag_fw_en, from_ag_valid, dep_and_load_en_bar);
 
     mux2$ mux2_mem_fw_A[8:0](MEM_FW_CONTROL_SIGS, {MEM_FW_A, MEM_FW_B, MEM_FW_C, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB}, 9'b0, mem_fw_en);
     mux2$ mux2_ag_fw_A[8:0](AG_FW_CONTROL_SIGS, {EX_FW_A, EX_FW_B, EX_FW_C, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB}, 9'b0, ex_fw_en);

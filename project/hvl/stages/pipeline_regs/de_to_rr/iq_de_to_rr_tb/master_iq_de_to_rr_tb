@@ -1,0 +1,13 @@
+/home/projects/courses/spring_22/ee382n19_16785/lib/time
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib1
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib2
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib5
+~/MICROARCH/project/hdl/local-lib/gates/big_and.v
+~/MICROARCH/project/hdl/local-lib/adders/big_increment.v
+~/MICROARCH/project/hdl/local-lib/adders/big_decrement.v
+~/MICROARCH/project/hdl/local-lib/regs/reg_n.v
+~/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr/iq_de_to_rr_entry.v
+~/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr/iq_de_to_rr.v
+~/MICROARCH/project/hvl/stages/pipeline_regs/de_to_rr/iq_de_to_rr_tb/iq_de_to_rr_behav.v
+~/MICROARCH/project/hvl/stages/pipeline_regs/de_to_rr/iq_de_to_rr_tb/iq_de_to_rr_tb.v

@@ -5,7 +5,7 @@ initial begin
   // $vcdpluson(0, big_or_tb); 
 end
 
-localparam WIDTH = 32;
+localparam WIDTH = 11;
 reg   [WIDTH-1:0]   in;
 wire                out, out_exp;
 

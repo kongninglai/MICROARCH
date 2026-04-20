@@ -25,9 +25,9 @@ module single_stage_dep(
     input   [2:0]   srcMMB_id,
     input   [10:0]  src_needREGS,
 
-    output          dep,
+    output          dep_bar,
 
-    output          addr_src_dep,
+    output          addr_src_dep_bar,
     output  [1:0]   fw_mux_A,
     output  [1:0]   fw_mux_B,
     output  [1:0]   fw_mux_C,
@@ -183,6 +183,6 @@ module single_stage_dep(
            depMMA, depMMB})
     );
 
-    and2$ and_valid_dep(dep, dst_valid, any_dep);
-    and2$ and_valid_addr_src_dep(addr_src_dep, addr_src_dep_without_valid, dst_valid);
+    nand2$ nand_valid_dep(dep_bar, dst_valid, any_dep);
+    nand2$ nand_valid_addr_src_dep_bar(addr_src_dep_bar, addr_src_dep_without_valid, dst_valid);
 endmodule

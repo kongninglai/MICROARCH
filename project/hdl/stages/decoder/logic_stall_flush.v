@@ -34,12 +34,53 @@ module logic_stall_flush(
         output wire instr_valid
 );
 
-    wire instr_invalid;
-    mag_comp8$ INSTR_VALID( 
-        .A({4'b0, incr_amt}), 
-        .B({3'b0, tail_ptr}),
-        .AGB(instr_invalid), 
-        .BGA() 
+    wire [15:0] invalids, invalids_final;
+
+    lshf_var_16b lshf_var_16b_invalids (
+      .in({16{1'b1}}),
+      .shf_amt(tail_ptr[3:0]),
+      .out(invalids)
+    );
+
+    mux2_8$   mux2_8$_invalids_final_low
+    (
+      invalids_final[7:0],
+      invalids[7:0],
+      8'd0,
+      tail_ptr[4]
+    );
+
+    mux2_8$   mux2_8$_invalids_final_high
+    (
+      invalids_final[15:8],
+      invalids[15:8],
+      8'd0,
+      tail_ptr[4]
+    );
+
+    mux16 mux16_instr_invalid
+    (
+      instr_invalid,
+      1'b1,
+      invalids_final[0],
+      invalids_final[1],
+      invalids_final[2],
+      invalids_final[3],
+      invalids_final[4],
+      invalids_final[5],
+      invalids_final[6],
+      invalids_final[7],
+      invalids_final[8],
+      invalids_final[9],
+      invalids_final[10],
+      invalids_final[11],
+      invalids_final[12],
+      invalids_final[13],
+      invalids_final[14],
+      incr_amt[0],
+      incr_amt[1],
+      incr_amt[2],
+      incr_amt[3]
     );
 
     wire any_flush_condition; 

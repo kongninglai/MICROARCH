@@ -34,6 +34,13 @@ if [[ "$sim_rc" -ne 0 ]]; then
     exit "$sim_rc"
 fi
 
+if grep -q "Timing violation" "$SIM_LOG"; then
+    echo "FAIL: Timing violation detected in simulation log"
+    echo "See simulator log: $SIM_LOG"
+    grep -n "Timing violation" "$SIM_LOG" || true
+    exit 4
+fi
+
 if [[ ! -f "$RESULTS_CMP" ]]; then
     echo "FAIL: results_cmp.txt was not created by simv_auto"
     echo "See simulator log: $SIM_LOG"
