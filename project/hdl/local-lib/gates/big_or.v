@@ -20,10 +20,14 @@ generate
       or4$ or_0_0(out,in[0],in[1],in[2],in[3]);
     end
     5: begin : width5_gen
+      wire in2_bar,in3_bar,in4_bar;
       wire or_0_0_out;
       wire or_0_1_out;
-      or4$ or_0_0(or_0_0_out,or_0_1_out,in[0],in[1],in[2]);
-      or2$ or_0_1(or_0_1_out,in[3],in[4]);
+      inv1$ inv1$_in2_bar(in2_bar,in[2]);
+      inv1$ inv1$_in3_bar(in3_bar,in[3]);
+      inv1$ inv1$_in4_bar(in4_bar,in[4]);
+      nand4$ or_0_0(or_0_0_out,or_0_1_out,in2_bar,in3_bar,in4_bar);
+      nor2$ nor2$_or_0_1_out(or_0_1_out,in[0],in[1]);
       assign out = or_0_0_out;
     end
     6: begin : width6_gen

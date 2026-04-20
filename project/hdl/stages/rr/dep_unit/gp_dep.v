@@ -13,17 +13,18 @@ module get_pid(
 endmodule
 
 module gp_dep(
-    input [2:0] dstA_id,
-    input [2:0] dstB_id,
-    input       ld_dstA,
-    input       ld_dstB,
-    input [1:0] dstA_size,
-    input [1:0] dstB_size,
-    input [2:0] src_id,
-    input [1:0] src_size,
-    input       ld_src,
+    input   [2:0]   dstA_id,
+    input   [2:0]   dstB_id,
+    input           ld_dstA,
+    input           ld_dstB,
+    input   [1:0]   dstA_size,
+    input   [1:0]   dstB_size,
+    input   [2:0]   src_id,
+    input   [1:0]   src_size,
+    input           ld_src,
 
-    output      dep
+    output          dep,
+    output  [1:0]   fw_mux
 );  
     wire [2:0] dstA_pid, dstB_pid, src_pid;
     get_pid get_pid_dstA(dstA_id, dstA_size, dstA_pid);
@@ -48,4 +49,6 @@ module gp_dep(
     );
     
     or2$ or_depAB(dep, depA, depB);
+    assign fw_mux = {depB, depA};
+    
 endmodule

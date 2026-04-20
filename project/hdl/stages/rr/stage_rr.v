@@ -21,6 +21,9 @@ module stage_rr #(
 
     input from_ag_stall_bar,
     input from_dep_unit_data_dep,
+    input [8:0] from_dep_ag_fw_control_sigs,
+    input [8:0] from_dep_mem_fw_control_sigs,
+    input [8:0] from_dep_ex_fw_control_sigs,
 
     input from_wb_flush,
     input from_ex_cmps_found,
@@ -64,6 +67,8 @@ module stage_rr #(
     input [63:0] from_regunit_MMB,
 
     output [10:0] to_dep_needREGS,
+    output [1:0]  from_rr_rw,
+    output        from_rr_rep,
 
     output [AG_CONTROL_SIGS_WIDTH-1:0] from_rr_control_sigs,
     output [2:0] from_rr_dstidA,
@@ -151,6 +156,8 @@ module stage_rr #(
         .not_intex_or_iret(not_intex_or_iret)
     );
 
+    assign from_rr_rep = to_rr_prefix[5];
+    
     wire [1:0] ldAB, dstidB_mux, gprd0_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds, mem_ds, imm_mux, addr_mux;
     wire [2:0] dstidA_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
     wire gprd1_mux, srcregA_mux, srcregB_mux, ldEFLAGS, alu_srcb_mux, ldEIP, ldCS, seg_dst_mux, srcsreg_mux, segrd0_mux, segrd1_mux, rm;
@@ -225,7 +232,7 @@ module stage_rr #(
 
 
     wire [3:0] ff_store_data_mux, from_rr_store_data_mux;
-    wire [1:0] ff_from_rr_rw, from_rr_rw;
+    wire [1:0] ff_from_rr_rw;
     wire ff_from_rr_ldEIP, from_rr_ldEIP;
     wire ff_ldB, ff_from_rr_ldB;
     wire opcode_ff;
@@ -246,7 +253,8 @@ module stage_rr #(
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
                      mmx_op, alu_op, shf_op, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
                      gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, from_rr_store_data_mux, from_rr_rw, ds_with_override, 
-                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir, iret0};
+                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir, iret0,
+                     from_dep_ag_fw_control_sigs, from_dep_mem_fw_control_sigs, from_dep_ex_fw_control_sigs};
 
     assign mmx_op = {to_rr_opcode[7], to_rr_opcode[2]};
     wire pack_size, padd_size, pavg_size;

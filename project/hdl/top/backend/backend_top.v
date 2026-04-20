@@ -1,9 +1,9 @@
 module backend_top #(
   parameter CYCLE_TIME_X10=98,
   parameter TRUE_LRU=1,
-  parameter AG_CONTROL_SIGS_WIDTH=69,
-  parameter MEM_CONTROL_SIGS_WIDTH=61,
-  parameter EX_CONTROL_SIGS_WIDTH=59,
+  parameter AG_CONTROL_SIGS_WIDTH=96,
+  parameter MEM_CONTROL_SIGS_WIDTH=79,
+  parameter EX_CONTROL_SIGS_WIDTH=68,
   parameter WB_CONTROL_SIGS_WIDTH=12
 ) (
     input clk,
@@ -130,7 +130,8 @@ module backend_top #(
     // wire            from_rr_stall;
     wire            from_rr_ucode_valid;
     wire [10:0]     to_dep_needREGS;
-
+    wire [1:0]      from_rr_rw;
+    wire            from_rr_rep;
     /*** REGUNIT OUTPUTS ***/
     wire [15:0]     from_regunit_srcSREG;
     wire [15:0]     from_regunit_SREG1;
@@ -228,7 +229,7 @@ module backend_top #(
     wire [1:0]     from_ag_dstB_size;
     wire [1:0]     from_ag_ldAB;
     wire [2:0]     from_ag_ldREGS;
-
+    wire           from_ag_valid_mem_inst;
     /*** AG TO MEM  ***/
     wire [MEM_CONTROL_SIGS_WIDTH-1:0]     to_mem_control_sigs;
     wire [2:0]      to_mem_dstidA;
@@ -302,7 +303,7 @@ module backend_top #(
     wire [1:0]      from_mem_dstB_size;
     wire [1:0]      from_mem_ldAB;
     wire [2:0]      from_mem_ldREGS;
-
+    wire            from_mem_valid_mem_inst;
     /*** MEM TO EX ***/
     wire [EX_CONTROL_SIGS_WIDTH-1:0]     to_ex_control_sigs;
     wire [2:0]      to_ex_dstidA;
@@ -434,11 +435,12 @@ module backend_top #(
     wire [1:0]  to_rr_temp_exception;
     /*** DEP UNIT ***/
     wire from_dep_unit_data_dep;
-
+    wire [8:0] AG_FW_CONTROL_SIGS, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
     /*** FLUSH LOGIC ***/
     wire ex_or_wb_flush_bar, wb_flush_bar;
     nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar, from_ex_flush, from_wb_flush);
     inv1$ inv1_wb_flush_bar(wb_flush_bar, from_wb_flush);
+
 
     dep_unit dut (
         .from_ag_dstidA(from_ag_dstidA),
@@ -480,7 +482,14 @@ module backend_top #(
         .from_regunit_srcMMB_id(to_dep_MMB_idx),
         .from_rr_src_needREGS(to_dep_needREGS),
         .rr_valid(from_rr_ucode_valid),
-        .data_dep(from_dep_unit_data_dep)
+        .from_rr_rw(from_rr_rw),
+        .from_rr_rep(from_rr_rep),
+        .from_ag_valid_mem_inst(from_ag_valid_mem_inst),
+        .from_mem_valid_mem_inst(from_mem_valid_mem_inst),
+        .data_dep(from_dep_unit_data_dep),
+        .AG_FW_CONTROL_SIGS(AG_FW_CONTROL_SIGS),
+        .MEM_FW_CONTROL_SIGS(MEM_FW_CONTROL_SIGS),
+        .EX_FW_CONTROL_SIGS(EX_FW_CONTROL_SIGS)
     );
     
     stage_rr #(
@@ -565,7 +574,12 @@ module backend_top #(
         .from_rr_valid(from_rr_valid),
         .from_rr_stall(from_rr_stall),
         .to_dep_needREGS(to_dep_needREGS),
+        .from_rr_rw(from_rr_rw),
+        .from_rr_rep(from_rr_rep),
         .from_dep_unit_data_dep(from_dep_unit_data_dep),
+        .from_dep_ag_fw_control_sigs(AG_FW_CONTROL_SIGS),
+        .from_dep_mem_fw_control_sigs(MEM_FW_CONTROL_SIGS),
+        .from_dep_ex_fw_control_sigs(EX_FW_CONTROL_SIGS),
         .from_rr_we_pipe_reg(from_rr_we_pipe_reg),
         .from_rr_ucode_valid(from_rr_ucode_valid)
     );
@@ -733,6 +747,17 @@ module backend_top #(
         .from_wb_stall_if_mem_en(from_wb_stall_if_mem_en),
         .from_wb_valid_store_inst(from_wb_valid_store_inst),
 
+        .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx[2]),
+        .from_wb_gpwr0_data(from_wb_gpwr0_data),
+        .from_wb_gpwr0_size(from_wb_gpwr0_size),
+        .from_wb_gpwr0_en(from_wb_gpwr0_en),
+        .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx[2]),
+        .from_wb_gpwr1_data(from_wb_gpwr1_data),
+        .from_wb_gpwr1_size(from_wb_gpwr1_size),
+        .from_wb_gpwr1_en(from_wb_gpwr1_en),
+        .from_wb_segwr_data(from_wb_segwr_data),
+        .from_wb_mmxwr_data(from_wb_mmxwr_data),
+
         .from_ag_control_sigs(from_ag_control_sigs),
         .from_ag_dstidA(from_ag_dstidA),
         .from_ag_dstidB(from_ag_dstidB),
@@ -768,7 +793,8 @@ module backend_top #(
         .from_ag_dstA_size(from_ag_dstA_size),
         .from_ag_dstB_size(from_ag_dstB_size),
         .from_ag_ldAB(from_ag_ldAB),
-        .from_ag_ldREGS(from_ag_ldREGS)
+        .from_ag_ldREGS(from_ag_ldREGS),
+        .from_ag_valid_mem_inst(from_ag_valid_mem_inst)
     );
 
     ag_to_mem #(
@@ -866,6 +892,17 @@ module backend_top #(
       .to_mem_exception(to_mem_exception),
       .to_mem_valid(to_mem_valid),
 
+      .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx[2]),
+      .from_wb_gpwr0_data(from_wb_gpwr0_data),
+      .from_wb_gpwr0_size(from_wb_gpwr0_size),
+      .from_wb_gpwr0_en(from_wb_gpwr0_en),
+      .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx[2]),
+      .from_wb_gpwr1_data(from_wb_gpwr1_data),
+      .from_wb_gpwr1_size(from_wb_gpwr1_size),
+      .from_wb_gpwr1_en(from_wb_gpwr1_en),
+      .from_wb_segwr_data(from_wb_segwr_data),
+      .from_wb_mmxwr_data(from_wb_mmxwr_data),
+
       .from_mem_control_sigs(from_mem_control_sigs),
       .from_mem_dstidA(from_mem_dstidA),
       .from_mem_dstidB(from_mem_dstidB),
@@ -901,7 +938,7 @@ module backend_top #(
       .from_mem_dstB_size(from_mem_dstB_size),
       .from_mem_ldAB(from_mem_ldAB),
       .from_mem_ldREGS(from_mem_ldREGS),
-
+      .from_mem_valid_mem_inst(from_mem_valid_mem_inst),
       .DCACHE_STALL(DCACHE_STALL),
       .DCACHE_HIT_DATA(DCACHE_HIT_DATA),
 
@@ -1037,6 +1074,18 @@ module backend_top #(
         .to_ex_tempCS(to_ex_tempCS),
         .to_ex_cs_limit(from_regunit_cs_limit),
         .from_wb_flush(from_wb_flush),
+
+        .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx[2]),
+        .from_wb_gpwr0_data(from_wb_gpwr0_data),
+        .from_wb_gpwr0_size(from_wb_gpwr0_size),
+        .from_wb_gpwr0_en(from_wb_gpwr0_en),
+        .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx[2]),
+        .from_wb_gpwr1_data(from_wb_gpwr1_data),
+        .from_wb_gpwr1_size(from_wb_gpwr1_size),
+        .from_wb_gpwr1_en(from_wb_gpwr1_en),
+        .from_wb_segwr_data(from_wb_segwr_data),
+        .from_wb_mmxwr_data(from_wb_mmxwr_data),
+
         .from_ex_flush(from_ex_flush),
         .from_ex_ld_cs(from_ex_ld_cs),
         .from_ex_br_t_nt(from_ex_br_t_nt),
