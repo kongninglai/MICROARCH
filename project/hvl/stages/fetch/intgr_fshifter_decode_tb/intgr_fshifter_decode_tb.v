@@ -158,7 +158,7 @@ end
         rst_bar = 1;
 
         #(1.5 * CYCLE_TIME); // 300ns. We are now at 500ns (Rising Edge)
-        #2; // Safety buffer (501ns)
+        #2.5; // Safety buffer (501ns)
 
         // ==========================================
         // CYCLE 3: Setup Cache Load

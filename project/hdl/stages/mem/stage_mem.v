@@ -168,8 +168,8 @@ module stage_mem #(
 
 );
 
-wire to_mem_valid_buf16;
-bufferH16$    bufferH16$_to_mem_valid_buf16(to_mem_valid_buf16, to_mem_valid);
+wire to_mem_valid_buf256;
+bufferH256$    bufferH256$_to_mem_valid_buf16(to_mem_valid_buf256, to_mem_valid);
 
 /*** CONTROL SIGNALS ***/
 
@@ -263,8 +263,8 @@ wire  STORE_LINE_0_EXCEPTION_COND, STORE_LINE_1_EXCEPTION_COND;
 or2$    or2$_STORE_LINE_0_EXCEPTION_COND(STORE_LINE_0_EXCEPTION_COND, D_WR0_TLB_PAGE_FAULT_OUT, D_WR0_TLB_WRITE_DISABLE_OUT);
 or2$    or2$_STORE_LINE_1_EXCEPTION_COND(STORE_LINE_1_EXCEPTION_COND, D_WR1_TLB_PAGE_FAULT_OUT, D_WR1_TLB_WRITE_DISABLE_OUT);
 
-and3$   and3$_STORE_LINE_0_EXCEPTION(STORE_LINE_0_EXCEPTION, rw_buf16[0], STORE_LINE_0_EXCEPTION_COND, to_mem_valid_buf16);
-and4$   and4$_STORE_LINE_1_EXCEPTION(STORE_LINE_1_EXCEPTION, rw_buf16[0], STORE_LINE_1_EXCEPTION_COND, NEEDS_LINE_1_STORE, to_mem_valid_buf16);
+and3$   and3$_STORE_LINE_0_EXCEPTION(STORE_LINE_0_EXCEPTION, rw_buf16[0], STORE_LINE_0_EXCEPTION_COND, to_mem_valid_buf256);
+and4$   and4$_STORE_LINE_1_EXCEPTION(STORE_LINE_1_EXCEPTION, rw_buf16[0], STORE_LINE_1_EXCEPTION_COND, NEEDS_LINE_1_STORE, to_mem_valid_buf256);
 
 or2$    or2$_STORE_EXCEPTION(STORE_EXCEPTION, STORE_LINE_0_EXCEPTION, STORE_LINE_1_EXCEPTION);
 nor2$   nor2$_STORE_EXCEPTION_BAR(STORE_EXCEPTION_BAR, STORE_LINE_0_EXCEPTION, STORE_LINE_1_EXCEPTION);
@@ -340,7 +340,7 @@ assign D_WR1_TLB_VPN = to_mem_st_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1
 
 wire  D_RD_TLB_PAGE_FAULT_OUT_BAR, LOAD_EXCEPTION;
 inv1$   inv1$_D_RD_TLB_PAGE_FAULT_OUT_BAR(D_RD_TLB_PAGE_FAULT_OUT_BAR, D_RD_TLB_PAGE_FAULT_OUT);
-and3$   and3$_LOAD_EXCEPTION(LOAD_EXCEPTION, D_RD_TLB_PAGE_FAULT_OUT, rw_buf16[1], to_mem_valid_buf16);
+and3$   and3$_LOAD_EXCEPTION(LOAD_EXCEPTION, D_RD_TLB_PAGE_FAULT_OUT, rw_buf16[1], to_mem_valid_buf256);
 
 wire  [1:0] LOAD_EXCEPTION_MASK;
 assign  LOAD_EXCEPTION_MASK = {1'b0, LOAD_EXCEPTION};
@@ -403,9 +403,9 @@ assign ld_slim_exception_mask[0] = 1'b0;
 assign st_slim_exception_mask[0] = 1'b0;
 assign eip_slim_exception_mask[0] = 1'b0;
 
-and3$   and3$_ld_slim_exception_mask(ld_slim_exception_mask[1], ld_gen_limit_violation, rw_buf16[1], to_mem_valid_buf16);
-and3$   and3$_st_slim_exception_mask(st_slim_exception_mask[1], st_gen_limit_violation, rw_buf16[0], to_mem_valid_buf16);
-and2$   and2$_eip_slim_exception_mask(eip_slim_exception_mask[1], eip_gen_limit_violation, to_mem_valid_buf16);
+and3$   and3$_ld_slim_exception_mask(ld_slim_exception_mask[1], ld_gen_limit_violation, rw_buf16[1], to_mem_valid_buf256);
+and3$   and3$_st_slim_exception_mask(st_slim_exception_mask[1], st_gen_limit_violation, rw_buf16[0], to_mem_valid_buf256);
+and2$   and2$_eip_slim_exception_mask(eip_slim_exception_mask[1], eip_gen_limit_violation, to_mem_valid_buf256);
 
 or3$    or3$_combined_slim_exception_mask[1:0](combined_slim_exception_mask, ld_slim_exception_mask, st_slim_exception_mask, eip_slim_exception_mask);
 
@@ -414,21 +414,21 @@ or4$    or4$_from_mem_exception[1:0](from_mem_exception, LOAD_EXCEPTION_MASK, ST
 wire  no_mem_exception, no_mem_exception_buf16;
 nor2$   nor2$_no_mem_exception(no_mem_exception, from_mem_exception[0], from_mem_exception[1]);
 bufferH16$    bufferH16$_no_mem_exception_buf16(no_mem_exception_buf16, no_mem_exception);
-and2$   and2$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], to_mem_valid_buf16);
+and2$   and2$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], to_mem_valid_buf256);
 
 
 /*** STORE PIPELINE REGISTERS ***/
 
 wire  D_WR0_TLB_CACHE_ENABLE_OUT_BAR;
 inv1$   inv1$_D_WR0_TLB_CACHE_ENABLE_OUT_BAR(D_WR0_TLB_CACHE_ENABLE_OUT_BAR, D_WR0_TLB_CACHE_ENABLE_OUT);
-and4$   and4$_from_mem_store_is_io_line_0(from_mem_store_is_io_line_0, D_WR0_TLB_CACHE_ENABLE_OUT_BAR, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
-and4$   and4$_from_mem_store_queue_alloc_line_0(from_mem_store_queue_alloc_line_0, D_WR0_TLB_CACHE_ENABLE_OUT, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
+and4$   and4$_from_mem_store_is_io_line_0(from_mem_store_is_io_line_0, D_WR0_TLB_CACHE_ENABLE_OUT_BAR, to_mem_valid_buf256, no_mem_exception_buf16, rw_buf16[0]);
+and4$   and4$_from_mem_store_queue_alloc_line_0(from_mem_store_queue_alloc_line_0, D_WR0_TLB_CACHE_ENABLE_OUT, to_mem_valid_buf256, no_mem_exception_buf16, rw_buf16[0]);
 
 wire  from_mem_store_queue_alloc_line_1_int;
-and4$   and4$_from_mem_store_queue_alloc_line_1_int(from_mem_store_queue_alloc_line_1_int, D_WR1_TLB_CACHE_ENABLE_OUT, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
+and4$   and4$_from_mem_store_queue_alloc_line_1_int(from_mem_store_queue_alloc_line_1_int, D_WR1_TLB_CACHE_ENABLE_OUT, to_mem_valid_buf256, no_mem_exception_buf16, rw_buf16[0]);
 and2$   and2$_from_mem_store_queue_alloc_line_1(from_mem_store_queue_alloc_line_1, from_mem_store_queue_alloc_line_1_int, NEEDS_LINE_1_STORE);
 
-and3$   and3$_from_mem_valid_store_inst(from_mem_valid_store_inst, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
+and3$   and3$_from_mem_valid_store_inst(from_mem_valid_store_inst, to_mem_valid_buf256, no_mem_exception_buf16, rw_buf16[0]);
 
 assign from_mem_store_addr_line_0 = {D_WR0_TLB_PFN_OUT, to_mem_st_addr_aligned[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]};
 assign from_mem_store_addr_line_1 = {D_WR1_TLB_PFN_OUT, to_mem_st_addr_next_line_aligned[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]};
@@ -503,11 +503,14 @@ rshf_bytes_var_128b rshf_bytes_var_128b_FULL_LOAD_RESULT_CROSS (
   .out(FULL_LOAD_RESULT_CROSS)
 );
 
+wire [STORE_DATA_BIT_WIDTH-1:0] from_mem_load_result_ungated;
+and2$ and2$_from_mem_load_result[STORE_DATA_BIT_WIDTH-1:0](from_mem_load_result, from_mem_load_result_ungated, {STORE_DATA_BIT_WIDTH{to_mem_valid_buf256}});
+
 genvar i;
 generate
   for (i = 0; i < STORE_DATA_BIT_WIDTH / 16; i = i + 1) begin : mux2_16_load_result_gen
-    mux2_16$    mux2_16$_from_mem_load_result(
-      from_mem_load_result[i*16 +: 16],
+    mux2_16$    mux2_16$_from_mem_load_result_ungated(
+      from_mem_load_result_ungated[i*16 +: 16],
       LOAD_RESULT_REGULAR[i*16 +: 16],
       LOAD_RESULT_CROSS[i*16 +: 16],
       DOING_LINE_1_LOAD
@@ -517,7 +520,9 @@ endgenerate
 
 /*** VALID AND STALL ***/
 
-and2$   and2$_from_mem_valid(from_mem_valid, from_mem_stall_bar, to_mem_valid_buf16);
+wire from_mem_valid_buf64;
+and2$   and2$_from_mem_valid(from_mem_valid, from_mem_stall_bar, to_mem_valid_buf256);
+bufferH64$   bufferH64$_from_mem_valid_buf64(from_mem_valid_buf64, from_mem_valid);
 
 wire  STALL_REASON_0_bar, STALL_REASON_1_bar;
 

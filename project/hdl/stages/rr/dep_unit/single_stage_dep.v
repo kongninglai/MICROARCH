@@ -25,7 +25,7 @@ module single_stage_dep(
     input   [2:0]   srcMMB_id,
     input   [10:0]  src_needREGS,
 
-    output          dep
+    output          dep_bar
 ); 
     wire depA, depB, depC, depBS1, depBS2, depIDX, depSREG, depSR1, depSR2, depMMA, depMMB;
 
@@ -158,5 +158,5 @@ module single_stage_dep(
            depMMA, depMMB})
     );
 
-    and2$ and_valid_dep(dep, dst_valid, any_dep);
+    nand2$ nand_valid_dep(dep_bar, dst_valid, any_dep);
 endmodule

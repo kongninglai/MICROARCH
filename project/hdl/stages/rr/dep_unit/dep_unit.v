@@ -93,7 +93,7 @@ module dep_unit(
         .srcMMA_id(from_regunit_srcMMA_id),
         .srcMMB_id(from_regunit_srcMMB_id),
         .src_needREGS(from_rr_src_needREGS),
-        .dep(dep_ag)
+        .dep_bar(dep_ag_bar)
     ); 
 
     single_stage_dep check_dep_from_mem(
@@ -122,7 +122,7 @@ module dep_unit(
         .srcMMA_id(from_regunit_srcMMA_id),
         .srcMMB_id(from_regunit_srcMMB_id),
         .src_needREGS(from_rr_src_needREGS),
-        .dep(dep_mem)
+        .dep_bar(dep_mem_bar)
     ); 
 
     single_stage_dep check_dep_from_ex(
@@ -151,11 +151,11 @@ module dep_unit(
         .srcMMA_id(from_regunit_srcMMA_id),
         .srcMMB_id(from_regunit_srcMMB_id),
         .src_needREGS(from_rr_src_needREGS),
-        .dep(dep_ex)
+        .dep_bar(dep_ex_bar)
     ); 
 
     wire any_dep;
-    or3$ or3_any_dep(any_dep, dep_ag, dep_mem, dep_ex);
+    nand3$ nand3_any_dep(any_dep, dep_ag_bar, dep_mem_bar, dep_ex_bar);
     assign data_dep = any_dep;
     // and2$ and2_dep_stall(data_dep, any_dep, rr_valid);
 endmodule

@@ -96,7 +96,8 @@ mux4_8$ mux4_8$_rd_ptr_plus_1(
   {6'd0, 2'b11},
   {6'd0, 2'b00},
   rd_ptr_buf16[0],
-  rd_ptr_buf16[1]);
+  rd_ptr_buf16[1]
+);
 
 /* On flush, reset rd_ptr to 0 */
 wire [5:0] rd_ptr_d_dummy;
@@ -178,13 +179,10 @@ reg_n #(
 /*** ONE-HOT RD / WR LOGIC ***/
 
 wire    [NUM_ENTRIES-1:0]   wr_one_hot, wr_one_hot_gated;
-wire    [NUM_ENTRIES-1:0]   rd_one_hot, rd_one_hot_gated;
 
 decoder2_4$   decoder2_4$_wr_one_hot(.SEL(wr_ptr_buf64), .Y(wr_one_hot), .YBAR());
-decoder2_4$   decoder2_4$_rd_one_hot(.SEL(rd_ptr_buf16), .Y(rd_one_hot), .YBAR());
 
 and2$   and2$_wr_one_hot_gated[NUM_ENTRIES-1:0](wr_one_hot_gated, wr_one_hot, {NUM_ENTRIES{wr}});
-and2$   and2$_rd_one_hot_gated[NUM_ENTRIES-1:0](rd_one_hot_gated, rd_one_hot, {NUM_ENTRIES{rd}});
 
 /*** ENTRY INSTANTIATION ***/
 
