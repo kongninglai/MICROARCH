@@ -353,8 +353,9 @@ module stage_rr #(
     assign from_rr_cs = from_regunit_CS;
     
     assign from_rr_pred_eip = to_rr_pred_eip;
-    assign from_rr_exception = to_rr_exception;
+    // assign from_rr_exception = to_rr_exception;
 
+    mux2$ mux2_from_rr_exception[1:0](from_rr_exception, to_rr_exception, 2'b00, handling_intex);
     // if data_dep: bubble -> valid = 0
     // from_rr_valid = to_rr_valid & ~data_dep
     wire is_hlt, is_hlt_valid_bar, is_not_hlt, valid_dep_bar;
