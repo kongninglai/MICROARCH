@@ -123,17 +123,13 @@ generate
       assign out = or_0_0_out;
     end
     16: begin : width16_gen
-      wire or_0_0_out;
-      wire or_0_1_out;
-      wire or_0_2_out;
-      wire or_0_3_out;
-      wire or_0_4_out;
-      or4$ or_0_0(or_0_0_out,or_0_1_out,or_0_2_out,or_0_3_out,or_0_4_out);
-      or4$ or_0_1(or_0_1_out,in[0],in[1],in[2],in[3]);
-      or4$ or_0_2(or_0_2_out,in[4],in[5],in[6],in[7]);
-      or4$ or_0_3(or_0_3_out,in[8],in[9],in[10],in[11]);
-      or4$ or_0_4(or_0_4_out,in[12],in[13],in[14],in[15]);
-      assign out = or_0_0_out;
+      // Optimized for BSF
+      wire nor_0_0_out, nor_0_1_out, nor_0_2_out, nor_0_3_out;
+      nand4$  nand4$_out(out, nor_0_0_out, nor_0_1_out, nor_0_2_out,nor_0_3_out);
+      nor4$   nor4$_nor_0_0_out(nor_0_0_out,in[0],in[1],in[2],in[3]);
+      nor4$   nor4$_nor_0_1_out(nor_0_1_out,in[4],in[5],in[6],in[7]);
+      nor4$   nor4$_nor_0_2_out(nor_0_2_out,in[8],in[9],in[10],in[11]);
+      nor4$   nor4$_nor_0_3_out(nor_0_3_out,in[12],in[13],in[14],in[15]);
     end
     17: begin : width17_gen
       wire or_0_0_out;

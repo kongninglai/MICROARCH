@@ -8,13 +8,13 @@ module ex_pavg(
     genvar i;
 
     generate 
-        for (i=0; i<8; i=i+1) begin 
+        for (i=0; i<8; i=i+1) begin : FA_16b_gen
             wire [15:0] paddb_out;
             FA_16b paddb(.in0({8'b0, dest_in[i*8+7:i*8]}), .in1({8'b0, src_in[i*8+7:i*8]}), .cin(1'b1), .s(paddb_out), .cout());
             assign pavgb_out[i*8+7:i*8] = paddb_out[8:1];
         end
 
-        for (i=0; i<4; i=i+1) begin 
+        for (i=0; i<4; i=i+1) begin : FA_32b_gen
             wire [31:0] paddw_out;
             FA_32b paddw(.in0({16'b0, dest_in[i*16+15:i*16]}), .in1({16'b0, src_in[i*16+15:i*16]}), .cin(1'b1), .s(paddw_out), .cout());
             assign pavgw_out[i*16+15:i*16] = paddw_out[16:1];

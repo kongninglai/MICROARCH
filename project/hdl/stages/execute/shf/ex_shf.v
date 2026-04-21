@@ -15,15 +15,18 @@ module ex_shf(
     wire [4:0] shf_amt_masked;
     assign shf_amt_masked = shf_amt[4:0];
 
-    wire [31:0] se8_shf_data, se16_shf_data, shf_data_extended;
+    wire [31:0] se8_shf_data, se16_shf_data, shf_data_extended, shf_data_extended_buf4096;
     se #(.INP_WIDTH(8), .OUT_WIDTH(32)) se8_shf_data_inst(.in(shf_data[7:0]), .out(se8_shf_data));
     se #(.INP_WIDTH(16), .OUT_WIDTH(32)) se16_shf_data_inst(.in(shf_data[15:0]), .out(se16_shf_data));
     mux4_32 mux4_32_shf_data(shf_data_extended, se8_shf_data, se16_shf_data, shf_data, , ds[0], ds[1]);
+    bufferH4096$ bufferH4096$_shf_data_extended_buf4096[31:0](shf_data_extended_buf4096, shf_data_extended);
 
     wire [31:0] lshf_out, rshf_out;
-    lshf_var_32b lshf_out_inst(.in(shf_data_extended), .shf_amt(shf_amt_masked), .out(lshf_out));
-    rshfa_var_32b rshf_out_inst(.in(shf_data_extended), .shf_amt(shf_amt_masked), .out(rshf_out));
+    lshf_var_32b lshf_out_inst(.in(shf_data_extended_buf4096), .shf_amt(shf_amt_masked), .out(lshf_out));
+    rshfa_var_32b rshf_out_inst(.in(shf_data_extended_buf4096), .shf_amt(shf_amt_masked), .out(rshf_out));
 
+    wire [31:0] shf_out_buf16;
+    bufferH16$  bufferH16$_shf_out_buf16[31:0](shf_out_buf16, shf_out);    
     mux2_32 mux2_32_shf_out(shf_out, lshf_out, rshf_out, shf_op);
 
     // EFLAGS
@@ -33,12 +36,13 @@ module ex_shf(
     // SAR: = shf_data[shf_amt-1]
     wire CF;
 
-    wire [4:0] shf_amt_dec;
+    wire [4:0] shf_amt_dec, shf_amt_dec_buf256;
+    bufferH256$ bufferH256$_shf_amt_dec_buf256[4:0](shf_amt_dec_buf256, shf_amt_dec);
     big_decrement #(.WIDTH(5)) dec_shf_amt(.a(shf_amt_masked), .s(shf_amt_dec));
 
     wire [31:0] lshf_dec_out, rshf_dec_out;
-    lshf_var_32b lshf_dec_out_inst(.in(shf_data_extended), .shf_amt(shf_amt_dec), .out(lshf_dec_out));
-    rshfa_var_32b rshf_dec_out_inst(.in(shf_data_extended), .shf_amt(shf_amt_dec), .out(rshf_dec_out));
+    lshf_var_32b lshf_dec_out_inst(.in(shf_data_extended_buf4096), .shf_amt(shf_amt_dec_buf256), .out(lshf_dec_out));
+    rshfa_var_32b rshf_dec_out_inst(.in(shf_data_extended_buf4096), .shf_amt(shf_amt_dec_buf256), .out(rshf_dec_out));
     
     wire lshf_cf, rshf_cf;
     mux4$ mux4_lshf_cf(lshf_cf, lshf_dec_out[7], lshf_dec_out[15], lshf_dec_out[31], , ds[0], ds[1]);
@@ -66,9 +70,9 @@ module ex_shf(
     wire zf_8, zf_16, zf_32;
     wire pf_8, pf_16, pf_32;
 
-    set_sf_zf_pf #(.WIDTH(8)) st_sf_zf_pf_8(.out(shf_out),.SF(sf_8),.ZF(zf_8),.PF(pf_8));
-    set_sf_zf_pf #(.WIDTH(16)) st_sf_zf_pf_16(.out(shf_out),.SF(sf_16),.ZF(zf_16),.PF(pf_16));
-    set_sf_zf_pf #(.WIDTH(32)) st_sf_zf_pf_32(.out(shf_out),.SF(sf_32),.ZF(zf_32),.PF(pf_32));
+    set_sf_zf_pf #(.WIDTH(8)) st_sf_zf_pf_8(.out(shf_out_buf16),.SF(sf_8),.ZF(zf_8),.PF(pf_8));
+    set_sf_zf_pf #(.WIDTH(16)) st_sf_zf_pf_16(.out(shf_out_buf16),.SF(sf_16),.ZF(zf_16),.PF(pf_16));
+    set_sf_zf_pf #(.WIDTH(32)) st_sf_zf_pf_32(.out(shf_out_buf16),.SF(sf_32),.ZF(zf_32),.PF(pf_32));
 
     mux4$ mux4_sf(SF, sf_8, sf_16, sf_32, , ds[0], ds[1]);
     mux4$ mux4_zf(ZF, zf_8, zf_16, zf_32, , ds[0], ds[1]);

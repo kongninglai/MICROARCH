@@ -41,10 +41,12 @@ module ex_alu(
     bufferH64$ buffer64_alu_op[2:0](buffered_alu_op, alu_op);
 
     // ALU OUT MUX
-    wire [31:0] alu_mux_out, alu_mux_cout;
+    wire [31:0] alu_mux_out, alu_mux_out_buf16, alu_mux_cout, alu_mux_cout_buf16;
+    bufferH16$  bufferH16$_alu_mux_out_buf16[31:0](alu_mux_out_buf16, alu_mux_out);
+    bufferH16$  bufferH16$_alu_mux_cout_buf16[31:0](alu_mux_cout_buf16, alu_mux_cout);
     mux8_32 mux8_aluout(alu_mux_out, add_out, or_out, adc_out, sbb_out, and_out, , , , buffered_alu_op[0], buffered_alu_op[1], buffered_alu_op[2]);
     mux8_32 mux8_alucout(alu_mux_cout, add_cout, 32'b0, adc_cout, sbb_cout, 32'b0, , , , buffered_alu_op[0], buffered_alu_op[1], buffered_alu_op[2]);
-    assign alu_out = alu_mux_out;
+    assign alu_out = alu_mux_out_buf16;
 
     // EFLAGS
     wire OF8, OF16, OF32, OF;
@@ -54,7 +56,7 @@ module ex_alu(
     wire CF8, CF16, CF32, CF;
     wire PF8, PF16, PF32, PF;
 
-    alu_eflags #(.WIDTH(8)) alu_eflags8(in0, in1, alu_mux_out, alu_mux_cout, buffered_alu_op,
+    alu_eflags #(.WIDTH(8)) alu_eflags8(in0, in1, alu_mux_out_buf16, alu_mux_cout_buf16, buffered_alu_op,
                                         OF8,
                                         SF8,
                                         ZF8,
@@ -62,7 +64,7 @@ module ex_alu(
                                         CF8,
                                         PF8);
 
-    alu_eflags #(.WIDTH(16)) alu_eflags16(in0, in1, alu_mux_out, alu_mux_cout, buffered_alu_op,
+    alu_eflags #(.WIDTH(16)) alu_eflags16(in0, in1, alu_mux_out_buf16, alu_mux_cout_buf16, buffered_alu_op,
                                         OF16,
                                         SF16,
                                         ZF16,
@@ -70,7 +72,7 @@ module ex_alu(
                                         CF16,
                                         PF16);
 
-    alu_eflags #(.WIDTH(32)) alu_eflags32(in0, in1, alu_mux_out, alu_mux_cout, buffered_alu_op,
+    alu_eflags #(.WIDTH(32)) alu_eflags32(in0, in1, alu_mux_out_buf16, alu_mux_cout_buf16, buffered_alu_op,
                                         OF32,
                                         SF32,
                                         ZF32,

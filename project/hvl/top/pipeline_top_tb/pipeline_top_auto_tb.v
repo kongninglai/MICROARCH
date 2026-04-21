@@ -395,6 +395,12 @@ reg [63:0] arch_snap_mmx [0:7];
 reg [15:0] arch_snap_seg [0:4];
 reg [15:0] arch_snap_cs;
 
+reg [15:0] cs_q_delayed;
+
+always @(posedge clk) begin
+  cs_q_delayed <= dut.inst_regunit.segrf.cs_q;
+end
+
 task take_arch_snapshot;
   input [31:0] snap_oeip;
   input [31:0] snap_ieip;
@@ -415,7 +421,7 @@ begin
     arch_snap_mmx[si] = dut.inst_regunit.mmxrf.mmx_regs.q[si];
 
   arch_snap_seg[0] = dut.inst_regunit.segrf.seg_rf.q[0]; // ES
-  arch_snap_cs     = dut.inst_regunit.segrf.cs_q;        // CS
+  arch_snap_cs     = cs_q_delayed;        // CS
   arch_snap_seg[1] = dut.inst_regunit.segrf.seg_rf.q[2]; // SS
   arch_snap_seg[2] = dut.inst_regunit.segrf.seg_rf.q[3]; // DS
   arch_snap_seg[3] = dut.inst_regunit.segrf.seg_rf.q[4]; // FS
