@@ -19,8 +19,7 @@
 0x52:  be 00 00 00 00  // mov    esi,0x0
 0x57:  bf 00 00 00 00  // mov    edi,0x0
 0x5c:  f3 a7  // repe cmps DWORD PTR ds:[esi],DWORD PTR es:[edi]
-0x5e:  ba 01 00 00 00  // mov    edx,0x1
-0x63:  8e ca  // mov    cs,edx  <- sets CS=0x0001
+0x5e:  ea 65 00 00 00 01 00  // jmp    0x1:0x65  <- far JMP sets CS=0x0001, next fetch PFs
 0x65:  b8 ee ff c0 00  // mov    eax,0xc0ffee  (PF handled, back in CS=0x0000)
 0x6a:  f4  // hlt
 0x6b:  90  // nop

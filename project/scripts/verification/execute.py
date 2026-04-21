@@ -740,7 +740,8 @@ class Executor:
                     modrm = self.fetch8()
                     mod, reg, rm = (modrm >> 6) & 3, (modrm >> 3) & 7, modrm & 7
                     seg, addr = self.get_rm(mod, rm)
-                    self.state.seg[reg] = self.read_rm(seg, addr, 2)
+                    if (reg != 1): # Cannot do MOV CS, ---
+                        self.state.seg[reg] = self.read_rm(seg, addr, 2)
                 elif op == 0x9A:  # CALL ptr16:16/32
                     eip_val = self.fetch16() if self.oso else self.fetch32()
                     cs_val = self.fetch16()
