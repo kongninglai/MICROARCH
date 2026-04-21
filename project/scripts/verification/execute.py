@@ -227,8 +227,11 @@ class Executor:
         )
         self.push(eflags_val & 0xFFFFFFFF, 4)
         idt_addr = self.state.idtr_base + (vector * 8)
+        temp = self.state.seg[1] & 0xFFFF
+        self.state.seg[1] = 0
         low = self.mmu.read_dword(1, idt_addr, check_lim=0)
         high = self.mmu.read_dword(1, idt_addr + 4, check_lim=0)
+        self.state.seg[1] = temp
 
         old_eip = self.state.eip & 0xFFFFFFFF
         old_cs = self.state.seg[1] & 0xFFFF

@@ -1,33 +1,66 @@
-0x0:  ba 00 02 00 00  // mov    edx,0x200
-0x5:  8e da  // mov    ds,edx
-0x7:  ba 00 04 00 00  // mov    edx,0x400
-0xc:  8e c2  // mov    es,edx
-0xe:  ba 00 0b 00 00  // mov    edx,0xb00
-0x13:  8e d2  // mov    ss,edx
-0x15:  bc 00 01 00 00  // mov    esp,0x100
-0x1a:  bb 00 00 00 00  // mov    ebx,0x0
-0x1f:  bd 00 00 00 00  // mov    ebp,0x0
-0x24:  b8 11 11 11 11  // mov    eax,0x11111111
-0x29:  b9 22 22 22 22  // mov    ecx,0x22222222
-0x2e:  91  // xchg   ecx,eax
-0x2f:  b8 aa aa aa aa  // mov    eax,0xaaaaaaaa
-0x34:  ba bb bb bb bb  // mov    edx,0xbbbbbbbb
-0x39:  92  // xchg   edx,eax
-0x3a:  be 78 56 34 12  // mov    esi,0x12345678
-0x3f:  bf 21 43 65 87  // mov    edi,0x87654321
-0x44:  87 fe  // xchg   esi,edi
-0x46:  c7 03 ef be ad de  // mov    DWORD PTR [ebx],0xdeadbeef
-0x4c:  b8 78 56 34 12  // mov    eax,0x12345678
-0x51:  87 03  // xchg   DWORD PTR [ebx],eax
-0x53:  b8 aa 00 00 00  // mov    eax,0xaa
-0x58:  b9 55 00 00 00  // mov    ecx,0x55
-0x5d:  86 c8  // xchg   al,cl
-0x5f:  66 66 b8 34 12  // data16 mov ax,0x1234
-0x64:  66 66 b9 78 56  // data16 mov cx,0x5678
-0x69:  66 87 c8  // xchg   ax,cx
-0x6c:  66 66 b8 cd ab  // data16 mov ax,0xabcd
-0x71:  66 66 b9 34 12  // data16 mov cx,0x1234
-0x76:  66 91  // xchg   cx,ax
-0x78:  f4  // hlt
+0x0:  ba 00 0b 00 00  // mov    edx,0xb00
+0x5:  8e d2  // mov    ss,edx
+0x7:  bc 00 01 00 00  // mov    esp,0x100
+0xc:  ba 00 02 00 00  // mov    edx,0x200  (DS=writable)
+0x11:  8e da  // mov    ds,edx
+0x13:  ba 00 04 00 00  // mov    edx,0x400
+0x18:  8e c2  // mov    es,edx
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  b8 ef be ad de  // mov    eax,0xdeadbeef
+0x24:  c7 43 00 be ba fe ca  // mov    DWORD PTR [ebx+0x0],0xcafebabe  ; DS write OK
+0x2b:  c7 43 04 78 56 34 12  // mov    DWORD PTR [ebx+0x4],0x12345678  ; DS write OK
+0x32:  8b 4b 00  // mov    ecx,DWORD PTR [ebx+0x0]  ; read back
+0x35:  03 4b 04  // add    ecx,DWORD PTR [ebx+0x4]  ; read back
+0x38:  bd 00 00 00 00  // mov    ebp,0x0
+0x3d:  26 89 45 00  // mov    DWORD PTR es:[ebp+0x0],eax  ; ES write
+0x41:  ba 00 00 00 00  // mov    edx,0x0  (DS=read-only)
+0x46:  8e da  // mov    ds,edx  <- DS=0x0000 (VPN 0x00000, rw=1)
+0x48:  89 03  // mov    DWORD PTR [ebx],eax  <- WRITE TO READ-ONLY PAGE -> GP FAULT
+0x4a:  b8 de c0 ad de  // mov    eax,0xdeadc0de  (GP handled, write succeeded)
+0x4f:  f4  // hlt
+0x50:  90  // nop
+0x51:  90  // nop
+0x52:  90  // nop
+0x53:  90  // nop
+0x54:  90  // nop
+0x55:  90  // nop
+0x56:  90  // nop
+0x57:  90  // nop
+0x58:  90  // nop
+0x59:  90  // nop
+0x5a:  90  // nop
+0x5b:  90  // nop
+0x5c:  90  // nop
+0x5d:  90  // nop
+0x5e:  90  // nop
+0x5f:  90  // nop
+0x60:  ba 00 02 00 00  // mov    edx,0x200  (restore DS)
+0x65:  8e da  // mov    ds,edx  (DS restored to 0x200)
+0x67:  cf  // iretd  (re-execute faulting write)
 
 0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2060: 00 00 00 00 00 00 00 00
+0x2068: 60 00 00 00 00 00 00 00
+0x5000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
