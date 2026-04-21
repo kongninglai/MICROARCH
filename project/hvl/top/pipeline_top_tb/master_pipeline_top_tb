@@ -12,6 +12,7 @@
 // Automatic Directory Search
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/adders
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/comparators
+-y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/decoders
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/extenders
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/gates
 -y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/muxes

@@ -123,6 +123,10 @@ module stage_decode(
     bp BP(
         .clk(clk),
         .rst_bar(rst_bar),
+        .opcode(opcode),
+        .imm(imm),
+        .op_size_overload(prefix_op_size),
+        .prefix_ext(prefix_ext),
         .is_branch(is_branch),
         .o_eip(o_eip), //used to predict cur instruction in decode
         .br_t_nt_ex_d(br_t_nt_ex_d), //used to update pht for instr in execute stage
