@@ -76,7 +76,7 @@ run_one_sim() {
     fi
 
     # After backend_top_tb passes compilation and simulation, run instruction regression
-    if [[ "$tb_name" == "backend_top_tb" ]]; then
+    if [[ "$tb_name" == "pipeline_top_tb" ]]; then
       TB_DIR="$leaf_dir"
       instr_out="$TMP_RESULTS/${tb_name}_instructions.result"
       echo "[$tb_name] Running instruction regression..."
