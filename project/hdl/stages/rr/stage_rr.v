@@ -293,7 +293,7 @@ module stage_rr #(
     assign from_rr_srcSREG=from_regunit_srcSREG;
     assign from_rr_MMA=from_regunit_MMA;
     assign from_rr_MMB=from_regunit_MMB;
-    // assign from_rr_imm=to_rr_imm[31:0];
+    assign from_rr_imm=to_rr_imm[31:0];
     assign from_rr_sreg1=from_regunit_SREG1;
     assign to_regunit_seg_prefix=to_rr_prefix[3:1];
     assign to_regunit_has_seg_prefix=to_rr_prefix[6];
@@ -320,8 +320,8 @@ module stage_rr #(
     wire [31:0] disp8_se, disp_normal, disp_ptr;
     se se_disp(.out(disp8_se), .in(to_rr_disp[7:0]));
     mux3_32 mux3_disp(.out(disp_normal), .in0(32'b0), .in1(disp8_se), .in2(to_rr_disp), .s0(to_rr_dispsize[0]), .s1(to_rr_dispsize[1]));
-    // mux2_32 mux2_disp_ptr(.out(disp_ptr), .in0({16'b0, to_rr_imm[47:32]}), .in1({16'b0, to_rr_imm[31:16]}), .s0(to_rr_prefix[4])) ;
-    assign disp_ptr = {16'b0, to_rr_imm[15:0]};
+    mux2_32 mux2_disp_ptr(.out(disp_ptr), .in0({16'b0, to_rr_imm[47:32]}), .in1({16'b0, to_rr_imm[31:16]}), .s0(to_rr_prefix[4])) ;
+
     wire disp_is_ptr; // opcode=9A/EA
     wire opcode_9a, opcode_ea;
     big_eq #(.WIDTH(8)) eq_9a(.eq(opcode_9a), .in0(to_rr_opcode), .in1(8'h9A));
@@ -329,8 +329,7 @@ module stage_rr #(
     or2$ or_is_ptr(disp_is_ptr, opcode_9a, opcode_ea);
     // and2$ and_immsize48(disp_is_ptr, to_rr_imm_size[2], to_rr_imm_size[1]);
     mux2_32 mux2_disp_value(.out(from_rr_disp), .in0(disp_normal), .in1(disp_ptr), .s0(disp_is_ptr));
-    mux2_32 mux2_eip_ptr(from_rr_imm, to_rr_imm[31:0], to_rr_imm[47:16], disp_is_ptr);
-    // assign from_rr_imm=to_rr_imm[31:0];
+
     mux2$ mux2_scale[1:0](from_rr_scale_mux, 2'b00, to_rr_sib[7:6], to_rr_addr_mode[1]);
 
     assign from_rr_slim1 = from_regunit_SLIM1;
