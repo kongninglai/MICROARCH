@@ -1,5 +1,5 @@
 FAIL: RESULTS MISMATCH
-Diff written to: /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/diff_output.txt
+Diff written to: /home/ecelrc/students/var2427/MICROARCH/project/hvl/top/pipeline_top_tb/diff_output.txt
 188,393d187
 < Architectural State 17
 < EAX: 0x00000000    ECX: 0xaaaaaaaa    EDX: 0x11111111    EBX: 0x00000000
