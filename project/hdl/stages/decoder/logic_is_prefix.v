@@ -34,7 +34,7 @@ module logic_is_prefix(
     //Level 1: 0.24ns
     wire [7:0] candidate_prefix_buf;
     
-    bufferH16$ candidate_prefix_wire_buf [7:0] (candidate_prefix_buf, candidate_prefix);
+    assign candidate_prefix_buf = candidate_prefix;
 
     //Level 2: 1.05ns delay 
     //Compare Opcode to all Prefixes in Parallel
@@ -101,6 +101,8 @@ module logic_is_prefix(
 
     // Level 4: 0.2ns delay
     //NAND output of wires for completing the OR
-    nand3$ nine_input_or(is_any_prefix, nor_grp0, nor_grp1, nor_grp2);
+    wire is_any_prefix_prebuf;
+    nand3$ nine_input_or(is_any_prefix_prebuf, nor_grp0, nor_grp1, nor_grp2);
+    bufferH16$ bufferH16$_is_any_prefix(is_any_prefix, is_any_prefix_prebuf);
 
 endmodule

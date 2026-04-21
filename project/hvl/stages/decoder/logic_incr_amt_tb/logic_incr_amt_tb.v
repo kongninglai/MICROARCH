@@ -6,7 +6,7 @@ module tb_logic_incr_amt();
     reg  [7:0] opcode;          // <--- ADDED OPCODE REG
     reg  [2:0] rom_sum;
     reg  [2:0] disp_plus_sib;
-    reg  [2:0] prefix_amount;
+    reg  [1:0] prefix_amount;
     wire [3:0] incr_amt;
 
     // 2. Instantiate the Unit Under Test (UUT)
@@ -48,7 +48,7 @@ module tb_logic_incr_amt();
         // Loop through all possible combinations (8 * 8 * 8 = 512 total tests)
         for (i = 0; i < 8; i = i + 1) begin
             for (j = 0; j < 8; j = j + 1) begin
-                for (k = 0; k < 8; k = k + 1) begin
+                for (k = 0; k < 4; k = k + 1) begin
                     // Set Inputs
                     rom_sum       = i[2:0];
                     disp_plus_sib = j[2:0];

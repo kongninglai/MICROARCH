@@ -19,8 +19,11 @@ module stage_rr #(
     input [1:0]  to_rr_exception,
     input to_rr_valid,
 
-    input from_ag_stall,
+    input from_ag_stall_bar,
     input from_dep_unit_data_dep,
+    input [8:0] from_dep_ag_fw_control_sigs,
+    input [8:0] from_dep_mem_fw_control_sigs,
+    input [8:0] from_dep_ex_fw_control_sigs,
 
     input from_wb_flush,
     input from_ex_cmps_found,
@@ -64,6 +67,8 @@ module stage_rr #(
     input [63:0] from_regunit_MMB,
 
     output [10:0] to_dep_needREGS,
+    output [1:0]  from_rr_rw,
+    output        from_rr_rep,
 
     output [AG_CONTROL_SIGS_WIDTH-1:0] from_rr_control_sigs,
     output [2:0] from_rr_dstidA,
@@ -113,13 +118,14 @@ module stage_rr #(
     big_eq #(.WIDTH(8)) eq_a7(.eq(cmps), .in0(to_rr_opcode), .in1(8'ha7));
     big_eq #(.WIDTH(8)) eq_cf(.eq(iret), .in0(to_rr_opcode), .in1(8'hcf));
     
-    wire        ucode_stall;
+    wire        ucode_stall_bar;
 
     wire cmps0, cmps1, cmps2;
     wire iret0;
     wire fsm_stall, intex, handling_intex;
     wire not_intex_or_iret;
-    or2$ or2_fsm_stall(fsm_stall, from_ag_stall, from_dep_unit_data_dep);
+    wire no_dep;
+    nand2$ nand2_fsm_stall(fsm_stall, from_ag_stall_bar, no_dep);
     ucode_fsm ucode_fsm_inst (
         .clk(clk),
         .rst_n(rst_n),
@@ -144,12 +150,14 @@ module stage_rr #(
         .clear_int(clear_int),
         .intex(intex),
         .handling_intex(handling_intex),
-        .ucode_stall(ucode_stall),
+        .ucode_stall_bar(ucode_stall_bar),
         .ucode_valid(from_rr_ucode_valid),
         .ucode_sig(ucode_sig),
         .not_intex_or_iret(not_intex_or_iret)
     );
 
+    assign from_rr_rep = to_rr_prefix[5];
+    
     wire [1:0] ldAB, dstidB_mux, gprd0_mux, gprd2_mux, shf_srcb_mux, cs_mux, mm_dst_mux, rw, ds, mem_ds, imm_mux, addr_mux;
     wire [2:0] dstidA_mux, ldREGS, eflags_mux, eip_mux, gp_dstb_mux;
     wire gprd1_mux, srcregA_mux, srcregB_mux, ldEFLAGS, alu_srcb_mux, ldEIP, ldCS, seg_dst_mux, srcsreg_mux, segrd0_mux, segrd1_mux, rm;
@@ -224,7 +232,7 @@ module stage_rr #(
 
 
     wire [3:0] ff_store_data_mux, from_rr_store_data_mux;
-    wire [1:0] ff_from_rr_rw, from_rr_rw;
+    wire [1:0] ff_from_rr_rw;
     wire ff_from_rr_ldEIP, from_rr_ldEIP;
     wire ff_ldB, ff_from_rr_ldB;
     wire opcode_ff;
@@ -245,7 +253,8 @@ module stage_rr #(
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
                      mmx_op, alu_op, shf_op, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
                      gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, from_rr_store_data_mux, from_rr_rw, ds_with_override, 
-                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir, iret0};
+                     mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir, iret0,
+                     from_dep_ag_fw_control_sigs, from_dep_mem_fw_control_sigs, from_dep_ex_fw_control_sigs};
 
     assign mmx_op = {to_rr_opcode[7], to_rr_opcode[2]};
     wire pack_size, padd_size, pavg_size;
@@ -344,12 +353,13 @@ module stage_rr #(
     assign from_rr_cs = from_regunit_CS;
     
     assign from_rr_pred_eip = to_rr_pred_eip;
-    assign from_rr_exception = to_rr_exception;
+    // assign from_rr_exception = to_rr_exception;
 
+    mux2$ mux2_from_rr_exception[1:0](from_rr_exception, to_rr_exception, 2'b00, handling_intex);
     // if data_dep: bubble -> valid = 0
     // from_rr_valid = to_rr_valid & ~data_dep
-    wire no_dep, is_hlt, is_hlt_valid, is_not_hlt, valid_dep;
-    and2$ valid_data_dep(valid_dep, from_rr_ucode_valid, from_dep_unit_data_dep);
+    wire is_hlt, is_hlt_valid_bar, is_not_hlt, valid_dep_bar;
+    nand2$ valid_data_dep_bar(valid_dep_bar, from_rr_ucode_valid, from_dep_unit_data_dep);
     inv1$ inv_dep(no_dep, from_dep_unit_data_dep);
 
     big_eq #(
@@ -359,7 +369,7 @@ module stage_rr #(
       .eq(is_hlt)
     );
 
-    and2$ and2$_is_hlt_valid(is_hlt_valid, is_hlt, from_rr_ucode_valid);
+    nand2$ nand2$_is_hlt_valid_bar(is_hlt_valid_bar, is_hlt, from_rr_ucode_valid);
 
     big_neq #(
       .WIDTH(8)
@@ -371,8 +381,8 @@ module stage_rr #(
     and2$ and_valid(from_rr_valid, from_rr_ucode_valid, no_dep);
 
     /* TODO: ADD STALL LOGIC */
-    or4$ or_from_rr_stall(from_rr_stall, ucode_stall, from_ag_stall, valid_dep, is_hlt_valid);
+    nand4$ nand_from_rr_stall(from_rr_stall, ucode_stall_bar, from_ag_stall_bar, valid_dep_bar, is_hlt_valid_bar);
 
     assign to_dep_needREGS = {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]};
-    inv1$  inv1$_from_rr_we_pipe_reg(from_rr_we_pipe_reg, from_ag_stall);
+    assign from_rr_we_pipe_reg = from_ag_stall_bar;
 endmodule

@@ -227,8 +227,11 @@ class Executor:
         )
         self.push(eflags_val & 0xFFFFFFFF, 4)
         idt_addr = self.state.idtr_base + (vector * 8)
+        temp = self.state.seg[1] & 0xFFFF
+        self.state.seg[1] = 0
         low = self.mmu.read_dword(1, idt_addr, check_lim=0)
         high = self.mmu.read_dword(1, idt_addr + 4, check_lim=0)
+        self.state.seg[1] = temp
 
         old_eip = self.state.eip & 0xFFFFFFFF
         old_cs = self.state.seg[1] & 0xFFFF
@@ -742,8 +745,10 @@ class Executor:
                     eip_val = self.fetch16() if self.oso else self.fetch32()
                     cs_val = self.fetch16()
                     if self.mmu.check_segment(eip_val, 1):
-                        self.push(self.state.seg[1], 2 if self.oso else 4)
-                        self.push(self.state.eip, 2 if self.oso else 4)
+                        # self.push(self.state.seg[1], 2 if self.oso else 4)
+                        # self.push(self.state.eip, 2 if self.oso else 4)
+                        push_data = ((self.state.seg[1]<<16) | (self.state.eip & 0xFFFF)) if self.oso else ((self.state.seg[1]<<32) | self.state.eip )
+                        self.push(push_data, 4 if self.oso else 8)
                         self.state.seg[1] = cs_val
                         self.state.eip = eip_val
                     else:

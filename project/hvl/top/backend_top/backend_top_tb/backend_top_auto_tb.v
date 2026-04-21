@@ -814,7 +814,7 @@ initial begin
   TEST_CASE_NEW_CHAR_WR      <= 8'd0;
   TEST_CASE_NEW_READY        <= 1'b0;
   TEST_CASE_NEW_READY_WR     <= 1'b0;
-  clk = 1'b0;
+  clk = 1'b1;
   rst_n = 1'b0;
   file_handle_cmp = $fopen("/home/ecelrc/students/var2427/MICROARCH/project/hvl/top/backend_top/backend_top_tb/results_cmp.txt", "w");
   if (file_handle_cmp == 0) begin

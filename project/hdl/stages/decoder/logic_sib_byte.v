@@ -16,9 +16,8 @@ module logic_sib_byte(
     input wire [7:0] candidate_modrm5,
     input wire [7:0] candidate_modrm6,
     input wire is_modrm_true, //signal is ready at 2.69ns
-    input wire [2:0] prefix_num, //signal is ready at 3.38ns
-    output wire [7:0] sib_byte_true,
-    output wire is_sib_true
+    input wire [1:0] prefix_num, //signal is ready at 3.38ns
+    output wire [7:0] sib_byte_true
 );  
 
     //Layer 1: 0.75ns
@@ -50,9 +49,7 @@ module logic_sib_byte(
     
     //Layer 2: 0.8ns
     wire is_any_sib;
-    mux8 choose_is_sib(.outb(is_any_sib), .in0(is_sib1), .in1(is_sib2), .in2(is_sib3), .in3(is_sib4), .in4(is_sib5), .in5(is_sib6), .in6(1'b0), .in7(1'b0), .s0(prefix_num[0]), .s1(prefix_num[1]), .s2(prefix_num[2]));
-    mux8_8 choose_sib_byte(.Y(sib_byte_true), .IN0(candidate_modrm2), .IN1(candidate_modrm3), .IN2(candidate_modrm4), .IN3(candidate_modrm5), .IN4(candidate_modrm6), .IN5(8'd0), .IN6(8'd0), .IN7(8'd0), .S0(prefix_num[0]), .S1(prefix_num[1]), .S2(prefix_num[2]));
+    mux4$ choose_is_sib(.outb(is_any_sib), .in0(is_sib1), .in1(is_sib2), .in2(is_sib3), .in3(is_sib4), .s0(prefix_num[0]), .s1(prefix_num[1]));
+    mux4_8$ choose_sib_byte(.Y(sib_byte_true), .IN0(candidate_modrm2), .IN1(candidate_modrm3), .IN2(candidate_modrm4), .IN3(candidate_modrm5), .S0(prefix_num[0]), .S1(prefix_num[1]));
 
-    //Layer 3: 0.35ns
-    and2$ and_sib_true_signal(.out(is_sib_true), .in0(is_any_sib), .in1(is_modrm_true));
 endmodule

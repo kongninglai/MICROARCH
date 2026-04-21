@@ -3,7 +3,7 @@ module stage_decode(
     input wire [4:0] tail_ptr,
     input wire [31:0] eip_target_ex, //comes from execute stage
     input wire flush_ex, //comes from execute stage
-    input wire v_excptn_src_wb, //comes from writeback stage
+    input wire from_wb_flush, //comes from writeback stage
     input wire stall_rr, 
 
     input wire clk, 
@@ -43,8 +43,10 @@ module stage_decode(
     output wire [1:0] exception_flags
 
 );
-
+    wire [7:0] modrm_prebuf;
+    bufferH16$  bufferH16$_modrm[7:0](modrm, modrm_prebuf);
     wire modrm_v;
+    wire [1:0] addressing_mode_prebuf;
     block_decoder DECODER(
         .cache_line(cache_line),
         .prefix_rep(prefix_rep),
@@ -53,22 +55,27 @@ module stage_decode(
         .prefix_seg(prefix_seg),
         .prefix_ext(prefix_ext),
         .opcode(opcode),
-        .modrm(modrm),
+        .modrm(modrm_prebuf),
         .modrm_v(modrm_v),
         .sib(sib),
         .disp_size_mux(disp_size_mux),
         .disp(disp),
         .imm_size(imm_size),
         .imm(imm),
-        .addressing_mode(addressing_mode),
+        .addressing_mode(addressing_mode_prebuf),
         .instr_length(instr_length)
     );     
 
+    bufferH16$   bufferH16$_addressing_mode[1:0](addressing_mode, addressing_mode_prebuf);
+
     logic_stall_flush LOGIC_STALL_FLUSH(
+        .clk(clk),
+        .rst_bar(rst_bar),
         .i_eip(i_eip),
         .tail_ptr(tail_ptr),
         .incr_amt(instr_length),
         .flush_ex(flush_ex), //comes from execute stage
+        .flush_wb(from_wb_flush), //comes from writeback stage
         .stall_rr(stall_rr), //comes from register read stage
 
         .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal

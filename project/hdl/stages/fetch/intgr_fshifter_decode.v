@@ -44,6 +44,7 @@ module intgr_fshifter_decode(
     wire [127:0] to_de_outbytes;
     wire [15:0] to_de_pf_expn_bytes_out;
     wire [31:0] to_pr_i_eip, to_pr_o_eip;
+    wire iq_full;
 
     fetch_buffer FETCH_BUFF(
         .clk(clk), 
@@ -52,7 +53,7 @@ module intgr_fshifter_decode(
         .from_de_valid(to_pr_pr_valid),
         .from_wb_flush(from_wb_flush),
         .from_ex_flush(from_ex_flush),
-        .from_de_stall(from_rr_stall), //if decode stalls, fetch should still load cl if there is space (but should not decrement the tail pointer by the instr length because we are not moving to the next instruction if de stall -> logic_stall_flush )
+        .from_de_stall(iq_full), //if decode stalls, fetch should still load cl if there is space (but should not decrement the tail pointer by the instr length because we are not moving to the next instruction if de stall -> logic_stall_flush )
         .from_f_cl_pf(from_f_cl_pf), 
         .from_f_cache_line(from_f_cache_line),
         .from_de_eip_redirection(from_de_eip_redirection), 
@@ -65,7 +66,7 @@ module intgr_fshifter_decode(
         .ready() //unused
     );    
 
-    wire to_pr_ld_pr_rr;
+    wire to_pr_ld_pr_rr, to_pr_ld_pr_rr_prebuf;
     wire to_f_ld_eip;
     wire to_pr_prefix_rep, to_pr_prefix_op_size, to_pr_prefix_ext, to_pr_prefix_seg;
     wire [2:0] to_pr_prefix_seg_ov_id, to_pr_imm_size;
@@ -78,8 +79,8 @@ module intgr_fshifter_decode(
         .tail_ptr(tail_ptr),
         .eip_target_ex(from_ex_eip_target), //comes from execute stage
         .flush_ex(from_ex_flush), //comes from execute stage
-        .v_excptn_src_wb(from_wb_flush), //comes from writeback stage
-        .stall_rr(from_rr_stall), 
+        .from_wb_flush(from_wb_flush), //comes from writeback stage
+        .stall_rr(iq_full), 
 
         .clk(clk),
         .rst_bar(rst_bar),
@@ -115,17 +116,21 @@ module intgr_fshifter_decode(
         .addressing_mode(to_pr_addressing_mode),
         .instr_length(to_pr_instr_length),
 
-        .ld_pr_rr(to_pr_ld_pr_rr),
+        .ld_pr_rr(to_pr_ld_pr_rr_prebuf),
         .exception_flags(to_pr_exception_flags)
 
     );
+
+    bufferH256$   bufferH256$_to_pr_ld_pr_rr(to_pr_ld_pr_rr, to_pr_ld_pr_rr_prebuf);
 
     
     //decoder output
     de_to_rr PR_DE_RR(
         .clk(clk),
         .rst(rst_bar),
-        .from_de_ld_pr(to_pr_ld_pr_rr),
+        .from_rr_stall(from_rr_stall),
+        .from_ex_flush(from_ex_flush),
+        .from_wb_flush(from_wb_flush),
 
         .from_f_exception_flags(to_pr_exception_flags), // {Protection, Page Fault}
 
@@ -155,7 +160,7 @@ module intgr_fshifter_decode(
         .to_rr_i_eip(to_rr_i_eip),
         .to_rr_o_eip(to_rr_o_eip),
         .to_rr_bp_target(to_rr_bp_target),
-        .to_rr_pr_valid(to_rr_pr_valid), 
+        .to_rr_pr_valid(), 
 
         //to rr output
         .to_rr_prefixes(to_rr_prefixes), //{prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
@@ -167,7 +172,10 @@ module intgr_fshifter_decode(
         .to_rr_imm_size(to_rr_imm_size),
         .to_rr_imm(to_rr_imm),
         .to_rr_addressing_mode(to_rr_addressing_mode),
-        .to_rr_instr_length(to_rr_instr_length)
+        .to_rr_instr_length(to_rr_instr_length),
+
+        .iq_full(iq_full),
+        .to_rr_valid(to_rr_pr_valid)
     ); 
 
 endmodule

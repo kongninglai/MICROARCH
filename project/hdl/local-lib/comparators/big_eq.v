@@ -17,7 +17,8 @@ generate
       assign eq = in[0];
     end
     2: begin : width2_gen
-      and2$ and_0_0(eq,in[0],in[1]);
+      // Optimized for logic_disp_size
+      nor2$ and_0_0(eq,in_inv[0],in_inv[1]);
     end
     3: begin : width3_gen
       // Optimized for set comparison

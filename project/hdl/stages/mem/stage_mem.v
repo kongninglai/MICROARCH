@@ -53,7 +53,7 @@ module stage_mem #(
   parameter MMXR_DATA_BIT_WIDTH=64,
   parameter SLIM_BIT_WIDTH=32,
 
-  parameter MEM_CONTROL_SIGS_WIDTH=61,
+  parameter MEM_CONTROL_SIGS_WIDTH=79,
   parameter EX_CONTROL_SIGS_WIDTH=59
 
 ) (
@@ -164,12 +164,25 @@ module stage_mem #(
   output  [1:0]                               from_mem_dstA_size,
   output  [1:0]                               from_mem_dstB_size,
   output  [1:0]                               from_mem_ldAB,
-  output  [2:0]                               from_mem_ldREGS
+  output  [2:0]                               from_mem_ldREGS,
+  output                                      from_mem_valid_mem_inst,
+  /* FROM WB FORWARDING */
+  input        from_wb_gpwr0_idx_bit_2,
+  input [31:0] from_wb_gpwr0_data,
+  input [1:0]  from_wb_gpwr0_size,
+  input        from_wb_gpwr0_en,
+  input        from_wb_gpwr1_idx_bit_2,
+  input [31:0] from_wb_gpwr1_data,
+  input [1:0]  from_wb_gpwr1_size,
+  input        from_wb_gpwr1_en,
+
+  input [15:0] from_wb_segwr_data,
+  input [63:0] from_wb_mmxwr_data
 
 );
 
-wire to_mem_valid_buf16;
-bufferH16$    bufferH16$_to_mem_valid_buf16(to_mem_valid_buf16, to_mem_valid);
+wire to_mem_valid_buf256;
+bufferH256$    bufferH256$_to_mem_valid_buf16(to_mem_valid_buf256, to_mem_valid);
 
 /*** CONTROL SIGNALS ***/
 
@@ -177,6 +190,12 @@ wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, 
 wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds;
 wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
 wire [3:0] gp_dsta_mux, store_data_mux;
+wire [8:0] MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
+
+wire [1:0] fw_A, fw_B, fw_C;
+wire fw_SREG, fw_MMA, fw_MMB;
+
+assign {fw_A, fw_B, fw_C, fw_SREG, fw_MMA, fw_MMB} = MEM_FW_CONTROL_SIGS;
 
 mem_sig #(.MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH)) mem_sig_inst (
   .ucode_sig(to_mem_control_sigs),
@@ -188,17 +207,79 @@ mem_sig #(.MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH)) mem_sig_inst (
   .cmpxchg(cmpxchg), .cmovc(cmovc),
   .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
   .store_data_mux(store_data_mux), .rw(rw),
-  .ds(ds), .mem_ds(mem_ds), .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir), .iret0(iret0)
+  .ds(ds), .mem_ds(mem_ds), .rm(rm), .op_ovr(op_ovr), .palu_size(palu_size), .sbb_dir(sbb_dir), .iret0(iret0),
+  .MEM_FW_CONTROL_SIGS(MEM_FW_CONTROL_SIGS), .EX_FW_CONTROL_SIGS(EX_FW_CONTROL_SIGS)
 );
+
+wire [31:0] f_srcregA, f_srcregB, f_srcregC;
+wire [15:0] f_srcSREG;
+wire [63:0] f_MMA, f_MMB;
+gp_forwarding gp_forward_A(
+    .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
+    .from_wb_gpwr0_data(from_wb_gpwr0_data),
+    .from_wb_gpwr0_size(from_wb_gpwr0_size),
+    .from_wb_gpwr0_en(from_wb_gpwr0_en),
+    .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx_bit_2),
+    .from_wb_gpwr1_data(from_wb_gpwr1_data),
+    .from_wb_gpwr1_size(from_wb_gpwr1_size),
+    .from_wb_gpwr1_en(from_wb_gpwr1_en),
+    .srcreg(to_mem_srcregA),
+    .fw_mux(fw_A),
+    .f_reg(f_srcregA)
+);
+
+gp_forwarding gp_forward_B(
+    .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
+    .from_wb_gpwr0_data(from_wb_gpwr0_data),
+    .from_wb_gpwr0_size(from_wb_gpwr0_size),
+    .from_wb_gpwr0_en(from_wb_gpwr0_en),
+    .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx_bit_2),
+    .from_wb_gpwr1_data(from_wb_gpwr1_data),
+    .from_wb_gpwr1_size(from_wb_gpwr1_size),
+    .from_wb_gpwr1_en(from_wb_gpwr1_en),
+    .srcreg(to_mem_srcregB),
+    .fw_mux(fw_B),
+    .f_reg(f_srcregB)
+);
+
+gp_forwarding gp_forward_C(
+    .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
+    .from_wb_gpwr0_data(from_wb_gpwr0_data),
+    .from_wb_gpwr0_size(from_wb_gpwr0_size),
+    .from_wb_gpwr0_en(from_wb_gpwr0_en),
+    .from_wb_gpwr1_idx_bit_2(from_wb_gpwr1_idx_bit_2),
+    .from_wb_gpwr1_data(from_wb_gpwr1_data),
+    .from_wb_gpwr1_size(from_wb_gpwr1_size),
+    .from_wb_gpwr1_en(from_wb_gpwr1_en),
+    .srcreg(to_mem_srcregC),
+    .fw_mux(fw_C),
+    .f_reg(f_srcregC)
+);
+
+mux2_16$ mux2_f_srcSREG(f_srcSREG, to_mem_srcSREG, from_wb_segwr_data, fw_SREG);
+mux2_64  mux2_f_MMA(f_MMA, to_mem_MMA, from_wb_mmxwr_data, fw_MMA);
+mux2_64  mux2_f_MMB(f_MMB, to_mem_MMB, from_wb_mmxwr_data, fw_MMB);
+
+assign from_mem_srcregA     = f_srcregA  ;    
+assign from_mem_srcregB     = f_srcregB  ;    
+assign from_mem_srcregC     = f_srcregC  ;    
+assign from_mem_srcSREG     = f_srcSREG  ;    
+assign from_mem_MMA         = f_MMA      ;
+assign from_mem_MMB         = f_MMB      ;
 
 wire [1:0] rw_buf16;
 bufferH16$    bufferH16$_rw_buf16[1:0](rw_buf16, rw);
+
+wire is_mem_inst;
+or2$    or2$_is_mem_inst(is_mem_inst, rw_buf16[1], rw_buf16[0]);
+and2$ and2_from_mem_valid_mem_inst(from_mem_valid_mem_inst, to_mem_valid, is_mem_inst);
 
 assign from_mem_control_sigs = {
     ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
     ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw_buf16, ds, shf_srcb_mux,
     ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
-    gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0
+    gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0,
+    EX_FW_CONTROL_SIGS
 };
 
 /*** TWO-CYCLE ACCESSES ***/
@@ -263,8 +344,8 @@ wire  STORE_LINE_0_EXCEPTION_COND, STORE_LINE_1_EXCEPTION_COND;
 or2$    or2$_STORE_LINE_0_EXCEPTION_COND(STORE_LINE_0_EXCEPTION_COND, D_WR0_TLB_PAGE_FAULT_OUT, D_WR0_TLB_WRITE_DISABLE_OUT);
 or2$    or2$_STORE_LINE_1_EXCEPTION_COND(STORE_LINE_1_EXCEPTION_COND, D_WR1_TLB_PAGE_FAULT_OUT, D_WR1_TLB_WRITE_DISABLE_OUT);
 
-and3$   and3$_STORE_LINE_0_EXCEPTION(STORE_LINE_0_EXCEPTION, rw_buf16[0], STORE_LINE_0_EXCEPTION_COND, to_mem_valid_buf16);
-and4$   and4$_STORE_LINE_1_EXCEPTION(STORE_LINE_1_EXCEPTION, rw_buf16[0], STORE_LINE_1_EXCEPTION_COND, NEEDS_LINE_1_STORE, to_mem_valid_buf16);
+and3$   and3$_STORE_LINE_0_EXCEPTION(STORE_LINE_0_EXCEPTION, rw_buf16[0], STORE_LINE_0_EXCEPTION_COND, to_mem_valid_buf256);
+and4$   and4$_STORE_LINE_1_EXCEPTION(STORE_LINE_1_EXCEPTION, rw_buf16[0], STORE_LINE_1_EXCEPTION_COND, NEEDS_LINE_1_STORE, to_mem_valid_buf256);
 
 or2$    or2$_STORE_EXCEPTION(STORE_EXCEPTION, STORE_LINE_0_EXCEPTION, STORE_LINE_1_EXCEPTION);
 nor2$   nor2$_STORE_EXCEPTION_BAR(STORE_EXCEPTION_BAR, STORE_LINE_0_EXCEPTION, STORE_LINE_1_EXCEPTION);
@@ -340,7 +421,7 @@ assign D_WR1_TLB_VPN = to_mem_st_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1
 
 wire  D_RD_TLB_PAGE_FAULT_OUT_BAR, LOAD_EXCEPTION;
 inv1$   inv1$_D_RD_TLB_PAGE_FAULT_OUT_BAR(D_RD_TLB_PAGE_FAULT_OUT_BAR, D_RD_TLB_PAGE_FAULT_OUT);
-and3$   and3$_LOAD_EXCEPTION(LOAD_EXCEPTION, D_RD_TLB_PAGE_FAULT_OUT, rw_buf16[1], to_mem_valid_buf16);
+and3$   and3$_LOAD_EXCEPTION(LOAD_EXCEPTION, D_RD_TLB_PAGE_FAULT_OUT, rw_buf16[1], to_mem_valid_buf256);
 
 wire  [1:0] LOAD_EXCEPTION_MASK;
 assign  LOAD_EXCEPTION_MASK = {1'b0, LOAD_EXCEPTION};
@@ -403,9 +484,9 @@ assign ld_slim_exception_mask[0] = 1'b0;
 assign st_slim_exception_mask[0] = 1'b0;
 assign eip_slim_exception_mask[0] = 1'b0;
 
-and3$   and3$_ld_slim_exception_mask(ld_slim_exception_mask[1], ld_gen_limit_violation, rw_buf16[1], to_mem_valid_buf16);
-and3$   and3$_st_slim_exception_mask(st_slim_exception_mask[1], st_gen_limit_violation, rw_buf16[0], to_mem_valid_buf16);
-and2$   and2$_eip_slim_exception_mask(eip_slim_exception_mask[1], eip_gen_limit_violation, to_mem_valid_buf16);
+and3$   and3$_ld_slim_exception_mask(ld_slim_exception_mask[1], ld_gen_limit_violation, rw_buf16[1], to_mem_valid_buf256);
+and3$   and3$_st_slim_exception_mask(st_slim_exception_mask[1], st_gen_limit_violation, rw_buf16[0], to_mem_valid_buf256);
+and2$   and2$_eip_slim_exception_mask(eip_slim_exception_mask[1], eip_gen_limit_violation, to_mem_valid_buf256);
 
 or3$    or3$_combined_slim_exception_mask[1:0](combined_slim_exception_mask, ld_slim_exception_mask, st_slim_exception_mask, eip_slim_exception_mask);
 
@@ -414,21 +495,21 @@ or4$    or4$_from_mem_exception[1:0](from_mem_exception, LOAD_EXCEPTION_MASK, ST
 wire  no_mem_exception, no_mem_exception_buf16;
 nor2$   nor2$_no_mem_exception(no_mem_exception, from_mem_exception[0], from_mem_exception[1]);
 bufferH16$    bufferH16$_no_mem_exception_buf16(no_mem_exception_buf16, no_mem_exception);
-and2$   and2$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], to_mem_valid_buf16);
+and2$   and2$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], to_mem_valid_buf256);
 
 
 /*** STORE PIPELINE REGISTERS ***/
 
 wire  D_WR0_TLB_CACHE_ENABLE_OUT_BAR;
 inv1$   inv1$_D_WR0_TLB_CACHE_ENABLE_OUT_BAR(D_WR0_TLB_CACHE_ENABLE_OUT_BAR, D_WR0_TLB_CACHE_ENABLE_OUT);
-and4$   and4$_from_mem_store_is_io_line_0(from_mem_store_is_io_line_0, D_WR0_TLB_CACHE_ENABLE_OUT_BAR, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
-and4$   and4$_from_mem_store_queue_alloc_line_0(from_mem_store_queue_alloc_line_0, D_WR0_TLB_CACHE_ENABLE_OUT, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
+and4$   and4$_from_mem_store_is_io_line_0(from_mem_store_is_io_line_0, D_WR0_TLB_CACHE_ENABLE_OUT_BAR, to_mem_valid_buf256, no_mem_exception_buf16, rw_buf16[0]);
+and4$   and4$_from_mem_store_queue_alloc_line_0(from_mem_store_queue_alloc_line_0, D_WR0_TLB_CACHE_ENABLE_OUT, to_mem_valid_buf256, no_mem_exception_buf16, rw_buf16[0]);
 
 wire  from_mem_store_queue_alloc_line_1_int;
-and4$   and4$_from_mem_store_queue_alloc_line_1_int(from_mem_store_queue_alloc_line_1_int, D_WR1_TLB_CACHE_ENABLE_OUT, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
+and4$   and4$_from_mem_store_queue_alloc_line_1_int(from_mem_store_queue_alloc_line_1_int, D_WR1_TLB_CACHE_ENABLE_OUT, to_mem_valid_buf256, no_mem_exception_buf16, rw_buf16[0]);
 and2$   and2$_from_mem_store_queue_alloc_line_1(from_mem_store_queue_alloc_line_1, from_mem_store_queue_alloc_line_1_int, NEEDS_LINE_1_STORE);
 
-and3$   and3$_from_mem_valid_store_inst(from_mem_valid_store_inst, to_mem_valid_buf16, no_mem_exception_buf16, rw_buf16[0]);
+and3$   and3$_from_mem_valid_store_inst(from_mem_valid_store_inst, to_mem_valid_buf256, no_mem_exception_buf16, rw_buf16[0]);
 
 assign from_mem_store_addr_line_0 = {D_WR0_TLB_PFN_OUT, to_mem_st_addr_aligned[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]};
 assign from_mem_store_addr_line_1 = {D_WR1_TLB_PFN_OUT, to_mem_st_addr_next_line_aligned[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]};
@@ -503,11 +584,14 @@ rshf_bytes_var_128b rshf_bytes_var_128b_FULL_LOAD_RESULT_CROSS (
   .out(FULL_LOAD_RESULT_CROSS)
 );
 
+wire [STORE_DATA_BIT_WIDTH-1:0] from_mem_load_result_ungated;
+and2$ and2$_from_mem_load_result[STORE_DATA_BIT_WIDTH-1:0](from_mem_load_result, from_mem_load_result_ungated, {STORE_DATA_BIT_WIDTH{to_mem_valid_buf256}});
+
 genvar i;
 generate
   for (i = 0; i < STORE_DATA_BIT_WIDTH / 16; i = i + 1) begin : mux2_16_load_result_gen
-    mux2_16$    mux2_16$_from_mem_load_result(
-      from_mem_load_result[i*16 +: 16],
+    mux2_16$    mux2_16$_from_mem_load_result_ungated(
+      from_mem_load_result_ungated[i*16 +: 16],
       LOAD_RESULT_REGULAR[i*16 +: 16],
       LOAD_RESULT_CROSS[i*16 +: 16],
       DOING_LINE_1_LOAD
@@ -517,25 +601,21 @@ endgenerate
 
 /*** VALID AND STALL ***/
 
-and2$   and2$_from_mem_valid(from_mem_valid, from_mem_stall_bar, to_mem_valid_buf16);
+wire from_mem_valid_buf64;
+and2$   and2$_from_mem_valid(from_mem_valid, from_mem_stall_bar, to_mem_valid_buf256);
+bufferH64$   bufferH64$_from_mem_valid_buf64(from_mem_valid_buf64, from_mem_valid);
 
-wire  STALL_REASON_0, STALL_REASON_1;
+wire  STALL_REASON_0_bar, STALL_REASON_1_bar;
 
-and2$   and2$_STALL_REASON_0(STALL_REASON_0, MEM_VALID_LOAD_INST, DCACHE_STALL);
-and3$   and3$_STALL_REASON_1(STALL_REASON_1, MEM_VALID_LOAD_INST, NEEDS_LINE_1_LOAD, DOING_LINE_1_LOAD_BAR);
+nand2$  nand2$_STALL_REASON_0_bar(STALL_REASON_0_bar, MEM_VALID_LOAD_INST, DCACHE_STALL);
+nand3$  nand3$_STALL_REASON_1_bar(STALL_REASON_1_bar, MEM_VALID_LOAD_INST, NEEDS_LINE_1_LOAD, DOING_LINE_1_LOAD_BAR);
 
-or2$    or2$_from_mem_stall(from_mem_stall, STALL_REASON_0, STALL_REASON_1);
+nand2$  nand2$_from_mem_stall(from_mem_stall, STALL_REASON_0_bar, STALL_REASON_1_bar);
 
 /*** EASY ASSIGN STATEMENTS ***/
 
 assign from_mem_dstidA      = to_mem_dstidA   ;  
 assign from_mem_dstidB      = to_mem_dstidB   ;  
-assign from_mem_srcregA     = to_mem_srcregA  ;    
-assign from_mem_srcregB     = to_mem_srcregB  ;    
-assign from_mem_srcregC     = to_mem_srcregC  ;    
-assign from_mem_srcSREG     = to_mem_srcSREG  ;    
-assign from_mem_MMA         = to_mem_MMA      ;
-assign from_mem_MMB         = to_mem_MMB      ;
 assign from_mem_target_cs   = to_mem_target_cs;      
 
 assign from_mem_inc_esp     = to_mem_inc_esp ;     

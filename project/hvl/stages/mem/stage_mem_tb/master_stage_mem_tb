@@ -24,6 +24,12 @@
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_8b.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_16b.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_64.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux4_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux4_64.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux8_64.v
+~/MICROARCH/project/hdl/stages/forwarding/gp_forwarding.v
 ~/MICROARCH/project/hdl/local-lib/shifters/lshf_chunks_var_256b.v
 ~/MICROARCH/project/hdl/local-lib/gates/big_or.v
 ~/MICROARCH/project/hdl/local-lib/adders/big_decrement.v

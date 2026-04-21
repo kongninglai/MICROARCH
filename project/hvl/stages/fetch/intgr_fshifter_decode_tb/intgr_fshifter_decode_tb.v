@@ -2,6 +2,13 @@
 
 module intgr_fshifter_decode_tb();
 
+
+initial begin
+  // $vcdplusfile("intgr_fshifter_decode_tb.dump.vpd");
+  // $vcdpluson(0, intgr_fshifter_decode_tb); 
+  // $vcdpluson(0, intgr_fshifter_decode_tb.uut);
+end
+
     // ---------------------------------------------------------
     // 0. Parameters 
     // ---------------------------------------------------------
@@ -62,6 +69,7 @@ module intgr_fshifter_decode_tb();
         .to_rr_i_eip(to_rr_i_eip),
         .to_rr_o_eip(to_rr_o_eip),
         .to_rr_bp_target(to_rr_bp_target),
+        .to_pr_bp_target(),
         .to_rr_pr_valid(to_rr_pr_valid),
         .to_rr_prefixes(to_rr_prefixes),
         .to_rr_opcode(to_rr_opcode),
@@ -74,7 +82,7 @@ module intgr_fshifter_decode_tb();
         .to_rr_addressing_mode(to_rr_addressing_mode),
         .to_rr_instr_length(to_rr_instr_length),
         .from_de_eip_redirection(), //unused
-        .to_pr_bp_target() //unused
+        .shft_reg_we() //unused
     );
     
     // ---------------------------------------------------------
@@ -150,7 +158,7 @@ module intgr_fshifter_decode_tb();
         rst_bar = 1;
 
         #(1.5 * CYCLE_TIME); // 300ns. We are now at 500ns (Rising Edge)
-        #2; // Safety buffer (501ns)
+        #2.5; // Safety buffer (501ns)
 
         // ==========================================
         // CYCLE 3: Setup Cache Load

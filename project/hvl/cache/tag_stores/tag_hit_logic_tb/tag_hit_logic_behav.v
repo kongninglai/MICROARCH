@@ -16,7 +16,7 @@ module tag_hit_logic_behav #(
 integer i;
 
 always @(*) begin
-  tag_hit_way = 0;
+  tag_hit_way = 3;
   tag_hit = 0;
 
   for (i = 0; i < NUM_WAYS; i = i + 1) begin

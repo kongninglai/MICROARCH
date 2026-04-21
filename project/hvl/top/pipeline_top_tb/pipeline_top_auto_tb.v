@@ -1,8 +1,10 @@
 module pipeline_top_auto_tb;
 
 initial begin
-  $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
-  $vcdpluson(0, pipeline_top_auto_tb); 
+  // $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
+  // $vcdpluson(0, pipeline_top_auto_tb); 
+  // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
+  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
 end
 
 integer i;
@@ -16,7 +18,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 160;
+localparam CYCLE_TIME_X10 = 103;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -372,7 +374,7 @@ end
 reg [31:0] saved_st_addr;
 reg [255:0] combined_data;
 reg [31:0] combined_mask;
-reg [31:0] saved_ieip, halt_ieip;
+reg [31:0] saved_ieip, halt_oeip;
 
 // Pending Read/Wrote buffer: each entry tagged with the ieip of the instruction
 localparam MAX_PENDING_MEM = 128;
@@ -392,6 +394,12 @@ reg [31:0] arch_snap_gpr [0:7];
 reg [63:0] arch_snap_mmx [0:7];
 reg [15:0] arch_snap_seg [0:4];
 reg [15:0] arch_snap_cs;
+
+reg [15:0] cs_q_delayed;
+
+always @(posedge clk) begin
+  cs_q_delayed <= dut.inst_regunit.segrf.cs_q;
+end
 
 task take_arch_snapshot;
   input [31:0] snap_oeip;
@@ -413,7 +421,7 @@ begin
     arch_snap_mmx[si] = dut.inst_regunit.mmxrf.mmx_regs.q[si];
 
   arch_snap_seg[0] = dut.inst_regunit.segrf.seg_rf.q[0]; // ES
-  arch_snap_cs     = dut.inst_regunit.segrf.cs_q;        // CS
+  arch_snap_cs     = cs_q_delayed;        // CS
   arch_snap_seg[1] = dut.inst_regunit.segrf.seg_rf.q[2]; // SS
   arch_snap_seg[2] = dut.inst_regunit.segrf.seg_rf.q[3]; // DS
   arch_snap_seg[3] = dut.inst_regunit.segrf.seg_rf.q[4]; // FS
@@ -568,13 +576,13 @@ end
 always @(posedge clk) begin
   
   if (!rst_n) begin 
-    halt_ieip <= 32'b0;
-  end else if (to_rr_opcode == 8'hF4) begin 
-    halt_ieip <= to_rr_ieip;
+    halt_oeip <= 32'hFFFFFFFF;
+  end else if (to_rr_opcode == 8'hF4 && to_rr_valid === 1'b1) begin 
+    halt_oeip <= to_rr_oeip;
   end
   //saved_ieip <= dut.from_wb_ieip;
 
-  if ((dut.to_wb_ieip == halt_ieip) && dut.to_wb_valid === 1'b1 && handle_hlt == 1'b0) begin
+  if ((dut.to_wb_oeip == halt_oeip) && dut.to_wb_valid === 1'b1 && handle_hlt == 1'b0) begin
     handle_hlt = 1;
     #(10 * CYCLE_TIME);
     print_arch_status(1);
@@ -590,9 +598,10 @@ always @(posedge clk) begin
   if (dut.inst_stage_mem.rw_buf16[0] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
     saved_st_addr = dut.inst_stage_mem.to_mem_st_addr;
   end
-  if ((dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b0 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) ||
-      (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.LINE_0_LOAD_DONE === 1'b1) ||
-      (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0)) begin
+  if (((dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b0 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) ||
+       (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.LINE_0_LOAD_DONE === 1'b1) ||
+       (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0)) &&
+        dut.inst_stage_mem.from_mem_exception === 2'b00) begin
     case (dut.inst_stage_mem.mem_ds)
       2'b00: load_iters=1;
       2'b01: load_iters=2;
@@ -747,9 +756,9 @@ begin
       stalled_cnt = stalled_cnt + 1;
     end
 
-    if (dut.inst_rr.is_hlt_valid && dut.to_ag_valid === 1'b0 && dut.to_mem_valid === 1'b0 &&
-        dut.to_ex_valid === 1'b0 && dut.to_wb_valid === 1'b0)
-      stream_done = 1'b1;
+    // if (dut.inst_rr.is_hlt_valid && dut.to_ag_valid === 1'b0 && dut.to_mem_valid === 1'b0 &&
+    //     dut.to_ex_valid === 1'b0 && dut.to_wb_valid === 1'b0)
+    //   stream_done = 1'b1;
   end
 
   if (stream_done) begin
@@ -855,7 +864,7 @@ initial begin
   check_results_against_golden();
 `endif
                   
-  $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
+  $display("FAILURESSSSSSS = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
   $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
   $finish;
 end

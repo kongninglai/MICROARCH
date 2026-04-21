@@ -10,7 +10,7 @@ module tb_logic_true_modrm_golden();
     // 1. UUT Signals
     reg [7:0] c [0:5]; // Candidate array
     reg ext, op_size;
-    reg [2:0] prefix_num;
+    reg [1:0] prefix_num;
     
     wire [7:0] modrm_byte_true;
     wire is_modrm_true, is_far_br_true;
@@ -138,11 +138,11 @@ module tb_logic_true_modrm_golden();
         ext=0; op_size=1; prefix_num=1; expected_imm_size_bytes = 3'b010; 
         verify_against_rom("ADD (OSO) at Index 1");
 
-        // CASE 4: 4 Prefixes. Opcode 0xC3 at index 4. ModRM at index 5.
+        // CASE 4: 4 Prefixes. Opcode 0xC3 at index 3. ModRM at index 4.
         // RET doesnt have an immediate encoded into the instruction
-        c[0]=8'hF3; c[1]=8'h66; c[2]=8'h2E; c[3]=8'h3E; c[4]=8'hC3; c[5]=8'hDD;
-        ext=0; op_size=0; prefix_num=4; expected_imm_size_bytes = 3'b000;
-        verify_against_rom("RET at Index 4");
+        c[0]=8'hF3; c[1]=8'h66; c[2]=8'h2E; c[3]=8'hC3; c[4]=8'hDD; c[5]=8'hFF;
+        ext=0; op_size=0; prefix_num=3; expected_imm_size_bytes = 3'b000;
+        verify_against_rom("RET at Index 3");
 
         // CASE 5: OR AL, imm8 (0C) with OSO Prefix (66); Instruction: 66 0C 12
         c[0]=8'h66; c[1]=8'h0C; c[2]=8'h12; c[3]=8'h00; c[4]=8'h00; c[5]=8'h00;

@@ -14,10 +14,7 @@ module logic_imm(
     // Layer 0: 0.24ns hidden by logic_disp_size latency
     generate
         for (i = 1; i <= 14; i = i + 1) begin : unpack_and_buffer_cache
-            buffer8$ cache_buf (
-                .out(cache_bytes[i]), 
-                .in(cache_bits[(i*8)+7 : (i*8)])
-            );
+            assign cache_bytes[i] = cache_bits[(i*8)+7 : (i*8)];
         end
     endgenerate
 

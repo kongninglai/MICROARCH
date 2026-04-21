@@ -23,48 +23,48 @@ module fetch_buffer(
     output [127:0] to_de_outbytes,
     output wire [15:0] to_de_pf_expn_bytes_out, 
     output ready
-);  
-
-    //Endianness Swap (big -> little)
-    // wire [127:0] le_cache_line;
-    // genvar b;
-    // generate
-    //     for (b = 0; b < 16; b = b + 1) begin : BYTE_REVERSAL
-    //         assign le_cache_line[(b*8) + 7 : b*8] = from_f_cache_line[((15-b)*8) + 7 : (15-b)*8];
-    //     end
-    // endgenerate
+);
 
     //Flush Signal Generation 
-    wire v_cl_ld, v_cl_ld_bar, from_de_cache_line_load_signal, from_de_eip_redirection_valid, fb_req_cl_stable;
+    wire v_cl_ld, v_cl_ld_bar, from_de_cache_line_load_signal, from_de_eip_redirection_valid_bar, fb_req_cl_stable;
     wire [4:0] wr_cl_byte_cnt;
     wire flush, flush_bar;
-    and2$ and_eip_redir_valid(from_de_eip_redirection_valid, from_de_eip_redirection, from_de_valid);
-    or2$ or_flush(flush, from_ex_flush, from_de_eip_redirection_valid); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid data
+    wire from_ex_flush_bar, from_wb_flush_bar, from_de_valid_bar;
+
+    inv1$ inv1$_from_ex_flush_bar(from_ex_flush_bar, from_ex_flush);
+    inv1$ inv1$_from_wb_flush_bar(from_wb_flush_bar, from_wb_flush);
+    inv1$ inv1$_from_de_valid_bar(from_de_valid_bar, from_de_valid);
+
+    nand2$ nand_eip_redir_valid_bar(from_de_eip_redirection_valid_bar, from_de_eip_redirection, from_de_valid);
+    nand3$ nand_flush(flush, from_wb_flush_bar, from_ex_flush_bar, from_de_eip_redirection_valid_bar); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid data
     inv1$ inv_flush_bar(flush_bar, flush);
     
     //Shift Enable Register Logic (WE = ~IF_FULL && ICACHE_VALID)
-    wire cl_write_shft_we, shft_reg_we_internal;
-    and2$ shft_reg_we_gate(.in0(ICACHE_VALID), .in1(v_cl_ld), .out(cl_write_shft_we));
-    or3$ or_shft_reg_we_internal(shft_reg_we_internal, cl_write_shft_we, from_de_valid, flush); //also shift when consuming instructions (branch taken or flush in execute)
+    wire shft_reg_we_internal, shft_reg_we_internal_prebuf;
+    nand3$ nand_shft_reg_we_internal(shft_reg_we_internal_prebuf, v_cl_ld_bar, from_de_valid_bar, flush_bar); //also shift when consuming instructions (branch taken or flush in execute)
+    bufferH64$    bufferH64$_shft_reg_we_internal(shft_reg_we_internal, shft_reg_we_internal_prebuf);
 
     //Generate fetch buffer enable signal
-    or2$ or_shft_reg_we(shft_reg_we, cl_write_shft_we, flush); //do not enable any time there is a valid instruction in decodeto prevent shifting by a cache line each time
+    nand2$ nand_shft_reg_we(shft_reg_we, v_cl_ld_bar, flush_bar); //do not enable any time there is a valid instruction in decodeto prevent shifting by a cache line each time
 
     //True Consume Logic
-    wire [3:0] gated_instr_len;
-    wire true_consume, stall_bar; 
-    inv1$ inv_stall_bar(stall_bar, from_de_stall);
-    and2$ and_true_consume(true_consume, from_de_valid, stall_bar); //only consume instruction (decr tail ptr) if de is valid and not stalled
+    wire [3:0] gated_instr_len, gated_instr_len_prebuf;
+    wire true_consume; 
+    nor2$ nor_true_consume(true_consume, from_de_valid_bar, from_de_stall); //only consume instruction (decr tail ptr) if de is valid and not stalled
     
     //Correct Instruction Length
-    and2$ gate_len0(gated_instr_len[0], from_de_instr_len[0], true_consume);
-    and2$ gate_len1(gated_instr_len[1], from_de_instr_len[1], true_consume);
-    and2$ gate_len2(gated_instr_len[2], from_de_instr_len[2], true_consume);
-    and2$ gate_len3(gated_instr_len[3], from_de_instr_len[3], true_consume);
+    and2$ gate_len0(gated_instr_len_prebuf[0], from_de_instr_len[0], true_consume);
+    and2$ gate_len1(gated_instr_len_prebuf[1], from_de_instr_len[1], true_consume);
+    and2$ gate_len2(gated_instr_len_prebuf[2], from_de_instr_len[2], true_consume);
+    and2$ gate_len3(gated_instr_len_prebuf[3], from_de_instr_len[3], true_consume);
+
+    bufferH16$    bufferH16$_gated_instr_len[3:0](gated_instr_len, gated_instr_len_prebuf);
 
     //Cache Line Load Sign Generation
-    and3$ and_v_cl_ld(v_cl_ld, fb_req_cl_stable, rst_bar, ICACHE_VALID); 
-    inv1$ inv_load(v_cl_ld_bar, v_cl_ld);
+    wire tail_ptr_less_than_16; //can replace mag comp with inverter bc need to look at only bit 4 to see if greater than 16
+    inv1$ inv1$_tail_ptr_less_than_16(tail_ptr_less_than_16, tail_ptr[4]);
+    nand3$ nand_v_cl_ld_bar(v_cl_ld_bar, tail_ptr_less_than_16, flush_bar, ICACHE_VALID); 
+    bufferHInv64$   bufferHInv64$_v_cl_ld(v_cl_ld, v_cl_ld_bar);
     
     //Tail Pointer Logic
     wire unaligned_eip_redir; //assigned by cl shifter logic
@@ -73,29 +73,12 @@ module fetch_buffer(
         .rst_bar(rst_bar),
         .incr_amt(gated_instr_len),
         .offset(offset),
-        .shft_reg_we(shft_reg_we_internal),
+        .shft_reg_we(shft_reg_we_internal_prebuf),
         .flush(flush),
         .stall(from_de_stall),
         .fb_req_cl(v_cl_ld), //input, fetch buffer request cache line signal (if there is space in the fetch buffer)
         .unaligned_eip_redir(unaligned_eip_redir),
         .tail_ptr(tail_ptr)
-    );
-
-    mag_comp8$ CL_comp( //tail_ptr < 16
-        .A({8'd16}), 
-        .B({3'b000, tail_ptr}), 
-        .AGB(from_de_cache_line_load_signal), //a > b
-        .BGA() 
-    );
-
-    wire gated_load_request, gated_load_request_w;
-    and2$ gate_req(gated_load_request_w, from_de_cache_line_load_signal, v_cl_ld_bar);
-    or2$ or_req(gated_load_request, gated_load_request_w, flush); //also consider flush as a load request to prevent accepting new instructions during a flush
-    dff$ CL_REQ_HOLD(
-        .clk(clk), .r(rst_bar), .s(1'b1),
-        .d(gated_load_request),
-        .q(fb_req_cl_stable),
-        .qbar()
     );
 
     //WE Logic
@@ -143,31 +126,31 @@ module fetch_buffer(
     );
 
     //Fetch Buffer
-    wire shft_reg_clr_bar, ready_fb;
-    and2$ and_shft_reg_clr_bar(shft_reg_clr_bar, rst_bar, flush_bar); 
     shift_reg FETCH_BUFFER(
-        .clk(clk), .rst_n(shft_reg_clr_bar), 
+        .clk(clk), .rst_n(rst_bar), //change from physical rst, to logical rst (only use tail pointer reset)
         .shift(shft_reg_we_internal), .instr_len(gated_instr_len), 
         .inbytes(cl_aligned), .wr_en(wr_en), 
-        .outbytes(to_de_outbytes[127:0]), .ready(ready_fb)
+        .outbytes(to_de_outbytes[127:0]), .ready()
     ); 
 
     //Page Fault Shifter
     wire [247:0] pf_expn_bits_in;
     wire [127:0] pf_expn_bits_out;
+    wire from_f_cl_pf_buf64;
+    bufferH64$    bufferH64$_from_f_cl_pf_buf64(from_f_cl_pf_buf64, from_f_cl_pf);
     
     genvar i;
     generate //convert pf_expn_bytes_in to bits
         for (i = 0; i < 31; i=i+1) begin : PF_BYTE_GEN
-            assign pf_expn_bits_in[i*8] = from_f_cl_pf;
+            assign pf_expn_bits_in[i*8] = from_f_cl_pf_buf64;
             assign pf_expn_bits_in[(i*8)+7 : (i*8)+1] = 7'bx;        
         end
     endgenerate
 
     wire ready_pfb;
-    shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(shft_reg_clr_bar), .shift(shft_reg_we_internal), .instr_len(gated_instr_len), .inbytes(pf_expn_bits_in), 
-        .wr_en(wr_en), .outbytes(pf_expn_bits_out), .ready(ready_pfb)
-    ); 
+    shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(rst_bar), .shift(shft_reg_we_internal), .instr_len(gated_instr_len), .inbytes(pf_expn_bits_in), 
+        .wr_en(wr_en), .outbytes(pf_expn_bits_out), .ready()
+    );
 
     genvar j;
     generate //convert pf_expn_bits_out to bytes
@@ -176,7 +159,6 @@ module fetch_buffer(
         end
     endgenerate
 
-    //Ready Logic (might not need to do with an and of both ready signals, but just to be safe for now)
-    and2$ and_ready(ready, ready_fb, ready_pfb);
+    assign ready = 1'b1;
 
 endmodule

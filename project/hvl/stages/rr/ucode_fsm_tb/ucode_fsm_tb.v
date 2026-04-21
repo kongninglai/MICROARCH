@@ -1,8 +1,8 @@
 module ucode_fsm_tb;
 
     // initial begin
-    //     $vcdplusfile("ucode_fsm_tb.dump.vpd");
-    //     $vcdpluson(0, ucode_fsm_tb); 
+    //     // $vcdplusfile("ucode_fsm_tb.dump.vpd");
+    //     // $vcdpluson(0, ucode_fsm_tb); 
     // end
     // ----------------------------
     // inputs
@@ -37,7 +37,7 @@ module ucode_fsm_tb;
     wire        bh_clear_int;
     wire        bh_intex;
     wire        bh_handling_intex;
-    wire        bh_ucode_stall;
+    wire        bh_ucode_stall_bar;
     wire        bh_ucode_valid;
     wire [95:0] bh_ucode_sig;
 
@@ -51,7 +51,7 @@ module ucode_fsm_tb;
     wire        st_clear_int;
     wire        st_intex;
     wire        st_handling_intex;
-    wire        st_ucode_stall;
+    wire        st_ucode_stall_bar;
     wire        st_ucode_valid;
     wire [95:0] st_ucode_sig;
 
@@ -85,7 +85,7 @@ module ucode_fsm_tb;
         .clear_int(bh_clear_int),
         .intex(bh_intex),
         .handling_intex(bh_handling_intex),
-        .ucode_stall(bh_ucode_stall),
+        .ucode_stall_bar(bh_ucode_stall_bar),
         .ucode_valid(bh_ucode_valid),
         .ucode_sig(bh_ucode_sig)
     );
@@ -118,7 +118,8 @@ module ucode_fsm_tb;
         .clear_int(st_clear_int),
         .intex(st_intex),
         .handling_intex(st_handling_intex),
-        .ucode_stall(st_ucode_stall),
+        .not_intex_or_iret(),
+        .ucode_stall_bar(st_ucode_stall_bar),
         .ucode_valid(st_ucode_valid),
         .ucode_sig(st_ucode_sig)
     );
@@ -174,7 +175,7 @@ module ucode_fsm_tb;
             bh_clear_int       !== st_clear_int ||
             bh_intex           !== st_intex ||
             bh_handling_intex  !== st_handling_intex ||
-            bh_ucode_stall     !== st_ucode_stall ||
+            bh_ucode_stall_bar     !== st_ucode_stall_bar ||
             bh_ucode_valid     !== st_ucode_valid ||
             bh_ucode_sig       !== st_ucode_sig) begin
 
@@ -186,11 +187,11 @@ module ucode_fsm_tb;
 
             // $display("BH : cmps0=%0b cmps1=%0b cmps2=%0b iret0=%0b clear_int=%0b intex=%0b handling_intex=%0b stall=%0b valid=%0b sig=%h",
             //          bh_cmps0, bh_cmps1, bh_cmps2, bh_iret0, bh_clear_int, bh_intex,
-            //          bh_handling_intex, bh_ucode_stall, bh_ucode_valid, bh_ucode_sig);
+            //          bh_handling_intex, bh_ucode_stall_bar, bh_ucode_valid, bh_ucode_sig);
 
             // $display("ST : cmps0=%0b cmps1=%0b cmps2=%0b iret0=%0b clear_int=%0b intex=%0b handling_intex=%0b stall=%0b valid=%0b sig=%h",
             //          st_cmps0, st_cmps1, st_cmps2, st_iret0, st_clear_int, st_intex,
-            //          st_handling_intex, st_ucode_stall, st_ucode_valid, st_ucode_sig);
+            //          st_handling_intex, st_ucode_stall_bar, st_ucode_valid, st_ucode_sig);
 
             // // internal state compare if visible
             // $display("BH state=%0d next=%0d | ST state=%0d next=%0d",
@@ -206,11 +207,11 @@ module ucode_fsm_tb;
 
             // $display("BH : cmps0=%0b cmps1=%0b cmps2=%0b iret0=%0b clear_int=%0b intex=%0b handling_intex=%0b stall=%0b valid=%0b sig=%h",
             //          bh_cmps0, bh_cmps1, bh_cmps2, bh_iret0, bh_clear_int, bh_intex,
-            //          bh_handling_intex, bh_ucode_stall, bh_ucode_valid, bh_ucode_sig);
+            //          bh_handling_intex, bh_ucode_stall_bar, bh_ucode_valid, bh_ucode_sig);
 
             // $display("ST : cmps0=%0b cmps1=%0b cmps2=%0b iret0=%0b clear_int=%0b intex=%0b handling_intex=%0b stall=%0b valid=%0b sig=%h",
             //          st_cmps0, st_cmps1, st_cmps2, st_iret0, st_clear_int, st_intex,
-            //          st_handling_intex, st_ucode_stall, st_ucode_valid, st_ucode_sig);
+            //          st_handling_intex, st_ucode_stall_bar, st_ucode_valid, st_ucode_sig);
 
             // // internal state compare if visible
             // $display("BH state=%0d next=%0d | ST state=%0d next=%0d",

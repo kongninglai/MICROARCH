@@ -17,6 +17,7 @@ module tb_block_decoder();
     wire [1:0] disp_size_mux;
     wire [31:0] disp; 
     wire [2:0] imm_size;
+    wire [2:0] imm_size;
     wire [47:0] imm;
     wire [1:0] addressing_mode;
     wire [3:0] incr_amt;
@@ -62,6 +63,7 @@ module tb_block_decoder();
         input [7:0] exp_sib;
         input [1:0] exp_disp_size_mux;
         input [31:0] exp_disp;
+        input [2:0] exp_imm_size;
         input [2:0] exp_imm_size;
         input [47:0] exp_imm;
         input [1:0] exp_addr_mode;
@@ -123,11 +125,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h04); load_cache_byte(1, 8'h12);
         check_decode(1, "ADD AL, 0x12", "04 12",
             1'b0, 1'b0, 3'b011, 1'b0, 8'h04, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b00, 4'd2);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h04, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b00, 4'd2);
 
         // 2. ADD AX, imm16 (05 iw)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h05); load_cache_byte(2, 8'h34); load_cache_byte(3, 8'h12);
         check_decode(2, "ADD AX, 0x1234", "66 05 34 12",
+            1'b0, 1'b1, 3'b011, 1'b0, 8'h05, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h1234, 2'b00, 4'd4);
             1'b0, 1'b1, 3'b011, 1'b0, 8'h05, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h1234, 2'b00, 4'd4);
 
         // 3. ADD EAX, imm32 (05 id)
@@ -135,11 +139,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h05); load_cache_byte(1, 8'h78); load_cache_byte(2, 8'h56); load_cache_byte(3, 8'h34); load_cache_byte(4, 8'h12);
         check_decode(3, "ADD EAX, 0x12345678", "05 78 56 34 12",
             1'b0, 1'b0, 3'b011, 1'b0, 8'h05, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h12345678, 2'b00, 4'd5);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h05, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h12345678, 2'b00, 4'd5);
 
         // 4. ADD r/m8, imm8 (80 /0 ib) -> ModRM: 01
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h80); load_cache_byte(1, 8'h01); load_cache_byte(2, 8'h12);
         check_decode(4, "ADD BYTE PTR [ECX], 0x12", "80 01 12",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h80, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b01, 4'd3);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h80, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b01, 4'd3);
 
         // 5. ADD r/m16, imm16 (81 /0 iw) 
@@ -147,11 +153,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h81); load_cache_byte(2, 8'h01); load_cache_byte(3, 8'h34); load_cache_byte(4, 8'h12);
         check_decode(5, "ADD WORD PTR [ECX], 0x1234", "66 81 01 34 12",
             1'b0, 1'b1, 3'b011, 1'b0, 8'h81, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b010, 48'h1234, 2'b01, 4'd5);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'h81, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b010, 48'h1234, 2'b01, 4'd5);
 
         // 6. ADD r/m32, imm32 (81 /0 id)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h81); load_cache_byte(1, 8'h01); load_cache_byte(2, 8'h78); load_cache_byte(3, 8'h56); load_cache_byte(4, 8'h34); load_cache_byte(5, 8'h12);
         check_decode(6, "ADD DWORD PTR [ECX], 0x12345678", "81 01 78 56 34 12",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h81, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b100, 48'h12345678, 2'b01, 4'd6);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h81, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b100, 48'h12345678, 2'b01, 4'd6);
 
         // 7. ADD r/m16, imm8 (83 /0 ib)
@@ -159,11 +167,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h83); load_cache_byte(2, 8'h01); load_cache_byte(3, 8'h12);
         check_decode(7, "ADD WORD PTR [ECX], 0x12 (sign-ext)", "66 83 01 12",
             1'b0, 1'b1, 3'b011, 1'b0, 8'h83, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b01, 4'd4);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'h83, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b01, 4'd4);
 
         // 8. ADD r/m32, imm8 (83 /0 ib)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h83); load_cache_byte(1, 8'h01); load_cache_byte(2, 8'h12);
         check_decode(8, "ADD DWORD PTR [ECX], 0x12 (sign-ext)", "83 01 12",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h83, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b01, 4'd3);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h83, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b01, 4'd3);
 
         // 9. ADD r/m8, r8 (00 /r)
@@ -171,11 +181,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h00); load_cache_byte(1, 8'h11);
         check_decode(9, "ADD BYTE PTR [ECX], DL", "00 11",
             1'b0, 1'b0, 3'b011, 1'b0, 8'h00, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h00, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
 
         // 10. ADD r/m16, r16 (01 /r)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h01); load_cache_byte(2, 8'h11);
         check_decode(10, "ADD WORD PTR [ECX], DX", "66 01 11",
+            1'b0, 1'b1, 3'b011, 1'b0, 8'h01, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd3);
             1'b0, 1'b1, 3'b011, 1'b0, 8'h01, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd3);
 
         // 11. ADD r/m32, r32 (01 /r)
@@ -183,11 +195,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h01); load_cache_byte(1, 8'h11);
         check_decode(11, "ADD DWORD PTR [ECX], EDX", "01 11",
             1'b0, 1'b0, 3'b011, 1'b0, 8'h01, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h01, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
 
         // 12. ADD r8, r/m8 (02 /r)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h02); load_cache_byte(1, 8'h11);
         check_decode(12, "ADD DL, BYTE PTR [ECX]", "02 11",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h02, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h02, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
 
         // 13. ADD r16, r/m16 (03 /r)
@@ -195,11 +209,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h03); load_cache_byte(2, 8'h11);
         check_decode(13, "ADD DX, WORD PTR [ECX]", "66 03 11",
             1'b0, 1'b1, 3'b011, 1'b0, 8'h03, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd3);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'h03, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd3);
 
         // 14. ADD r32, r/m32 (03 /r)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h03); load_cache_byte(1, 8'h11);
         check_decode(14, "ADD EDX, DWORD PTR [ECX]", "03 11",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h03, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h03, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
 
         // ====================================================================
@@ -211,11 +227,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h88); load_cache_byte(1, 8'h11);
         check_decode(15, "MOV BYTE PTR [ECX], DL", "88 11",
             1'b0, 1'b0, 3'b011, 1'b0, 8'h88, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h88, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
 
         // 16. MOV r/m16, r16 (89 /r)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h89); load_cache_byte(2, 8'h11);
         check_decode(16, "MOV WORD PTR [ECX], DX", "66 89 11",
+            1'b0, 1'b1, 3'b011, 1'b0, 8'h89, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd3);
             1'b0, 1'b1, 3'b011, 1'b0, 8'h89, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd3);
 
         // 17. MOV r/m32, r32 (89 /r)
@@ -223,11 +241,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h89); load_cache_byte(1, 8'h11);
         check_decode(17, "MOV DWORD PTR [ECX], EDX", "89 11",
             1'b0, 1'b0, 3'b011, 1'b0, 8'h89, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h89, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
 
         // 18. MOV r8, r/m8 (8A /r)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h8A); load_cache_byte(1, 8'h11);
         check_decode(18, "MOV DL, BYTE PTR [ECX]", "8A 11",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h8A, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h8A, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
 
         // 19. MOV r16, r/m16 (8B /r)
@@ -235,11 +255,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h8B); load_cache_byte(2, 8'h11);
         check_decode(19, "MOV DX, WORD PTR [ECX], DX", "66 8B 11",
             1'b0, 1'b1, 3'b011, 1'b0, 8'h8B, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd3);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'h8B, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd3);
 
         // 20. MOV r32, r/m32 (8B /r)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h8B); load_cache_byte(1, 8'h11);
         check_decode(20, "MOV EDX, DWORD PTR [ECX]", "8B 11",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h8B, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h8B, 1'b1, 8'h11, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
 
         // 21. MOV r/m16, Sreg (8C /r)
@@ -247,11 +269,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h8C); load_cache_byte(1, 8'h09); 
         check_decode(21, "MOV WORD PTR [ECX], CS", "8C 09",
             1'b0, 1'b0, 3'b011, 1'b0, 8'h8C, 1'b1, 8'h09, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h8C, 1'b1, 8'h09, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
 
         // 22. MOV Sreg, r/m16 (8E /r)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h8E); load_cache_byte(1, 8'h09); 
         check_decode(22, "MOV CS, WORD PTR [ECX]", "8E 09",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h8E, 1'b1, 8'h09, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h8E, 1'b1, 8'h09, 8'h00, 2'b00, 32'h0, 3'b000, 48'h0, 2'b01, 4'd2);
 
         // 23. MOV r8, imm8 (B0+ rb)
@@ -259,11 +283,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'hB2); load_cache_byte(1, 8'h12);
         check_decode(23, "MOV DL, 0x12", "B2 12",
             1'b0, 1'b0, 3'b011, 1'b0, 8'hB2, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b00, 4'd2);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hB2, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b00, 4'd2);
 
         // 24. MOV r16, imm16 (B8+ rw)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hBA); load_cache_byte(2, 8'h34); load_cache_byte(3, 8'h12);
         check_decode(24, "MOV DX, 0x1234", "66 BA 34 12",
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hBA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h1234, 2'b00, 4'd4);
             1'b0, 1'b1, 3'b011, 1'b0, 8'hBA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h1234, 2'b00, 4'd4);
 
         // 25. MOV r32, imm32 (B8+ rd)
@@ -271,11 +297,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'hBA); load_cache_byte(1, 8'h78); load_cache_byte(2, 8'h56); load_cache_byte(3, 8'h34); load_cache_byte(4, 8'h12);
         check_decode(25, "MOV EDX, 0x12345678", "BA 78 56 34 12",
             1'b0, 1'b0, 3'b011, 1'b0, 8'hBA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h12345678, 2'b00, 4'd5);
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hBA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h12345678, 2'b00, 4'd5);
 
         // 26. MOV r/m8, imm8 (C6 /0)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hC6); load_cache_byte(1, 8'h01); load_cache_byte(2, 8'h12);
         check_decode(26, "MOV BYTE PTR [ECX], 0x12", "C6 01 12",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hC6, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b01, 4'd3);
             1'b0, 1'b0, 3'b011, 1'b0, 8'hC6, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b001, 48'h12, 2'b01, 4'd3);
 
         // 27. MOV r/m16, imm16 (C7 /0)
@@ -283,11 +311,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hC7); load_cache_byte(2, 8'h01); load_cache_byte(3, 8'h34); load_cache_byte(4, 8'h12);
         check_decode(27, "MOV WORD PTR [ECX], 0x1234", "66 C7 01 34 12",
             1'b0, 1'b1, 3'b011, 1'b0, 8'hC7, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b010, 48'h1234, 2'b01, 4'd5);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hC7, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b010, 48'h1234, 2'b01, 4'd5);
 
         // 28. MOV r/m32, imm32 (C7 /0)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hC7); load_cache_byte(1, 8'h01); load_cache_byte(2, 8'h78); load_cache_byte(3, 8'h56); load_cache_byte(4, 8'h34); load_cache_byte(5, 8'h12);
         check_decode(28, "MOV DWORD PTR [ECX], 0x12345678", "C7 01 78 56 34 12",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hC7, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b100, 48'h12345678, 2'b01, 4'd6);
             1'b0, 1'b0, 3'b011, 1'b0, 8'hC7, 1'b1, 8'h01, 8'h00, 2'b00, 32'h0, 3'b100, 48'h12345678, 2'b01, 4'd6);
 
         // --------------------------------------------------------------------------------
@@ -298,11 +328,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h75); load_cache_byte(2, 8'h05);
         check_decode(1, "o16 jne $+0x07", "66 75 05",
             1'b0, 1'b1, 3'b011, 1'b0, 8'h75, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd3);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'h75, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd3);
 
         // 2. JNE rel8 (75 05)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h75); load_cache_byte(1, 8'h05);
         check_decode(2, "jne $+0x07", "75 05",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h75, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd2);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h75, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd2);
 
         // 3. JNBE rel8 (clr top 16 EIP bits) (66 77 05)
@@ -310,11 +342,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h77); load_cache_byte(2, 8'h05);
         check_decode(3, "o16 ja $+0x07", "66 77 05",
             1'b0, 1'b1, 3'b011, 1'b0, 8'h77, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd3);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'h77, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd3);
 
         // 4. JNBE rel8 (77 05)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h77); load_cache_byte(1, 8'h05);
         check_decode(4, "ja $+0x07", "77 05",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h77, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd2);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h77, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd2);
 
         // --------------------------------------------------------------------------------
@@ -325,11 +359,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h0F); load_cache_byte(2, 8'h85); load_cache_byte(3, 8'h44); load_cache_byte(4, 8'h33);
         check_decode(5, "o16 jne $+0x3348", "66 0F 85 44 33",
             1'b0, 1'b1, 3'b011, 1'b1, 8'h85, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h3344, 2'b00, 4'd5);
+            1'b0, 1'b1, 3'b011, 1'b1, 8'h85, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h3344, 2'b00, 4'd5);
 
         // 6. JNE rel32 (0F 85 44 33 22 11) (4 bytes -> 2'b10)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h0F); load_cache_byte(1, 8'h85); load_cache_byte(2, 8'h44); load_cache_byte(3, 8'h33); load_cache_byte(4, 8'h22); load_cache_byte(5, 8'h11);
         check_decode(6, "jne $+0x1122334A", "0F 85 44 33 22 11",
+            1'b0, 1'b0, 3'b011, 1'b1, 8'h85, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h11223344, 2'b00, 4'd6);
             1'b0, 1'b0, 3'b011, 1'b1, 8'h85, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h11223344, 2'b00, 4'd6);
 
         // 7. JNBE rel16 (66 0F 87 44 33) (2 bytes -> 2'b01)
@@ -337,11 +373,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h0F); load_cache_byte(2, 8'h87); load_cache_byte(3, 8'h44); load_cache_byte(4, 8'h33);
         check_decode(7, "o16 ja $+0x3348", "66 0F 87 44 33",
             1'b0, 1'b1, 3'b011, 1'b1, 8'h87, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h3344, 2'b00, 4'd5);
+            1'b0, 1'b1, 3'b011, 1'b1, 8'h87, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h3344, 2'b00, 4'd5);
 
         // 8. JNBE rel32 (0F 87 44 33 22 11) (4 bytes -> 2'b10)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h0F); load_cache_byte(1, 8'h87); load_cache_byte(2, 8'h44); load_cache_byte(3, 8'h33); load_cache_byte(4, 8'h22); load_cache_byte(5, 8'h11);
         check_decode(8, "ja $+0x1122334A", "0F 87 44 33 22 11",
+            1'b0, 1'b0, 3'b011, 1'b1, 8'h87, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h11223344, 2'b00, 4'd6);
             1'b0, 1'b0, 3'b011, 1'b1, 8'h87, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h11223344, 2'b00, 4'd6);
 
         // --------------------------------------------------------------------------------
@@ -352,11 +390,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'h9A); load_cache_byte(2, 8'h22); load_cache_byte(3, 8'h11); load_cache_byte(4, 8'h44); load_cache_byte(5, 8'h33);
         check_decode(9, "o16 call far 0x3344:0x1122", "66 9A 22 11 44 33",
             1'b0, 1'b1, 3'b011, 1'b0, 8'h9A, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h3344_1122, 2'b00, 4'd6);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'h9A, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h3344_1122, 2'b00, 4'd6);
 
         // 10. CALL ptr16:32 (9A 44 33 22 11 66 55) (6 bytes total -> 2'b11)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'h9A); load_cache_byte(1, 8'h44); load_cache_byte(2, 8'h33); load_cache_byte(3, 8'h22); load_cache_byte(4, 8'h11); load_cache_byte(5, 8'h66); load_cache_byte(6, 8'h55);
         check_decode(10, "call far 0x5566:0x11223344", "9A 44 33 22 11 66 55",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'h9A, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b110, 48'h5566_11223344, 2'b00, 4'd7);
             1'b0, 1'b0, 3'b011, 1'b0, 8'h9A, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b110, 48'h5566_11223344, 2'b00, 4'd7);
 
         // --------------------------------------------------------------------------------
@@ -424,11 +464,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hE8); load_cache_byte(2, 8'h44); load_cache_byte(3, 8'h33);
         check_decode(20, "o16 call $+0x3348", "66 E8 44 33",
             1'b0, 1'b1, 3'b011, 1'b0, 8'hE8, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h3344, 2'b00, 4'd4);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hE8, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h3344, 2'b00, 4'd4);
 
         // 21. CALL rel32 (E8 44 33 22 11) (4 bytes -> 2'b10)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hE8); load_cache_byte(1, 8'h44); load_cache_byte(2, 8'h33); load_cache_byte(3, 8'h22); load_cache_byte(4, 8'h11);
         check_decode(21, "call $+0x11223349", "E8 44 33 22 11",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hE8, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h11223344, 2'b00, 4'd5);
             1'b0, 1'b0, 3'b011, 1'b0, 8'hE8, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h11223344, 2'b00, 4'd5);
 
         // 22. JMP rel16 (66 E9 44 33) (2 bytes -> 2'b01)
@@ -436,11 +478,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hE9); load_cache_byte(2, 8'h44); load_cache_byte(3, 8'h33);
         check_decode(22, "o16 jmp $+0x3348", "66 E9 44 33",
             1'b0, 1'b1, 3'b011, 1'b0, 8'hE9, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h3344, 2'b00, 4'd4);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hE9, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b010, 48'h3344, 2'b00, 4'd4);
 
         // 23. JMP rel32 (E9 44 33 22 11) (4 bytes -> 2'b10)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hE9); load_cache_byte(1, 8'h44); load_cache_byte(2, 8'h33); load_cache_byte(3, 8'h22); load_cache_byte(4, 8'h11);
         check_decode(23, "jmp $+0x11223349", "E9 44 33 22 11",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hE9, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h11223344, 2'b00, 4'd5);
             1'b0, 1'b0, 3'b011, 1'b0, 8'hE9, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h11223344, 2'b00, 4'd5);
 
         // --------------------------------------------------------------------------------
@@ -451,11 +495,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hEA); load_cache_byte(2, 8'h22); load_cache_byte(3, 8'h11); load_cache_byte(4, 8'h44); load_cache_byte(5, 8'h33);
         check_decode(24, "o16 jmp far 0x3344:0x1122", "66 EA 22 11 44 33",
             1'b0, 1'b1, 3'b011, 1'b0, 8'hEA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h3344_1122, 2'b00, 4'd6);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hEA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b100, 48'h3344_1122, 2'b00, 4'd6);
 
         // 25. JMP ptr16:32 (EA 44 33 22 11 66 55) (6 bytes total -> 2'b11)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hEA); load_cache_byte(1, 8'h44); load_cache_byte(2, 8'h33); load_cache_byte(3, 8'h22); load_cache_byte(4, 8'h11); load_cache_byte(5, 8'h66); load_cache_byte(6, 8'h55);
         check_decode(25, "jmp far 0x5566:0x11223344", "EA 44 33 22 11 66 55",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hEA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b110, 48'h5566_11223344, 2'b00, 4'd7);
             1'b0, 1'b0, 3'b011, 1'b0, 8'hEA, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b110, 48'h5566_11223344, 2'b00, 4'd7);
 
         // --------------------------------------------------------------------------------
@@ -466,11 +512,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hEB); load_cache_byte(2, 8'h05);
         check_decode(26, "o16 jmp short $+0x07", "66 EB 05",
             1'b0, 1'b1, 3'b011, 1'b0, 8'hEB, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd3);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hEB, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd3);
 
         // 27. JMP rel8 (EB 05) (1 byte -> 2'b00)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hEB); load_cache_byte(1, 8'h05);
         check_decode(27, "jmp short $+0x07", "EB 05",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hEB, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd2);
             1'b0, 1'b0, 3'b011, 1'b0, 8'hEB, 1'b0, 8'h00, 8'h00, 2'b00, 32'h0, 3'b001, 48'h05, 2'b00, 4'd2);
 
         // --------------------------------------------------------------------------------
@@ -481,11 +529,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hFF); load_cache_byte(2, 8'h10);
         check_decode(28, "o16 call [eax]", "66 FF 10",
             1'b0, 1'b1, 3'b011, 1'b0, 8'hFF, 1'b1, 8'h10, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b01, 4'd3);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hFF, 1'b1, 8'h10, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b01, 4'd3);
 
         // 29. CALL r/m32 (FF 10) (0 bytes immediate -> 2'b00)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hFF); load_cache_byte(1, 8'h10);
         check_decode(29, "call [eax]", "FF 10",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hFF, 1'b1, 8'h10, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b01, 4'd2);
             1'b0, 1'b0, 3'b011, 1'b0, 8'hFF, 1'b1, 8'h10, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b01, 4'd2);
 
         // 30. JMP r/m16 (66 FF 20) Mod=00, Reg=100 (Jmp), RM=000 [EAX] (0 bytes immediate -> 2'b00)
@@ -493,11 +543,13 @@ module tb_block_decoder();
         load_cache_byte(0, 8'h66); load_cache_byte(1, 8'hFF); load_cache_byte(2, 8'h20);
         check_decode(30, "o16 jmp [eax]", "66 FF 20",
             1'b0, 1'b1, 3'b011, 1'b0, 8'hFF, 1'b1, 8'h20, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b01, 4'd3);
+            1'b0, 1'b1, 3'b011, 1'b0, 8'hFF, 1'b1, 8'h20, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b01, 4'd3);
 
         // 31. JMP r/m32 (FF 20) (0 bytes immediate -> 2'b00)
         cache_line = 128'd0; 
         load_cache_byte(0, 8'hFF); load_cache_byte(1, 8'h20);
         check_decode(31, "jmp [eax]", "FF 20",
+            1'b0, 1'b0, 3'b011, 1'b0, 8'hFF, 1'b1, 8'h20, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b01, 4'd2);
             1'b0, 1'b0, 3'b011, 1'b0, 8'hFF, 1'b1, 8'h20, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b01, 4'd2);
 
         // Final Result Summary

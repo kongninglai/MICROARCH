@@ -50,12 +50,12 @@ run_one_sim() {
       exit 0
     fi
 
-    if ! failures=$(grep -Eo 'FAILURES *= *[0-9]+' sim.log | awk '{print $NF}'); then
+    if ! failures=$(grep -Eo 'FAILURES *= *[0-9]+' sim.log | tail -1 | awk '{print $NF}'); then
       echo "No failure message found"
       failures=""
     fi
 
-    if ! successes=$(grep -Eo 'SUCCESSES *= *[0-9]+' sim.log | awk '{print $NF}'); then
+    if ! successes=$(grep -Eo 'SUCCESSES *= *[0-9]+' sim.log | tail -1 | awk '{print $NF}'); then
       echo "No success message found"
       successes=""
     fi
@@ -76,7 +76,7 @@ run_one_sim() {
     fi
 
     # After backend_top_tb passes compilation and simulation, run instruction regression
-    if [[ "$tb_name" == "backend_top_tb" ]]; then
+    if [[ "$tb_name" == "pipeline_top_tb" ]]; then
       TB_DIR="$leaf_dir"
       instr_out="$TMP_RESULTS/${tb_name}_instructions.result"
       echo "[$tb_name] Running instruction regression..."
