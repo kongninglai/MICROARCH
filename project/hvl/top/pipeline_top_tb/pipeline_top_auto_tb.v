@@ -395,6 +395,12 @@ reg [63:0] arch_snap_mmx [0:7];
 reg [15:0] arch_snap_seg [0:4];
 reg [15:0] arch_snap_cs;
 
+reg [15:0] cs_q_delayed;
+
+always @(posedge clk) begin
+  cs_q_delayed <= dut.inst_regunit.segrf.cs_q;
+end
+
 task take_arch_snapshot;
   input [31:0] snap_oeip;
   input [31:0] snap_ieip;
@@ -415,7 +421,7 @@ begin
     arch_snap_mmx[si] = dut.inst_regunit.mmxrf.mmx_regs.q[si];
 
   arch_snap_seg[0] = dut.inst_regunit.segrf.seg_rf.q[0]; // ES
-  arch_snap_cs     = dut.inst_regunit.segrf.cs_q;        // CS
+  arch_snap_cs     = cs_q_delayed;        // CS
   arch_snap_seg[1] = dut.inst_regunit.segrf.seg_rf.q[2]; // SS
   arch_snap_seg[2] = dut.inst_regunit.segrf.seg_rf.q[3]; // DS
   arch_snap_seg[3] = dut.inst_regunit.segrf.seg_rf.q[4]; // FS
@@ -593,9 +599,10 @@ always @(posedge clk) begin
   if (dut.inst_stage_mem.rw_buf16[0] === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) begin
     saved_st_addr = dut.inst_stage_mem.to_mem_st_addr;
   end
-  if ((dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b0 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) ||
-      (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.LINE_0_LOAD_DONE === 1'b1) ||
-      (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0)) begin
+  if (((dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b0 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) ||
+       (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.LINE_0_LOAD_DONE === 1'b1) ||
+       (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0)) &&
+        dut.inst_stage_mem.from_mem_exception === 2'b00) begin
     case (dut.inst_stage_mem.mem_ds)
       2'b00: load_iters=1;
       2'b01: load_iters=2;
