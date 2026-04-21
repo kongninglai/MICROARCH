@@ -8,6 +8,12 @@ add a speculative ghr later on.
 module bp(
     input wire clk,
     input wire rst_bar,
+
+    input wire [7:0] opcode,
+    input wire [47:0] imm,
+    input wire op_size_overload,
+    input wire prefix_ext,
+
     input wire is_branch, //predict current instruction in decode (if branch)
     input wire [31:0] o_eip, //predict current instruction in decode (if branch)
     input wire br_t_nt_ex_d, //comes from execute stage (taken not taken signal)
@@ -23,7 +29,7 @@ module bp(
 
     //Update GHR based on execute stage branch OR read GHR for current instruction in decode stage
     wire [7:0] ghr_in;
-    mux2_8$ GHR_IN_MUX(.Y(ghr_in), .IN0(ghr_out), .IN1({ghr_out[6:0], br_t_nt_ex_d}), .S0(br_valid_ex_d));
+    mux2_8$ GHR_IN_MUX(.Y(ghr_in), .IN0(ghr_out), .IN1({ghr_out[6:0], cur_instr_prediction}), .S0(is_branch));
     ghr GHR(
         .clk(clk), 
         .rst_bar(rst_bar),
@@ -51,6 +57,10 @@ module bp(
 
     br_target BR_TARGET(
         .o_eip (o_eip),
+        .opcode (opcode),
+        .imm(imm),
+        .op_size_overload(op_size_overload),
+        .prefix_ext(prefix_ext),
         .hit(hit), //currently not used since we're hardcoding to not hit
         .bp_eip_target (bp_eip_target)
     );
