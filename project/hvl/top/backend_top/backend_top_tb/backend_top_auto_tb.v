@@ -528,8 +528,8 @@ always @(posedge clk) begin
         if (pend_mem_cnt < MAX_PENDING_MEM) begin
           pend_mem_is_wr[pend_mem_cnt] = 1'b1;
           pend_mem_val  [pend_mem_cnt] = (WB_SHF_ST_DATA_L0 >> (8*m)) & 8'hFF;
-          pend_mem_va   [pend_mem_cnt] = saved_st_addr[31:0] + m;
-          pend_mem_pa   [pend_mem_cnt] = {WB_PR_ST_ADDR_L0[14:4], saved_st_addr[3:0]} + m;
+          pend_mem_va   [pend_mem_cnt] = {saved_st_addr[31:4], 4'd0} + m;
+          pend_mem_pa   [pend_mem_cnt] = {WB_PR_ST_ADDR_L0[14:4], 4'd0} + m;
           pend_mem_oeip [pend_mem_cnt] = dut.to_wb_oeip;
           pend_mem_cnt = pend_mem_cnt + 1;
         end

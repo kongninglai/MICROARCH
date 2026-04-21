@@ -100,7 +100,7 @@ module logic_stall_flush(
     // the next flush_ex will clear pending
     reg_n #(
       .WIDTH(1)
-    ) reg_n_Q_CC_DATA_WR_MASK_OUT_10 (
+    ) reg_n_pending_intex (
       .clk(clk), .rst(rst_bar),
       .en(either_flush), .d(flush_wb),
       .q(pending_intex)
