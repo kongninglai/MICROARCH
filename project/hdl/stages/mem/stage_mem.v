@@ -287,7 +287,8 @@ assign from_mem_control_sigs = {
 /* LOADS */
 
 wire  LINE_0_LOAD_DONE, LINE_1_LOAD_DONE;
-wire  NEEDS_LINE_1_LOAD, DOING_LINE_1_LOAD, DOING_LINE_1_LOAD_BAR;
+wire  NEEDS_LINE_1_LOAD, DOING_LINE_1_LOAD, DOING_LINE_1_LOAD_buf16, DOING_LINE_1_LOAD_BAR;
+bufferH16$  bufferH16$_DOING_LINE_1_LOAD_buf16(DOING_LINE_1_LOAD_buf16, DOING_LINE_1_LOAD);
 xor2$   xor2$_NEEDS_LINE_1_LOAD(NEEDS_LINE_1_LOAD, to_mem_ld_addr[RANK_BURST_SIZE], to_mem_ld_offset[RANK_BURST_SIZE]);
 
 wire  FLUSH, FLUSH_BAR;
@@ -296,7 +297,7 @@ nor2$   nor2$_FLUSH_BAR(FLUSH_BAR, from_ex_flush, from_wb_flush);
 
 wire  LINE_0_LOAD_DONE_AND_NEEDS_LINE_1_LOAD_AND_FLUSH_BAR, DCACHE_STALL_BAR;
 inv1$   inv1$_DCACHE_STALL_BAR(DCACHE_STALL_BAR, DCACHE_STALL);
-inv1$   inv1$_DOING_LINE_1_LOAD_BAR(DOING_LINE_1_LOAD_BAR, DOING_LINE_1_LOAD);
+inv1$   inv1$_DOING_LINE_1_LOAD_BAR(DOING_LINE_1_LOAD_BAR, DOING_LINE_1_LOAD_buf16);
 
 and3$   and3$_LINE_0_LOAD_DONE(LINE_0_LOAD_DONE, DCACHE_STALL_BAR, DOING_LINE_1_LOAD_BAR, MEM_VALID_LOAD_INST);
 
@@ -311,7 +312,7 @@ and3$   and3$_LINE_0_LOAD_DONE_AND_NEEDS_LINE_1_LOAD_AND_FLUSH_BAR
 wire    from_mem_stall_bar;
 inv1$   inv1$_from_mem_stall_bar(from_mem_stall_bar, from_mem_stall);
 
-and3$   and3$_LINE_1_LOAD_DONE(LINE_1_LOAD_DONE, DCACHE_STALL_BAR, DOING_LINE_1_LOAD, MEM_VALID_LOAD_INST);
+and3$   and3$_LINE_1_LOAD_DONE(LINE_1_LOAD_DONE, DCACHE_STALL_BAR, DOING_LINE_1_LOAD_buf16, MEM_VALID_LOAD_INST);
 
 wire    LINE_1_LOAD_DONE_AND_MEM_STALL_BAR;
 and2$   and2$_LINE_1_LOAD_DONE_AND_MEM_STALL_BAR( LINE_1_LOAD_DONE_AND_MEM_STALL_BAR,
@@ -384,18 +385,18 @@ big_increment #(
 mux2_16$ mux2_16$_D_RD_TLB_VPN( D_RD_TLB_VPN[VPN_BIT_WIDTH-1:VPN_BIT_WIDTH-16],
                                 to_mem_ld_addr_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-16],
                                 to_mem_ld_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-16],
-                                DOING_LINE_1_LOAD);
+                                DOING_LINE_1_LOAD_buf16);
 
 mux2$    mux2$_D_RD_TLB_VPN[3:0]( D_RD_TLB_VPN[3:0],
                                 to_mem_ld_addr_aligned[GENERAL_DATA_BIT_WIDTH-17:GENERAL_DATA_BIT_WIDTH-20],
                                 to_mem_ld_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-17:GENERAL_DATA_BIT_WIDTH-20],
-                                DOING_LINE_1_LOAD);
+                                DOING_LINE_1_LOAD_buf16);
 
 wire  [CHIPS_PER_RANK-1:0] MEM_PAGE_OFFSET_DUMMY;
 
 mux2_16$ mux2_16$_MEM_PAGE_OFFSET (MEM_PAGE_OFFSET_DUMMY, {4'd0, to_mem_ld_addr_aligned[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0},
                                                           {4'd0, to_mem_ld_addr_next_line_aligned[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}, 
-                                                          DOING_LINE_1_LOAD);
+                                                          DOING_LINE_1_LOAD_buf16);
 
 assign MEM_PAGE_OFFSET = MEM_PAGE_OFFSET_DUMMY[PAGE_BIT_WIDTH-1:0];
 
@@ -419,12 +420,20 @@ assign D_WR1_TLB_VPN = to_mem_st_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1
 
 /*** TLB OUTPUTS and MEM_VALID_LOAD_INST and EXCEPTIONS ***/
 
-wire  D_RD_TLB_PAGE_FAULT_OUT_BAR, LOAD_EXCEPTION;
+wire  D_RD_TLB_PAGE_FAULT_OUT_BAR, LOAD_EXCEPTION, SAVED_LOAD_EXCEPTION, COMBINED_LOAD_EXCEPTION;
 inv1$   inv1$_D_RD_TLB_PAGE_FAULT_OUT_BAR(D_RD_TLB_PAGE_FAULT_OUT_BAR, D_RD_TLB_PAGE_FAULT_OUT);
 and3$   and3$_LOAD_EXCEPTION(LOAD_EXCEPTION, D_RD_TLB_PAGE_FAULT_OUT, rw_buf16[1], to_mem_valid_buf256);
+or2$    or2$_COMBINED_LOAD_EXCEPTION(COMBINED_LOAD_EXCEPTION, LOAD_EXCEPTION, SAVED_LOAD_EXCEPTION);
 
 wire  [1:0] LOAD_EXCEPTION_MASK;
-assign  LOAD_EXCEPTION_MASK = {1'b0, LOAD_EXCEPTION};
+wire  [5:0] LOAD_EXCEPTION_MASK_DUMMY;
+mux2_8$ mux2_8$_LOAD_EXCEPTION_MASK
+(
+  {LOAD_EXCEPTION_MASK_DUMMY, LOAD_EXCEPTION_MASK},
+  {7'b0, LOAD_EXCEPTION},
+  {7'b0, COMBINED_LOAD_EXCEPTION},
+  DOING_LINE_1_LOAD_buf16
+);
 
 /* LIMIT CHECKING */
 
@@ -565,6 +574,15 @@ reg64e$ reg64e$_SAVED_LINE_0_LOAD_DATA(
   .en(LINE_0_LOAD_DONE)
 );
 
+reg_n #(
+  .WIDTH(1),
+  .USE_EN_BAR(0)
+) reg_n_SAVED_LOAD_EXCEPTION (
+  .clk(clk), .rst(rst_n),
+  .en(LINE_0_LOAD_DONE), .d(LOAD_EXCEPTION),
+  .q(SAVED_LOAD_EXCEPTION)
+);
+
 wire  [3:0]   to_mem_ld_addr_line_offset_adjusted;
 
 PA_4b PA_4b_to_mem_ld_addr_line_offset_adjusted (
@@ -594,7 +612,7 @@ generate
       from_mem_load_result_ungated[i*16 +: 16],
       LOAD_RESULT_REGULAR[i*16 +: 16],
       LOAD_RESULT_CROSS[i*16 +: 16],
-      DOING_LINE_1_LOAD
+      DOING_LINE_1_LOAD_buf16
     );
   end
 endgenerate
