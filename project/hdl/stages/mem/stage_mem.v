@@ -637,8 +637,8 @@ nand2$  nand2$_from_mem_stall(from_mem_stall, STALL_REASON_0_bar, STALL_REASON_1
 
 /*** EASY ASSIGN STATEMENTS ***/
 
-assign from_mem_dstidA      = to_mem_dstidA   ;  
-assign from_mem_dstidB      = to_mem_dstidB   ;  
+bufferH64$  bufferH64$_from_mem_dstidA[2:0](from_mem_dstidA, to_mem_dstidA);  
+bufferH16$  bufferH16$_from_mem_dstidB[2:0](from_mem_dstidB, to_mem_dstidB);
 assign from_mem_target_cs   = to_mem_target_cs;      
 
 assign from_mem_inc_esp     = to_mem_inc_esp ;     

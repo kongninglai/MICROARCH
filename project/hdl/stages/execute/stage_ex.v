@@ -107,8 +107,8 @@ module stage_ex #(
     wire valid_instruction;
 
     /*** PASS THROUGH SIGNALS ***/
-    assign from_ex_dstidA = to_ex_dstidA;
-    assign from_ex_dstidB = to_ex_dstidB;
+    bufferH64$  bufferH64$_from_ex_dstidA[2:0](from_ex_dstidA, to_ex_dstidA);  
+    bufferH16$  bufferH16$_from_ex_dstidB[2:0](from_ex_dstidB, to_ex_dstidB);
     // assign from_ex_store_is_io_line_0 = to_ex_store_is_io_line_0;
     assign from_ex_store_addr_line_0 = to_ex_store_addr_line_0;
     assign from_ex_store_mask_line_0 = to_ex_store_mask_line_0;
@@ -119,7 +119,7 @@ module stage_ex #(
     assign from_ex_store_data_shf_amt = to_ex_store_data_shf_amt;
     assign from_ex_oeip = to_ex_oeip;
 
-    assign from_ex_valid = to_ex_valid;
+    bufferH16$  bufferH16$_from_ex_valid(from_ex_valid, to_ex_valid);
     /*** Control Signals ***/
     wire [1:0] sig_ldAB, sig_dstA_size, sig_dstB_size, sig_shf_srcb_mux, sig_cs_mux, sig_mmx_op, sig_con_jmp, sig_mm_dst_mux, sig_rw, sig_ds;
     wire [1:0] sig_ds_buf64;

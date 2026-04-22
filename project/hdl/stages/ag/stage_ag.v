@@ -163,8 +163,8 @@ module stage_ag #(
     mux2_64  mux2_f_MMA(f_MMA, to_ag_MMA, from_wb_mmxwr_data, fw_MMA);
     mux2_64  mux2_f_MMB(f_MMB, to_ag_MMB, from_wb_mmxwr_data, fw_MMB);
 
-    assign from_ag_dstidA = to_ag_dstidA;
-    assign from_ag_dstidB = to_ag_dstidB;
+    bufferH64$  bufferH64$_from_ag_dstidA[2:0](from_ag_dstidA, to_ag_dstidA);
+    bufferH16$  bufferH16$_from_ag_dstidB[2:0](from_ag_dstidB, to_ag_dstidB);
     assign from_ag_srcregA = f_srcregA;
     assign from_ag_srcregB = f_srcregB;
     assign from_ag_srcregC = f_srcregC;
@@ -215,15 +215,16 @@ module stage_ag #(
 
 
     // ========= REL EIP LOGIC ===========
-    wire [31:0] imm_se8, imm_se16, imm_ze16, imm_final;
+    wire [31:0] imm_se8, imm_se16, imm_ze16, imm_final_buf16, imm_final;
     se #(.INP_WIDTH(8), .OUT_WIDTH(32)) se_imm8(.in(to_ag_imm[7:0]), .out(imm_se8));
     se #(.INP_WIDTH(16), .OUT_WIDTH(32)) se_imm16(.in(to_ag_imm[15:0]), .out(imm_se16));
     ze #(.INP_WIDTH(16), .OUT_WIDTH(32)) ze_imm16(.in(to_ag_imm[15:0]), .out(imm_ze16));
 
     mux4_32 mux_imm(imm_final, imm_se8, imm_se16, imm_ze16, to_ag_imm, imm_mux[0], imm_mux[1]);
-    PA_32b PA_rel_eip(.s(from_ag_rel_eip), .in0(to_ag_ieip), .in1(imm_final));
+    bufferH16$  bufferH16$_imm_final_buf16[31:0](imm_final_buf16, imm_final);
+    PA_32b PA_rel_eip(.s(from_ag_rel_eip), .in0(to_ag_ieip), .in1(imm_final_buf16));
     
-    assign from_ag_imm = imm_final;
+    assign from_ag_imm = imm_final_buf16;
 
     // ========= MEM ADDR LOGIC ===========
     wire [31:0] addr1, offset1, addr2, offset2, inc_esp, dec_esp;
@@ -231,7 +232,7 @@ module stage_ag #(
     bufferH16$  bufferH16$_to_ag_base2_buf16[31:0](to_ag_base2_buf16, to_ag_base2);
     address_adder address_adder_inst (
         .scale_mux1(to_ag_scale_mux), .sreg1(to_ag_sreg1), .index1(to_ag_index1), .base1(to_ag_base1), .disp1(to_ag_disp),
-        .stack_push(stack_push), .ret_with_imm(ret_with_imm), .imm(imm_final), .sreg2(to_ag_sreg2), .base2(to_ag_base2_buf16),
+        .stack_push(stack_push), .ret_with_imm(ret_with_imm), .imm(imm_final_buf16), .sreg2(to_ag_sreg2), .base2(to_ag_base2_buf16),
         .size_mux(mem_ds),
         .addr1(addr1), .offset1(offset1),
         .addr2(addr2), .offset2(offset2), .inc_esp(inc_esp), .dec_esp(dec_esp)
