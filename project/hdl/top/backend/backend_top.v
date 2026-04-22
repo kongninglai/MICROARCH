@@ -1,10 +1,10 @@
 module backend_top #(
   parameter CYCLE_TIME_X10=98,
   parameter TRUE_LRU=1,
-  parameter AG_CONTROL_SIGS_WIDTH=96,
-  parameter MEM_CONTROL_SIGS_WIDTH=79,
-  parameter EX_CONTROL_SIGS_WIDTH=68,
-  parameter WB_CONTROL_SIGS_WIDTH=12
+  parameter AG_CONTROL_SIGS_WIDTH=98,
+  parameter MEM_CONTROL_SIGS_WIDTH=81,
+  parameter EX_CONTROL_SIGS_WIDTH=70,
+  parameter WB_CONTROL_SIGS_WIDTH=17
 ) (
     input clk,
     input rst_n,
@@ -1184,6 +1184,7 @@ module backend_top #(
         .to_wb_seg_wr_data(to_wb_seg_wr_data),
         .to_wb_mmx_wr_data(to_wb_mmx_wr_data),
         .to_wb_oeip(to_wb_oeip),
+        .to_wb_ieip(to_wb_ieip),
         .to_wb_cs(to_wb_cs),
 
         .from_wb_gpwr0_idx(from_wb_gpwr0_idx),
@@ -1238,7 +1239,8 @@ module backend_top #(
 
         .from_wb_stall_if_mem_en(from_wb_stall_if_mem_en),
         .from_wb_valid_store_inst(from_wb_valid_store_inst),
-        .from_wb_flush(from_wb_flush)
+        .from_wb_flush(from_wb_flush),
+        .DMA_INT(DMA_INT)
     );
 
     temp_exception_regs inst_temp_exception_regs(

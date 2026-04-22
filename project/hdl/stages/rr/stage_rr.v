@@ -100,14 +100,14 @@ module stage_rr #(
     output from_rr_stall
 ); 
 
-    wire clear_int, pending_int;
-    pending_int pending_int_inst(
-        .clk(clk),
-        .rst_n(rst_n),
-        .set_int(interrupt),
-        .clear_int(clear_int),
-        .pending_int(pending_int)
-    ); 
+    // wire clear_int, pending_int;
+    // pending_int pending_int_inst(
+    //     .clk(clk),
+    //     .rst_n(rst_n),
+    //     .set_int(interrupt),
+    //     .clear_int(clear_int),
+    //     .pending_int(pending_int)
+    // ); 
 
     wire [95:0] ucode_sig;
 
@@ -120,7 +120,7 @@ module stage_rr #(
     
     wire        ucode_stall_bar;
 
-    wire cmps0, cmps1, cmps2;
+    wire movs0, movs1, cmps0, cmps1, cmps2;
     wire iret0;
     wire fsm_stall, intex, handling_intex;
     wire not_intex_or_iret;
@@ -132,7 +132,7 @@ module stage_rr #(
         .to_rr_valid(to_rr_valid),
         .rep(to_rr_prefix[5]),
         .stall(fsm_stall),
-        .interrupt(pending_int),
+        .interrupt(1'b0),
         .exception(from_wb_flush),
         .movs(movs),
         .cmps(cmps),
@@ -143,6 +143,8 @@ module stage_rr #(
         .modrm(to_rr_modrm[7:6]),
         .has_modrm(to_rr_addr_mode[0]),
         .reg_ecx(from_regunit_srcregA),
+        .movs0(movs0),
+        .movs1(movs1),
         .cmps0(cmps0),
         .cmps1(cmps1),
         .cmps2(cmps2),
@@ -251,7 +253,7 @@ module stage_rr #(
     big_eq #(.WIDTH(7)) eq_ret_with_imm(.eq(ret_with_imm), .in0({to_rr_opcode[7:4], to_rr_opcode[2:0]}), .in1(7'h62));
     assign from_rr_control_sigs={{ldAB[1], ff_from_rr_ldB}, dstA_size, dstB_size, ldREGS, ldEFLAGS,
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
-                     mmx_op, alu_op, shf_op, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
+                     mmx_op, alu_op, shf_op, movs0, movs1, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
                      gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, from_rr_store_data_mux, from_rr_rw, ds_with_override, 
                      mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir, iret0,
                      from_dep_ag_fw_control_sigs, from_dep_mem_fw_control_sigs, from_dep_ex_fw_control_sigs};
@@ -353,8 +355,9 @@ module stage_rr #(
     assign from_rr_cs = from_regunit_CS;
     
     assign from_rr_pred_eip = to_rr_pred_eip;
-    assign from_rr_exception = to_rr_exception;
+    // assign from_rr_exception = to_rr_exception;
 
+    mux2$ mux2_from_rr_exception[1:0](from_rr_exception, to_rr_exception, 2'b00, handling_intex);
     // if data_dep: bubble -> valid = 0
     // from_rr_valid = to_rr_valid & ~data_dep
     wire is_hlt, is_hlt_valid_bar, is_not_hlt, valid_dep_bar;

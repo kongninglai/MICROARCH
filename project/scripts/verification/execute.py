@@ -746,8 +746,10 @@ class Executor:
                     eip_val = self.fetch16() if self.oso else self.fetch32()
                     cs_val = self.fetch16()
                     if self.mmu.check_segment(eip_val, 1):
-                        self.push(self.state.seg[1], 2 if self.oso else 4)
-                        self.push(self.state.eip, 2 if self.oso else 4)
+                        # self.push(self.state.seg[1], 2 if self.oso else 4)
+                        # self.push(self.state.eip, 2 if self.oso else 4)
+                        push_data = ((self.state.seg[1]<<16) | (self.state.eip & 0xFFFF)) if self.oso else ((self.state.seg[1]<<32) | self.state.eip )
+                        self.push(push_data, 4 if self.oso else 8)
                         self.state.seg[1] = cs_val
                         self.state.eip = eip_val
                     else:
