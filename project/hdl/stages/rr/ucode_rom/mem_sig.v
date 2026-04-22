@@ -17,6 +17,8 @@ module mem_sig #(
     output [1:0] mmx_op,
     output [2:0] alu_op,
     output shf_op,
+    output movs0,
+    output movs1,
     output cmps0,
     output cmps1,
     output cmps2,
@@ -40,7 +42,7 @@ module mem_sig #(
     output [8:0] EX_FW_CONTROL_SIGS
 ); 
     assign {
-        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
+        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, movs0, movs1, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
         gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0,

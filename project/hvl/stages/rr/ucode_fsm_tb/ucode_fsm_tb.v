@@ -30,6 +30,8 @@ module ucode_fsm_tb;
     // ----------------------------
     // outputs: behavioral
     // ----------------------------
+    wire        bh_movs0;
+    wire        bh_movs1;
     wire        bh_cmps0;
     wire        bh_cmps1;
     wire        bh_cmps2;
@@ -44,6 +46,8 @@ module ucode_fsm_tb;
     // ----------------------------
     // outputs: structural
     // ----------------------------
+    wire        st_movs0;
+    wire        st_movs1;
     wire        st_cmps0;
     wire        st_cmps1;
     wire        st_cmps2;
@@ -78,6 +82,8 @@ module ucode_fsm_tb;
         .modrm(modrm),
         .has_modrm(has_modrm),
         .reg_ecx(reg_ecx),
+        .movs0(bh_movs0),
+        .movs1(bh_movs1),
         .cmps0(bh_cmps0),
         .cmps1(bh_cmps1),
         .cmps2(bh_cmps2),
@@ -111,6 +117,8 @@ module ucode_fsm_tb;
         .modrm(modrm),
         .has_modrm(has_modrm),
         .reg_ecx(reg_ecx),
+        .movs0(st_movs0),
+        .movs1(st_movs1),
         .cmps0(st_cmps0),
         .cmps1(st_cmps1),
         .cmps2(st_cmps2),

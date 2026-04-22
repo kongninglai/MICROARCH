@@ -53,8 +53,8 @@ module stage_mem #(
   parameter MMXR_DATA_BIT_WIDTH=64,
   parameter SLIM_BIT_WIDTH=32,
 
-  parameter MEM_CONTROL_SIGS_WIDTH=79,
-  parameter EX_CONTROL_SIGS_WIDTH=59
+  parameter MEM_CONTROL_SIGS_WIDTH=81,
+  parameter EX_CONTROL_SIGS_WIDTH=70
 
 ) (
   input                                       clk,
@@ -186,7 +186,7 @@ bufferH256$    bufferH256$_to_mem_valid_buf16(to_mem_valid_buf256, to_mem_valid)
 
 /*** CONTROL SIGNALS ***/
 
-wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux, rm, op_ovr, palu_size, sbb_dir, iret0;
+wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, movs0, movs1, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux, rm, op_ovr, palu_size, sbb_dir, iret0;
 wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds;
 wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
 wire [3:0] gp_dsta_mux, store_data_mux;
@@ -203,7 +203,7 @@ mem_sig #(.MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH)) mem_sig_inst (
   .ldEFLAGS(ldEFLAGS), .ldEIP(ldEIP), .ldCS(ldCS),
   .alu_srcb_mux(alu_srcb_mux), .shf_srcb_mux(shf_srcb_mux), .eflags_mux(eflags_mux),
   .eip_mux(eip_mux), .cs_mux(cs_mux),
-  .mmx_op(mmx_op), .alu_op(alu_op), .shf_op(shf_op), .cmps0(cmps0), .cmps1(cmps1), .cmps2(cmps2), .con_jmp(con_jmp),
+  .mmx_op(mmx_op), .alu_op(alu_op), .shf_op(shf_op), .movs0(movs0), .movs1(movs1), .cmps0(cmps0), .cmps1(cmps1), .cmps2(cmps2), .con_jmp(con_jmp),
   .cmpxchg(cmpxchg), .cmovc(cmovc),
   .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
   .store_data_mux(store_data_mux), .rw(rw),
@@ -275,7 +275,7 @@ or2$    or2$_is_mem_inst(is_mem_inst, rw_buf16[1], rw_buf16[0]);
 and2$ and2_from_mem_valid_mem_inst(from_mem_valid_mem_inst, to_mem_valid, is_mem_inst);
 
 assign from_mem_control_sigs = {
-    ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
+    ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, movs0, movs1, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
     ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw_buf16, ds, shf_srcb_mux,
     ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
     gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0,

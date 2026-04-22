@@ -17,6 +17,8 @@ module ag_sig #(
     output [1:0] mmx_op,
     output [2:0] alu_op,
     output shf_op,
+    output movs0,
+    output movs1,
     output cmps0,
     output cmps1,
     output cmps2,
@@ -47,7 +49,7 @@ module ag_sig #(
 ); 
     assign {ldAB, dstA_size, dstB_size, ldREGS, ldEFLAGS,
             ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
-            mmx_op, alu_op, shf_op, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
+            mmx_op, alu_op, shf_op, movs0, movs1, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
             gp_dsta_mux, gp_dstb_mux, seg_dst_mux, mm_dst_mux, store_data_mux, rw, ds,
             mem_ds, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, op_ovr, palu_size, sbb_dir, iret0,
             AG_FW_CONTROL_SIGS, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS} = ucode_sig;
