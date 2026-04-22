@@ -68,18 +68,20 @@
         wire [COUNT_WIDTH-1:0]     entry_count;
 
         /* Write when decode produces a valid instruction AND queue is not full */
-        wire iq_wr;
+        wire iq_wr, iq_wr_bar;
         wire iq_full_bar;
         inv1$ inv1$_iq_full_bar(iq_full_bar, iq_full);
-        and2$ and2$_iq_wr(iq_wr, from_de_pr_valid, iq_full_bar);
+        nand2$ nand2$_iq_wr_bar(iq_wr_bar, from_de_pr_valid, iq_full_bar);
+        bufferHInv16$ bufferHInv16$_iq_wr(iq_wr, iq_wr_bar);
 
         /* Read when RR is not stalling and iq_empty === 1'b0 */
         wire from_rr_stall_bar, iq_rd;
         nor2$ nor2$_iq_rd(iq_rd, from_rr_stall, iq_empty);
 
         /* Flush on either pipeline flush */
-        wire flush;
-        or2$ or2$_flush(flush, from_ex_flush, from_wb_flush);
+        wire flush_bar, flush;
+        nor2$ nor2$_flush_bar(flush_bar, from_ex_flush, from_wb_flush);
+        bufferHInv16$ bufferHInv16$_flush(flush, flush_bar);
 
         iq_de_to_rr #(
           .ENTRY_BIT_WIDTH(ENTRY_BIT_WIDTH),
@@ -101,8 +103,9 @@
         /* to_rr_valid: queue is non-empty AND head entry has valid bit set */
         wire entry_count_nonzero;
         or3$ or3$_entry_count_nonzero(entry_count_nonzero, entry_count[0], entry_count[1], entry_count[2]);
-        and2$ and2$_to_rr_valid(to_rr_valid, entry_count_nonzero, head_valid);
-
+        wire to_rr_valid_bar;
+        nand2$ nand2$_to_rr_valid_bar(to_rr_valid_bar, entry_count_nonzero, head_valid);
+        bufferHInv16$ bufferHInv16$_to_rr_valid(to_rr_valid, to_rr_valid_bar);
         assign {to_rr_exception_flags, to_rr_i_eip, to_rr_o_eip, to_rr_bp_target, to_rr_pr_valid, 
                 to_rr_prefixes, to_rr_opcode, to_rr_modrm, to_rr_sib, to_rr_disp_size_mux, to_rr_disp, 
                 to_rr_imm_size, to_rr_imm, to_rr_addressing_mode, to_rr_instr_length} = reg_out;

@@ -36,7 +36,7 @@ module stage_fetch_a (
 
 
     // 32-bit address = 20-bit VPN + 12-bit Page Offset 
-    assign ITLB_VPN = ic_addr[31:12]; 
+    bufferH16$  bufferH16$_ITLB_VPN[19:0](ITLB_VPN, ic_addr[31:12]); 
     assign F_PAGE_OFFSET = ic_addr[11:0];  
 
 endmodule

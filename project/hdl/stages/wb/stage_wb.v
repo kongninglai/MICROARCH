@@ -46,7 +46,7 @@ module stage_wb #(
   input                                       rst_n,
 
   /*** Inputs from pipeline registers (execute-related) ***/
-  input   [11:0]                              to_wb_control_sigs,
+  input   [16:0]                              to_wb_control_sigs,
   input   [2:0]                               to_wb_dstidA, 
   input   [2:0]                               to_wb_dstidB,
   input   [31:0]                              to_wb_gp_wr_data_1,
@@ -54,6 +54,7 @@ module stage_wb #(
   input   [15:0]                              to_wb_seg_wr_data,
   input   [63:0]                              to_wb_mmx_wr_data,
   input   [31:0]                              to_wb_oeip,
+  input   [31:0]                              to_wb_ieip,
   input   [15:0]                              to_wb_cs,
 
   /*** Inputs from pipeline registers (memory-related) ***/
@@ -112,15 +113,18 @@ module stage_wb #(
   /*** Outputs to other stages in the pipeline ***/
   output                                      from_wb_stall_if_mem_en,
   output                                      from_wb_valid_store_inst,
-  output                                      from_wb_flush
+  output                                      from_wb_flush,
+
+  input                                       DMA_INT
 );
 
 assign from_wb_temp_cs = to_wb_cs;
-assign from_wb_temp_eip = to_wb_oeip;
 assign from_wb_temp_exception = to_wb_exception;
 
 /*** REGFILE UPDATE LOGIC ***/
 wire gpwr0_en, gp_wr1_en, segwr_en, mmxwr_en;
+wire movs0, movs1, cmps0, cmps1, cmps2;
+
 wire [1:0] dstA_size, dstB_size, rw, ds;
 wb_sig dut_wb_sig(
     .ucode_sig(to_wb_control_sigs),
@@ -131,29 +135,49 @@ wb_sig dut_wb_sig(
     .dstA_size(dstA_size),
     .dstB_size(dstB_size),
     .rw(rw),
-    .ds(ds)
+    .ds(ds),
+    .movs0(movs0),
+    .movs1(movs1),
+    .cmps0(cmps0),
+    .cmps1(cmps1),
+    .cmps2(cmps2)
 );
 
-assign from_wb_gpwr0_idx = to_wb_dstidA;
-assign from_wb_gpwr0_data = to_wb_gp_wr_data_1;
-assign from_wb_gpwr0_en = gpwr0_en;
-assign from_wb_gpwr0_size = dstA_size;
+bufferH256$ bufferH256$_from_wb_gpwr0_idx[2:0](from_wb_gpwr0_idx, to_wb_dstidA);
+bufferH256$ bufferH256$_from_wb_gpwr0_data[31:0](from_wb_gpwr0_data, to_wb_gp_wr_data_1);
+bufferH64$  bufferH64$_from_wb_gpwr0_en(from_wb_gpwr0_en, gpwr0_en);
+bufferH64$  bufferH64$_from_wb_gpwr0_size[1:0](from_wb_gpwr0_size, dstA_size);
+wire clear_int, pending_int;
+pending_int pending_int_inst(
+    .clk(clk),
+    .rst_n(rst_n),
+    .set_int(DMA_INT),
+    .clear_int(clear_int),
+    .pending_int(pending_int)
+); 
 
-assign from_wb_gpwr1_idx = to_wb_dstidB;
-assign from_wb_gpwr1_data = to_wb_gp_wr_data_2;
-assign from_wb_gpwr1_en = gpwr1_en;
-assign from_wb_gpwr1_size = dstB_size;
+bufferH64$ bufferH64$_from_wb_gpwr1_idx[2:0](from_wb_gpwr1_idx, to_wb_dstidB);
+bufferH256$ bufferH256$_from_wb_gpwr1_data[31:0](from_wb_gpwr1_data, to_wb_gp_wr_data_2);
+bufferH64$  bufferH64$_from_wb_gpwr1_en(from_wb_gpwr1_en, gpwr1_en);
+bufferH64$  bufferH64$_from_wb_gpwr1_size[1:0](from_wb_gpwr1_size, dstB_size);
 
-assign from_wb_segwr_idx = to_wb_dstidA;
-assign from_wb_segwr_data = to_wb_seg_wr_data;
-assign from_wb_segwr_en = segwr_en;
+bufferH64$  bufferH64$_from_wb_segwr_idx[2:0](from_wb_segwr_idx, to_wb_dstidA);
+bufferH16$  bufferH16$_from_wb_segwr_data[15:0](from_wb_segwr_data, to_wb_seg_wr_data);
+bufferH16$  bufferH16$_from_wb_segwr_en(from_wb_segwr_en, segwr_en);
 
-assign from_wb_mmxwr_idx = to_wb_dstidA;
-assign from_wb_mmxwr_data = to_wb_mmx_wr_data;
-assign from_wb_mmxwr_en = mmxwr_en;
+assign from_wb_mmxwr_idx = from_wb_segwr_idx;
+bufferH16$  bufferH16$_from_wb_mmxwr_data[63:0](from_wb_mmxwr_data, to_wb_mmx_wr_data);
+bufferH16$  bufferH16$_from_wb_mmxwr_en(from_wb_mmxwr_en, mmxwr_en);
 
 wire to_wb_valid_buf16;
 bufferH16$  bufferH16$_to_wb_valid_buf16(to_wb_valid_buf16, to_wb_valid);
+
+wire pending_int_bar, movs0_bar, cmps0_bar, cmps1_bar, wb_valid_buf16_bar;
+inv1$ inv_pending_int(pending_int_bar, pending_int);
+inv1$ inv_movs0(movs0_bar,movs0);
+inv1$ inv_cmps0(cmps0_bar, cmps0);
+inv1$ inv_cmps1(cmps1_bar, cmps1);
+big_and #(.WIDTH(5)) big_and_clear_int(clear_int, {pending_int, to_wb_valid_buf16, movs0_bar, cmps0_bar, cmps1_bar});
 
 /*** STORE QUEUE "HOOKS" ***/
 wire    [MULTI_WRITE_AMT-1:0]               wr, wr_buf16;
@@ -174,10 +198,14 @@ or2$    or2$_wb_store_inst(wb_store_inst, to_wb_store_is_io_line_0, to_wb_store_
 and3$   and3$_from_wb_valid_store_inst(from_wb_valid_store_inst, to_wb_valid_buf16, no_exception, wb_store_inst);
 
 /* Flush from WB if there's an exception for a valid instruction */
-wire    any_exception;
-or2$    or2$_any_exception(any_exception, to_wb_exception[0], to_wb_exception[1]);
-and2$   and2$_from_wb_flush(from_wb_flush, any_exception, to_wb_valid_buf16);
+wire    any_exception_or_interrupt, any_interrupt;
+nor4$   nor4_any_interrupt(any_interrupt, pending_int_bar, movs0, cmps0, cmps1);
+or3$    or2$_any_exception_or_interrupt(any_exception_or_interrupt, to_wb_exception[0], to_wb_exception[1], any_interrupt);
+wire from_wb_flush_bar;
+nand2$   nand2$_from_wb_flush_bar(from_wb_flush_bar, any_exception_or_interrupt, to_wb_valid_buf16);
+    bufferHInv64$ bufferHInv64$_from_wb_flush(from_wb_flush, from_wb_flush_bar);
 
+mux2_32 mux2_temp_eip(from_wb_temp_eip, to_wb_oeip, to_wb_ieip, any_interrupt);
 /* 
     This block aligns the 64-bit store data to cache line boundaries.
     Its output is 256 bits because accesses may cross cache lines.

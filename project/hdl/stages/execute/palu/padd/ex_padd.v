@@ -8,11 +8,11 @@ module ex_padd(
     genvar i;
 
     generate 
-        for (i=0; i<4; i=i+1) begin 
+        for (i=0; i<4; i=i+1) begin : paddw_gen
             PA_16b paddw(.in0(dest_in[i*16+15:i*16]), .in1(src_in[i*16+15:i*16]), .s(paddw_out[i*16+15:i*16]));
         end
 
-        for (i=0; i<2; i=i+1) begin 
+        for (i=0; i<2; i=i+1) begin  : paddd_gen
             PA_32b paddd(.in0(dest_in[i*32+31:i*32]), .in1(src_in[i*32+31:i*32]), .s(paddd_out[i*32+31:i*32]));
         end
     endgenerate

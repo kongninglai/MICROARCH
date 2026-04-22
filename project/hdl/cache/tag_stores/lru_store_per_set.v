@@ -18,6 +18,9 @@ wire  Q0_prebuf,
       Q4_prebuf;
 
 
+wire D4, D3, D2, D1, D0;
+
+
 wire [31:0] out_00, out_01, out_10, out_11;
 
 rom32b32w$   rom32b32w$_out_00({Q2,Q1,Q0,T1,T0}, rst, out_00);

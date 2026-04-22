@@ -95,7 +95,7 @@ module HA_32b (
 					Gi_im4[k],
 					Pi_im4[k],
 					Pi_i[8*k + 3],
-					Pi_im3[2*k],
+					Pi_im3_buf16[2*k],
 					Gi_i[8*k + 3],
 					Gi_im3_buf16[2*k]
 			  );
@@ -109,7 +109,7 @@ module HA_32b (
 					Gi_im5[k],
 					Pi_im5[k],
 					Pi_im1[4*k + 2],
-					Pi_im3[2*k],
+					Pi_im3_buf16[2*k],
 					Gi_im1[4*k + 2],
 					Gi_im3_buf16[2*k]
 			  );
@@ -123,7 +123,7 @@ module HA_32b (
 					Gi_im6[k],
 					Pi_im6[k],
 					Pi_im2[2*k + 1],
-					Pi_im3[2*k],
+					Pi_im3_buf16[2*k],
 					Gi_im2[2*k + 1],
 					Gi_im3_buf16[2*k]
 			  );
@@ -136,8 +136,8 @@ module HA_32b (
 			  gen_prop_2 gp3_im7 (
 					Gi_im7[k],
 					Pi_im7[k],
-					Pi_im3[2*k + 1],
-					Pi_im3[2*k],
+					Pi_im3_buf16[2*k + 1],
+					Pi_im3_buf16[2*k],
 					Gi_im3_buf16[2*k + 1],
 					Gi_im3_buf16[2*k]
 			  );
@@ -213,7 +213,7 @@ module HA_32b (
 			  gen_prop_2 gp4_im11 (
 					Gi_im11[l],
 					Pi_im11[l],
-					Pi_im3[4*l + 2],
+					Pi_im3_buf16[4*l + 2],
 					Pi_im7_buf16[2*l],
 					Gi_im3_buf16[4*l + 2],
 					Gi_im7_buf16[2*l]
@@ -288,7 +288,7 @@ module HA_32b (
 	gen_prop_2 gp4_im16(G15_m1, P15_m1, Pi_i[15],   Pi_im15_buf16[0], Gi_i[15]  , Gi_im15_buf64[0]);
 	gen_prop_2 gp4_im17(G16_m1, P16_m1, Pi_im1[8],  Pi_im15_buf16[0], Gi_im1[8] , Gi_im15_buf64[0]);
 	gen_prop_2 gp4_im18(G17_m1, P17_m1, Pi_im2[4],  Pi_im15_buf16[0], Gi_im2[4] , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im19(G18_m1, P18_m1, Pi_im3[4],  Pi_im15_buf16[0], Gi_im3_buf16[4] , Gi_im15_buf64[0]);
+	gen_prop_2 gp4_im19(G18_m1, P18_m1, Pi_im3_buf16[4],  Pi_im15_buf16[0], Gi_im3_buf16[4] , Gi_im15_buf64[0]);
 	gen_prop_2 gp4_im20(G19_m1, P19_m1, Pi_im4[2],  Pi_im15_buf16[0], Gi_im4[2] , Gi_im15_buf64[0]);
 	gen_prop_2 gp4_im21(G20_m1, P20_m1, Pi_im5[2],  Pi_im15_buf16[0], Gi_im5[2] , Gi_im15_buf64[0]);
 	gen_prop_2 gp4_im22(G21_m1, P21_m1, Pi_im6[2],  Pi_im15_buf16[0], Gi_im6[2] , Gi_im15_buf64[0]);

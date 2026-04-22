@@ -90,36 +90,26 @@ module logic_tail_ptr(
                                               incr_amt[2],
                                               incr_amt[3]);
 
-    mux4_8$ mux_tail_ptr_in(
+    mux8_8 mux_tail_ptr_in(
         .Y(tail_ptr_in_w), 
         .IN0(tail_ptr_decr_w), .IN1(tail_ptr_cl_incr_w), .IN2(tail_ptr_w), .IN3(tail_ptr_cl_incr_only_w),
-        .S0(fb_req_cl), .S1(zero_inst_len)
+        .IN4(8'd0),            .IN5(8'd0),               .IN6(8'd0),       .IN7(8'd0),
+        .S0(fb_req_cl), .S1(zero_inst_len), .S2(flush)
     );
     assign tail_ptr_w = {3'd0, tail_ptr};
     assign tail_ptr_in = tail_ptr_in_w[4:0];
 
     //Tail pointer
-    wire CLR, CLR_BAR, flush_bar;
     wire tail_ptr_en_bar;
     nor2$ or_tail_ptr_en_bar(tail_ptr_en_bar, shft_reg_we, flush);
     bufferHInv16$ bufferHInv16$_tail_ptr_en(tail_ptr_en, tail_ptr_en_bar);
 
-    inv1$ inv_flush(flush_bar, flush);
-    nand2$ nand_clear(CLR, rst_bar, flush_bar); //(if either rst of flush is a 0, we want to clear)
-    bufferHInv16$ bufferHInv16$_CLR_BAR(CLR_BAR, CLR);
-
     wire [4:0] tail_ptr_prebuf;
-    wire [7:0] final_tail_ptr_w;
-    mux2_8$ final_tail_ptr(
-        .Y(final_tail_ptr_w), 
-        .IN0({3'd0, tail_ptr_in}), .IN1(8'd0), 
-        .S0(flush)
-    );
     reg_n #(.WIDTH(5)) tail_ptr_reg (
         .clk(clk),
-        .rst(rst_bar), //CLR_BAR
+        .rst(rst_bar),
         .en({5{tail_ptr_en}}),
-        .d(final_tail_ptr_w[4:0]),
+        .d(tail_ptr_in),
         .q(tail_ptr_prebuf)
     );
 

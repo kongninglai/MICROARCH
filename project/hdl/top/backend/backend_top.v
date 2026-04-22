@@ -1,10 +1,10 @@
 module backend_top #(
   parameter CYCLE_TIME_X10=98,
   parameter TRUE_LRU=1,
-  parameter AG_CONTROL_SIGS_WIDTH=96,
-  parameter MEM_CONTROL_SIGS_WIDTH=79,
-  parameter EX_CONTROL_SIGS_WIDTH=68,
-  parameter WB_CONTROL_SIGS_WIDTH=12
+  parameter AG_CONTROL_SIGS_WIDTH=98,
+  parameter MEM_CONTROL_SIGS_WIDTH=81,
+  parameter EX_CONTROL_SIGS_WIDTH=70,
+  parameter WB_CONTROL_SIGS_WIDTH=17
 ) (
     input clk,
     input rst_n,
@@ -437,8 +437,9 @@ module backend_top #(
     wire from_dep_unit_data_dep;
     wire [8:0] AG_FW_CONTROL_SIGS, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
     /*** FLUSH LOGIC ***/
-    wire ex_or_wb_flush_bar, wb_flush_bar;
-    nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar, from_ex_flush, from_wb_flush);
+    wire ex_or_wb_flush_bar_prebuf, ex_or_wb_flush_bar, wb_flush_bar;
+    nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar_prebuf, from_ex_flush, from_wb_flush);
+    bufferH16$  bufferH16$_ex_or_wb_flush_bar(ex_or_wb_flush_bar, ex_or_wb_flush_bar_prebuf);
     inv1$ inv1_wb_flush_bar(wb_flush_bar, from_wb_flush);
 
     dep_unit dut (
@@ -1183,6 +1184,7 @@ module backend_top #(
         .to_wb_seg_wr_data(to_wb_seg_wr_data),
         .to_wb_mmx_wr_data(to_wb_mmx_wr_data),
         .to_wb_oeip(to_wb_oeip),
+        .to_wb_ieip(to_wb_ieip),
         .to_wb_cs(to_wb_cs),
 
         .from_wb_gpwr0_idx(from_wb_gpwr0_idx),
@@ -1237,7 +1239,8 @@ module backend_top #(
 
         .from_wb_stall_if_mem_en(from_wb_stall_if_mem_en),
         .from_wb_valid_store_inst(from_wb_valid_store_inst),
-        .from_wb_flush(from_wb_flush)
+        .from_wb_flush(from_wb_flush),
+        .DMA_INT(DMA_INT)
     );
 
     temp_exception_regs inst_temp_exception_regs(

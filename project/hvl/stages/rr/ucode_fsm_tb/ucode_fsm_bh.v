@@ -19,6 +19,8 @@ module ucode_fsm_bh(
 
     input [31:0] reg_ecx,
 
+    output movs0,
+    output movs1,
     output cmps0,
     output cmps1,
     output cmps2,
@@ -205,6 +207,8 @@ module ucode_fsm_bh(
     mux4_32 mux4_sig32(.in0(sig_reg[31:0]), .in1(sig_reg_rm[31:0]), .in2(sig_ext[31:0]), .in3(sig_ext_rm[31:0]), .s0(has_modrm), .s1(ext_opcode), .out(sig_idle[31:0]));
 
     assign ucode_sig = (state == S_IDLE) ? sig_idle : sig_reg;
+    assign movs0 = (state == S_REP_MOVS0);
+    assign movs1 = (state == S_REP_MOVS1);
     assign cmps0 = (state == S_REP_CMPS0);
     assign cmps1 = (state == S_REP_CMPS1);
     assign cmps2 = (state == S_REP_CMPS2);
