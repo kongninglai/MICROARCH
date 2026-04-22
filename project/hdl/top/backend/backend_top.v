@@ -441,12 +441,6 @@ module backend_top #(
     nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar, from_ex_flush, from_wb_flush);
     inv1$ inv1_wb_flush_bar(wb_flush_bar, from_wb_flush);
 
-
-    /*** FLUSH LOGIC ***/
-    wire ex_or_wb_flush_bar, wb_flush_bar;
-    nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar, from_ex_flush, from_wb_flush);
-    inv1$ inv1_wb_flush_bar(wb_flush_bar, from_wb_flush);
-
     dep_unit dut (
         .from_ag_dstidA(from_ag_dstidA),
         .from_ag_dstidB(from_ag_dstidB),
