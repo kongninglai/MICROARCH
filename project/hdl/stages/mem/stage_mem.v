@@ -214,6 +214,11 @@ mem_sig #(.MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH)) mem_sig_inst (
 wire [31:0] f_srcregA, f_srcregB, f_srcregC;
 wire [15:0] f_srcSREG;
 wire [63:0] f_MMA, f_MMB;
+
+wire [31:0] to_mem_srcregA_buf16, to_mem_srcregB_buf16, to_mem_srcregC_buf16;
+bufferH16$  bufferH16$_to_mem_srcregA_buf16[31:0](to_mem_srcregA_buf16, to_mem_srcregA);
+bufferH16$  bufferH16$_to_mem_srcregB_buf16[31:0](to_mem_srcregB_buf16, to_mem_srcregB);
+bufferH16$  bufferH16$_to_mem_srcregC_buf16[31:0](to_mem_srcregC_buf16, to_mem_srcregC);
 gp_forwarding gp_forward_A(
     .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
     .from_wb_gpwr0_data(from_wb_gpwr0_data),
@@ -223,7 +228,7 @@ gp_forwarding gp_forward_A(
     .from_wb_gpwr1_data(from_wb_gpwr1_data),
     .from_wb_gpwr1_size(from_wb_gpwr1_size),
     .from_wb_gpwr1_en(from_wb_gpwr1_en),
-    .srcreg(to_mem_srcregA),
+    .srcreg(to_mem_srcregA_buf16),
     .fw_mux(fw_A),
     .f_reg(f_srcregA)
 );
@@ -237,7 +242,7 @@ gp_forwarding gp_forward_B(
     .from_wb_gpwr1_data(from_wb_gpwr1_data),
     .from_wb_gpwr1_size(from_wb_gpwr1_size),
     .from_wb_gpwr1_en(from_wb_gpwr1_en),
-    .srcreg(to_mem_srcregB),
+    .srcreg(to_mem_srcregB_buf16),
     .fw_mux(fw_B),
     .f_reg(f_srcregB)
 );
@@ -251,7 +256,7 @@ gp_forwarding gp_forward_C(
     .from_wb_gpwr1_data(from_wb_gpwr1_data),
     .from_wb_gpwr1_size(from_wb_gpwr1_size),
     .from_wb_gpwr1_en(from_wb_gpwr1_en),
-    .srcreg(to_mem_srcregC),
+    .srcreg(to_mem_srcregC_buf16),
     .fw_mux(fw_C),
     .f_reg(f_srcregC)
 );
@@ -272,7 +277,7 @@ bufferH16$    bufferH16$_rw_buf16[1:0](rw_buf16, rw);
 
 wire is_mem_inst;
 or2$    or2$_is_mem_inst(is_mem_inst, rw_buf16[1], rw_buf16[0]);
-and2$ and2_from_mem_valid_mem_inst(from_mem_valid_mem_inst, to_mem_valid, is_mem_inst);
+and2$ and2_from_mem_valid_mem_inst(from_mem_valid_mem_inst, to_mem_valid_buf256, is_mem_inst);
 
 assign from_mem_control_sigs = {
     ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, movs0, movs1, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
@@ -287,7 +292,8 @@ assign from_mem_control_sigs = {
 /* LOADS */
 
 wire  LINE_0_LOAD_DONE, LINE_1_LOAD_DONE;
-wire  NEEDS_LINE_1_LOAD, DOING_LINE_1_LOAD, DOING_LINE_1_LOAD_BAR;
+wire  NEEDS_LINE_1_LOAD, DOING_LINE_1_LOAD, DOING_LINE_1_LOAD_buf16, DOING_LINE_1_LOAD_BAR;
+bufferH16$  bufferH16$_DOING_LINE_1_LOAD_buf16(DOING_LINE_1_LOAD_buf16, DOING_LINE_1_LOAD);
 xor2$   xor2$_NEEDS_LINE_1_LOAD(NEEDS_LINE_1_LOAD, to_mem_ld_addr[RANK_BURST_SIZE], to_mem_ld_offset[RANK_BURST_SIZE]);
 
 wire  FLUSH, FLUSH_BAR;
@@ -296,7 +302,7 @@ nor2$   nor2$_FLUSH_BAR(FLUSH_BAR, from_ex_flush, from_wb_flush);
 
 wire  LINE_0_LOAD_DONE_AND_NEEDS_LINE_1_LOAD_AND_FLUSH_BAR, DCACHE_STALL_BAR;
 inv1$   inv1$_DCACHE_STALL_BAR(DCACHE_STALL_BAR, DCACHE_STALL);
-inv1$   inv1$_DOING_LINE_1_LOAD_BAR(DOING_LINE_1_LOAD_BAR, DOING_LINE_1_LOAD);
+inv1$   inv1$_DOING_LINE_1_LOAD_BAR(DOING_LINE_1_LOAD_BAR, DOING_LINE_1_LOAD_buf16);
 
 and3$   and3$_LINE_0_LOAD_DONE(LINE_0_LOAD_DONE, DCACHE_STALL_BAR, DOING_LINE_1_LOAD_BAR, MEM_VALID_LOAD_INST);
 
@@ -311,7 +317,7 @@ and3$   and3$_LINE_0_LOAD_DONE_AND_NEEDS_LINE_1_LOAD_AND_FLUSH_BAR
 wire    from_mem_stall_bar;
 inv1$   inv1$_from_mem_stall_bar(from_mem_stall_bar, from_mem_stall);
 
-and3$   and3$_LINE_1_LOAD_DONE(LINE_1_LOAD_DONE, DCACHE_STALL_BAR, DOING_LINE_1_LOAD, MEM_VALID_LOAD_INST);
+and3$   and3$_LINE_1_LOAD_DONE(LINE_1_LOAD_DONE, DCACHE_STALL_BAR, DOING_LINE_1_LOAD_buf16, MEM_VALID_LOAD_INST);
 
 wire    LINE_1_LOAD_DONE_AND_MEM_STALL_BAR;
 and2$   and2$_LINE_1_LOAD_DONE_AND_MEM_STALL_BAR( LINE_1_LOAD_DONE_AND_MEM_STALL_BAR,
@@ -381,21 +387,25 @@ big_increment #(
   .s(to_mem_ld_addr_next_line_aligned_top)
 );
 
-mux2_16$ mux2_16$_D_RD_TLB_VPN( D_RD_TLB_VPN[VPN_BIT_WIDTH-1:VPN_BIT_WIDTH-16],
+wire [VPN_BIT_WIDTH-1:0]                 D_RD_TLB_VPN_prebuf;
+
+mux2_16$ mux2_16$_D_RD_TLB_VPN( D_RD_TLB_VPN_prebuf[VPN_BIT_WIDTH-1:VPN_BIT_WIDTH-16],
                                 to_mem_ld_addr_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-16],
                                 to_mem_ld_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-16],
-                                DOING_LINE_1_LOAD);
+                                DOING_LINE_1_LOAD_buf16);
 
-mux2$    mux2$_D_RD_TLB_VPN[3:0]( D_RD_TLB_VPN[3:0],
+mux2$    mux2$_D_RD_TLB_VPN[3:0]( D_RD_TLB_VPN_prebuf[3:0],
                                 to_mem_ld_addr_aligned[GENERAL_DATA_BIT_WIDTH-17:GENERAL_DATA_BIT_WIDTH-20],
                                 to_mem_ld_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-17:GENERAL_DATA_BIT_WIDTH-20],
-                                DOING_LINE_1_LOAD);
+                                DOING_LINE_1_LOAD_buf16);
+
+bufferH16$  bufferH16$_D_RD_TLB_VPN[VPN_BIT_WIDTH-1:0](D_RD_TLB_VPN, D_RD_TLB_VPN_prebuf);
 
 wire  [CHIPS_PER_RANK-1:0] MEM_PAGE_OFFSET_DUMMY;
 
 mux2_16$ mux2_16$_MEM_PAGE_OFFSET (MEM_PAGE_OFFSET_DUMMY, {4'd0, to_mem_ld_addr_aligned[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0},
                                                           {4'd0, to_mem_ld_addr_next_line_aligned[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0}, 
-                                                          DOING_LINE_1_LOAD);
+                                                          DOING_LINE_1_LOAD_buf16);
 
 assign MEM_PAGE_OFFSET = MEM_PAGE_OFFSET_DUMMY[PAGE_BIT_WIDTH-1:0];
 
@@ -414,17 +424,25 @@ big_increment #(
   .s(to_mem_st_addr_next_line_aligned_top)
 );
 
-assign D_WR0_TLB_VPN = to_mem_st_addr_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-VPN_BIT_WIDTH];
-assign D_WR1_TLB_VPN = to_mem_st_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-VPN_BIT_WIDTH];
+bufferH64$  bufferH64$_D_WR0_TLB_VPN[VPN_BIT_WIDTH-1:0](D_WR0_TLB_VPN, to_mem_st_addr_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-VPN_BIT_WIDTH]);
+bufferH16$  bufferH16$_D_WR1_TLB_VPN[VPN_BIT_WIDTH-1:0](D_WR1_TLB_VPN, to_mem_st_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-VPN_BIT_WIDTH]);
 
 /*** TLB OUTPUTS and MEM_VALID_LOAD_INST and EXCEPTIONS ***/
 
-wire  D_RD_TLB_PAGE_FAULT_OUT_BAR, LOAD_EXCEPTION;
+wire  D_RD_TLB_PAGE_FAULT_OUT_BAR, LOAD_EXCEPTION, SAVED_LOAD_EXCEPTION, COMBINED_LOAD_EXCEPTION;
 inv1$   inv1$_D_RD_TLB_PAGE_FAULT_OUT_BAR(D_RD_TLB_PAGE_FAULT_OUT_BAR, D_RD_TLB_PAGE_FAULT_OUT);
 and3$   and3$_LOAD_EXCEPTION(LOAD_EXCEPTION, D_RD_TLB_PAGE_FAULT_OUT, rw_buf16[1], to_mem_valid_buf256);
+or2$    or2$_COMBINED_LOAD_EXCEPTION(COMBINED_LOAD_EXCEPTION, LOAD_EXCEPTION, SAVED_LOAD_EXCEPTION);
 
 wire  [1:0] LOAD_EXCEPTION_MASK;
-assign  LOAD_EXCEPTION_MASK = {1'b0, LOAD_EXCEPTION};
+wire  [5:0] LOAD_EXCEPTION_MASK_DUMMY;
+mux2_8$ mux2_8$_LOAD_EXCEPTION_MASK
+(
+  {LOAD_EXCEPTION_MASK_DUMMY, LOAD_EXCEPTION_MASK},
+  {7'b0, LOAD_EXCEPTION},
+  {7'b0, COMBINED_LOAD_EXCEPTION},
+  DOING_LINE_1_LOAD_buf16
+);
 
 /* LIMIT CHECKING */
 
@@ -495,8 +513,10 @@ or4$    or4$_from_mem_exception[1:0](from_mem_exception, LOAD_EXCEPTION_MASK, ST
 wire  no_mem_exception, no_mem_exception_buf16;
 nor2$   nor2$_no_mem_exception(no_mem_exception, from_mem_exception[0], from_mem_exception[1]);
 bufferH16$    bufferH16$_no_mem_exception_buf16(no_mem_exception_buf16, no_mem_exception);
-and2$   and2$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], to_mem_valid_buf256);
 
+wire MEM_VALID_LOAD_INST_BAR;
+nand2$   nand2$_MEM_VALID_LOAD_INST_BAR(MEM_VALID_LOAD_INST_BAR, rw_buf16[1], to_mem_valid_buf256);
+bufferHInv16$ bufferHInv16$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, MEM_VALID_LOAD_INST_BAR);
 
 /*** STORE PIPELINE REGISTERS ***/
 
@@ -565,6 +585,15 @@ reg64e$ reg64e$_SAVED_LINE_0_LOAD_DATA(
   .en(LINE_0_LOAD_DONE)
 );
 
+reg_n #(
+  .WIDTH(1),
+  .USE_EN_BAR(0)
+) reg_n_SAVED_LOAD_EXCEPTION (
+  .clk(clk), .rst(rst_n),
+  .en(LINE_0_LOAD_DONE), .d(LOAD_EXCEPTION),
+  .q(SAVED_LOAD_EXCEPTION)
+);
+
 wire  [3:0]   to_mem_ld_addr_line_offset_adjusted;
 
 PA_4b PA_4b_to_mem_ld_addr_line_offset_adjusted (
@@ -594,7 +623,7 @@ generate
       from_mem_load_result_ungated[i*16 +: 16],
       LOAD_RESULT_REGULAR[i*16 +: 16],
       LOAD_RESULT_CROSS[i*16 +: 16],
-      DOING_LINE_1_LOAD
+      DOING_LINE_1_LOAD_buf16
     );
   end
 endgenerate
@@ -614,8 +643,8 @@ nand2$  nand2$_from_mem_stall(from_mem_stall, STALL_REASON_0_bar, STALL_REASON_1
 
 /*** EASY ASSIGN STATEMENTS ***/
 
-assign from_mem_dstidA      = to_mem_dstidA   ;  
-assign from_mem_dstidB      = to_mem_dstidB   ;  
+bufferH64$  bufferH64$_from_mem_dstidA[2:0](from_mem_dstidA, to_mem_dstidA);  
+bufferH16$  bufferH16$_from_mem_dstidB[2:0](from_mem_dstidB, to_mem_dstidB);
 assign from_mem_target_cs   = to_mem_target_cs;      
 
 assign from_mem_inc_esp     = to_mem_inc_esp ;     
@@ -627,8 +656,8 @@ assign from_mem_oeip        = to_mem_oeip    ;
 assign from_mem_ieip        = to_mem_ieip    ;   
 assign from_mem_pred_eip    = to_mem_pred_eip;
 
-assign from_mem_dstA_size   = dstA_size;
-assign from_mem_dstB_size   = dstB_size;
+bufferH16$ bufferH16$_from_mem_dstA_size[1:0](from_mem_dstA_size, dstA_size);
+bufferH16$ bufferH16$_from_mem_dstB_size[1:0](from_mem_dstB_size, dstB_size);
 assign from_mem_ldAB        = ldAB;
 assign from_mem_ldREGS      = ldREGS;
 

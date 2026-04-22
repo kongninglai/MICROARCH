@@ -756,7 +756,7 @@ mux8_16b   mux8_16b_DATA_BUS_DRIVER_VALUE_BOT(    DATA_BUS_DRIVER_VALUE   [15:0]
                                                   DC_PLUS_HIT_buf16,
                                                   IC_PLUS_HIT);
 
-wire SKIP_STATE_INT;
+wire SKIP_STATE, SKIP_STATE_INT;
 or2$    or2$_SKIP_STATE_INT(SKIP_STATE_INT, IC_PLUS_HIT_D, DC_PLUS_HIT_D);
 and2$   and2$_SKIP_STATE(SKIP_STATE, SKIP_STATE_INT, LOAD_ADDR_LD_EN_buf1024);
 

@@ -56,9 +56,10 @@ and2$ and2_valid(valid_with_flush, flush_bar, from_ex_valid);
 assign reg_din = {from_ex_control_sigs, from_ex_dstidA, from_ex_dstidB, from_ex_gp_wr_data_1, from_ex_gp_wr_data_2, from_ex_seg_wr_data, from_ex_mmx_wr_data, from_ex_store_data, from_ex_store_is_io_line_0, from_ex_store_addr_line_0, from_ex_store_mask_line_0, from_ex_store_queue_alloc_line_0, from_ex_store_addr_line_1, from_ex_store_mask_line_1, from_ex_store_queue_alloc_line_1, from_ex_store_data_shf_amt, from_ex_cs, from_ex_oeip, from_ex_ieip, valid_with_flush, from_ex_exception};
 assign {to_wb_control_sigs, to_wb_dstidA, to_wb_dstidB, to_wb_gp_wr_data_1, to_wb_gp_wr_data_2, to_wb_seg_wr_data, to_wb_mmx_wr_data, to_wb_store_data, to_wb_store_is_io_line_0, to_wb_store_addr_line_0, to_wb_store_mask_line_0, to_wb_store_queue_alloc_line_0, to_wb_store_addr_line_1, to_wb_store_mask_line_1, to_wb_store_queue_alloc_line_1, to_wb_store_data_shf_amt, to_wb_cs, to_wb_oeip, to_wb_ieip, to_wb_valid, to_wb_exception} = reg_q;
 
-wire flush, we_with_flush;
+wire flush, we_with_flush_bar, we_with_flush;
 inv1$ inv_flush_bar(flush, flush_bar);
-or2$ or2_we_with_flush(we_with_flush, flush, we);
+nor2$ nor2_we_with_flush_bar(we_with_flush_bar, flush, we);
+bufferHInv16$ bufferHInv16$_we_with_flush(we_with_flush, we_with_flush_bar);
 reg_ex_to_wb reg340_ex_to_wb(clk, reg_din, reg_q, reg_qb, rst_n, 1'b1, we_with_flush);
 
 endmodule

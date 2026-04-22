@@ -7,7 +7,7 @@ module set_sf_zf_pf #(
     output PF
 ); 
     // SF Logic
-    assign SF = out[WIDTH-1];
+    buffer$ buffer$_SF(SF, out[WIDTH-1]);
 
     // ZF Logic
     wire out_or;

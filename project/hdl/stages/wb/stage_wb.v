@@ -143,6 +143,10 @@ wb_sig dut_wb_sig(
     .cmps2(cmps2)
 );
 
+bufferH256$ bufferH256$_from_wb_gpwr0_idx[2:0](from_wb_gpwr0_idx, to_wb_dstidA);
+bufferH256$ bufferH256$_from_wb_gpwr0_data[31:0](from_wb_gpwr0_data, to_wb_gp_wr_data_1);
+bufferH64$  bufferH64$_from_wb_gpwr0_en(from_wb_gpwr0_en, gpwr0_en);
+bufferH64$  bufferH64$_from_wb_gpwr0_size[1:0](from_wb_gpwr0_size, dstA_size);
 wire clear_int, pending_int;
 pending_int pending_int_inst(
     .clk(clk),
@@ -152,24 +156,18 @@ pending_int pending_int_inst(
     .pending_int(pending_int)
 ); 
 
+bufferH64$ bufferH64$_from_wb_gpwr1_idx[2:0](from_wb_gpwr1_idx, to_wb_dstidB);
+bufferH256$ bufferH256$_from_wb_gpwr1_data[31:0](from_wb_gpwr1_data, to_wb_gp_wr_data_2);
+bufferH64$  bufferH64$_from_wb_gpwr1_en(from_wb_gpwr1_en, gpwr1_en);
+bufferH64$  bufferH64$_from_wb_gpwr1_size[1:0](from_wb_gpwr1_size, dstB_size);
 
-assign from_wb_gpwr0_idx = to_wb_dstidA;
-assign from_wb_gpwr0_data = to_wb_gp_wr_data_1;
-assign from_wb_gpwr0_en = gpwr0_en;
-assign from_wb_gpwr0_size = dstA_size;
+bufferH64$  bufferH64$_from_wb_segwr_idx[2:0](from_wb_segwr_idx, to_wb_dstidA);
+bufferH16$  bufferH16$_from_wb_segwr_data[15:0](from_wb_segwr_data, to_wb_seg_wr_data);
+bufferH16$  bufferH16$_from_wb_segwr_en(from_wb_segwr_en, segwr_en);
 
-assign from_wb_gpwr1_idx = to_wb_dstidB;
-assign from_wb_gpwr1_data = to_wb_gp_wr_data_2;
-assign from_wb_gpwr1_en = gpwr1_en;
-assign from_wb_gpwr1_size = dstB_size;
-
-assign from_wb_segwr_idx = to_wb_dstidA;
-assign from_wb_segwr_data = to_wb_seg_wr_data;
-assign from_wb_segwr_en = segwr_en;
-
-assign from_wb_mmxwr_idx = to_wb_dstidA;
-assign from_wb_mmxwr_data = to_wb_mmx_wr_data;
-assign from_wb_mmxwr_en = mmxwr_en;
+assign from_wb_mmxwr_idx = from_wb_segwr_idx;
+bufferH16$  bufferH16$_from_wb_mmxwr_data[63:0](from_wb_mmxwr_data, to_wb_mmx_wr_data);
+bufferH16$  bufferH16$_from_wb_mmxwr_en(from_wb_mmxwr_en, mmxwr_en);
 
 wire to_wb_valid_buf16;
 bufferH16$  bufferH16$_to_wb_valid_buf16(to_wb_valid_buf16, to_wb_valid);
@@ -203,7 +201,9 @@ and3$   and3$_from_wb_valid_store_inst(from_wb_valid_store_inst, to_wb_valid_buf
 wire    any_exception_or_interrupt, any_interrupt;
 nor4$   nor4_any_interrupt(any_interrupt, pending_int_bar, movs0, cmps0, cmps1);
 or3$    or2$_any_exception_or_interrupt(any_exception_or_interrupt, to_wb_exception[0], to_wb_exception[1], any_interrupt);
-and2$   and2$_from_wb_flush(from_wb_flush, any_exception_or_interrupt, to_wb_valid_buf16);
+wire from_wb_flush_bar;
+nand2$   nand2$_from_wb_flush_bar(from_wb_flush_bar, any_exception_or_interrupt, to_wb_valid_buf16);
+    bufferHInv64$ bufferHInv64$_from_wb_flush(from_wb_flush, from_wb_flush_bar);
 
 mux2_32 mux2_temp_eip(from_wb_temp_eip, to_wb_oeip, to_wb_ieip, any_interrupt);
 /* 

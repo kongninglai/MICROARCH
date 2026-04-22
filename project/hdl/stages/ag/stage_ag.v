@@ -100,7 +100,8 @@ module stage_ag #(
 
     wire store_addr_mux, load_addr_mux;
 
-    assign {load_addr_mux, store_addr_mux} = addr_mux;
+    bufferH16$  bufferH16$_load_addr_mux(load_addr_mux, addr_mux[1]);
+    bufferH16$  bufferH16$_store_addr_mux(store_addr_mux, addr_mux[0]);
 
     assign from_ag_control_sigs = {
         ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, movs0, movs1, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
@@ -112,6 +113,10 @@ module stage_ag #(
     wire [31:0] f_srcregA, f_srcregB, f_srcregC;
     wire [15:0] f_srcSREG;
     wire [63:0] f_MMA, f_MMB;
+    wire [31:0] to_ag_srcregA_buf16, to_ag_srcregB_buf16, to_ag_srcregC_buf16;
+    bufferH16$  bufferH16$_to_ag_srcregA_buf16[31:0](to_ag_srcregA_buf16, to_ag_srcregA);
+    bufferH16$  bufferH16$_to_ag_srcregB_buf16[31:0](to_ag_srcregB_buf16, to_ag_srcregB);
+    bufferH16$  bufferH16$_to_ag_srcregC_buf16[31:0](to_ag_srcregC_buf16, to_ag_srcregC);
     gp_forwarding gp_forward_A(
         .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
         .from_wb_gpwr0_data(from_wb_gpwr0_data),
@@ -121,7 +126,7 @@ module stage_ag #(
         .from_wb_gpwr1_data(from_wb_gpwr1_data),
         .from_wb_gpwr1_size(from_wb_gpwr1_size),
         .from_wb_gpwr1_en(from_wb_gpwr1_en),
-        .srcreg(to_ag_srcregA),
+        .srcreg(to_ag_srcregA_buf16),
         .fw_mux(fw_A),
         .f_reg(f_srcregA)
     );
@@ -135,7 +140,7 @@ module stage_ag #(
         .from_wb_gpwr1_data(from_wb_gpwr1_data),
         .from_wb_gpwr1_size(from_wb_gpwr1_size),
         .from_wb_gpwr1_en(from_wb_gpwr1_en),
-        .srcreg(to_ag_srcregB),
+        .srcreg(to_ag_srcregB_buf16),
         .fw_mux(fw_B),
         .f_reg(f_srcregB)
     );
@@ -149,7 +154,7 @@ module stage_ag #(
         .from_wb_gpwr1_data(from_wb_gpwr1_data),
         .from_wb_gpwr1_size(from_wb_gpwr1_size),
         .from_wb_gpwr1_en(from_wb_gpwr1_en),
-        .srcreg(to_ag_srcregC),
+        .srcreg(to_ag_srcregC_buf16),
         .fw_mux(fw_C),
         .f_reg(f_srcregC)
     );
@@ -158,8 +163,8 @@ module stage_ag #(
     mux2_64  mux2_f_MMA(f_MMA, to_ag_MMA, from_wb_mmxwr_data, fw_MMA);
     mux2_64  mux2_f_MMB(f_MMB, to_ag_MMB, from_wb_mmxwr_data, fw_MMB);
 
-    assign from_ag_dstidA = to_ag_dstidA;
-    assign from_ag_dstidB = to_ag_dstidB;
+    bufferH64$  bufferH64$_from_ag_dstidA[2:0](from_ag_dstidA, to_ag_dstidA);
+    bufferH16$  bufferH16$_from_ag_dstidB[2:0](from_ag_dstidB, to_ag_dstidB);
     assign from_ag_srcregA = f_srcregA;
     assign from_ag_srcregB = f_srcregB;
     assign from_ag_srcregC = f_srcregC;
@@ -210,21 +215,24 @@ module stage_ag #(
 
 
     // ========= REL EIP LOGIC ===========
-    wire [31:0] imm_se8, imm_se16, imm_ze16, imm_final;
+    wire [31:0] imm_se8, imm_se16, imm_ze16, imm_final_buf16, imm_final;
     se #(.INP_WIDTH(8), .OUT_WIDTH(32)) se_imm8(.in(to_ag_imm[7:0]), .out(imm_se8));
     se #(.INP_WIDTH(16), .OUT_WIDTH(32)) se_imm16(.in(to_ag_imm[15:0]), .out(imm_se16));
     ze #(.INP_WIDTH(16), .OUT_WIDTH(32)) ze_imm16(.in(to_ag_imm[15:0]), .out(imm_ze16));
 
     mux4_32 mux_imm(imm_final, imm_se8, imm_se16, imm_ze16, to_ag_imm, imm_mux[0], imm_mux[1]);
-    PA_32b PA_rel_eip(.s(from_ag_rel_eip), .in0(to_ag_ieip), .in1(imm_final));
+    bufferH16$  bufferH16$_imm_final_buf16[31:0](imm_final_buf16, imm_final);
+    PA_32b PA_rel_eip(.s(from_ag_rel_eip), .in0(to_ag_ieip), .in1(imm_final_buf16));
     
-    assign from_ag_imm = imm_final;
+    assign from_ag_imm = imm_final_buf16;
 
     // ========= MEM ADDR LOGIC ===========
     wire [31:0] addr1, offset1, addr2, offset2, inc_esp, dec_esp;
+    wire [31:0] to_ag_base2_buf16;
+    bufferH16$  bufferH16$_to_ag_base2_buf16[31:0](to_ag_base2_buf16, to_ag_base2);
     address_adder address_adder_inst (
         .scale_mux1(to_ag_scale_mux), .sreg1(to_ag_sreg1), .index1(to_ag_index1), .base1(to_ag_base1), .disp1(to_ag_disp),
-        .stack_push(stack_push), .ret_with_imm(ret_with_imm), .imm(imm_final), .sreg2(to_ag_sreg2), .base2(to_ag_base2),
+        .stack_push(stack_push), .ret_with_imm(ret_with_imm), .imm(imm_final_buf16), .sreg2(to_ag_sreg2), .base2(to_ag_base2_buf16),
         .size_mux(mem_ds),
         .addr1(addr1), .offset1(offset1),
         .addr2(addr2), .offset2(offset2), .inc_esp(inc_esp), .dec_esp(dec_esp)
@@ -240,19 +248,21 @@ module stage_ag #(
     PA_32b PA_intex_idtr(.s(addr_intex_idtr), .in0(32'h02000000), .in1(shifted_intex_vec));
 
     wire [31:0] ld_addr1_or_2, ld_offset_1_or_2, ld_slim1_or_2;
+    wire intex_buf16;
+    bufferH16$  bufferH16$_intex_buf16(intex_buf16, intex);
     mux2_32 mux_ld_addr(ld_addr1_or_2, addr1, addr2, load_addr_mux);
-    mux2_32 mux_ld_addr_with_intex(from_ag_ld_addr, ld_addr1_or_2, addr_intex_idtr, intex);
+    mux2_32 mux_ld_addr_with_intex(from_ag_ld_addr, ld_addr1_or_2, addr_intex_idtr, intex_buf16);
     mux2_32 mux_ld_offset(ld_offset_1_or_2, offset1, offset2, load_addr_mux);
-    mux2_32 mux_ld_offset_with_intex(from_ag_ld_offset, ld_offset_1_or_2, addr_intex_idtr, intex);
+    mux2_32 mux_ld_offset_with_intex(from_ag_ld_offset, ld_offset_1_or_2, addr_intex_idtr, intex_buf16);
     mux2_32 mux_ld_slim(ld_slim1_or_2, to_ag_slim1, to_ag_slim2, load_addr_mux);
-    mux2_32 mux_ld_slim_with_intex(from_ag_ld_slim, ld_slim1_or_2, 32'hffff_ffff, intex);
+    mux2_32 mux_ld_slim_with_intex(from_ag_ld_slim, ld_slim1_or_2, 32'hffff_ffff, intex_buf16);
 
     mux2_32 mux_st_addr(from_ag_st_addr, addr1, addr2, store_addr_mux);
     mux2_32 mux_st_offset(from_ag_st_offset, offset1, offset2, store_addr_mux);
     mux2_32 mux_st_slim(from_ag_st_slim, to_ag_slim1, to_ag_slim2, store_addr_mux);
     
-    assign from_ag_dstA_size = dstA_size;
-    assign from_ag_dstB_size = dstB_size;
+    bufferH16$  bufferH16$_from_ag_dstA_size[1:0](from_ag_dstA_size, dstA_size);
+    bufferH16$  bufferH16$_from_ag_dstB_size[1:0](from_ag_dstB_size, dstB_size);
     assign from_ag_ldAB = ldAB;
     assign from_ag_ldREGS = ldREGS;
 endmodule

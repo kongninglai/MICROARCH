@@ -7,8 +7,9 @@ module ex_cmp(
     output [31:0] cmp_eflags_mask
 ); 
     
-    wire [31:0] sbb_out, sbb_cout;
+    wire [31:0] sbb_out, sbb_out_buf16, sbb_cout;
     SUB_32b SUB32_SBB(.in0(in0), .in1(in1), .cin(1'b0), .s(sbb_out), .cout(sbb_cout));
+    bufferH16$  bufferH16$_sbb_out_buf16[31:0](sbb_out_buf16, sbb_out);
 
     // TODO: EFLAGS
     // EFLAGS
@@ -19,7 +20,7 @@ module ex_cmp(
     wire CF8, CF16, CF32, CF;
     wire PF8, PF16, PF32, PF;
 
-    cmp_eflags #(.WIDTH(8)) cmp_eflags8(in0, in1, sbb_out, sbb_cout,
+    cmp_eflags #(.WIDTH(8)) cmp_eflags8(in0, in1, sbb_out_buf16, sbb_cout,
                                         OF8,
                                         SF8,
                                         ZF8,
@@ -27,7 +28,7 @@ module ex_cmp(
                                         CF8,
                                         PF8);
 
-    cmp_eflags #(.WIDTH(16)) cmp_eflags16(in0, in1, sbb_out, sbb_cout,
+    cmp_eflags #(.WIDTH(16)) cmp_eflags16(in0, in1, sbb_out_buf16, sbb_cout,
                                         OF16,
                                         SF16,
                                         ZF16,
@@ -35,7 +36,7 @@ module ex_cmp(
                                         CF16,
                                         PF16);
 
-    cmp_eflags #(.WIDTH(32)) cmp_eflags32(in0, in1, sbb_out, sbb_cout,
+    cmp_eflags #(.WIDTH(32)) cmp_eflags32(in0, in1, sbb_out_buf16, sbb_cout,
                                         OF32,
                                         SF32,
                                         ZF32,

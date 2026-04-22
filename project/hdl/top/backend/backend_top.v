@@ -437,8 +437,9 @@ module backend_top #(
     wire from_dep_unit_data_dep;
     wire [8:0] AG_FW_CONTROL_SIGS, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
     /*** FLUSH LOGIC ***/
-    wire ex_or_wb_flush_bar, wb_flush_bar;
-    nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar, from_ex_flush, from_wb_flush);
+    wire ex_or_wb_flush_bar_prebuf, ex_or_wb_flush_bar, wb_flush_bar;
+    nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar_prebuf, from_ex_flush, from_wb_flush);
+    bufferH16$  bufferH16$_ex_or_wb_flush_bar(ex_or_wb_flush_bar, ex_or_wb_flush_bar_prebuf);
     inv1$ inv1_wb_flush_bar(wb_flush_bar, from_wb_flush);
 
 

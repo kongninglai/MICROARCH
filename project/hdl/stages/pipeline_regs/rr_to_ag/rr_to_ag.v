@@ -68,9 +68,10 @@ assign reg_din = {from_rr_control_sigs, from_rr_dstidA, from_rr_dstidB, from_rr_
 assign {to_ag_control_sigs, to_ag_dstidA, to_ag_dstidB, to_ag_srcregA, to_ag_srcregB, to_ag_srcregC, to_ag_srcSREG, to_ag_MMA, to_ag_MMB, to_ag_imm, to_ag_sreg1, to_ag_slim1, to_ag_base1, to_ag_index1, to_ag_disp, to_ag_scale_mux, to_ag_sreg2, to_ag_slim2, to_ag_base2, to_ag_intex_vec, to_ag_cs, to_ag_oeip, to_ag_ieip, 
             to_ag_pred_eip, to_ag_exception, to_ag_valid} = reg_q;
 
-wire flush, we_with_flush;
+wire flush, we_with_flush_bar, we_with_flush;
 inv1$ inv_flush_bar(flush, flush_bar);
-or2$ or2_we_with_flush(we_with_flush, flush, we);
+nor2$ nor2_we_with_flush_bar(we_with_flush_bar, flush, we);
+bufferHInv16$ bufferHInv16$_we_with_flush(we_with_flush, we_with_flush_bar);
 reg_rr_to_ag #(.REG_SIZE(REG_SIZE)) reg_inst(clk, reg_din, reg_q, reg_qb, rst_n, 1'b1, we_with_flush);
 
 endmodule

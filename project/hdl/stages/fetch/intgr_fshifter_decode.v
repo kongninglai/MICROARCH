@@ -39,7 +39,8 @@ module intgr_fshifter_decode(
 
     wire [4:0]  tail_ptr;
     wire [3:0] to_pr_instr_length;
-    wire to_pr_pr_valid;
+    wire to_pr_pr_valid, to_pr_pr_valid_buf16;
+    bufferH16$  bufferH16$_to_pr_pr_valid_buf16(to_pr_pr_valid_buf16, to_pr_pr_valid);
 
     wire [127:0] to_de_outbytes;
     wire [15:0] to_de_pf_expn_bytes_out;
@@ -137,7 +138,7 @@ module intgr_fshifter_decode(
         .from_de_i_eip(to_pr_i_eip),
         .from_de_o_eip(to_pr_o_eip),
         .from_de_bp_target(to_pr_bp_target),
-        .from_de_pr_valid(to_pr_pr_valid),
+        .from_de_pr_valid(to_pr_pr_valid_buf16),
 
         //decoder output
         .from_de_prefix_rep(to_pr_prefix_rep),

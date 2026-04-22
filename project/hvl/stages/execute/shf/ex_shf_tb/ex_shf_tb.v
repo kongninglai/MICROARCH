@@ -228,7 +228,7 @@ end
             shf_data = t_data;
             shf_amt  = t_amt;
 
-            #5;
+            #8;
 
             exp_out_v   = ref_out(t_op, t_ds, t_data, t_amt);
             exp_flags_v = ref_flags(t_op, t_ds, t_data, t_amt, exp_out_v);

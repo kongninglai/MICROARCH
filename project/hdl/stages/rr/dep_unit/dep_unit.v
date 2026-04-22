@@ -65,17 +65,24 @@ module dep_unit(
     inv1$ inv_from_ag_ldSEG(from_ag_inv_ldSEG_out, from_ag_ldREGS[1]);
     inv1$ inv_from_mem_ldSEG(from_mem_inv_ldSEG_out, from_mem_ldREGS[1]);
 
-    and3$ and_from_ag_ld_gp0(from_ag_ld_gp0, from_ag_ldAB[1], from_ag_ldREGS[2], from_ag_inv_ldSEG_out);
-    and2$ and_from_ag_ld_gp1(from_ag_ld_gp1, from_ag_ldAB[0], from_ag_ldREGS[2]);
+    wire from_ag_ld_gp0_bar, from_ag_ld_gp1_bar, from_mem_ld_gp0_bar, from_mem_ld_gp1_bar;
+
+    bufferHInv16$ bufferHInv16$_from_ag_ld_gp0(from_ag_ld_gp0, from_ag_ld_gp0_bar);
+    bufferHInv16$ bufferHInv16$_from_ag_ld_gp1(from_ag_ld_gp1, from_ag_ld_gp1_bar);
+    bufferHInv16$ bufferHInv16$_from_mem_ld_gp0(from_mem_ld_gp0, from_mem_ld_gp0_bar);
+    bufferHInv16$ bufferHInv16$_from_mem_ld_gp1(from_mem_ld_gp1, from_mem_ld_gp1_bar);
+
+    nand3$ nand_from_ag_ld_gp0_bar(from_ag_ld_gp0_bar, from_ag_ldAB[1], from_ag_ldREGS[2], from_ag_inv_ldSEG_out);
+    nand2$ nand_from_ag_ld_gp1_bar(from_ag_ld_gp1_bar, from_ag_ldAB[0], from_ag_ldREGS[2]);
     and2$ and_from_ag_ld_seg(from_ag_ld_seg, from_ag_ldAB[1], from_ag_ldREGS[1]);
     and2$ and_from_ag_ld_mmx(from_ag_ld_mmx, from_ag_ldAB[1], from_ag_ldREGS[0]);
 
-    and3$ and_from_mem_ld_gp0(from_mem_ld_gp0, from_mem_ldAB[1], from_mem_ldREGS[2], from_mem_inv_ldSEG_out);
-    and2$ and_from_mem_ld_gp1(from_mem_ld_gp1, from_mem_ldAB[0], from_mem_ldREGS[2]);
+    nand3$ nand_from_mem_ld_gp0_bar(from_mem_ld_gp0_bar, from_mem_ldAB[1], from_mem_ldREGS[2], from_mem_inv_ldSEG_out);
+    nand2$ nand_from_mem_ld_gp1_bar(from_mem_ld_gp1_bar, from_mem_ldAB[0], from_mem_ldREGS[2]);
     and2$ and_from_mem_ld_seg(from_mem_ld_seg, from_mem_ldAB[1], from_mem_ldREGS[1]);
     and2$ and_from_mem_ld_mmx(from_mem_ld_mmx, from_mem_ldAB[1], from_mem_ldREGS[0]);
 
-    wire dep_ag, dep_mem, dep_ex;
+    wire dep_ag_bar, dep_mem_bar, dep_ex_bar;
 
     wire addr_src_dep_bar_ag, addr_src_dep_bar_mem, addr_src_dep_bar_ex;
     wire [1:0] mem_fw_A_temp, mem_fw_B_temp, mem_fw_C_temp;
@@ -207,7 +214,9 @@ module dep_unit(
     nand2$ nand_ex_fw_en(ex_fw_en, from_ex_valid, dep_and_load_en_bar);
     nand2$ nand_ag_fw_en(ag_fw_en, from_ag_valid, dep_and_load_en_bar);
 
-    mux2$ mux2_mem_fw_A[8:0](MEM_FW_CONTROL_SIGS, {MEM_FW_A, MEM_FW_B, MEM_FW_C, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB}, 9'b0, mem_fw_en);
-    mux2$ mux2_ag_fw_A[8:0](AG_FW_CONTROL_SIGS, {EX_FW_A, EX_FW_B, EX_FW_C, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB}, 9'b0, ex_fw_en);
-    mux2$ mux2_ex_fw_A[8:0](EX_FW_CONTROL_SIGS, {AG_FW_A, AG_FW_B, AG_FW_C, AG_FW_SREG, AG_FW_MMA, AG_FW_MMB}, 9'b0, ag_fw_en);
+    wire [6:0] MEM_FW_CONTROL_SIGS_DUMMY, AG_FW_CONTROL_SIGS_DUMMY, EX_FW_CONTROL_SIGS_DUMMY;
+
+    mux2_16$ mux2_16_mem_fw_A({MEM_FW_CONTROL_SIGS_DUMMY, MEM_FW_CONTROL_SIGS}, {7'd0, MEM_FW_A, MEM_FW_B, MEM_FW_C, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB}, 16'd0, mem_fw_en);
+    mux2_16$ mux2_16_ag_fw_A ({ AG_FW_CONTROL_SIGS_DUMMY,  AG_FW_CONTROL_SIGS}, {7'd0, EX_FW_A, EX_FW_B, EX_FW_C, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB},       16'd0, ex_fw_en);
+    mux2_16$ mux2_16_ex_fw_A ({ EX_FW_CONTROL_SIGS_DUMMY,  EX_FW_CONTROL_SIGS}, {7'd0, AG_FW_A, AG_FW_B, AG_FW_C, AG_FW_SREG, AG_FW_MMA, AG_FW_MMB},       16'd0, ag_fw_en);
 endmodule
