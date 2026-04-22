@@ -26,12 +26,15 @@ module choose_eip(
     output wire take_branch
 
 );  
+    wire [31:0] i_eip_prebuf;
 
     eip_incr EIP_INCR_LOGIC(
         .incr_amt(instr_length),
         .eip(o_eip),
-        .incr_eip(i_eip)
+        .incr_eip(i_eip_prebuf)
     );
+
+    bufferH16$  bufferH16$_i_eip[31:0](i_eip, i_eip_prebuf);
 
     /*
     Load EIP if: 

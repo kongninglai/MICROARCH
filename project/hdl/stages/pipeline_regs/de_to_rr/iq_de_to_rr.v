@@ -178,11 +178,12 @@ reg_n #(
 
 /*** ONE-HOT RD / WR LOGIC ***/
 
-wire    [NUM_ENTRIES-1:0]   wr_one_hot, wr_one_hot_gated;
+wire    [NUM_ENTRIES-1:0]   wr_one_hot, wr_one_hot_gated_bar, wr_one_hot_gated;
 
 decoder2_4$   decoder2_4$_wr_one_hot(.SEL(wr_ptr_buf64), .Y(wr_one_hot), .YBAR());
 
-and2$   and2$_wr_one_hot_gated[NUM_ENTRIES-1:0](wr_one_hot_gated, wr_one_hot, {NUM_ENTRIES{wr}});
+nand2$   nand2$_wr_one_hot_gated_bar[NUM_ENTRIES-1:0](wr_one_hot_gated_bar, wr_one_hot, {NUM_ENTRIES{wr}});
+bufferHInv256$ bufferHInv256$_wr_one_hot_gated[NUM_ENTRIES-1:0](wr_one_hot_gated, wr_one_hot_gated_bar);
 
 /*** ENTRY INSTANTIATION ***/
 

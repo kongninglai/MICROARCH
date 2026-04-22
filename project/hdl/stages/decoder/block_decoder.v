@@ -58,10 +58,10 @@ module block_decoder(
 
     bufferH64$    bufferH64$_prefix_num[1:0](prefix_num, prefix_num_prebuf);
     assign prefix_rep = is_rep;
-    assign prefix_op_size = is_op_size;
+    bufferH16$  bufferH16$_prefix_op_size(prefix_op_size, is_op_size);
     assign prefix_seg_ov_id = seg_id;
-    assign prefix_seg = is_seg_ov;
-    assign prefix_ext = is_ext;
+    bufferH16$  bufferH16$_prefix_seg(prefix_seg, is_seg_ov);
+    bufferH16$  bufferH16$_prefix_ext(prefix_ext, is_ext);
 
     //Opcode Logic
     wire [7:0] opcode_byte_true;
@@ -134,7 +134,7 @@ module block_decoder(
         .disp_bytes(disp_bytes),
         .disp_offset(disp_offset_prebuf)
     );
-    assign disp_size_mux = disp_size;
+    bufferH16$  bufferH16$_disp_size_mux[1:0](disp_size_mux, disp_size);
     assign disp = disp_bytes;
 
     bufferH256$   bufferH256$_disp_offset[3:0](disp_offset, disp_offset_prebuf);

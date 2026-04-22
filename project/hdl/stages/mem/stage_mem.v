@@ -214,6 +214,11 @@ mem_sig #(.MEM_CONTROL_SIGS_WIDTH(MEM_CONTROL_SIGS_WIDTH)) mem_sig_inst (
 wire [31:0] f_srcregA, f_srcregB, f_srcregC;
 wire [15:0] f_srcSREG;
 wire [63:0] f_MMA, f_MMB;
+
+wire [31:0] to_mem_srcregA_buf16, to_mem_srcregB_buf16, to_mem_srcregC_buf16;
+bufferH16$  bufferH16$_to_mem_srcregA_buf16[31:0](to_mem_srcregA_buf16, to_mem_srcregA);
+bufferH16$  bufferH16$_to_mem_srcregB_buf16[31:0](to_mem_srcregB_buf16, to_mem_srcregB);
+bufferH16$  bufferH16$_to_mem_srcregC_buf16[31:0](to_mem_srcregC_buf16, to_mem_srcregC);
 gp_forwarding gp_forward_A(
     .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
     .from_wb_gpwr0_data(from_wb_gpwr0_data),
@@ -223,7 +228,7 @@ gp_forwarding gp_forward_A(
     .from_wb_gpwr1_data(from_wb_gpwr1_data),
     .from_wb_gpwr1_size(from_wb_gpwr1_size),
     .from_wb_gpwr1_en(from_wb_gpwr1_en),
-    .srcreg(to_mem_srcregA),
+    .srcreg(to_mem_srcregA_buf16),
     .fw_mux(fw_A),
     .f_reg(f_srcregA)
 );
@@ -237,7 +242,7 @@ gp_forwarding gp_forward_B(
     .from_wb_gpwr1_data(from_wb_gpwr1_data),
     .from_wb_gpwr1_size(from_wb_gpwr1_size),
     .from_wb_gpwr1_en(from_wb_gpwr1_en),
-    .srcreg(to_mem_srcregB),
+    .srcreg(to_mem_srcregB_buf16),
     .fw_mux(fw_B),
     .f_reg(f_srcregB)
 );
@@ -251,7 +256,7 @@ gp_forwarding gp_forward_C(
     .from_wb_gpwr1_data(from_wb_gpwr1_data),
     .from_wb_gpwr1_size(from_wb_gpwr1_size),
     .from_wb_gpwr1_en(from_wb_gpwr1_en),
-    .srcreg(to_mem_srcregC),
+    .srcreg(to_mem_srcregC_buf16),
     .fw_mux(fw_C),
     .f_reg(f_srcregC)
 );
