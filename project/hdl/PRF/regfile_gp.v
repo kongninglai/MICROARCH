@@ -153,17 +153,22 @@ module regfile_gp (
     nor2$ nor2_rd3_size8(rd3_size_is_8, rd_reg3_ds[1], rd_reg3_ds[0]);
 
     wire [2:0] rd_reg0_idx_shifted, rd_reg1_idx_shifted, rd_reg2_idx_shifted, rd_reg3_idx_shifted;
-    wire [2:0] rd0_pidx, rd1_pidx, rd2_pidx, rd3_pidx;
+    wire [2:0] rd0_pidx, rd0_pidx_prebuf, rd1_pidx, rd1_pidx_prebuf, rd2_pidx, rd2_pidx_prebuf, rd3_pidx, rd3_pidx_prebuf;
     
     assign rd_reg0_idx_shifted = {1'b0, rd_reg0_idx[1:0]};
     assign rd_reg1_idx_shifted = {1'b0, rd_reg1_idx[1:0]};
     assign rd_reg2_idx_shifted = {1'b0, rd_reg2_idx[1:0]};
     assign rd_reg3_idx_shifted = {1'b0, rd_reg3_idx[1:0]};
 
-    mux2$ mux2_rd0_pidx[2:0](rd0_pidx, rd_reg0_idx, rd_reg0_idx_shifted, rd0_size_is_8);
-    mux2$ mux2_rd1_pidx[2:0](rd1_pidx, rd_reg1_idx, rd_reg1_idx_shifted, rd1_size_is_8);
-    mux2$ mux2_rd2_pidx[2:0](rd2_pidx, rd_reg2_idx, rd_reg2_idx_shifted, rd2_size_is_8);
-    mux2$ mux2_rd3_pidx[2:0](rd3_pidx, rd_reg3_idx, rd_reg3_idx_shifted, rd3_size_is_8);
+    mux2$ mux2_rd0_pidx[2:0](rd0_pidx_prebuf, rd_reg0_idx, rd_reg0_idx_shifted, rd0_size_is_8);
+    mux2$ mux2_rd1_pidx[2:0](rd1_pidx_prebuf, rd_reg1_idx, rd_reg1_idx_shifted, rd1_size_is_8);
+    mux2$ mux2_rd2_pidx[2:0](rd2_pidx_prebuf, rd_reg2_idx, rd_reg2_idx_shifted, rd2_size_is_8);
+    mux2$ mux2_rd3_pidx[2:0](rd3_pidx_prebuf, rd_reg3_idx, rd_reg3_idx_shifted, rd3_size_is_8);
+
+    bufferH16$  bufferH16$_rd0_pidx[2:0](rd0_pidx, rd0_pidx_prebuf);
+    bufferH16$  bufferH16$_rd1_pidx[2:0](rd1_pidx, rd1_pidx_prebuf);
+    bufferH16$  bufferH16$_rd2_pidx[2:0](rd2_pidx, rd2_pidx_prebuf);
+    bufferH16$  bufferH16$_rd3_pidx[2:0](rd3_pidx, rd3_pidx_prebuf);
 
     // hitij means the i-th rd_idx matches the j-th wr_idx
     wire hit00, hit10, hit20, hit30, hit01, hit11, hit21, hit31;

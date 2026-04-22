@@ -20,7 +20,7 @@ module regfile_seg (
     wire [15:0] rf_segrd0_data, rf_segrd1_data;
     wire [15:0] cs_q, cs_qb;
     
-    assign cs = cs_q;
+    bufferH16$ bufferH16$_cs[15:0](cs, cs_q);
 
     wire segrd0_idx0_inv, segrd1_idx0_inv, segrd0_is_cs, segrd1_is_cs;
     inv1$ inv_segrd0_idx0(segrd0_idx0_inv, segrd0_idx[0]);

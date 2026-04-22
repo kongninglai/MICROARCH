@@ -387,15 +387,19 @@ big_increment #(
   .s(to_mem_ld_addr_next_line_aligned_top)
 );
 
-mux2_16$ mux2_16$_D_RD_TLB_VPN( D_RD_TLB_VPN[VPN_BIT_WIDTH-1:VPN_BIT_WIDTH-16],
+wire [VPN_BIT_WIDTH-1:0]                 D_RD_TLB_VPN_prebuf;
+
+mux2_16$ mux2_16$_D_RD_TLB_VPN( D_RD_TLB_VPN_prebuf[VPN_BIT_WIDTH-1:VPN_BIT_WIDTH-16],
                                 to_mem_ld_addr_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-16],
                                 to_mem_ld_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-16],
                                 DOING_LINE_1_LOAD_buf16);
 
-mux2$    mux2$_D_RD_TLB_VPN[3:0]( D_RD_TLB_VPN[3:0],
+mux2$    mux2$_D_RD_TLB_VPN[3:0]( D_RD_TLB_VPN_prebuf[3:0],
                                 to_mem_ld_addr_aligned[GENERAL_DATA_BIT_WIDTH-17:GENERAL_DATA_BIT_WIDTH-20],
                                 to_mem_ld_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-17:GENERAL_DATA_BIT_WIDTH-20],
                                 DOING_LINE_1_LOAD_buf16);
+
+bufferH16$  bufferH16$_D_RD_TLB_VPN[VPN_BIT_WIDTH-1:0](D_RD_TLB_VPN, D_RD_TLB_VPN_prebuf);
 
 wire  [CHIPS_PER_RANK-1:0] MEM_PAGE_OFFSET_DUMMY;
 
@@ -420,8 +424,8 @@ big_increment #(
   .s(to_mem_st_addr_next_line_aligned_top)
 );
 
-assign D_WR0_TLB_VPN = to_mem_st_addr_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-VPN_BIT_WIDTH];
-assign D_WR1_TLB_VPN = to_mem_st_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-VPN_BIT_WIDTH];
+bufferH64$  bufferH64$_D_WR0_TLB_VPN[VPN_BIT_WIDTH-1:0](D_WR0_TLB_VPN, to_mem_st_addr_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-VPN_BIT_WIDTH]);
+bufferH16$  bufferH16$_D_WR1_TLB_VPN[VPN_BIT_WIDTH-1:0](D_WR1_TLB_VPN, to_mem_st_addr_next_line_aligned[GENERAL_DATA_BIT_WIDTH-1:GENERAL_DATA_BIT_WIDTH-VPN_BIT_WIDTH]);
 
 /*** TLB OUTPUTS and MEM_VALID_LOAD_INST and EXCEPTIONS ***/
 
@@ -650,8 +654,8 @@ assign from_mem_oeip        = to_mem_oeip    ;
 assign from_mem_ieip        = to_mem_ieip    ;   
 assign from_mem_pred_eip    = to_mem_pred_eip;
 
-assign from_mem_dstA_size   = dstA_size;
-assign from_mem_dstB_size   = dstB_size;
+bufferH16$ bufferH16$_from_mem_dstA_size[1:0](from_mem_dstA_size, dstA_size);
+bufferH16$ bufferH16$_from_mem_dstB_size[1:0](from_mem_dstB_size, dstB_size);
 assign from_mem_ldAB        = ldAB;
 assign from_mem_ldREGS      = ldREGS;
 

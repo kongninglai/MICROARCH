@@ -89,7 +89,9 @@ module ucode_fsm(
     and2$ and2_valid_rep(valid_rep, to_rr_valid, rep);
     mux2_8$ mux2_ucode_idle(ucode_idle, opcode, OPC_REP_READ_ECX, valid_rep);
     
-    mux16_8b mux16_ucode_opcode(ucode_opcode, 
+    wire [7:0] ucode_opcode_prebuf;
+    bufferH64$  bufferH64$_ucode_opcode[7:0](ucode_opcode, ucode_opcode_prebuf);
+    mux16_8b mux16_ucode_opcode(ucode_opcode_prebuf, 
                                 ucode_idle, opcode, OPC_REP_MOVS1, OPC_REP_CMPS0, 
                                 OPC_REP_CMPS1, OPC_REP_CMPS2, OPC_INTEX_INIT0, OPC_INTEX_INIT1,
                                 OPC_IRET0, OPC_IRET1, opcode, opcode, 

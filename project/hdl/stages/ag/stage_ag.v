@@ -261,8 +261,8 @@ module stage_ag #(
     mux2_32 mux_st_offset(from_ag_st_offset, offset1, offset2, store_addr_mux);
     mux2_32 mux_st_slim(from_ag_st_slim, to_ag_slim1, to_ag_slim2, store_addr_mux);
     
-    assign from_ag_dstA_size = dstA_size;
-    assign from_ag_dstB_size = dstB_size;
+    bufferH16$  bufferH16$_from_ag_dstA_size[1:0](from_ag_dstA_size, dstA_size);
+    bufferH16$  bufferH16$_from_ag_dstB_size[1:0](from_ag_dstB_size, dstB_size);
     assign from_ag_ldAB = ldAB;
     assign from_ag_ldREGS = ldREGS;
 endmodule

@@ -125,7 +125,9 @@ module stage_ex #(
     wire [1:0] sig_ds_buf64;
     bufferH64$  bufferH64$_sig_ds_buf64[1:0](sig_ds_buf64, sig_ds);
     wire sig_shf_op, sig_movs0, sig_movs1, sig_cmps0, sig_cmps1, sig_cmps2, sig_ldEFLAGS, sig_ldEIP, sig_ldCS, sig_alu_srcb_mux, sig_cmpxchg, sig_cmovc, sig_seg_dst_mux;
-    
+    wire sig_cmps2_prebuf;
+    bufferH16$  bufferH16$_sig_cmps2(sig_cmps2, sig_cmps2_prebuf);
+
     wire sig_rm, sig_op_ovr, sig_palu_size, sig_sbb_dir, sig_iret0;
     wire sig_rm_buf16, sig_op_ovr_buf16, sig_palu_size_buf16;
     bufferH16$  bufferH16$_sig_rm_buf16(sig_rm_buf16, sig_rm);
@@ -144,7 +146,7 @@ module stage_ex #(
         .ucode_sig(to_ex_control_sigs),.ldAB(sig_ldAB),.dstA_size(sig_dstA_size),.dstB_size(sig_dstB_size),
         .ldREGS(sig_ldREGS),.ldEFLAGS(sig_ldEFLAGS),.ldEIP(sig_ldEIP),.ldCS(sig_ldCS),.alu_srcb_mux(sig_alu_srcb_mux),.shf_srcb_mux(sig_shf_srcb_mux),
         .eflags_mux(sig_eflags_mux),.eip_mux(sig_eip_mux),.cs_mux(sig_cs_mux),.mmx_op(sig_mmx_op),.alu_op(sig_alu_op),.shf_op(sig_shf_op),
-        .movs0(sig_movs0), .movs1(sig_movs1), .cmps0(sig_cmps0), .cmps1(sig_cmps1), .cmps2(sig_cmps2), .con_jmp(sig_con_jmp),.cmpxchg(sig_cmpxchg),.cmovc(sig_cmovc),
+        .movs0(sig_movs0), .movs1(sig_movs1), .cmps0(sig_cmps0), .cmps1(sig_cmps1), .cmps2(sig_cmps2_prebuf), .con_jmp(sig_con_jmp),.cmpxchg(sig_cmpxchg),.cmovc(sig_cmovc),
         .gp_dsta_mux(sig_gp_dsta_mux),.gp_dstb_mux(sig_gp_dstb_mux),.seg_dst_mux(sig_seg_dst_mux),.mm_dst_mux(sig_mm_dst_mux),
         .store_data_mux(sig_store_data_mux),.rw(sig_rw), .ds(sig_ds), .rm(sig_rm), .op_ovr(sig_op_ovr), .palu_size(sig_palu_size), .sbb_dir(sig_sbb_dir), .iret0(sig_iret0),
         .EX_FW_CONTROL_SIGS(EX_FW_CONTROL_SIGS)
@@ -468,7 +470,9 @@ module stage_ex #(
     wire valid_ld_CS, valid_ld_EIP;
     and2$ and2_valid_ldCS(valid_ld_CS, valid_instruction, sig_ldCS);
     and3$ and3_valid_ldEIP(valid_ld_EIP, valid_instruction, sig_ldEIP, mispredict);
-    or3$ or_flush(from_ex_flush, valid_ld_CS, valid_ld_EIP, from_ex_cmps_found);
+    wire from_ex_flush_bar;
+    nor3$ nor_flush_bar(from_ex_flush_bar, valid_ld_CS, valid_ld_EIP, from_ex_cmps_found);
+    bufferHInv64$ bufferHInv64$_from_ex_flush(from_ex_flush, from_ex_flush_bar);
     assign from_ex_ld_cs = valid_ld_CS;
     
     mux2_32 mux2_ieip(from_ex_ieip, to_ex_ieip_buf16, from_ex_eip_target, from_ex_flush);
@@ -477,8 +481,11 @@ module stage_ex #(
     assign from_ex_br_t_nt = branch_taken;
     // and2$ and_br_valid(from_ex_br_valid, sig_ldEIP, from_ex_valid);
     assign from_ex_br_valid = sig_ldEIP;
-    mux2_32 mux2_32_eip_target(from_ex_eip_target, target_eip_buf16, to_ex_ieip_buf16, sig_cmps2);
+
+    wire [31:0] from_ex_eip_target_prebuf;
+    mux2_32 mux2_32_eip_target(from_ex_eip_target_prebuf, target_eip_buf16, to_ex_ieip_buf16, sig_cmps2);
     // assign from_ex_eip_target = target_eip_buf16;
+    bufferH16$  bufferH16$_from_ex_eip_target[31:0](from_ex_eip_target, from_ex_eip_target_prebuf);
 
     // ldAB for cmov/cmpxchg
     /* from_ex_control_sigs, */

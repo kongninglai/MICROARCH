@@ -112,11 +112,11 @@ module stage_rr #(
     wire [95:0] ucode_sig;
 
     wire movs_8, movs_32, movs, cmps, iret;
-    big_eq #(.WIDTH(8)) eq_a4(.eq(movs_8), .in0(to_rr_opcode), .in1(8'ha4));
-    big_eq #(.WIDTH(8)) eq_a5(.eq(movs_32), .in0(to_rr_opcode), .in1(8'ha5));
+    big_eq #(.WIDTH(8)) eq_a4(.eq(movs_8), .in0(to_regunit_opcode), .in1(8'ha4));
+    big_eq #(.WIDTH(8)) eq_a5(.eq(movs_32), .in0(to_regunit_opcode), .in1(8'ha5));
     or2$ or_movs(movs, movs_8, movs_32);
-    big_eq #(.WIDTH(8)) eq_a7(.eq(cmps), .in0(to_rr_opcode), .in1(8'ha7));
-    big_eq #(.WIDTH(8)) eq_cf(.eq(iret), .in0(to_rr_opcode), .in1(8'hcf));
+    big_eq #(.WIDTH(8)) eq_a7(.eq(cmps), .in0(to_regunit_opcode), .in1(8'ha7));
+    big_eq #(.WIDTH(8)) eq_cf(.eq(iret), .in0(to_regunit_opcode), .in1(8'hcf));
     
     wire        ucode_stall_bar;
 
@@ -126,6 +126,8 @@ module stage_rr #(
     wire not_intex_or_iret;
     wire no_dep;
     nand2$ nand2_fsm_stall(fsm_stall, from_ag_stall_bar, no_dep);
+    wire to_rr_prefix_0_buf16;
+    bufferH16$  bufferH16$_to_rr_prefix_0_buf16(to_rr_prefix_0_buf16, to_rr_prefix[0]);
     ucode_fsm ucode_fsm_inst (
         .clk(clk),
         .rst_n(rst_n),
@@ -138,8 +140,8 @@ module stage_rr #(
         .cmps(cmps),
         .iret(iret),
         .cmps_found(from_ex_cmps_found),
-        .opcode(to_rr_opcode),
-        .ext_opcode(to_rr_prefix[0]),
+        .opcode(to_regunit_opcode),
+        .ext_opcode(to_rr_prefix_0_buf16),
         .modrm(to_rr_modrm[7:6]),
         .has_modrm(to_rr_addr_mode[0]),
         .reg_ecx(from_regunit_srcregA),
@@ -203,8 +205,8 @@ module stage_rr #(
 
     assign stack_push = gp_dstb_mux_is_010;
 
-    assign to_regunit_opcode = to_rr_opcode;          
-    assign to_regunit_modrm = to_rr_modrm[5:0];
+    bufferH64$  bufferH64$_to_regunit_opcode[7:0](to_regunit_opcode, to_rr_opcode); 
+    bufferH16$  bufferH16$_to_regunit_modrm[5:0](to_regunit_modrm, to_rr_modrm[5:0]);
     assign to_regunit_sib = to_rr_sib[5:0];
     assign to_regunit_has_sib = to_rr_addr_mode[1];
     assign to_regunit_sig_gprd0_mux = gprd0_mux;
@@ -238,7 +240,7 @@ module stage_rr #(
     wire ff_from_rr_ldEIP, from_rr_ldEIP;
     wire ff_ldB, ff_from_rr_ldB;
     wire opcode_ff;
-    big_and #(.WIDTH(8)) and_opcode_ff(opcode_ff, to_rr_opcode);
+    big_and #(.WIDTH(8)) and_opcode_ff(opcode_ff, to_regunit_opcode);
     mux4$ mux4_store_data_mux[3:0](ff_store_data_mux, 4'bx, 4'b0001, 4'bx, 4'b1100, to_rr_modrm[4], to_rr_modrm[5]);
     mux4$ mux4_rw(ff_from_rr_rw[0], 1'bx, 1'b1, 1'b0, 1'b1, to_rr_modrm[4], to_rr_modrm[5]);
     assign ff_from_rr_rw[1] = rm;
@@ -250,7 +252,7 @@ module stage_rr #(
     mux2$ mux2_ldEIP(from_rr_ldEIP, ldEIP, ff_from_rr_ldEIP, opcode_ff);
     mux2$ mux2_ldB(ff_from_rr_ldB, ldAB[0], ff_ldB, opcode_ff);
     wire ret_with_imm;
-    big_eq #(.WIDTH(7)) eq_ret_with_imm(.eq(ret_with_imm), .in0({to_rr_opcode[7:4], to_rr_opcode[2:0]}), .in1(7'h62));
+    big_eq #(.WIDTH(7)) eq_ret_with_imm(.eq(ret_with_imm), .in0({to_regunit_opcode[7:4], to_regunit_opcode[2:0]}), .in1(7'h62));
     assign from_rr_control_sigs={{ldAB[1], ff_from_rr_ldB}, dstA_size, dstB_size, ldREGS, ldEFLAGS,
                      from_rr_ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,
                      mmx_op, alu_op, shf_op, movs0, movs1, cmps0, cmps1, cmps2, con_jmp, cmpxchg, cmovc,
@@ -258,35 +260,35 @@ module stage_rr #(
                      mem_ds_with_override, imm_mux, addr_mux, stack_push, intex, ret_with_imm, rm, to_rr_prefix[4], palu_size, sbb_dir, iret0,
                      from_dep_ag_fw_control_sigs, from_dep_mem_fw_control_sigs, from_dep_ex_fw_control_sigs};
 
-    assign mmx_op = {to_rr_opcode[7], to_rr_opcode[2]};
+    assign mmx_op = {to_regunit_opcode[7], to_regunit_opcode[2]};
     wire pack_size, padd_size, pavg_size;
-    assign pack_size = to_rr_opcode[3];
-    assign padd_size = to_rr_opcode[1];
-    assign pavg_size = to_rr_opcode[0];
+    assign pack_size = to_regunit_opcode[3];
+    assign padd_size = to_regunit_opcode[1];
+    assign pavg_size = to_regunit_opcode[0];
     mux4$ mux4_palu_size(palu_size, pack_size, 1'bx, pavg_size, padd_size, mmx_op[0], mmx_op[1]);
     assign shf_op = to_rr_modrm[4];
-    big_eq #(.WIDTH(8)) eq_1b(.eq(sbb_dir), .in0(to_rr_opcode), .in1(8'h1B));
+    big_eq #(.WIDTH(8)) eq_1b(.eq(sbb_dir), .in0(to_regunit_opcode), .in1(8'h1B));
 
-    mux2$ mux2_aluop[2:0](alu_op, to_rr_opcode[5:3], to_rr_modrm[5:3], to_rr_opcode[7]);
+    mux2$ mux2_aluop[2:0](alu_op, to_regunit_opcode[5:3], to_rr_modrm[5:3], to_regunit_opcode[7]);
     wire opcode_77, opcode_87, opcode_75, opcode_85, opcode_jnbe, opcode_jne;
-    big_eq #(.WIDTH(8)) eq_77(.eq(opcode_77), .in0(to_rr_opcode), .in1(8'h77));
-    big_eq #(.WIDTH(8)) eq_87(.eq(opcode_87), .in0(to_rr_opcode), .in1(8'h87));
-    big_eq #(.WIDTH(8)) eq_75(.eq(opcode_75), .in0(to_rr_opcode), .in1(8'h75));
-    big_eq #(.WIDTH(8)) eq_85(.eq(opcode_85), .in0(to_rr_opcode), .in1(8'h85));
+    big_eq #(.WIDTH(8)) eq_77(.eq(opcode_77), .in0(to_regunit_opcode), .in1(8'h77));
+    big_eq #(.WIDTH(8)) eq_87(.eq(opcode_87), .in0(to_regunit_opcode), .in1(8'h87));
+    big_eq #(.WIDTH(8)) eq_75(.eq(opcode_75), .in0(to_regunit_opcode), .in1(8'h75));
+    big_eq #(.WIDTH(8)) eq_85(.eq(opcode_85), .in0(to_regunit_opcode), .in1(8'h85));
 
     or2$ or_opcode_jnbe(opcode_jnbe, opcode_77, opcode_87);
     or2$ or_opcode_jne(opcode_jne, opcode_75, opcode_85);
     assign con_jmp = {opcode_jnbe, opcode_jne};
 
     wire opcode_B0;
-    big_eq #(.WIDTH(5)) eq_B0(.eq(opcode_B0), .in0(to_rr_opcode[7:3]), .in1(5'b10110));
+    big_eq #(.WIDTH(5)) eq_B0(.eq(opcode_B0), .in0(to_regunit_opcode[7:3]), .in1(5'b10110));
     and2$ and_cmpxchg(cmpxchg, to_rr_prefix[0], opcode_B0);
 
     wire opcode_42;
-    big_eq #(.WIDTH(8)) eq_42(.eq(opcode_42), .in0(to_rr_opcode), .in1(8'h42));
+    big_eq #(.WIDTH(8)) eq_42(.eq(opcode_42), .in0(to_regunit_opcode), .in1(8'h42));
     and2$ and_cmovc(cmovc, to_rr_prefix[0], opcode_42);
     
-    mux8 mux8_dstidA[2:0](from_rr_dstidA, 3'b000, to_rr_modrm[2:0], to_rr_modrm[5:3], to_rr_opcode[2:0], to_rr_opcode[5:3], 3'b110, 3'b001, , dstidA_mux[0], dstidA_mux[1], dstidA_mux[2]);
+    mux8 mux8_dstidA[2:0](from_rr_dstidA, 3'b000, to_rr_modrm[2:0], to_rr_modrm[5:3], to_regunit_opcode[2:0], to_regunit_opcode[5:3], 3'b110, 3'b001, , dstidA_mux[0], dstidA_mux[1], dstidA_mux[2]);
     mux4$ mux4_dstidB[2:0](from_rr_dstidB, 3'b100, to_rr_modrm[5:3], 3'b000, 3'b111, dstidB_mux[0], dstidB_mux[1]);
 
     assign from_rr_srcregA=from_regunit_srcregA;
@@ -326,8 +328,8 @@ module stage_rr #(
 
     wire disp_is_ptr; // opcode=9A/EA
     wire opcode_9a, opcode_ea;
-    big_eq #(.WIDTH(8)) eq_9a(.eq(opcode_9a), .in0(to_rr_opcode), .in1(8'h9A));
-    big_eq #(.WIDTH(8)) eq_ea(.eq(opcode_ea), .in0(to_rr_opcode), .in1(8'hEA));
+    big_eq #(.WIDTH(8)) eq_9a(.eq(opcode_9a), .in0(to_regunit_opcode), .in1(8'h9A));
+    big_eq #(.WIDTH(8)) eq_ea(.eq(opcode_ea), .in0(to_regunit_opcode), .in1(8'hEA));
     or2$ or_is_ptr(disp_is_ptr, opcode_9a, opcode_ea);
     // and2$ and_immsize48(disp_is_ptr, to_rr_imm_size[2], to_rr_imm_size[1]);
     mux2_32 mux2_disp_value(.out(from_rr_disp), .in0(disp_normal), .in1(disp_ptr), .s0(disp_is_ptr));
@@ -352,7 +354,7 @@ module stage_rr #(
     mux2_32 mux2_oeip(from_rr_oeip, to_rr_oeip, temp_eip, handling_intex);
     // assign from_rr_oeip=to_rr_oeip;
     assign from_rr_ieip=to_rr_ieip;
-    assign from_rr_cs = from_regunit_CS;
+    assign from_rr_cs=from_regunit_CS;
     
     assign from_rr_pred_eip = to_rr_pred_eip;
     // assign from_rr_exception = to_rr_exception;
@@ -367,7 +369,7 @@ module stage_rr #(
     big_eq #(
       .WIDTH(8)
     ) big_eq_is_hlt (
-      .in0(to_rr_opcode), .in1(8'hF4),
+      .in0(to_regunit_opcode), .in1(8'hF4),
       .eq(is_hlt)
     );
 
@@ -376,7 +378,7 @@ module stage_rr #(
     big_neq #(
       .WIDTH(8)
     ) big_neq_is_not_hlt (
-      .in0(to_rr_opcode), .in1(8'hF4),
+      .in0(to_regunit_opcode), .in1(8'hF4),
       .neq(is_not_hlt)
     );
 
@@ -385,6 +387,6 @@ module stage_rr #(
     /* TODO: ADD STALL LOGIC */
     nand4$ nand_from_rr_stall(from_rr_stall, ucode_stall_bar, from_ag_stall_bar, valid_dep_bar, is_hlt_valid_bar);
 
-    assign to_dep_needREGS = {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]};
+    bufferH16$  bufferH16$_to_dep_needREGS[10:0](to_dep_needREGS, {needREGS[10:8], need_bs1, needREGS[6], need_idx, needREGS[4:0]});
     assign from_rr_we_pipe_reg = from_ag_stall_bar;
 endmodule
