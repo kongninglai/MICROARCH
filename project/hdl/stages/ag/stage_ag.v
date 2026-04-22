@@ -87,7 +87,7 @@ module stage_ag #(
     output           from_ag_valid_mem_inst
 );
 
-    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size, sbb_dir, iret0;
+    wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, movs0, movs1, cmps0, cmps1, cmps2, cmpxchg, cmovc, stack_push, intex, seg_dst_mux, ret_with_imm, rm, op_ovr, palu_size, sbb_dir, iret0;
     wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds, imm_mux, addr_mux;
     wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
     wire [3:0] gp_dsta_mux, store_data_mux;
@@ -103,7 +103,7 @@ module stage_ag #(
     assign {load_addr_mux, store_addr_mux} = addr_mux;
 
     assign from_ag_control_sigs = {
-        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
+        ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, movs0, movs1, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
         ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds,
         ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux,
         gp_dsta_mux, store_data_mux, rm, op_ovr, palu_size, sbb_dir, iret0, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS
@@ -199,7 +199,7 @@ module stage_ag #(
         .ldEFLAGS(ldEFLAGS), .ldEIP(ldEIP), .ldCS(ldCS),
         .alu_srcb_mux(alu_srcb_mux), .shf_srcb_mux(shf_srcb_mux), .eflags_mux(eflags_mux),
         .eip_mux(eip_mux), .cs_mux(cs_mux),
-        .mmx_op(mmx_op), .alu_op(alu_op), .shf_op(shf_op), .cmps0(cmps0), .cmps1(cmps1), .cmps2(cmps2), .con_jmp(con_jmp),
+        .mmx_op(mmx_op), .alu_op(alu_op), .shf_op(shf_op), .movs0(movs0), .movs1(movs1), .cmps0(cmps0), .cmps1(cmps1), .cmps2(cmps2), .con_jmp(con_jmp),
         .cmpxchg(cmpxchg), .cmovc(cmovc),
         .gp_dsta_mux(gp_dsta_mux), .gp_dstb_mux(gp_dstb_mux), .seg_dst_mux(seg_dst_mux), .mm_dst_mux(mm_dst_mux),
         .store_data_mux(store_data_mux), .rw(rw),

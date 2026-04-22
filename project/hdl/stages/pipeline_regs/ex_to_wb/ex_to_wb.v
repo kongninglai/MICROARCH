@@ -4,7 +4,7 @@ module ex_to_wb(
     input we,
     input flush_bar,
 
-    input [11:0]        from_ex_control_sigs,
+    input [16:0]        from_ex_control_sigs,
     input [2:0]         from_ex_dstidA, 
     input [2:0]         from_ex_dstidB,
     input [31:0]        from_ex_gp_wr_data_1,
@@ -26,7 +26,7 @@ module ex_to_wb(
     input               from_ex_valid,
     input [1:0]         from_ex_exception,
  
-    output [11:0]       to_wb_control_sigs,
+    output [16:0]       to_wb_control_sigs,
     output [2:0]        to_wb_dstidA, 
     output [2:0]        to_wb_dstidB,
     output [31:0]       to_wb_gp_wr_data_1,
@@ -49,7 +49,7 @@ module ex_to_wb(
     output [1:0]        to_wb_exception
 );
 
-wire [370:0] reg_din, reg_q, reg_qb;
+wire [375:0] reg_din, reg_q, reg_qb;
 wire valid_with_flush;
 and2$ and2_valid(valid_with_flush, flush_bar, from_ex_valid);
 

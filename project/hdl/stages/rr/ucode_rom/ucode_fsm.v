@@ -19,6 +19,8 @@ module ucode_fsm(
 
     input [31:0] reg_ecx,
 
+    output movs0,
+    output movs1,
     output cmps0,
     output cmps1,
     output cmps2,
@@ -215,10 +217,11 @@ module ucode_fsm(
 	dff$ dff_3(clk, d3_in, Q3, Q3_bar, rst_n, 1'b1);
 
     // state==S_IDLE: state=0000
-    wire state_is_IDLE, state_is_REP_CMPS0, state_is_REP_CMPS1, state_is_REP_CMPS2, state_is_REP_MOVS0, next_state_not_IDLE;
+    wire state_is_IDLE, state_is_REP_CMPS0, state_is_REP_CMPS1, state_is_REP_CMPS2, state_is_REP_MOVS0, state_is_REP_MOVS1, next_state_not_IDLE;
     wire state_is_IRET0, state_is_IRET1, state_is_INTEX_INIT1, state_is_INTEX_INIT0;
     nor4$ nor_state_is_IDLE(state_is_IDLE, state[0], state[1], state[2], state[3]);
     nor4$ nor_state_is_REP_MOVS0(state_is_REP_MOVS0, Q3, Q2, Q1, Q0_bar);
+    nor4$ nor_state_is_REP_MOVS1(state_is_REP_MOVS1, Q3, Q2, Q1_bar, Q0);
     nor4$ nor_state_is_REP_CMPS0(state_is_REP_CMPS0, Q3, Q2, Q1_bar, Q0_bar);
     nor4$ nor_state_is_REP_CMPS1(state_is_REP_CMPS1, Q3, Q2_bar, Q1, Q0);
     nor4$ nor_state_is_REP_CMPS2(state_is_REP_CMPS2, Q3, Q2_bar, Q1, Q0_bar);
@@ -255,12 +258,15 @@ module ucode_fsm(
     mux2_64 mux2_ucode_sig64(.in0(sig_reg[95:32]), .in1(sig_idle[95:32]), .s0(state_is_IDLE), .out(ucode_sig[95:32]));
     mux2_32 mux2_ucode_sig32(.in0(sig_reg[31:0]), .in1(sig_idle[31:0]), .s0(state_is_IDLE), .out(ucode_sig[31:0]));
     // assign ucode_sig = (state == S_IDLE) ? sig_idle : sig_reg;
+    assign movs0 = state_is_REP_MOVS0;
+    assign movs1 = state_is_REP_MOVS1;
     assign cmps0 = state_is_REP_CMPS0;
     assign cmps1 = state_is_REP_CMPS1;
     assign cmps2 = state_is_REP_CMPS2;
     assign iret0 = state_is_IRET0;
     assign intex = state_is_INTEX_INIT1;
-    assign clear_int = state_is_INTEX_INIT1;
+    and2$ and2_clear_int(clear_int, state_is_INTEX_INIT1, next_state_is_IDLE);
+    // assign clear_int = state_is_INTEX_INIT1;
     or2$ or2_handling_intex(handling_intex, state_is_INTEX_INIT0, state_is_INTEX_INIT1);
     // assign cmps0 = (state == S_REP_CMPS0);
     // assign cmps1 = (state == S_REP_CMPS1);

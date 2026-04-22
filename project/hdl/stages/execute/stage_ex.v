@@ -60,7 +60,7 @@ module stage_ex #(
     output [31:0]       from_ex_eip_target,
     /*TODO: ADD from_ex_pht_idx[3:0] */
 
-    output [11:0]       from_ex_control_sigs,
+    output [16:0]       from_ex_control_sigs,
     output [2:0]        from_ex_dstidA, 
     output [2:0]        from_ex_dstidB,
     output [31:0]       from_ex_gp_wr_data_1,
@@ -123,7 +123,7 @@ module stage_ex #(
     /*** Control Signals ***/
     wire [1:0] sig_ldAB, sig_dstA_size, sig_dstB_size, sig_shf_srcb_mux, sig_cs_mux, sig_mmx_op, sig_con_jmp, sig_mm_dst_mux, sig_rw, sig_ds;
 
-    wire sig_shf_op, sig_cmps0, sig_cmps1, sig_cmps2, sig_ldEFLAGS, sig_ldEIP, sig_ldCS, sig_alu_srcb_mux, sig_cmpxchg, sig_cmovc, sig_seg_dst_mux;
+    wire sig_shf_op, sig_movs0, sig_movs1, sig_cmps0, sig_cmps1, sig_cmps2, sig_ldEFLAGS, sig_ldEIP, sig_ldCS, sig_alu_srcb_mux, sig_cmpxchg, sig_cmovc, sig_seg_dst_mux;
     
     wire sig_rm, sig_op_ovr, sig_palu_size, sig_sbb_dir, sig_iret0;
 
@@ -137,7 +137,7 @@ module stage_ex #(
         .ucode_sig(to_ex_control_sigs),.ldAB(sig_ldAB),.dstA_size(sig_dstA_size),.dstB_size(sig_dstB_size),
         .ldREGS(sig_ldREGS),.ldEFLAGS(sig_ldEFLAGS),.ldEIP(sig_ldEIP),.ldCS(sig_ldCS),.alu_srcb_mux(sig_alu_srcb_mux),.shf_srcb_mux(sig_shf_srcb_mux),
         .eflags_mux(sig_eflags_mux),.eip_mux(sig_eip_mux),.cs_mux(sig_cs_mux),.mmx_op(sig_mmx_op),.alu_op(sig_alu_op),.shf_op(sig_shf_op),
-        .cmps0(sig_cmps0), .cmps1(sig_cmps1), .cmps2(sig_cmps2), .con_jmp(sig_con_jmp),.cmpxchg(sig_cmpxchg),.cmovc(sig_cmovc),
+        .movs0(sig_movs0), .movs1(sig_movs1), .cmps0(sig_cmps0), .cmps1(sig_cmps1), .cmps2(sig_cmps2), .con_jmp(sig_con_jmp),.cmpxchg(sig_cmpxchg),.cmovc(sig_cmovc),
         .gp_dsta_mux(sig_gp_dsta_mux),.gp_dstb_mux(sig_gp_dstb_mux),.seg_dst_mux(sig_seg_dst_mux),.mm_dst_mux(sig_mm_dst_mux),
         .store_data_mux(sig_store_data_mux),.rw(sig_rw), .ds(sig_ds), .rm(sig_rm), .op_ovr(sig_op_ovr), .palu_size(sig_palu_size), .sbb_dir(sig_sbb_dir), .iret0(sig_iret0),
         .EX_FW_CONTROL_SIGS(EX_FW_CONTROL_SIGS)
@@ -374,7 +374,7 @@ module stage_ex #(
                                                   {32'b0, eflags_out}, // for exception, but we don't need to use a temp register?  
                                                   {32'b0, to_ex_imm},
                                                   to_ex_load_result,
-                                                  {16'b0, to_ex_tempCS, to_ex_tempEIP}, {32'b0, regA_rm}, 64'bx, 64'bx, 64'bx,
+                                                  {16'b0, to_ex_cs, to_ex_oeip}, {32'b0, regA_rm}, 64'bx, 64'bx, 64'bx,
                                                   sig_store_data_mux[0], sig_store_data_mux[1], sig_store_data_mux[2], sig_store_data_mux[3]);
 
     wire valid_iret0;
@@ -482,7 +482,8 @@ module stage_ex #(
     and3$ and_mmxwr_en(mmxwr_en, sig_ldAB[1], sig_ldREGS[0], valid_instruction);
 
     assign from_ex_control_sigs = {
-        {gpwr0_en, gpwr1_en, segwr_en, mmxwr_en}, sig_dstA_size, sig_dstB_size, sig_rw, sig_ds
+        {gpwr0_en, gpwr1_en, segwr_en, mmxwr_en}, sig_dstA_size, sig_dstB_size, sig_rw, sig_ds,
+        sig_movs0, sig_movs1, sig_cmps0, sig_cmps1, sig_cmps2
     };
 
     and2$ and2_valid_store_inst(from_ex_valid_store_inst, valid_instruction, sig_rw[0]);
