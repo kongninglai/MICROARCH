@@ -84,12 +84,12 @@ module stage_ex #(
     output [1:0]        from_ex_exception,
 
     /* TO DEP UNIT */
-    input  [1:0]        from_ex_dstA_size,
-    input  [1:0]        from_ex_dstB_size,
-    input               from_ex_ld_gp0,
-    input               from_ex_ld_gp1,
-    input               from_ex_ld_seg,
-    input               from_ex_ld_mmx,
+    output [1:0]        from_ex_dstA_size,
+    output [1:0]        from_ex_dstB_size,
+    output              from_ex_ld_gp0,
+    output              from_ex_ld_gp1,
+    output              from_ex_ld_seg,
+    output              from_ex_ld_mmx,
 
     /* FROM WB FORWARDING */
     input        from_wb_gpwr0_idx_bit_2,
@@ -531,10 +531,10 @@ module stage_ex #(
 
     and2$ and2_valid_store_inst(from_ex_valid_store_inst, valid_instruction, sig_rw[0]);
 
-    assign from_ex_dstA_size = sig_dstA_size;
-    assign from_ex_dstB_size = sig_dstB_size;
-    assign from_ex_ld_gp0 = gpwr0_en;
-    assign from_ex_ld_gp1 = gpwr1_en;
+    bufferH16$  bufferH16$_from_ex_dstA_size[1:0](from_ex_dstA_size, sig_dstA_size);
+    bufferH16$  bufferH16$_from_ex_dstB_size[1:0](from_ex_dstB_size, sig_dstB_size);
+    bufferH16$  bufferH16$_from_ex_ld_gp0(from_ex_ld_gp0, gpwr0_en);
+    bufferH16$  bufferH16$_from_ex_ld_gp1(from_ex_ld_gp1, gpwr1_en);
     assign from_ex_ld_seg = segwr_en;
     assign from_ex_ld_mmx = mmxwr_en;
 endmodule

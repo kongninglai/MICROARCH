@@ -60,7 +60,7 @@ module bsf #(
             inv1$ inv_idx2(idx[2], low_4_has1);
             inv1$ inv_idx3(idx[3], low_8_has1);
 
-        end else if (WIDTH==8) begin 
+        end else if (WIDTH==8) begin : WIDTH_8_GEN
             wire low_4_has1_bar, low_4_has1;
             nor4$   nor4$_low_4_has1_bar(low_4_has1_bar, nibble8[0], nibble8[1], nibble8[2], nibble8[3]);
             bufferHInv16$ bufferHInv16$_low_4_has1(low_4_has1, low_4_has1_bar);

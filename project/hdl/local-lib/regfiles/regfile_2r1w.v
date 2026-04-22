@@ -27,15 +27,16 @@ module regfile_2r1w #(
     
     genvar i;
     generate
-        for (i = 0; i < 8; i=i+1) begin 
+        for (i = 0; i < 8; i=i+1) begin : wr_idx_eq_gen
             big_eq #(.WIDTH(3)) wr0_eq_i(.in0(wr_reg0_idx), .in1(i[2:0]), .eq(we0[i]));
             and2$ and_en_i(en[i], we0[i], wr0_en);
-            if (WIDTH==16)
+            if (WIDTH==16) begin : reg16_gen
                 reg16e reg16e_inst(clk, wr_reg0_data, q[i], qb[i], rst_n, 1'b1, en[i]);
-            else if (WIDTH==32)
+            end else if (WIDTH==32) begin : reg32_gen
                 reg32e$ reg32e$_inst(clk, wr_reg0_data, q[i], qb[i], rst_n, 1'b1, en[i]);
-            else if (WIDTH==64)
+            end else if (WIDTH==64) begin : reg64_gen
                 reg64e$ reg64e$_inst(clk, wr_reg0_data, q[i], qb[i], rst_n, 1'b1, en[i]);
+            end
         end
     endgenerate
 

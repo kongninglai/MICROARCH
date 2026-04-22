@@ -277,7 +277,7 @@ bufferH16$    bufferH16$_rw_buf16[1:0](rw_buf16, rw);
 
 wire is_mem_inst;
 or2$    or2$_is_mem_inst(is_mem_inst, rw_buf16[1], rw_buf16[0]);
-and2$ and2_from_mem_valid_mem_inst(from_mem_valid_mem_inst, to_mem_valid, is_mem_inst);
+and2$ and2_from_mem_valid_mem_inst(from_mem_valid_mem_inst, to_mem_valid_buf256, is_mem_inst);
 
 assign from_mem_control_sigs = {
     ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, movs0, movs1, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,
@@ -513,8 +513,10 @@ or4$    or4$_from_mem_exception[1:0](from_mem_exception, LOAD_EXCEPTION_MASK, ST
 wire  no_mem_exception, no_mem_exception_buf16;
 nor2$   nor2$_no_mem_exception(no_mem_exception, from_mem_exception[0], from_mem_exception[1]);
 bufferH16$    bufferH16$_no_mem_exception_buf16(no_mem_exception_buf16, no_mem_exception);
-and2$   and2$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, rw_buf16[1], to_mem_valid_buf256);
 
+wire MEM_VALID_LOAD_INST_BAR;
+nand2$   nand2$_MEM_VALID_LOAD_INST_BAR(MEM_VALID_LOAD_INST_BAR, rw_buf16[1], to_mem_valid_buf256);
+bufferHInv16$ bufferHInv16$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, MEM_VALID_LOAD_INST_BAR);
 
 /*** STORE PIPELINE REGISTERS ***/
 

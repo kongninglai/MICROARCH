@@ -9,12 +9,12 @@ module ex_pack(
     genvar i;
     generate 
         // word to byte:
-        for (i=0; i<4; i=i+1) begin 
+        for (i=0; i<4; i=i+1) begin : pack_word_to_byte_gen
             sat_signed_narrow #(.IN_WIDTH(16), .OUT_WIDTH(8)) word_to_byte_dest (.in(dest_in[i*16+15:i*16]),.out(packsswb_out[i*8+7:i*8]));
             sat_signed_narrow #(.IN_WIDTH(16), .OUT_WIDTH(8)) word_to_byte_src (.in(src_in[i*16+15:i*16]),.out(packsswb_out[i*8+39:i*8+32]));
         end
         // dword to word:
-        for (i=0; i<2; i=i+1) begin 
+        for (i=0; i<2; i=i+1) begin  : pack_dword_to_word_gen
             sat_signed_narrow #(.IN_WIDTH(32), .OUT_WIDTH(16)) dword_to_word_dest (.in(dest_in[i*32+31:i*32]),.out(packssdw_out[i*16+15:i*16]));
             sat_signed_narrow #(.IN_WIDTH(32), .OUT_WIDTH(16)) dword_to_word_src (.in(src_in[i*32+31:i*32]),.out(packssdw_out[i*16+47:i*16+32]));
         end

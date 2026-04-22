@@ -16,12 +16,16 @@ module temp_exception_regs(
     reg16e reg_temp_cs(clk, from_wb_temp_cs, to_ex_tempCS, tempCS_qb, rst_n, 1'b1, from_wb_flush);
     reg32e$ reg32e$_inst(clk, from_wb_temp_eip, to_ex_tempEIP, tempEIP_qb, rst_n, 1'b1, from_wb_flush);
     
+    wire [1:0] to_rr_temp_exception_prebuf;
+
     reg_n #(
         .WIDTH(2),
         .USE_EN_BAR(0)
     ) reg_n_temp_exception (
         .clk(clk), .rst(rst_n),
         .en({from_wb_flush, from_wb_flush}), .d(from_wb_temp_exception),
-        .q(to_rr_temp_exception)
+        .q(to_rr_temp_exception_prebuf)
     );
+
+    bufferH16$  bufferH16$_to_rr_temp_exception[1:0](to_rr_temp_exception, to_rr_temp_exception_prebuf);
 endmodule

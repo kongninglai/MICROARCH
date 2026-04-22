@@ -132,13 +132,13 @@ module ucode_fsm(
 	inv1$ inv_1(cmps_found_bar, cmps_found);
 	wire Q0_bar;
 	wire interrupt_bar;
-	inv1$ inv_3(interrupt_bar, interrupt);
+	bufferHInv16$ inv_3(interrupt_bar, interrupt);
 	wire Q2_bar;
 	wire Q1_bar;
 	wire exception_bar;
-	inv1$ inv_6(exception_bar, exception);
+	bufferHInv16$ inv_6(exception_bar, exception);
 	wire counter_finish_bar;
-	inv1$ inv_7(counter_finish_bar, counter_finish);
+	bufferHInv16$ inv_7(counter_finish_bar, counter_finish);
 
 	/* Product Expressions */
 	wire and_0_0_out;
@@ -213,15 +213,28 @@ module ucode_fsm(
     mux2$ mux2_d2_in(d2_in, Q2, D2, we);
     mux2$ mux2_d3_in(d3_in, Q3, D3, we);
 
-	dff$ dff_0(clk, d0_in, Q0, Q0_bar, rst_n, 1'b1);
-	dff$ dff_1(clk, d1_in, Q1, Q1_bar, rst_n, 1'b1);
-	dff$ dff_2(clk, d2_in, Q2, Q2_bar, rst_n, 1'b1);
-	dff$ dff_3(clk, d3_in, Q3, Q3_bar, rst_n, 1'b1);
+  wire Q0_prebuf, Q1_prebuf, Q2_prebuf, Q3_prebuf,
+        Q0_bar_prebuf, Q1_bar_prebuf, Q2_bar_prebuf, Q3_bar_prebuf;
+        
+	dff$ dff_0(clk, d0_in, Q0_prebuf, Q0_bar_prebuf, rst_n, 1'b1);
+	dff$ dff_1(clk, d1_in, Q1_prebuf, Q1_bar_prebuf, rst_n, 1'b1);
+	dff$ dff_2(clk, d2_in, Q2_prebuf, Q2_bar_prebuf, rst_n, 1'b1);
+	dff$ dff_3(clk, d3_in, Q3_prebuf, Q3_bar_prebuf, rst_n, 1'b1);
+
+  bufferH16$  bufferH16$_Q0(Q0, Q0_prebuf);
+  bufferH16$  bufferH16$_Q1(Q1, Q1_prebuf);
+  bufferH16$  bufferH16$_Q2(Q2, Q2_prebuf);
+  bufferH16$  bufferH16$_Q3(Q3, Q3_prebuf);
+  bufferH16$  bufferH16$_Q0_bar(Q0_bar, Q0_bar_prebuf);
+  bufferH16$  bufferH16$_Q1_bar(Q1_bar, Q1_bar_prebuf);
+  bufferH16$  bufferH16$_Q2_bar(Q2_bar, Q2_bar_prebuf);
+  bufferH16$  bufferH16$_Q3_bar(Q3_bar, Q3_bar_prebuf);
 
     // state==S_IDLE: state=0000
-    wire state_is_IDLE, state_is_REP_CMPS0, state_is_REP_CMPS1, state_is_REP_CMPS2, state_is_REP_MOVS0, state_is_REP_MOVS1, next_state_not_IDLE;
+    wire state_is_IDLE, state_is_IDLE_prebuf, state_is_REP_CMPS0, state_is_REP_CMPS1, state_is_REP_CMPS2, state_is_REP_MOVS0, state_is_REP_MOVS1, next_state_not_IDLE;
     wire state_is_IRET0, state_is_IRET1, state_is_INTEX_INIT1, state_is_INTEX_INIT0;
-    nor4$ nor_state_is_IDLE(state_is_IDLE, state[0], state[1], state[2], state[3]);
+    nor4$ nor_state_is_IDLE(state_is_IDLE_prebuf, state[0], state[1], state[2], state[3]);
+    bufferH16$  bufferH16$_state_is_IDLE(state_is_IDLE, state_is_IDLE_prebuf);
     nor4$ nor_state_is_REP_MOVS0(state_is_REP_MOVS0, Q3, Q2, Q1, Q0_bar);
     nor4$ nor_state_is_REP_MOVS1(state_is_REP_MOVS1, Q3, Q2, Q1_bar, Q0);
     nor4$ nor_state_is_REP_CMPS0(state_is_REP_CMPS0, Q3, Q2, Q1_bar, Q0_bar);
@@ -247,8 +260,9 @@ module ucode_fsm(
     // assign ucode_stall_bar          = ~(next_state != S_IDLE);
     // assign ucode_valid          = (state == S_IDLE) ? (to_rr_valid & next_state == S_IDLE) : 1'b1;
     wire [95:0] sig_reg_rm, sig_ext_rm, sig_idle;
-    wire addr_mode; // 1 for mem mode, 1 for reg mode
-    nand2$ nand_addrmode(addr_mode, modrm[1], modrm[0]);
+    wire addr_mode, addr_mode_prebuf; // 1 for mem mode, 1 for reg mode
+    nand2$ nand_addrmode(addr_mode_prebuf, modrm[1], modrm[0]);
+    bufferH16$  bufferH16$_addr_mode(addr_mode, addr_mode_prebuf);
     mux2_64 mux2_reg_rm64(.in0(sig_reg[95:32]), .in1(sig_mem[95:32]), .s0(addr_mode), .out(sig_reg_rm[95:32]));
     mux2_32 mux2_reg_rm32(.in0(sig_reg[31:0]), .in1(sig_mem[31:0]), .s0(addr_mode), .out(sig_reg_rm[31:0]));
     mux2_64 mux2_ext_rm64(.in0(sig_ext[95:32]), .in1(sig_ext_mem[95:32]), .s0(addr_mode), .out(sig_ext_rm[95:32]));

@@ -165,7 +165,7 @@ bufferH64$  bufferH64$_from_wb_segwr_idx[2:0](from_wb_segwr_idx, to_wb_dstidA);
 bufferH16$  bufferH16$_from_wb_segwr_data[15:0](from_wb_segwr_data, to_wb_seg_wr_data);
 bufferH16$  bufferH16$_from_wb_segwr_en(from_wb_segwr_en, segwr_en);
 
-assign from_wb_mmxwr_idx = to_wb_dstidA;
+assign from_wb_mmxwr_idx = from_wb_segwr_idx;
 bufferH16$  bufferH16$_from_wb_mmxwr_data[63:0](from_wb_mmxwr_data, to_wb_mmx_wr_data);
 bufferH16$  bufferH16$_from_wb_mmxwr_en(from_wb_mmxwr_en, mmxwr_en);
 
