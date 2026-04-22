@@ -15,10 +15,10 @@ if [[ ! -x "$SIM_BIN" ]]; then
     exit 2
 fi
 
-/usr/bin/python3.11 /home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/readmemh.py
-/usr/bin/python3.11 /home/ecelrc/students/var2427/MICROARCH/project/scripts/verification/gen_test_cases.py
-/usr/bin/python3.11 /home/ecelrc/students/var2427/MICROARCH/project/scripts/verification/gen_eip_idx_map.py
-/usr/bin/python3.11 /home/ecelrc/students/var2427/MICROARCH/project/scripts/verification/main.py > "$RESULTS_SCRIPT"
+/usr/bin/python3.11 /home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/readmemh.py
+/usr/bin/python3.11 /home/ecelrc/students/aak3265/MICROARCH/project/scripts/verification/gen_test_cases.py
+/usr/bin/python3.11 /home/ecelrc/students/aak3265/MICROARCH/project/scripts/verification/gen_eip_idx_map.py
+/usr/bin/python3.11 /home/ecelrc/students/aak3265/MICROARCH/project/scripts/verification/main.py > "$RESULTS_SCRIPT"
 
 rm -f "$RESULTS_CMP" "$DIFF_OUTPUT" "$SIM_LOG"
 

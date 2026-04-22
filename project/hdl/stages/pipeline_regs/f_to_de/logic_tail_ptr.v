@@ -109,11 +109,17 @@ module logic_tail_ptr(
     bufferHInv16$ bufferHInv16$_CLR_BAR(CLR_BAR, CLR);
 
     wire [4:0] tail_ptr_prebuf;
+    wire [7:0] final_tail_ptr_w;
+    mux2_8$ final_tail_ptr(
+        .Y(final_tail_ptr_w), 
+        .IN0({3'd0, tail_ptr_in}), .IN1(8'd0), 
+        .S0(flush)
+    );
     reg_n #(.WIDTH(5)) tail_ptr_reg (
         .clk(clk),
-        .rst(CLR_BAR),
+        .rst(rst_bar), //CLR_BAR
         .en({5{tail_ptr_en}}),
-        .d(tail_ptr_in),
+        .d(final_tail_ptr_w[4:0]),
         .q(tail_ptr_prebuf)
     );
 

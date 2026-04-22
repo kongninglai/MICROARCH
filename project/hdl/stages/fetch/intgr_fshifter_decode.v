@@ -98,7 +98,7 @@ module intgr_fshifter_decode(
         //to fetch output
         .ld_eip(), //unused in this tb (to fetch)
         .eip_true(), //unused in this tb (to fetch)
-        .to_f_take_branch(from_de_eip_redirection), //unused in this tb (to fetch)
+        .to_f_take_branch(from_de_eip_redirection), 
 
         //decoder output
         .prefix_rep(to_pr_prefix_rep),

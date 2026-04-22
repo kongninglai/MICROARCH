@@ -74,17 +74,17 @@ module logic_modrm_imm(
     assign imm_size[1:0] = imm_size_inbytes[2:1];
 
     initial begin
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_std_lo.data", ROM_STD_LO.mem);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_std_hi.data", ROM_STD_HI.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_std_lo.data", ROM_STD_LO.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_std_hi.data", ROM_STD_HI.mem);
         
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_oso_lo.data", ROM_OSO_LO.mem);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_oso_hi.data", ROM_OSO_HI.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_oso_lo.data", ROM_OSO_LO.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_oso_hi.data", ROM_OSO_HI.mem);
         
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_lo.data", ROM_EXT_LO.mem);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_hi.data", ROM_EXT_HI.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_ext_lo.data", ROM_EXT_LO.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_ext_hi.data", ROM_EXT_HI.mem);
         
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_oso_lo.data", ROM_EXT_OSO_LO.mem);
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_ext_oso_hi.data", ROM_EXT_OSO_HI.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_ext_oso_lo.data", ROM_EXT_OSO_LO.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_ext_oso_hi.data", ROM_EXT_OSO_HI.mem);
     end
 
 endmodule

@@ -20,7 +20,7 @@ module prefix_modrm_sib_adder (
     rom4b32w$ ROM_prefix_modrm_sib_adder (.A({1'b0, prefix_num, has_modrm, has_sib}), .OE(1'b1), .DOUT(total_offset_dummy));
 
     initial begin
-        $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/hdl/rom/rom_prefix_modrm_sib_adder.data", ROM_prefix_modrm_sib_adder.mem);
+        $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_prefix_modrm_sib_adder.data", ROM_prefix_modrm_sib_adder.mem);
     end
 
 endmodule

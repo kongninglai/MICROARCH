@@ -11,7 +11,6 @@ module tb_logic_incr_amt();
 
     // 2. Instantiate the Unit Under Test (UUT)
     logic_incr_amt uut (
-        .opcode(opcode),        // <--- MAPPED OPCODE
         .rom_sum(rom_sum),
         .disp_plus_sib(disp_plus_sib),
         .prefix_amount(prefix_amount),
@@ -72,34 +71,7 @@ module tb_logic_incr_amt();
             end
         end
 
-        // ---------------------------------------------------------
-        // NEW TEST CASES: End Program Opcodes
-        // ---------------------------------------------------------
-        $display("---------------------------------------------------------");
-        $display("STARTING END-PROGRAM OPCODE VERIFICATION");
-        $display("---------------------------------------------------------");
-
-        // Set the lengths to maximum to ensure we have a non-zero candidate
-        rom_sum       = 3'b111;
-        disp_plus_sib = 3'b111;
-        prefix_amount = 3'b111;
-        expected_val  = 4'b0000; // We expect 0 for all of these!
-
-        for (l = 0; l < 6; l = l + 1) begin
-            opcode = end_opcodes[l];
-            
-            #15; // Wait for logic to settle
-
-            if (incr_amt !== expected_val) begin
-                $display("❌ FAIL | Opcode: %h | Got Length: %d | Exp: %d", 
-                          opcode, incr_amt, expected_val);
-                FAILURES = FAILURES + 1;
-            end else begin
-                $display("✅ PASS | Opcode: %h | Got Length: %d", opcode, incr_amt);
-                SUCCESSES = SUCCESSES + 1;
-            end
-        end
-
+      
         // 4. Final Report
         $display("---------------------------------------------------------");
         $display("DECODER ADDER SUMMARY:");
