@@ -1,8 +1,8 @@
 module pipeline_top_auto_tb;
 
 initial begin
-  // $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
-  // $vcdpluson(0, pipeline_top_auto_tb); 
+  $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
+  $vcdpluson(0, pipeline_top_auto_tb); 
   // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
 end
@@ -25,21 +25,21 @@ localparam TRUE_LRU = 1;
 reg clk;
 reg rst_n;
 
-wire [6:0]  from_de_prefix;
-wire [7:0]  from_de_opcode;
-wire [7:0]  from_de_modrm;
-wire [7:0]  from_de_sib;
-wire [31:0] from_de_disp;
-wire [1:0]  from_de_dispsize;
-wire [47:0] from_de_imm;
-wire [2:0]  from_de_imm_size;
-wire [1:0]  from_de_addr_mode;
+// wire [6:0]  from_de_prefix;
+// wire [7:0]  from_de_opcode;
+// wire [7:0]  from_de_modrm;
+// wire [7:0]  from_de_sib;
+// wire [31:0] from_de_disp;
+// wire [1:0]  from_de_dispsize;
+// wire [47:0] from_de_imm;
+// wire [2:0]  from_de_imm_size;
+// wire [1:0]  from_de_addr_mode;
 
-wire  [31:0] from_de_oeip;
-wire  [31:0] from_de_ieip;
-wire  [31:0] from_de_pred_eip;
-wire  [1:0]  from_de_exception;
-wire         from_de_valid;
+// wire  [31:0] from_de_oeip;
+// wire  [31:0] from_de_ieip;
+// wire  [31:0] from_de_pred_eip;
+// wire  [1:0]  from_de_exception;
+// wire         from_de_valid;
 
 wire [6:0]  to_rr_prefix;
 wire [7:0]  to_rr_opcode;
