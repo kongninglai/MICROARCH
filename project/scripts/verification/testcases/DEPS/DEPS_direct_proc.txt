@@ -1,0 +1,88 @@
+0x0:  ba 00 0b 00 00  // mov edx,0xb00
+0x5:  8e d2  // mov ss,edx
+0x7:  bc 00 03 00 00  // mov esp,0x300
+0xc:  ba 00 02 00 00  // mov edx,0x200
+0x11:  8e da  // mov ds,edx
+0x13:  ba 00 04 00 00  // mov edx,0x400
+0x18:  8e c2  // mov es,edx
+0x1a:  ba 00 0a 00 00  // mov edx,0xa00
+0x1f:  8e e2  // mov fs,edx
+0x21:  bb 00 00 00 00  // mov ebx,0x0
+0x26:  bd 00 00 00 00  // mov ebp,0x0
+0x2b:  90  // --- GPR RAW dependencies (distance=0) ---
+0x2c:  b8 01 00 ad de  // mov eax,0xdead0001  (produce EAX)
+0x31:  03 c8  // add ecx,eax  (consume EAX)
+0x33:  b9 02 00 ef be  // mov ecx,0xbeef0002  (produce ECX)
+0x38:  03 c1  // add eax,ecx  (consume ECX)
+0x3a:  ba 03 00 fe ca  // mov edx,0xcafe0003  (produce EDX)
+0x3f:  03 c2  // add eax,edx  (consume EDX)
+0x41:  bb 04 00 0d f0  // mov ebx,0xf00d0004  (produce EBX)
+0x46:  03 c3  // add eax,ebx  (consume EBX)
+0x48:  bb 00 00 00 00  // mov ebx,0x0  (restore EBX=DS base)
+0x4d:  bc f0 02 00 00  // mov esp,0x2f0  (produce ESP)
+0x52:  8b c4  // mov eax,esp  (consume ESP)
+0x54:  bc 00 03 00 00  // mov esp,0x300  (restore ESP)
+0x59:  bd 05 00 cd ab  // mov ebp,0xabcd0005  (produce EBP)
+0x5e:  8b c5  // mov eax,ebp  (consume EBP)
+0x60:  bd 00 00 00 00  // mov ebp,0x0  (restore EBP=ES base)
+0x65:  be 06 00 34 12  // mov esi,0x12340006  (produce ESI)
+0x6a:  03 c6  // add eax,esi  (consume ESI)
+0x6c:  bf 07 00 78 56  // mov edi,0x56780007  (produce EDI)
+0x71:  03 c7  // add eax,edi  (consume EDI)
+0x73:  90  // --- Segment register RAW dependencies (distance=0) ---
+0x74:  ba 00 02 00 00  // mov edx,0x200
+0x79:  8e da  // mov ds,dx  (produce DS)
+0x7b:  8b 43 00  // mov eax,[ebx+0]  (consume DS)
+0x7e:  ba 00 04 00 00  // mov edx,0x400
+0x83:  8e c2  // mov es,dx  (produce ES)
+0x85:  26 8b 45 00  // mov eax,es:[ebp+0]  (consume ES)
+0x89:  ba 00 0b 00 00  // mov edx,0xb00
+0x8e:  8e d2  // mov ss,dx  (produce SS)
+0x90:  36 8b 43 00  // mov eax,ss:[ebx+0]  (consume SS)
+0x94:  ba 00 0a 00 00  // mov edx,0xa00
+0x99:  8e e2  // mov fs,dx  (produce FS)
+0x9b:  64 8b 43 00  // mov eax,fs:[ebx+0]  (consume FS)
+0x9f:  ba 00 0c 00 00  // mov edx,0xc00
+0xa4:  8e ea  // mov gs,dx  (produce GS)
+0xa6:  65 8b 43 00  // mov eax,gs:[ebx+0]  (consume GS)
+0xaa:  90  // --- MMX RAW dependencies (distance=0) ---
+0xab:  0f 6f 43 00  // movq mm0,ds:[ebx+0x00]  (produce MM0)
+0xaf:  0f fe c0  // paddd mm0,mm0  (consume MM0)
+0xb2:  0f 6f 4b 08  // movq mm1,ds:[ebx+0x08]  (produce MM1)
+0xb6:  0f fe c9  // paddd mm1,mm1  (consume MM1)
+0xb9:  0f 6f 53 10  // movq mm2,ds:[ebx+0x10]  (produce MM2)
+0xbd:  0f fe d2  // paddd mm2,mm2  (consume MM2)
+0xc0:  0f 6f 5b 18  // movq mm3,ds:[ebx+0x18]  (produce MM3)
+0xc4:  0f fe db  // paddd mm3,mm3  (consume MM3)
+0xc7:  0f 6f 63 20  // movq mm4,ds:[ebx+0x20]  (produce MM4)
+0xcb:  0f fe e4  // paddd mm4,mm4  (consume MM4)
+0xce:  0f 6f 6b 28  // movq mm5,ds:[ebx+0x28]  (produce MM5)
+0xd2:  0f fe ed  // paddd mm5,mm5  (consume MM5)
+0xd5:  0f 6f 73 30  // movq mm6,ds:[ebx+0x30]  (produce MM6)
+0xd9:  0f fe f6  // paddd mm6,mm6  (consume MM6)
+0xdc:  0f 6f 7b 38  // movq mm7,ds:[ebx+0x38]  (produce MM7)
+0xe0:  0f fe ff  // paddd mm7,mm7  (consume MM7)
+0xe3:  90  // --- EFLAGS RAW dependencies (distance=0) ---
+0xe4:  b8 01 00 00 00  // mov eax,1
+0xe9:  05 ff ff ff ff  // add eax,0xffffffff  (produce CF=1)
+0xee:  83 d1 00  // adc ecx,0  (consume CF)
+0xf1:  b8 00 00 00 00  // mov eax,0
+0xf6:  05 00 00 00 00  // add eax,0  (produce ZF=1)
+0xfb:  75 00  // jne +0  (consume ZF, not taken)
+0xfd:  be 10 00 00 00  // mov esi,0x10
+0x102:  bf 10 00 00 00  // mov edi,0x10
+0x107:  fd  // std  (produce DF=1)
+0x108:  a5  // movs dword es:[edi],ds:[esi]  (consume DF)
+0x109:  fc  // cld  (restore DF=0)
+0x10a:  f4  // hlt
+
+0x2000: 59 19 b5 8d e0 bc 91 fa 77 30 72 3e c8 57 c7 d0
+0x2010: 41 ac f3 06 2a 49 6e c3 60 87 b2 c7 16 c3 be cd
+0x2020: 53 73 f7 1b 16 73 4b ae 07 dd fe f4 38 85 e4 ac
+0x2030: 5b 67 dc 71 6e d3 c9 80 af 47 33 f9 3c ae d6 59
+0x5000: 75 ae ef 6d ea 34 89 57 69 0e b7 98 38 64 10 4b
+0x5010: 55 8f 13 60 a6 28 d7 43 cd b5 40 43 8b b1 21 d8
+0x4000: 26 f4 3c 93 f6 18 bb fa 31 88 64 a8 85 90 3d 06
+0x42f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4300: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x7000: fb 32 83 14 2a f8 b0 fb 12 b1 01 cf a7 62 e0 4b

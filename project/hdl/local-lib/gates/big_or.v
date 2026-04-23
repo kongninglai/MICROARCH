@@ -38,11 +38,11 @@ generate
       assign out = or_0_0_out;
     end
     7: begin : width7_gen
-      wire or_0_0_out;
-      wire or_0_1_out;
-      or4$ or_0_0(or_0_0_out,or_0_1_out,in[0],in[1],in[2]);
-      or4$ or_0_1(or_0_1_out,in[3],in[4],in[5],in[6]);
-      assign out = or_0_0_out;
+      // Optimized for single_stage_dep
+      wire nor_0_0_out, nor_0_1_out;
+      nand2$  nand2$_out(out, nor_0_0_out, nor_0_1_out);
+      nor4$   nor4$_nor_0_0_out(nor_0_0_out,in[0],in[1],in[2],in[3]);
+      nor3$   nor3$_nor_0_1_out(nor_0_1_out,in[4],in[5],in[6]);
     end
     8: begin : width8_gen
       // Optimized for TLB lookups
