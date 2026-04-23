@@ -71,10 +71,10 @@ module ucode_fsm(
 
     // wire [7:0] ucode_opcode;
     // wire [95:0] sig_reg, sig_mem, sig_ext, sig_ext_mem;
-    // ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg32.data")) ucoderom_reg(.opcode(ucode_opcode), .sig(sig_reg));
-    // ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem32.data")) ucoderom_mem(.opcode(ucode_opcode), .sig(sig_mem));
-    // ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext32.data")) ucoderom_ext(.opcode(ucode_opcode), .sig(sig_ext));
-    // ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem32.data")) ucoderom_ext_mem(.opcode(ucode_opcode), .sig(sig_ext_mem));
+    // ucoderom #(.MEMFILE64("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg64.data"), .MEMFILE32("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg32.data")) ucoderom_reg(.opcode(ucode_opcode), .sig(sig_reg));
+    // ucoderom #(.MEMFILE64("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem64.data"), .MEMFILE32("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem32.data")) ucoderom_mem(.opcode(ucode_opcode), .sig(sig_mem));
+    // ucoderom #(.MEMFILE64("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext64.data"), .MEMFILE32("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext32.data")) ucoderom_ext(.opcode(ucode_opcode), .sig(sig_ext));
+    // ucoderom #(.MEMFILE64("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem64.data"), .MEMFILE32("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem32.data")) ucoderom_ext_mem(.opcode(ucode_opcode), .sig(sig_ext_mem));
 
     wire counter_start, counter_dec, counter_finish;
     ecx_counter ecx_counter_inst(

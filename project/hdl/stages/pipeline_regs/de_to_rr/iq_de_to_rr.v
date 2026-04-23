@@ -27,8 +27,8 @@
  */
 
 module iq_de_to_rr #(
-  parameter ENTRY_BIT_WIDTH = 226,
-  parameter VALID_BIT       = 122,
+  parameter ENTRY_BIT_WIDTH = 318,
+  parameter VALID_BIT       = 218,
   parameter NUM_ENTRIES     = 4,
   parameter PTR_WIDTH       = $clog2(NUM_ENTRIES),
   parameter COUNT_WIDTH     = PTR_WIDTH + 1
@@ -227,20 +227,17 @@ generate
   end
 endgenerate
 
-genvar r;
-generate
-  for (r = 0; r < REM_BITS; r = r + 1) begin : DATA_OUT_MUX4_REMAINDER_GEN
-    mux4$ mux4_data_out_remainder (
-      data_out[FULL_CHUNKS*16 + r],
-      data_out_full[0][FULL_CHUNKS*16 + r],
-      data_out_full[1][FULL_CHUNKS*16 + r],
-      data_out_full[2][FULL_CHUNKS*16 + r],
-      data_out_full[3][FULL_CHUNKS*16 + r],
-      rd_ptr_buf16[0],
-      rd_ptr_buf16[1]
-    );
-  end
-endgenerate
+/* Top leftover bits, padded to 16 for mux4_16$ */
+wire [(16-REM_BITS)-1:0] data_out_top_dummy;
+mux4_16$ mux4_16_data_out_top (
+  {data_out_top_dummy, data_out[ENTRY_BIT_WIDTH-1 : FULL_CHUNKS*16]},
+  {{(16-REM_BITS){1'b0}}, data_out_full[0][ENTRY_BIT_WIDTH-1 : FULL_CHUNKS*16]},
+  {{(16-REM_BITS){1'b0}}, data_out_full[1][ENTRY_BIT_WIDTH-1 : FULL_CHUNKS*16]},
+  {{(16-REM_BITS){1'b0}}, data_out_full[2][ENTRY_BIT_WIDTH-1 : FULL_CHUNKS*16]},
+  {{(16-REM_BITS){1'b0}}, data_out_full[3][ENTRY_BIT_WIDTH-1 : FULL_CHUNKS*16]},
+  rd_ptr_buf64[0],
+  rd_ptr_buf64[1]
+);
 
 /*** HEAD VALID ***/
 assign head_valid = data_out[VALID_BIT];

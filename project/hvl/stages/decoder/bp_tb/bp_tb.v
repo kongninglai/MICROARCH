@@ -14,6 +14,7 @@ module tb_bp();
     // Decode Stage Inputs
     reg is_branch;
     reg [31:0] o_eip;
+    reg [31:0] i_eip;
     reg [127:0] cache_line;
 
     // Execute Stage Inputs
@@ -42,6 +43,7 @@ module tb_bp();
     wire cur_instr_prediction;
     wire [7:0] ghr_out;
     wire hit;
+    wire [3:0] pht_idx;
     wire [31:0] bp_eip_target;
 
     // Error Tracking
@@ -82,7 +84,8 @@ module tb_bp();
         .imm_size(imm_size),
         .imm(imm),
         .addressing_mode(addressing_mode),
-        .instr_length(instr_length)
+        .instr_length(instr_length),
+        .ucode_sigs() // Unused in this testbench
     );
 
     bp PREDICTOR (
@@ -94,12 +97,14 @@ module tb_bp();
         .prefix_ext(prefix_ext),
         .is_branch(is_branch), 
         .o_eip(o_eip),
+        .i_eip(i_eip),
         .br_t_nt_ex_d(br_t_nt_ex_d),
         .br_valid_ex_d(br_valid_ex_d),
         .ext_pht_idx(ext_pht_idx),
         .bp_eip_target(bp_eip_target), 
         .hit(hit),                     
         .cur_instr_prediction(cur_instr_prediction),
+        .pht_idx(pht_idx),
         .ghr_out(ghr_out)
     );
 
@@ -134,7 +139,9 @@ module tb_bp();
         input t_is_br;
         input [127:0] t_cache;
         input exp_pred;
-        input [31:0] exp_tgt;
+        input [31:0] exp_tgt; //offset
+        reg [31:0] dyn_exp_tgt;
+
         begin
             @(negedge clk);
             o_eip = t_eip;
@@ -143,15 +150,19 @@ module tb_bp();
             br_valid_ex_d = 0; 
             
             // Wait 40ns (Clock posedge hits at +50ns). Let structural logic settle.
-            #40; 
+            #10;
+            i_eip = o_eip + instr_length;
+            dyn_exp_tgt = i_eip + exp_tgt; //Calculate dynamic expected target based on test EIP and offset
+            #30; 
             // CAPTURE COMBINATIONAL OUTPUTS RIGHT BEFORE THE CLOCK EDGE!
             last_hash = PREDICTOR.hash_out; 
             captured_pred = cur_instr_prediction;
             captured_tgt = bp_eip_target;
-            
+
+
             @(posedge clk); // Clock edge shifts GHR
             #20; 
-            check_result(name, exp_pred, exp_tgt);
+            check_result(name, exp_pred, dyn_exp_tgt);
         end
     endtask
 
@@ -232,25 +243,21 @@ module tb_bp();
         
         target_offset = 32'h00_00_10_24;
         test_eip = 32'h01_00_00_00;
-        test_tgt = test_eip + target_offset;
-        test_decode("0F 85 JNE rel32 (Untrained) ", test_eip, 1'b1, {80'h0, 48'h00_00_10_24_85_0F}, 1'b0, test_tgt);
+        test_decode("0F 85 JNE rel32 (Untrained) ", test_eip, 1'b1, {80'h0, 48'h00_00_10_24_85_0F}, 1'b0, target_offset);
         train_for_hit();
         
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("0F 85 JNE rel32 (Trained)   ", test_eip, 1'b1, {80'h0, 48'h00_00_10_24_85_0F}, 1'b1, test_tgt);
+        test_decode("0F 85 JNE rel32 (Trained)   ", test_eip, 1'b1, {80'h0, 48'h00_00_10_24_85_0F}, 1'b1, target_offset);
 
         test_decode("85 TEST (Not a branch)      ", 32'h01_00_00_00, 1'b0, {88'h0, 40'h00_00_10_24_85}, 1'bx, 32'hxxxx_xxxx);
 
         target_offset = 32'hFF_FF_FF_F0;
         test_eip = 32'h01_00_00_00;
-        test_tgt = test_eip + target_offset;
-        test_decode("0F 87 JNBE rel32 (Untrained)", test_eip, 1'b1, {80'h0, 48'hFF_FF_FF_F0_87_0F}, 1'b0, test_tgt);
+        test_decode("0F 87 JNBE rel32 (Untrained)", test_eip, 1'b1, {80'h0, 48'hFF_FF_FF_F0_87_0F}, 1'b0, target_offset);
         train_for_hit();
         
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("0F 87 JNBE rel32 (Trained)  ", test_eip, 1'b1, {80'h0, 48'hFF_FF_FF_F0_87_0F}, 1'b1, test_tgt);
+        test_decode("0F 87 JNBE rel32 (Trained)  ", test_eip, 1'b1, {80'h0, 48'hFF_FF_FF_F0_87_0F}, 1'b1, target_offset);
 
         test_decode("87 XCHG (Not a branch)      ", 32'h01_00_00_00, 1'b0, {88'h0, 40'hFF_FF_FF_F0_87}, 1'bx, 32'hxxxx_xxxx);
 
@@ -263,23 +270,19 @@ module tb_bp();
         
         target_offset = 32'h00_00_24_10;
         test_eip = 32'h01_00_00_00;
-        test_tgt = test_eip + target_offset;
-        test_decode("66 0F 85 JNE rel16 (Untr)   ", test_eip, 1'b1, {88'h0, 40'h24_10_85_0F_66}, 1'b0, test_tgt);
+        test_decode("66 0F 85 JNE rel16 (Untr)   ", test_eip, 1'b1, {88'h0, 40'h24_10_85_0F_66}, 1'b0, target_offset);
         train_for_hit();
         
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("66 0F 85 JNE rel16 (Trnd)   ", test_eip, 1'b1, {88'h0, 40'h24_10_85_0F_66}, 1'b1, test_tgt);
+        test_decode("66 0F 85 JNE rel16 (Trnd)   ", test_eip, 1'b1, {88'h0, 40'h24_10_85_0F_66}, 1'b1, target_offset);
         
         target_offset = 32'hFF_FF_FF_F0;
         test_eip = 32'h01_00_00_00;
-        test_tgt = test_eip + target_offset;
-        test_decode("66 0F 87 JNBE rel16 (Untr)  ", test_eip, 1'b1, {88'h0, 40'hFF_F0_87_0F_66}, 1'b0, test_tgt);
+        test_decode("66 0F 87 JNBE rel16 (Untr)  ", test_eip, 1'b1, {88'h0, 40'hFF_F0_87_0F_66}, 1'b0, target_offset);
         train_for_hit();
         
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("66 0F 87 JNBE rel16 (Trnd)  ", test_eip, 1'b1, {88'h0, 40'hFF_F0_87_0F_66}, 1'b1, test_tgt);
+        test_decode("66 0F 87 JNBE rel16 (Trnd)  ", test_eip, 1'b1, {88'h0, 40'hFF_F0_87_0F_66}, 1'b1, target_offset);
 
 
         // ==========================================
@@ -290,33 +293,27 @@ module tb_bp();
 
         target_offset = 32'h00_00_12_34;
         test_eip = 32'h01_00_00_00;
-        test_tgt = test_eip + target_offset;
-        test_decode("E8 CALL rel32 (Untrained)   ", test_eip, 1'b1, {88'h0, 40'h00_00_12_34_E8}, 1'b0, test_tgt);
+        test_decode("E8 CALL rel32 (Untrained)   ", test_eip, 1'b1, {88'h0, 40'h00_00_12_34_E8}, 1'b0, target_offset);
         train_for_hit();
         
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("E8 CALL rel32 (Trained)     ", test_eip, 1'b1, {88'h0, 40'h00_00_12_34_E8}, 1'b1, test_tgt);
+        test_decode("E8 CALL rel32 (Trained)     ", test_eip, 1'b1, {88'h0, 40'h00_00_12_34_E8}, 1'b1, target_offset);
 
         target_offset = 32'h00_00_12_34;
         test_eip = 32'h01_00_00_00;
-        test_tgt = test_eip + target_offset;
-        test_decode("66 E8 CALL rel16 (Untrained)", test_eip, 1'b1, {96'h0, 32'h12_34_E8_66}, 1'b0, test_tgt);
+        test_decode("66 E8 CALL rel16 (Untrained)", test_eip, 1'b1, {96'h0, 32'h12_34_E8_66}, 1'b0, target_offset);
         train_for_hit();
         
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("66 E8 CALL rel16 (Trained)  ", test_eip, 1'b1, {96'h0, 32'h12_34_E8_66}, 1'b1, test_tgt);
+        test_decode("66 E8 CALL rel16 (Trained)  ", test_eip, 1'b1, {96'h0, 32'h12_34_E8_66}, 1'b1, target_offset);
 
         target_offset = 32'h00_00_00_55;
         test_eip = 32'h01_00_00_00;
-        test_tgt = test_eip + target_offset;
-        test_decode("E9 JMP rel32 (Untrained)    ", test_eip, 1'b1, {88'h0, 40'h00_00_00_55_E9}, 1'b0, test_tgt);
+        test_decode("E9 JMP rel32 (Untrained)    ", test_eip, 1'b1, {88'h0, 40'h00_00_00_55_E9}, 1'b0, target_offset);
         train_for_hit();
         
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("E9 JMP rel32 (Trained)      ", test_eip, 1'b1, {88'h0, 40'h00_00_00_55_E9}, 1'b1, test_tgt);
+        test_decode("E9 JMP rel32 (Trained)      ", test_eip, 1'b1, {88'h0, 40'h00_00_00_55_E9}, 1'b1, target_offset);
 
 
         // ==========================================
@@ -327,23 +324,19 @@ module tb_bp();
 
         target_offset = 32'h00_00_00_08;
         test_eip = 32'h01_00_00_00;
-        test_tgt = test_eip + target_offset;
-        test_decode("75 JNE rel8 (Untrained)     ", test_eip, 1'b1, {112'h0, 16'h08_75}, 1'b0, test_tgt);
+        test_decode("75 JNE rel8 (Untrained)     ", test_eip, 1'b1, {112'h0, 16'h08_75}, 1'b0, target_offset);
         train_for_hit();
         
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("75 JNE rel8 (Trained)       ", test_eip, 1'b1, {112'h0, 16'h08_75}, 1'b1, test_tgt);
+        test_decode("75 JNE rel8 (Trained)       ", test_eip, 1'b1, {112'h0, 16'h08_75}, 1'b1, target_offset);
 
         target_offset = 32'h00_00_00_1A;
         test_eip = 32'h01_00_00_00;
-        test_tgt = test_eip + target_offset;
-        test_decode("EB JMP rel8 (Untrained)     ", test_eip, 1'b1, {112'h0, 16'h1A_EB}, 1'b0, test_tgt);
+        test_decode("EB JMP rel8 (Untrained)     ", test_eip, 1'b1, {112'h0, 16'h1A_EB}, 1'b0, target_offset);
         train_for_hit();
         
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("EB JMP rel8 (Trained)       ", test_eip, 1'b1, {112'h0, 16'h1A_EB}, 1'b1, test_tgt);
+        test_decode("EB JMP rel8 (Trained)       ", test_eip, 1'b1, {112'h0, 16'h1A_EB}, 1'b1, target_offset);
 
 
         // ==========================================
@@ -354,22 +347,19 @@ module tb_bp();
         
         target_offset = 32'h00_00_00_08;
         test_eip = 32'h01_00_00_04;
-        test_tgt = test_eip + target_offset;
-        test_decode("Br A (Untrained)            ", test_eip, 1'b1, {112'h0, 16'h08_75}, 1'b0, test_tgt);
+        test_decode("Br A (Untrained)            ", test_eip, 1'b1, {112'h0, 16'h08_75}, 1'b0, target_offset);
         train_for_hit();
         
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("Br A (Trained)              ", test_eip, 1'b1, {112'h0, 16'h08_75}, 1'b1, test_tgt);
+        test_decode("Br A (Trained)              ", test_eip, 1'b1, {112'h0, 16'h08_75}, 1'b1, target_offset);
 
         // Branch B uses a different instruction block base address (0x02_00_00_00)
         // But we force its lower bits to ALIAS to Branch A's hash.
         target_offset = 32'h00_00_00_1A;
         test_eip = {28'h02_00_00_0, eip_low_for_hash(last_hash)}; 
-        test_tgt = test_eip + target_offset;
         
         // This predicts TAKEN (1) because Branch A trained the entry!
-        test_decode("Br B (Aliased to A)         ", test_eip, 1'b1, {112'h0, 16'h1A_EB}, 1'b1, test_tgt); 
+        test_decode("Br B (Aliased to A)         ", test_eip, 1'b1, {112'h0, 16'h1A_EB}, 1'b1, target_offset); 
         
         // Force Branch B to Miss (Destroying Branch A's prediction state)
         train_for_miss(); 
@@ -377,8 +367,7 @@ module tb_bp();
         // Re-test Branch A (Expected prediction is now 0)
         target_offset = 32'h00_00_00_08;
         test_eip = {28'h01_00_00_0, eip_low_for_hash(last_hash)};
-        test_tgt = test_eip + target_offset;
-        test_decode("Br A (Destructive Alias)    ", test_eip, 1'b1, {112'h0, 16'h08_75}, 1'b0, test_tgt);
+        test_decode("Br A (Destructive Alias)    ", test_eip, 1'b1, {112'h0, 16'h08_75}, 1'b0, target_offset);
 
         $display("=======================================");
         $display("FAILURES = %d out of %d", FAILURES, FAILURES + SUCCESSES);

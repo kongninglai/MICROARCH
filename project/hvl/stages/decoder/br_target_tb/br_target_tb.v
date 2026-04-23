@@ -3,7 +3,7 @@
 module tb_br_target();
 
     // 1. Inputs
-    reg [31:0] o_eip;
+    reg [31:0] i_eip;
     reg [127:0] cache_line;
 
     // 2. Wires between Decoder and Br_Target
@@ -45,7 +45,7 @@ module tb_br_target();
 
     // 5. Instantiate Branch Target Calculator
     br_target target_uut (
-        .o_eip(o_eip),
+        .i_eip(i_eip),
         .prefix_ext(prefix_ext), // Hooked up!
         .opcode(opcode),
         .imm(imm),
@@ -69,7 +69,7 @@ module tb_br_target();
                 $display("     EXPECTED: Hit=%b | Target=%h", exp_hit, exp_target);
                 $display("     ACTUAL  : Hit=%b | Target=%h", hit, bp_eip_target);
                 FAILURES = FAILURES + 1;
-                $display("     ACTUAL  : oeip=%b | Target32=%h, | Target16=%h, | Target8=%h", o_eip, target_uut.target_rel32, target_uut.target_rel16, target_uut.target_rel8);
+                $display("     ACTUAL  : ieip=%b | Target32=%h, | Target16=%h, | Target8=%h", i_eip, target_uut.target_rel32, target_uut.target_rel16, target_uut.target_rel8);
             end
             #5; // Padding before next test
         end
@@ -85,7 +85,7 @@ module tb_br_target();
         $display("=======================================");
 
         // Set Base EIP for all tests
-        o_eip = 32'h01_00_00_00;
+        i_eip = 32'h01_00_00_00;
 
         // Note: cache_line[7:0] is the first byte (lowest address).
 
