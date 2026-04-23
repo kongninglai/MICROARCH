@@ -417,29 +417,23 @@ generate
       assign out = or_0_0_out;
     end
     32: begin : width32_gen
-      wire or_0_0_out;
-      wire or_0_1_out;
-      wire or_0_2_out;
-      wire or_0_3_out;
-      wire or_0_4_out;
-      wire or_0_5_out;
-      wire or_0_6_out;
-      wire or_0_7_out;
-      wire or_0_8_out;
-      wire or_0_9_out;
-      wire or_0_10_out;
-      or4$ or_0_0(or_0_0_out,or_0_1_out,or_0_2_out,or_0_3_out,or_0_4_out);
-      or4$ or_0_1(or_0_1_out,in[0],in[1],in[2],in[3]);
-      or4$ or_0_2(or_0_2_out,in[4],in[5],in[6],in[7]);
-      or4$ or_0_3(or_0_3_out,in[8],in[9],in[10],in[11]);
-      or4$ or_0_4(or_0_4_out,in[12],in[13],in[14],or_0_5_out);
-      or4$ or_0_5(or_0_5_out,or_0_6_out,or_0_7_out,or_0_8_out,or_0_9_out);
-      or4$ or_0_6(or_0_6_out,in[15],in[16],in[17],in[18]);
-      or4$ or_0_7(or_0_7_out,in[19],in[20],in[21],in[22]);
-      or4$ or_0_8(or_0_8_out,in[23],in[24],in[25],in[26]);
-      or4$ or_0_9(or_0_9_out,in[27],in[28],in[29],or_0_10_out);
-      or2$ or_0_10(or_0_10_out,in[30],in[31]);
-      assign out = or_0_0_out;
+      wire g0, g1, g2, g3, g4, g5, g6, g7;
+      wire h0, h1;
+
+      nor4$ n0(g0, in[0],  in[1],  in[2],  in[3]);
+      nor4$ n1(g1, in[4],  in[5],  in[6],  in[7]);
+      nor4$ n2(g2, in[8],  in[9],  in[10], in[11]);
+      nor4$ n3(g3, in[12], in[13], in[14], in[15]);
+      nor4$ n4(g4, in[16], in[17], in[18], in[19]);
+      nor4$ n5(g5, in[20], in[21], in[22], in[23]);
+      nor4$ n6(g6, in[24], in[25], in[26], in[27]);
+      nor4$ n7(g7, in[28], in[29], in[30], in[31]);
+
+      nand4$ n8(h0, g0, g1, g2, g3);
+      nand4$ n9(h1, g4, g5, g6, g7);
+
+      or2$ n10(out, h0, h1);
+      
     end
   endcase
 endgenerate
