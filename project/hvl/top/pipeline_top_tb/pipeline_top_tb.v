@@ -52,6 +52,7 @@ wire [1:0]  to_rr_addr_mode;
 wire  [31:0] to_rr_oeip;
 wire  [31:0] to_rr_ieip;
 wire  [31:0] to_rr_pred_eip;
+wire         to_rr_pred_dir;
 wire  [1:0]  to_rr_exception;
 wire         to_rr_valid;
 
@@ -163,6 +164,7 @@ backend_top dut (
   .to_rr_oeip(to_rr_oeip),
   .to_rr_ieip(to_rr_ieip),
   .to_rr_pred_eip(to_rr_pred_eip),
+  .to_rr_pred_dir(to_rr_pred_dir),
   .to_rr_exception(to_rr_exception),
   .to_rr_valid(to_rr_valid),
 
@@ -717,6 +719,7 @@ fetch_decode_top FRONTEND_TOP(
     .to_rr_oeip(to_rr_oeip),
     .to_rr_ieip(to_rr_ieip),
     .to_rr_pred_eip(to_rr_pred_eip),
+    .to_rr_pred_dir(to_rr_pred_dir),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
     .to_rr_valid(to_rr_valid)

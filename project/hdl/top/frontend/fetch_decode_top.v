@@ -38,6 +38,8 @@ module fetch_decode_top(
     output wire [31:0] to_rr_oeip,
     output wire [31:0] to_rr_ieip,
     output wire [31:0] to_rr_pred_eip,
+    output wire to_rr_pred_dir,
+    output wire [3:0] to_rr_pht_idx,
     output wire [31:0] to_pr_pred_eip,
     output wire [1:0] to_rr_exception,
     output wire to_rr_valid
@@ -90,6 +92,8 @@ module fetch_decode_top(
         .to_rr_bp_target(to_rr_pred_eip), //post de latch
         .to_pr_bp_target(to_pr_pred_eip), //pre de latch
         .to_rr_pr_valid(to_rr_valid),
+        .to_rr_pred_dir(to_rr_pred_dir),
+        .to_rr_pht_idx(to_rr_pht_idx),
         .to_rr_prefixes(to_rr_prefix), //{prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
         .to_rr_opcode(to_rr_opcode),
         .to_rr_modrm(to_rr_modrm),

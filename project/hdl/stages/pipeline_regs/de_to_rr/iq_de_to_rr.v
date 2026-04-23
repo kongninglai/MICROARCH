@@ -5,7 +5,9 @@
  * Read:  when rd == 1'b1 (NOT from_rr_stall), advances rd_ptr.
  * Flush: clears entry_count to 0 next cycle.
  *
- * ENTRY LAYOUT (MSB to LSB, 221 bits total):
+ * ENTRY LAYOUT (MSB to LSB, 226 bits total):
+ *   [225]     from_de_pred_dir        (1b)
+ *   [224:221] from_de_pht_idx         (4b)
  *   [220:219] from_f_exception_flags  (2b)
  *   [218:187] from_de_i_eip           (32b)
  *   [186:155] from_de_o_eip           (32b)
@@ -21,10 +23,11 @@
  *   [53:6]    from_de_imm             (48b)
  *   [5:4]     from_de_addressing_mode (2b)
  *   [3:0]     from_de_instr_length    (4b)
+ *
  */
 
 module iq_de_to_rr #(
-  parameter ENTRY_BIT_WIDTH = 221,
+  parameter ENTRY_BIT_WIDTH = 226,
   parameter VALID_BIT       = 122,
   parameter NUM_ENTRIES     = 4,
   parameter PTR_WIDTH       = $clog2(NUM_ENTRIES),
@@ -206,9 +209,12 @@ endgenerate
 
 /*** DATA OUTPUT SELECTION (mux4_16$ across entries, selected by rd_ptr) ***/
 
+localparam FULL_CHUNKS = ENTRY_BIT_WIDTH / 16;
+localparam REM_BITS    = ENTRY_BIT_WIDTH % 16;
+
 genvar k;
 generate
-  for (k = 0; k < 13; k = k + 1) begin : DATA_OUT_MUX4_16b_GEN
+  for (k = 0; k < FULL_CHUNKS; k = k + 1) begin : DATA_OUT_MUX4_16b_GEN
     mux4_16$ mux4_16_data_out (
       data_out[k*16 +: 16],
       data_out_full[0][k*16 +: 16],
@@ -221,17 +227,20 @@ generate
   end
 endgenerate
 
-/* Top 13 bits (221 - 13*16 = 13), pad to 16 for mux4_16$ */
-wire [2:0] data_out_top_dummy;
-mux4_16$ mux4_16_data_out_top (
-  {data_out_top_dummy, data_out[ENTRY_BIT_WIDTH-1:13*16]},
-  {3'd0, data_out_full[0][ENTRY_BIT_WIDTH-1:13*16]},
-  {3'd0, data_out_full[1][ENTRY_BIT_WIDTH-1:13*16]},
-  {3'd0, data_out_full[2][ENTRY_BIT_WIDTH-1:13*16]},
-  {3'd0, data_out_full[3][ENTRY_BIT_WIDTH-1:13*16]},
-  rd_ptr_buf16[0],
-  rd_ptr_buf16[1]
-);
+genvar r;
+generate
+  for (r = 0; r < REM_BITS; r = r + 1) begin : DATA_OUT_MUX4_REMAINDER_GEN
+    mux4$ mux4_data_out_remainder (
+      data_out[FULL_CHUNKS*16 + r],
+      data_out_full[0][FULL_CHUNKS*16 + r],
+      data_out_full[1][FULL_CHUNKS*16 + r],
+      data_out_full[2][FULL_CHUNKS*16 + r],
+      data_out_full[3][FULL_CHUNKS*16 + r],
+      rd_ptr_buf16[0],
+      rd_ptr_buf16[1]
+    );
+  end
+endgenerate
 
 /*** HEAD VALID ***/
 assign head_valid = data_out[VALID_BIT];

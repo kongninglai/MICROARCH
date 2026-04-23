@@ -15,7 +15,8 @@ module bp(
     input wire prefix_ext,
 
     input wire is_branch, //predict current instruction in decode (if branch)
-    input wire [31:0] o_eip, //predict current instruction in decode (if branch)
+    input wire [31:0] o_eip, 
+    input wire [31:0] i_eip, //predict current instruction in decode (if branch)
     input wire br_t_nt_ex_d, //comes from execute stage (taken not taken signal)
     input wire br_valid_ex_d, //comes from execute stage (branch valid signal)
     input wire [3:0] ext_pht_idx, //comes from execute stage: branch counter TO UPDATE
@@ -24,6 +25,7 @@ module bp(
     output wire hit, //to decode stage to indicate if we have a bp target or not (currently hardcoded to 0)
 
     output wire cur_instr_prediction, //to decode stage 
+    output wire [3:0] pht_idx,
     output wire [7:0] ghr_out
 );
 
@@ -44,6 +46,8 @@ module bp(
         .hash_out(hash_out)
     );
 
+    assign pht_idx = hash_out;
+
     predictor PREDICTOR(
         .clk(clk),
         .rst_bar(rst_bar),
@@ -56,7 +60,7 @@ module bp(
     );
 
     br_target BR_TARGET(
-        .o_eip (o_eip),
+        .i_eip (i_eip),
         .opcode (opcode),
         .imm(imm),
         .op_size_overload(op_size_overload),

@@ -21,6 +21,8 @@ module backend_top #(
     input [31:0] to_rr_oeip,
     input [31:0] to_rr_ieip,
     input [31:0] to_rr_pred_eip,
+    input to_rr_pred_dir,
+    input [3:0] to_rr_pht_idx,
     input [1:0] to_rr_exception,
     input to_rr_valid,
 
@@ -32,6 +34,7 @@ module backend_top #(
     output from_ex_br_t_nt,
     output from_ex_br_valid,
     output [31:0] from_ex_eip_target,
+    output [3:0] from_ex_pht_idx,
 
     output from_wb_flush,
 
@@ -124,6 +127,8 @@ module backend_top #(
     wire [31:0]     from_rr_oeip;
     wire [31:0]     from_rr_ieip;
     wire [31:0]     from_rr_pred_eip;
+    wire            from_rr_pred_dir;
+    wire [3:0]      from_rr_pht_idx;
     wire [1:0]      from_rr_exception;
     wire            from_rr_valid;
     wire            from_rr_we_pipe_reg;
@@ -189,6 +194,8 @@ module backend_top #(
     wire [31:0]     to_ag_oeip;
     wire [31:0]     to_ag_ieip;
     wire [31:0]     to_ag_pred_eip;
+    wire            to_ag_pred_dir;
+    wire [3:0]      to_ag_pht_idx;
     wire [1:0]      to_ag_exception;
     wire            to_ag_valid;
 
@@ -219,6 +226,8 @@ module backend_top #(
     wire [31:0]     from_ag_oeip;
     wire [31:0]     from_ag_ieip;
     wire [31:0]     from_ag_pred_eip;
+    wire            from_ag_pred_dir;
+    wire [3:0]      from_ag_pht_idx;
     wire [1:0]      from_ag_exception;
     wire            from_ag_valid;
     wire            from_ag_stall_bar;
@@ -257,6 +266,8 @@ module backend_top #(
     wire [31:0]     to_mem_oeip;
     wire [31:0]     to_mem_ieip;
     wire [31:0]     to_mem_pred_eip;
+    wire            to_mem_pred_dir;
+    wire [3:0]      to_mem_pht_idx;
     wire [1:0]      to_mem_exception;
     wire            to_mem_valid;
 
@@ -293,6 +304,8 @@ module backend_top #(
     wire [31:0]     from_mem_oeip;
     wire [31:0]     from_mem_ieip;
     wire [31:0]     from_mem_pred_eip;
+    wire            from_mem_pred_dir;
+    wire [3:0]      from_mem_pht_idx;
     wire [1:0]      from_mem_exception;
     wire            from_mem_valid;
     wire            from_mem_stall;
@@ -332,6 +345,8 @@ module backend_top #(
     wire [31:0]     to_ex_oeip;
     wire [31:0]     to_ex_ieip;
     wire [31:0]     to_ex_pred_eip;
+    wire            to_ex_pred_dir;
+    wire [3:0]      to_ex_pht_idx;
     wire [1:0]      to_ex_exception;
     wire            to_ex_valid;
 
@@ -509,6 +524,8 @@ module backend_top #(
         .to_rr_oeip(to_rr_oeip),
         .to_rr_ieip(to_rr_ieip),
         .to_rr_pred_eip(to_rr_pred_eip),
+        .to_rr_pred_dir(to_rr_pred_dir),
+        .to_rr_pht_idx(to_rr_pht_idx),
         .to_rr_exception(to_rr_exception),
         .to_rr_valid(to_rr_valid),
         .from_ag_stall_bar(from_ag_stall_bar),
@@ -570,6 +587,8 @@ module backend_top #(
         .from_rr_oeip(from_rr_oeip),
         .from_rr_ieip(from_rr_ieip),
         .from_rr_pred_eip(from_rr_pred_eip),
+        .from_rr_pred_dir(from_rr_pred_dir),
+        .from_rr_pht_idx(from_rr_pht_idx),
         .from_rr_exception(from_rr_exception),
         .from_rr_valid(from_rr_valid),
         .from_rr_stall(from_rr_stall),
@@ -615,6 +634,8 @@ module backend_top #(
         .from_rr_oeip(from_rr_oeip),
         .from_rr_ieip(from_rr_ieip),
         .from_rr_pred_eip(from_rr_pred_eip),
+        .from_rr_pred_dir(from_rr_pred_dir),
+        .from_rr_pht_idx(from_rr_pht_idx),
         .from_rr_exception(from_rr_exception),
         .from_rr_valid(from_rr_valid),
         .to_ag_control_sigs(to_ag_control_sigs),
@@ -641,6 +662,8 @@ module backend_top #(
         .to_ag_oeip(to_ag_oeip),
         .to_ag_ieip(to_ag_ieip),
         .to_ag_pred_eip(to_ag_pred_eip),
+        .to_ag_pred_dir(to_ag_pred_dir),
+        .to_ag_pht_idx(to_ag_pht_idx),
         .to_ag_exception(to_ag_exception),
         .to_ag_valid(to_ag_valid)
     );
@@ -738,6 +761,8 @@ module backend_top #(
         .to_ag_oeip(to_ag_oeip),
         .to_ag_ieip(to_ag_ieip),
         .to_ag_pred_eip(to_ag_pred_eip),
+        .to_ag_pred_dir(to_ag_pred_dir),
+        .to_ag_pht_idx(to_ag_pht_idx),
         .to_ag_exception(to_ag_exception),
         .to_ag_valid(to_ag_valid),
 
@@ -784,6 +809,8 @@ module backend_top #(
         .from_ag_oeip(from_ag_oeip),
         .from_ag_ieip(from_ag_ieip),
         .from_ag_pred_eip(from_ag_pred_eip),
+        .from_ag_pred_dir(from_ag_pred_dir),
+        .from_ag_pht_idx(from_ag_pht_idx),
         .from_ag_exception(from_ag_exception),
         .from_ag_valid(from_ag_valid),
 
@@ -828,6 +855,8 @@ module backend_top #(
         .from_ag_oeip(from_ag_oeip),
         .from_ag_ieip(from_ag_ieip),
         .from_ag_pred_eip(from_ag_pred_eip),
+        .from_ag_pred_dir(from_ag_pred_dir),
+        .from_ag_pht_idx(from_ag_pht_idx),
         .from_ag_exception(from_ag_exception),
         .from_ag_valid(from_ag_valid),
         .to_mem_control_sigs(to_mem_control_sigs),
@@ -854,6 +883,8 @@ module backend_top #(
         .to_mem_oeip(to_mem_oeip),
         .to_mem_ieip(to_mem_ieip),
         .to_mem_pred_eip(to_mem_pred_eip),
+        .to_mem_pred_dir(to_mem_pred_dir),
+        .to_mem_pht_idx(to_mem_pht_idx),
         .to_mem_exception(to_mem_exception),
         .to_mem_valid(to_mem_valid)
     );
@@ -889,6 +920,8 @@ module backend_top #(
       .to_mem_oeip(to_mem_oeip),
       .to_mem_ieip(to_mem_ieip),
       .to_mem_pred_eip(to_mem_pred_eip),
+    .to_mem_pred_dir(to_mem_pred_dir),
+            .to_mem_pht_idx(to_mem_pht_idx),
       .to_mem_exception(to_mem_exception),
       .to_mem_valid(to_mem_valid),
 
@@ -930,6 +963,8 @@ module backend_top #(
       .from_mem_oeip(from_mem_oeip),
       .from_mem_ieip(from_mem_ieip),
       .from_mem_pred_eip(from_mem_pred_eip),
+    .from_mem_pred_dir(from_mem_pred_dir),
+            .from_mem_pht_idx(from_mem_pht_idx),
       .from_mem_exception(from_mem_exception),
       .from_mem_valid(from_mem_valid),
       .from_mem_stall(from_mem_stall),
@@ -1001,6 +1036,8 @@ module backend_top #(
         .from_mem_oeip(from_mem_oeip),
         .from_mem_ieip(from_mem_ieip),
         .from_mem_pred_eip(from_mem_pred_eip),
+        .from_mem_pred_dir(from_mem_pred_dir),
+        .from_mem_pht_idx(from_mem_pht_idx),
         .from_mem_exception(from_mem_exception),
         .from_mem_valid(from_mem_valid),
         .to_ex_control_sigs(to_ex_control_sigs),
@@ -1030,6 +1067,8 @@ module backend_top #(
         .to_ex_oeip(to_ex_oeip),
         .to_ex_ieip(to_ex_ieip),
         .to_ex_pred_eip(to_ex_pred_eip),
+        .to_ex_pred_dir(to_ex_pred_dir),
+        .to_ex_pht_idx(to_ex_pht_idx),
         .to_ex_exception(to_ex_exception),
         .to_ex_valid(to_ex_valid)
     );
@@ -1066,6 +1105,8 @@ module backend_top #(
         .to_ex_oeip(to_ex_oeip),
         .to_ex_ieip(to_ex_ieip),
         .to_ex_pred_eip(to_ex_pred_eip),
+        .to_ex_pred_dir(to_ex_pred_dir),
+        .to_ex_pht_idx(to_ex_pht_idx),
         .to_ex_exception(to_ex_exception),
         .to_ex_valid(to_ex_valid),
         .to_ex_CMPS0(to_ex_CMPS0),
@@ -1092,6 +1133,7 @@ module backend_top #(
         .from_ex_br_valid(from_ex_br_valid),
         .from_ex_cs_target(from_ex_cs_target),
         .from_ex_eip_target(from_ex_eip_target),
+        .from_ex_pht_idx(from_ex_pht_idx),
         .from_ex_control_sigs(from_ex_control_sigs),
         .from_ex_dstidA(from_ex_dstidA),
         .from_ex_dstidB(from_ex_dstidB),

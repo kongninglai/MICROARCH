@@ -4,6 +4,7 @@ module ex_control(
     input [63:0] load_result,
     input [31:0] rel_eip,
     input [31:0] pred_eip,
+    input pred_dir, //predicted direction of branch in decode stage
     input [31:0] ieip,
     input [31:0] iret_eip,
     input [1:0] sig_con_jump,
@@ -33,6 +34,7 @@ module ex_control(
     or3$ or_jmp(branch_taken, uncond_jmp, jne, jnbe);
     mux2_32 mux2_t_nt_eip(new_eip, ieip, masked_eip, branch_taken);
     wire accurate_predict;
-    big_eq #(.WIDTH(32)) eq_pred_eip(.eq(accurate_predict), .in0(pred_eip), .in1(new_eip));
+    //big_eq #(.WIDTH(32)) eq_pred_eip(.eq(accurate_predict), .in0(pred_eip), .in1(new_eip));
+    big_eq #(.WIDTH(1)) eq_pred_dir(.eq(accurate_predict), .in0(pred_dir), .in1(branch_taken));
     inv1$ inv_mispredict(mispredict, accurate_predict);
 endmodule 

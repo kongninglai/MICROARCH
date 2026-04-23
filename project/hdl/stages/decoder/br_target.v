@@ -1,5 +1,5 @@
 module br_target(
-    input wire [31:0] o_eip,
+    input wire [31:0] i_eip,
     input wire [7:0] opcode,
     input wire [47:0] imm, //imm[15:0] for rel16, imm[31:0] for rel32
     input wire op_size_overload, //to determine if rel16 or rel32 for certain instructions
@@ -62,9 +62,9 @@ module br_target(
     se #(.INP_WIDTH(8), .OUT_WIDTH(32)) sign_extend_rel8(.in(offset_rel8), .out(offset_rel8_ext));
     se #(.INP_WIDTH(16), .OUT_WIDTH(32)) sign_extend_rel16(.in(offset_rel16), .out(offset_rel16_ext));
 
-    PA_32b TARGET_rel32_adder(.in0(o_eip), .in1(offset_rel32), .s(target_rel32));
-    PA_32b TARGET_rel16_adder(.in0(o_eip), .in1(offset_rel16_ext), .s(target_rel16));
-    PA_32b TARGET_rel8_adder(.in0(o_eip), .in1(offset_rel8_ext), .s(target_rel8));
+    PA_32b TARGET_rel32_adder(.in0(i_eip), .in1(offset_rel32), .s(target_rel32));
+    PA_32b TARGET_rel16_adder(.in0(i_eip), .in1(offset_rel16_ext), .s(target_rel16));
+    PA_32b TARGET_rel8_adder(.in0(i_eip), .in1(offset_rel8_ext), .s(target_rel8));
 
     //Select the Correct Branch Target 
     mux3_onehot DUT(

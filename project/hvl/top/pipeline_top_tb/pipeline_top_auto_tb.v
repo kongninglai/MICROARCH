@@ -54,6 +54,8 @@ wire [1:0]  to_rr_addr_mode;
 wire  [31:0] to_rr_oeip;
 wire  [31:0] to_rr_ieip;
 wire  [31:0] to_rr_pred_eip;
+wire         to_rr_pred_dir;
+wire  [3:0]  to_rr_pht_idx;
 wire  [1:0]  to_rr_exception;
 wire         to_rr_valid;
 
@@ -132,7 +134,6 @@ wire from_wb_flush;
 
 assign from_rr_cs = from_regunit_CS;
 assign from_ex_ld_cs = 1'b0;
-assign from_ex_pht_idx = 4'd0;
 
 reg [31:0] wb_ieip;
 reg [31:0] wb_eflags;
@@ -165,6 +166,8 @@ backend_top dut (
   .to_rr_oeip(to_rr_oeip),
   .to_rr_ieip(to_rr_ieip),
   .to_rr_pred_eip(to_rr_pred_eip),
+  .to_rr_pred_dir(to_rr_pred_dir),
+  .to_rr_pht_idx(to_rr_pht_idx),
   .to_rr_exception(to_rr_exception),
   .to_rr_valid(to_rr_valid),
 
@@ -175,6 +178,7 @@ backend_top dut (
   .from_ex_br_t_nt(from_ex_br_t_nt),
   .from_ex_br_valid(from_ex_br_valid),
   .from_ex_eip_target(from_ex_eip_target),
+  .from_ex_pht_idx(from_ex_pht_idx),
   .from_wb_flush(from_wb_flush),
 
   /*** CACHE INTERFACE ***/
@@ -726,6 +730,8 @@ fetch_decode_top FRONTEND_TOP(
     .to_rr_oeip(to_rr_oeip),
     .to_rr_ieip(to_rr_ieip),
     .to_rr_pred_eip(to_rr_pred_eip),
+    .to_rr_pred_dir(to_rr_pred_dir),
+    .to_rr_pht_idx(to_rr_pht_idx),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
     .to_rr_valid(to_rr_valid)

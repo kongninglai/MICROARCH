@@ -30,6 +30,8 @@ module stage_ex #(
     input [31:0]    to_ex_oeip,
     input [31:0]    to_ex_ieip,
     input [31:0]    to_ex_pred_eip,
+    input           to_ex_pred_dir, 
+    input [3:0]     to_ex_pht_idx,
     input [1:0]     to_ex_exception,
     input           to_ex_valid,
 
@@ -58,7 +60,7 @@ module stage_ex #(
     output              from_ex_br_valid,
     output [15:0]       from_ex_cs_target,
     output [31:0]       from_ex_eip_target,
-    /*TODO: ADD from_ex_pht_idx[3:0] */
+    output [3:0]        from_ex_pht_idx,
 
     output [16:0]       from_ex_control_sigs,
     output [2:0]        from_ex_dstidA, 
@@ -118,6 +120,7 @@ module stage_ex #(
     // assign from_ex_store_queue_alloc_line_1 = to_ex_store_queue_alloc_line_1;
     assign from_ex_store_data_shf_amt = to_ex_store_data_shf_amt;
     assign from_ex_oeip = to_ex_oeip;
+    assign from_ex_pht_idx = to_ex_pht_idx;
 
     bufferH16$  bufferH16$_from_ex_valid(from_ex_valid, to_ex_valid);
     /*** Control Signals ***/
@@ -429,6 +432,7 @@ module stage_ex #(
         .load_result(to_ex_load_result_buf16),
         .rel_eip(to_ex_rel_eip),
         .pred_eip(to_ex_pred_eip),
+        .pred_dir(to_ex_pred_dir),
         .ieip(to_ex_ieip_buf16),
         .iret_eip(iret_eip),
         .sig_con_jump(sig_con_jmp),

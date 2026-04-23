@@ -17,6 +17,8 @@ module stage_decode(
     output wire [31:0] o_eip,
     output wire [31:0] bp_eip_target,
     output wire pr_de_rr_valid, //to rr stage pipeline regs are valid
+    output wire pred_dir,
+    output wire [3:0] pht_idx,
 
     //to fetch output
     output wire ld_eip, //to fetch stage to load new feip
@@ -136,6 +138,7 @@ module stage_decode(
         .prefix_ext(prefix_ext),
         .is_branch(is_branch),
         .o_eip(o_eip), //used to predict cur instruction in decode
+        .i_eip(i_eip),
         .br_t_nt_ex_d(br_t_nt_ex_d), //used to update pht for instr in execute stage
         .br_valid_ex_d(br_valid_ex_d), //used to update pht for instr in execute stage
         .ext_pht_idx(pht_idx_ex_d), //used to update pht for instr in execute stage
@@ -144,8 +147,11 @@ module stage_decode(
         .hit(hit),
 
         .cur_instr_prediction(cur_instr_prediction),
+        .pht_idx(pht_idx),
         .ghr_out() //used internally only
     );
+
+    assign pred_dir = cur_instr_prediction;
 
 endmodule
 
