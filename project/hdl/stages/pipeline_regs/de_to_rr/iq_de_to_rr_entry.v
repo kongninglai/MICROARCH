@@ -1,5 +1,5 @@
 module iq_de_to_rr_entry #(
-  parameter ENTRY_BIT_WIDTH = 221
+  parameter ENTRY_BIT_WIDTH = 317
 ) (
   input                           clk,
   input                           rst_n,

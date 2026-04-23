@@ -18,6 +18,8 @@
 ~/MICROARCH/project/hdl/local-lib/muxes/mux4_64.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_64.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux16_8b.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_96.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_96.v
 ~/MICROARCH/project/hdl/stages/forwarding/gp_forwarding.v
 ~/MICROARCH/project/hdl/local-lib/extenders/ze.v
 ~/MICROARCH/project/hdl/local-lib/extenders/se.v
@@ -31,6 +33,7 @@
 ~/MICROARCH/project/hdl/stages/rr/get_segreg_idx.v
 ~/MICROARCH/project/hdl/stages/rr/regunit.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucoderom.v
+~/MICROARCH/project/hdl/stages/decoder/to_rr_ucode_lookup.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_controller.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_fsm.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/rr_sig.v

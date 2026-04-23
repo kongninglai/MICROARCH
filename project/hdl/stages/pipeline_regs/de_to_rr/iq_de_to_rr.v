@@ -83,9 +83,9 @@ reg_n #(
 
 /*** READ POINTER LOGIC ***/
 
-wire    [PTR_WIDTH-1:0]   rd_ptr, rd_ptr_buf16, rd_ptr_plus_1, rd_ptr_d;
+wire    [PTR_WIDTH-1:0]   rd_ptr, rd_ptr_buf64, rd_ptr_plus_1, rd_ptr_d;
 
-bufferH16$    bufferH16$_rd_ptr_buf16[PTR_WIDTH-1:0](rd_ptr_buf16, rd_ptr);
+bufferH64$    bufferH64$_rd_ptr_buf64[PTR_WIDTH-1:0](rd_ptr_buf64, rd_ptr);
 
 /* rd_ptr_plus_1 = (rd_ptr + 1) mod 4 */
 wire [5:0] rd_ptr_plus_1_dummy;
@@ -95,8 +95,8 @@ mux4_8$ mux4_8$_rd_ptr_plus_1(
   {6'd0, 2'b10},
   {6'd0, 2'b11},
   {6'd0, 2'b00},
-  rd_ptr_buf16[0],
-  rd_ptr_buf16[1]
+  rd_ptr_buf64[0],
+  rd_ptr_buf64[1]
 );
 
 /* On flush, reset rd_ptr to 0 */
@@ -183,7 +183,7 @@ wire    [NUM_ENTRIES-1:0]   wr_one_hot, wr_one_hot_gated_bar, wr_one_hot_gated;
 decoder2_4$   decoder2_4$_wr_one_hot(.SEL(wr_ptr_buf64), .Y(wr_one_hot), .YBAR());
 
 nand2$   nand2$_wr_one_hot_gated_bar[NUM_ENTRIES-1:0](wr_one_hot_gated_bar, wr_one_hot, {NUM_ENTRIES{wr}});
-bufferHInv256$ bufferHInv256$_wr_one_hot_gated[NUM_ENTRIES-1:0](wr_one_hot_gated, wr_one_hot_gated_bar);
+bufferHInv1024$ bufferHInv1024$_wr_one_hot_gated[NUM_ENTRIES-1:0](wr_one_hot_gated, wr_one_hot_gated_bar);
 
 /*** ENTRY INSTANTIATION ***/
 
@@ -208,15 +208,15 @@ endgenerate
 
 genvar k;
 generate
-  for (k = 0; k < 13; k = k + 1) begin : DATA_OUT_MUX4_16b_GEN
+  for (k = 0; k < 19; k = k + 1) begin : DATA_OUT_MUX4_16b_GEN
     mux4_16$ mux4_16_data_out (
       data_out[k*16 +: 16],
       data_out_full[0][k*16 +: 16],
       data_out_full[1][k*16 +: 16],
       data_out_full[2][k*16 +: 16],
       data_out_full[3][k*16 +: 16],
-      rd_ptr_buf16[0],
-      rd_ptr_buf16[1]
+      rd_ptr_buf64[0],
+      rd_ptr_buf64[1]
     );
   end
 endgenerate
@@ -224,13 +224,13 @@ endgenerate
 /* Top 13 bits (221 - 13*16 = 13), pad to 16 for mux4_16$ */
 wire [2:0] data_out_top_dummy;
 mux4_16$ mux4_16_data_out_top (
-  {data_out_top_dummy, data_out[ENTRY_BIT_WIDTH-1:13*16]},
-  {3'd0, data_out_full[0][ENTRY_BIT_WIDTH-1:13*16]},
-  {3'd0, data_out_full[1][ENTRY_BIT_WIDTH-1:13*16]},
-  {3'd0, data_out_full[2][ENTRY_BIT_WIDTH-1:13*16]},
-  {3'd0, data_out_full[3][ENTRY_BIT_WIDTH-1:13*16]},
-  rd_ptr_buf16[0],
-  rd_ptr_buf16[1]
+  {data_out_top_dummy, data_out[ENTRY_BIT_WIDTH-1:19*16]},
+  {3'd0, data_out_full[0][ENTRY_BIT_WIDTH-1:19*16]},
+  {3'd0, data_out_full[1][ENTRY_BIT_WIDTH-1:19*16]},
+  {3'd0, data_out_full[2][ENTRY_BIT_WIDTH-1:19*16]},
+  {3'd0, data_out_full[3][ENTRY_BIT_WIDTH-1:19*16]},
+  rd_ptr_buf64[0],
+  rd_ptr_buf64[1]
 );
 
 /*** HEAD VALID ***/
