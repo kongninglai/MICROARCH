@@ -56,8 +56,8 @@
         output wire to_rr_valid
 ); 
 
-        localparam ENTRY_BIT_WIDTH = 226;
-        localparam VALID_BIT       = 122;
+        localparam ENTRY_BIT_WIDTH = 317;
+        localparam VALID_BIT       = 218;
         localparam COUNT_WIDTH     = 3;
 
         wire [6:0] prefixes;
