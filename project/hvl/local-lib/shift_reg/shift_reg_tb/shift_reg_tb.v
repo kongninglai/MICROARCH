@@ -26,7 +26,7 @@ module shifter_tb;
 
     shift_reg dut(
         .clk(clk), .rst_n(rst_n), .shift(shift),
-        .instr_len(instr_len), .inbytes(inbytes),
+        .instr_len(instr_len), .gate(1'b1), .inbytes(inbytes),
         .wr_en(wr_en), .outbytes(outbytes_dut), .ready(ready_dut)
     );
 

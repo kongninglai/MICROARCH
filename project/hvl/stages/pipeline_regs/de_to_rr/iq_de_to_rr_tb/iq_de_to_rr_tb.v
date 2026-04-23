@@ -7,8 +7,8 @@ initial begin
   // $vcdpluson(0, iq_de_to_rr_tb.REF);
 end
 
-localparam ENTRY_BIT_WIDTH = 221;
-localparam VALID_BIT       = 122;
+localparam ENTRY_BIT_WIDTH = 317;
+localparam VALID_BIT       = 218;
 localparam NUM_ENTRIES     = 4;
 localparam PTR_WIDTH       = $clog2(NUM_ENTRIES);
 localparam COUNT_WIDTH     = PTR_WIDTH + 1;

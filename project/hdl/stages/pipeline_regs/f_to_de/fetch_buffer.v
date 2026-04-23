@@ -49,16 +49,11 @@ module fetch_buffer(
 
     //True Consume Logic
     wire [3:0] gated_instr_len, gated_instr_len_prebuf;
-    wire true_consume; 
-    nor2$ nor_true_consume(true_consume, from_de_valid_bar, from_de_stall); //only consume instruction (decr tail ptr) if de is valid and not stalled
-    
-    //Correct Instruction Length
-    and2$ gate_len0(gated_instr_len_prebuf[0], from_de_instr_len[0], true_consume);
-    and2$ gate_len1(gated_instr_len_prebuf[1], from_de_instr_len[1], true_consume);
-    and2$ gate_len2(gated_instr_len_prebuf[2], from_de_instr_len[2], true_consume);
-    and2$ gate_len3(gated_instr_len_prebuf[3], from_de_instr_len[3], true_consume);
-
-    bufferH16$    bufferH16$_gated_instr_len[3:0](gated_instr_len, gated_instr_len_prebuf);
+    wire true_consume, true_consume_prebuf; 
+    nor2$ nor_true_consume(true_consume_prebuf, from_de_valid_bar, from_de_stall); //only consume instruction (decr tail ptr) if de is valid and not stalled
+    wire true_consume_bar;
+    inv1$ inv1$_true_consume_bar(true_consume_bar, true_consume_prebuf);
+    bufferH64$  bufferH64$_true_consume(true_consume, true_consume_prebuf);
 
     //Cache Line Load Sign Generation
     wire tail_ptr_less_than_16; //can replace mag comp with inverter bc need to look at only bit 4 to see if greater than 16
@@ -71,7 +66,8 @@ module fetch_buffer(
     logic_tail_ptr LOGIC_TAIL_PTR(
         .clk(clk),
         .rst_bar(rst_bar),
-        .incr_amt(gated_instr_len),
+        .incr_amt(from_de_instr_len),
+        .zero_inst_len(true_consume_bar),
         .offset(offset),
         .shft_reg_we(shft_reg_we_internal_prebuf),
         .flush(flush),
@@ -127,8 +123,8 @@ module fetch_buffer(
 
     //Fetch Buffer
     shift_reg FETCH_BUFFER(
-        .clk(clk), .rst_n(rst_bar), //change from physical rst, to logical rst (only use tail pointer reset)
-        .shift(shft_reg_we_internal), .instr_len(gated_instr_len), 
+        .clk(clk), .rst_n(rst_bar), 
+        .shift(shft_reg_we_internal), .instr_len(from_de_instr_len), .gate(true_consume),
         .inbytes(cl_aligned), .wr_en(wr_en), 
         .outbytes(to_de_outbytes[127:0]), .ready()
     ); 
@@ -148,7 +144,7 @@ module fetch_buffer(
     endgenerate
 
     wire ready_pfb;
-    shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(rst_bar), .shift(shft_reg_we_internal), .instr_len(gated_instr_len), .inbytes(pf_expn_bits_in), 
+    shift_reg PAGE_FAULT_BYTES(.clk(clk), .rst_n(rst_bar), .shift(shft_reg_we_internal), .instr_len(from_de_instr_len), .gate(true_consume), .inbytes(pf_expn_bits_in), 
         .wr_en(wr_en), .outbytes(pf_expn_bits_out), .ready()
     );
 

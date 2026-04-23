@@ -19,6 +19,7 @@ module stage_rr #(
     input to_rr_pred_dir,
     input [3:0] to_rr_pht_idx,
     input [1:0]  to_rr_exception,
+    input [95:0] to_rr_ucode_sigs,
     input to_rr_valid,
 
     input from_ag_stall_bar,
@@ -136,6 +137,7 @@ module stage_rr #(
     ucode_fsm ucode_fsm_inst (
         .clk(clk),
         .rst_n(rst_n),
+        .to_rr_ucode_sigs(to_rr_ucode_sigs),
         .to_rr_valid(to_rr_valid),
         .rep(from_rr_rep),
         .stall(fsm_stall),

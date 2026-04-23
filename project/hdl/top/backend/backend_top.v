@@ -24,6 +24,7 @@ module backend_top #(
     input to_rr_pred_dir,
     input [3:0] to_rr_pht_idx,
     input [1:0] to_rr_exception,
+    input [95:0] to_rr_ucode_sigs,
     input to_rr_valid,
 
     /*** To FRONTEND ***/
@@ -47,6 +48,9 @@ module backend_top #(
 
     /* DMA Interrupt */
     input           DMA_INT,
+
+    input           DCACHE_STALL_UNCOND_BAR,
+    input           DCACHE_STALL_IF_MEM_BAR,
 
     /* Outputs to D$ to help with lookup */
     output  [11:0]  MEM_PAGE_OFFSET,
@@ -527,6 +531,7 @@ module backend_top #(
         .to_rr_pred_dir(to_rr_pred_dir),
         .to_rr_pht_idx(to_rr_pht_idx),
         .to_rr_exception(to_rr_exception),
+        .to_rr_ucode_sigs(to_rr_ucode_sigs),
         .to_rr_valid(to_rr_valid),
         .from_ag_stall_bar(from_ag_stall_bar),
         .from_wb_flush(from_wb_flush),
@@ -769,7 +774,7 @@ module backend_top #(
         .from_mem_stall(from_mem_stall),
         .from_mem_valid_store_inst(from_mem_valid_store_inst),
         .from_ex_valid_store_inst(from_ex_valid_store_inst),
-        .from_wb_stall_if_mem_en(from_wb_stall_if_mem_en),
+        .from_wb_stall_if_mem_en(DCACHE_STALL_IF_MEM_BAR),
         .from_wb_valid_store_inst(from_wb_valid_store_inst),
 
         .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx[2]),
@@ -974,7 +979,7 @@ module backend_top #(
       .from_mem_ldAB(from_mem_ldAB),
       .from_mem_ldREGS(from_mem_ldREGS),
       .from_mem_valid_mem_inst(from_mem_valid_mem_inst),
-      .DCACHE_STALL(DCACHE_STALL),
+      .DCACHE_STALL(DCACHE_STALL_UNCOND_BAR),
       .DCACHE_HIT_DATA(DCACHE_HIT_DATA),
 
       .from_rr_code_segment_limit(from_regunit_cs_limit),

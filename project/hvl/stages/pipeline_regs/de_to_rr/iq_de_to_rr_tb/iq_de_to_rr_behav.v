@@ -1,6 +1,6 @@
 module iq_de_to_rr_behav #(
-  parameter ENTRY_BIT_WIDTH = 221,
-  parameter VALID_BIT       = 122,
+  parameter ENTRY_BIT_WIDTH = 317,
+  parameter VALID_BIT       = 218,
   parameter NUM_ENTRIES     = 4,
   parameter PTR_WIDTH       = $clog2(NUM_ENTRIES),
   parameter COUNT_WIDTH     = PTR_WIDTH + 1

@@ -24,7 +24,7 @@ wire [3:0] to_rr_pht_idx;
 wire [31:0] to_pr_pred_eip;
 wire [1:0] to_rr_exception;
 wire to_rr_valid;
-
+wire [95:0] to_rr_ucode_sigs;
 //TLB wires
 wire [19:0] ITLB_VPN; //stage fetch a
 wire [2:0]  ITLB_PFN_OUT;
@@ -89,6 +89,7 @@ fetch_decode_top FRONTEND_TOP (
     .to_rr_pht_idx(to_rr_pht_idx),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
+    .to_rr_ucode_sigs(to_rr_ucode_sigs),
     .to_rr_valid(to_rr_valid)
 );
 
@@ -140,6 +141,9 @@ wire         DCACHE_HIT;
 wire         DCACHE_STALL;
 wire         WBE_BUSY;
 wire         DMA_INT;
+
+wire         DCACHE_STALL_UNCOND_BAR;
+wire         DCACHE_STALL_IF_MEM_BAR;
 
 tlb_wrapper tlb_inst (
     .ITLB_VPN(ITLB_VPN), //input from frontend
@@ -228,6 +232,8 @@ full_cache #(
     .DCACHE_HIT(DCACHE_HIT),
     .DCACHE_STALL(DCACHE_STALL),
     .WBE_BUSY(WBE_BUSY),
+    .DCACHE_STALL_UNCOND_BAR(DCACHE_STALL_UNCOND_BAR),
+    .DCACHE_STALL_IF_MEM_BAR(DCACHE_STALL_IF_MEM_BAR),
 
     .DMA_INT(DMA_INT),
 
@@ -265,6 +271,7 @@ backend_top #(
     .to_rr_pred_dir(to_rr_pred_dir),
     .to_rr_pht_idx(to_rr_pht_idx),
     .to_rr_exception(to_rr_exception),
+    .to_rr_ucode_sigs(to_rr_ucode_sigs),
     .to_rr_valid(to_rr_valid),
 
     //outputs to frontend
@@ -283,6 +290,8 @@ backend_top #(
     .DCACHE_HIT_DATA(DCACHE_HIT_DATA),
     .DCACHE_HIT(DCACHE_HIT),
     .WBE_BUSY(WBE_BUSY),
+    .DCACHE_STALL_UNCOND_BAR(DCACHE_STALL_UNCOND_BAR),
+    .DCACHE_STALL_IF_MEM_BAR(DCACHE_STALL_IF_MEM_BAR),
 
     //input for dma interrupt
     .DMA_INT(DMA_INT),

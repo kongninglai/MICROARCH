@@ -5,6 +5,7 @@ initial begin
   $vcdpluson(0, pipeline_top_auto_tb); 
   // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
+  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
 end
 
 integer i;
@@ -18,7 +19,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 130;
+localparam CYCLE_TIME_X10 = 94;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -57,6 +58,7 @@ wire  [31:0] to_rr_pred_eip;
 wire         to_rr_pred_dir;
 wire  [3:0]  to_rr_pht_idx;
 wire  [1:0]  to_rr_exception;
+wire  [95:0] to_rr_ucode_sigs;
 wire         to_rr_valid;
 
 wire [6:0] fe_to_rr_prefix;
@@ -113,6 +115,8 @@ wire         DCACHE_HIT;
 wire         DCACHE_STALL;
 wire         WBE_BUSY;
 wire         DMA_INT;
+wire         DCACHE_STALL_UNCOND_BAR;
+wire         DCACHE_STALL_IF_MEM_BAR;
 
 /*** FULL CACHE BUS WIRES (TB SIDE) ***/
 wire [31:0] DATA_BUS;
@@ -169,6 +173,7 @@ backend_top dut (
   .to_rr_pred_dir(to_rr_pred_dir),
   .to_rr_pht_idx(to_rr_pht_idx),
   .to_rr_exception(to_rr_exception),
+  .to_rr_ucode_sigs(to_rr_ucode_sigs),
   .to_rr_valid(to_rr_valid),
 
   .from_rr_stall(from_rr_stall),
@@ -187,6 +192,8 @@ backend_top dut (
   .DCACHE_HIT(DCACHE_HIT),
   .WBE_BUSY(WBE_BUSY),
   .DMA_INT(DMA_INT),
+  .DCACHE_STALL_UNCOND_BAR(DCACHE_STALL_UNCOND_BAR),
+  .DCACHE_STALL_IF_MEM_BAR(DCACHE_STALL_IF_MEM_BAR),
 
   .MEM_PAGE_OFFSET(MEM_PAGE_OFFSET),
   .MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST),
@@ -263,6 +270,8 @@ full_cache #(
   .DCACHE_HIT(DCACHE_HIT),
   .DCACHE_STALL(DCACHE_STALL),
   .WBE_BUSY(WBE_BUSY),
+  .DCACHE_STALL_UNCOND_BAR(DCACHE_STALL_UNCOND_BAR),
+  .DCACHE_STALL_IF_MEM_BAR(DCACHE_STALL_IF_MEM_BAR),
 
   .DMA_INT(DMA_INT),
 
@@ -734,6 +743,7 @@ fetch_decode_top FRONTEND_TOP(
     .to_rr_pht_idx(to_rr_pht_idx),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
+    .to_rr_ucode_sigs(to_rr_ucode_sigs),
     .to_rr_valid(to_rr_valid)
 );
 

@@ -171,7 +171,7 @@ stage_mem DUT (
   .to_mem_exception(to_mem_exception),
   .to_mem_valid(to_mem_valid),
 
-  .DCACHE_STALL(DCACHE_STALL),
+  .DCACHE_STALL(~DCACHE_STALL),
   .DCACHE_HIT_DATA(DCACHE_HIT_DATA),
 
   .from_rr_code_segment_limit(from_rr_code_segment_limit),
@@ -292,6 +292,8 @@ full_cache #(
   .DCACHE_HIT(DCACHE_HIT),
   .DCACHE_STALL(DCACHE_STALL),
   .WBE_BUSY(),
+  .DCACHE_STALL_UNCOND_BAR(),
+  .DCACHE_STALL_IF_MEM_BAR(),
 
   .DMA_INT(),
 
