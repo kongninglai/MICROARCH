@@ -73,6 +73,8 @@ module full_cache #(
   output                                                  DCACHE_HIT,
   output                                                  DCACHE_STALL,
   output                                                  WBE_BUSY,
+  output                                                  DCACHE_STALL_UNCOND_BAR, 
+  output                                                  DCACHE_STALL_IF_MEM_BAR,
 
   /*** DMA INTERRUPT ***/
   output                                                  DMA_INT,
@@ -510,10 +512,14 @@ reg_n #(
 
 nor2$   nor2$_DOUBLE_WBE_NOT_BUSY(DOUBLE_WBE_NOT_BUSY, WBE_BUSY, WBE_BUSY_REG);
 
-wire w1, w2;
+wire w1, w1_bar, w2;
 nand3$  nand3$_w1(w1, DOUBLE_WBE_NOT_BUSY, DIRTY_VICTIM, DCACHE_MISS);
 nand2$  nand2$_w2(w2, DOUBLE_WBE_NOT_BUSY, WB_VALID_IO_STORE_INST_buf1024);
-and2$  and2$_THIRD_STALL_REASON(THIRD_STALL_REASON, w1, w2);
+and2$   and2$_THIRD_STALL_REASON(THIRD_STALL_REASON, w1, w2);
+inv1$   inv1$_w1_bar(w1_bar, w1);
+
+wire THIRD_STALL_REASON_TRUE;
+nand2$  nand2$_THIRD_STALL_REASON_TRUE(THIRD_STALL_REASON_TRUE, w1, w2);
 
 wire WBE_BUSY_BAR;
 inv1$   inv1$_WBE_BUSY_BAR(WBE_BUSY_BAR, WBE_BUSY);
@@ -532,7 +538,7 @@ and3$   and3$_MEM_NO_IO_MISS(MEM_NO_IO_MISS, MEM_VALID_LOAD_INST_buf16, DCACHE_G
 
 wire    STICKY_BAR;
 
-inv1$   inv1$_D_RD_TLB_CACHE_DISABLE(D_RD_TLB_CACHE_DISABLE, D_RD_TLB_CACHE_ENABLE_OUT);
+bufferHInv16$   bufferHInv16$_D_RD_TLB_CACHE_DISABLE(D_RD_TLB_CACHE_DISABLE, D_RD_TLB_CACHE_ENABLE_OUT);
 inv1$   inv1$_STICKY_BAR(STICKY_BAR, STICKY);
 and3$   and3$_MEM_IO_MISS(MEM_IO_MISS, MEM_VALID_LOAD_INST_buf16, D_RD_TLB_CACHE_DISABLE, STICKY_BAR);
 
@@ -544,6 +550,16 @@ wire    THREE_OTHER_STALL_REASONS;
 nand3$  nand3$_THREE_OTHER_STALL_REASONS(THREE_OTHER_STALL_REASONS, STOREQ_MISS_BAR, MEM_NO_IO_MISS_BAR, MEM_IO_MISS_BAR);
 
 or2$    or2$_DCACHE_STALL(DCACHE_STALL, THREE_STALL_REASONS, THREE_OTHER_STALL_REASONS);
+
+wire non_io_load_miss_cond, io_load_miss_cond, load_miss_cond;
+nand2$  nand2$_non_io_load_miss_cond(non_io_load_miss_cond, D_RD_TLB_CACHE_ENABLE_OUT, DCACHE_GENERAL_MISS);
+nand2$  nand2$_io_load_miss_cond(io_load_miss_cond, D_RD_TLB_CACHE_DISABLE, STICKY_BAR);
+nand4$  nand4$_load_miss_cond(load_miss_cond, non_io_load_miss_cond, io_load_miss_cond, WBE_BUSY_BAR, w1);
+nand2$  nand2$_DCACHE_STALL_UNCOND_BAR(DCACHE_STALL_UNCOND_BAR, MEM_VALID_LOAD_INST_buf16, load_miss_cond);
+
+wire NEITHER_BUSY_BAR;
+inv1$   inv1$_NEITHER_BUSY_BAR(NEITHER_BUSY_BAR, NEITHER_BUSY);
+or3$   nor3$_DCACHE_STALL_IF_MEM_BAR(DCACHE_STALL_IF_MEM_BAR, NEITHER_BUSY_BAR, STOREQ_STORING_buf64, w1_bar);
 
 wire DCACHE_VALID_INT;
 nor4$   nor4$_DCACHE_VALID_INT(DCACHE_VALID_INT, THREE_STALL_REASONS, STOREQ_MISS, MEM_NO_IO_MISS, MEM_IO_MISS);

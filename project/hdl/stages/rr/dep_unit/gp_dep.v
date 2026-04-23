@@ -32,23 +32,23 @@ module gp_dep(
     get_pid get_pid_src(src_id, src_size, src_pid);
 
     wire depA, depB;
-    check_dep check_depA(
+    check_dep_bar check_depA(
         .src_id(src_pid),
         .dst_id(dstA_pid),
         .ld_dst(ld_dstA),
         .ld_src(ld_src),
-        .dep(depA)
+        .dep_bar(depA)
     );
 
-    check_dep check_depB(
+    check_dep_bar check_depB(
         .src_id(src_pid),
         .dst_id(dstB_pid),
         .ld_dst(ld_dstB),
         .ld_src(ld_src),
-        .dep(depB)
+        .dep_bar(depB)
     );
     
-    or2$ or_depAB(dep, depA, depB);
-    assign fw_mux = {depB, depA};
+    nand2$ nand_depAB(dep, depA, depB);
+    inv1$ inv1$_fw_mux[1:0](fw_mux, {depB, depA});
     
 endmodule

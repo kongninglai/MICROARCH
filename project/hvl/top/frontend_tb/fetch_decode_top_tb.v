@@ -165,6 +165,8 @@ full_cache #(
   .DCACHE_HIT(),
   .DCACHE_STALL(),
   .WBE_BUSY(),
+  .DCACHE_STALL_UNCOND_BAR(),
+  .DCACHE_STALL_IF_MEM_BAR(),
 
   .DMA_INT(),
 
