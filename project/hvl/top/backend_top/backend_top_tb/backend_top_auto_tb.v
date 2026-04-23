@@ -31,6 +31,7 @@ wire  [31:0] from_de_oeip;
 wire  [31:0] from_de_ieip;
 wire  [31:0] from_de_pred_eip;
 wire  [1:0]  from_de_exception;
+wire  [95:0] from_de_ucode_sigs;
 wire         from_de_valid;
 
 wire [6:0]  to_rr_prefix;
@@ -49,6 +50,7 @@ wire  [31:0] to_rr_pred_eip;
 wire  [1:0]  to_rr_exception;
 wire         to_rr_valid;
 
+wire   [95:0] to_rr_ucode_sigs;
 /*** CACHE / TLB INTERNAL WIRES ***/
 wire [11:0] MEM_PAGE_OFFSET;
 wire        MEM_VALID_LOAD_INST;
@@ -143,6 +145,7 @@ backend_top dut (
   .to_rr_ieip(to_rr_ieip),
   .to_rr_pred_eip(to_rr_pred_eip),
   .to_rr_exception(to_rr_exception),
+  .to_rr_ucode_sigs(to_rr_ucode_sigs),
   .to_rr_valid(to_rr_valid),
 
   .from_rr_stall(from_rr_stall),
@@ -589,6 +592,7 @@ dummy_fe dut_fe(
   .from_de_ieip(from_de_ieip),
   .from_de_pred_eip(from_de_pred_eip),
   .from_de_exception(from_de_exception),
+  .from_de_ucode_sigs(from_de_ucode_sigs),
   .from_de_valid(from_de_valid)
 );
 
@@ -611,6 +615,7 @@ dummy_fe_to_be dut_fe_to_be(
   .from_de_ieip(from_de_ieip),
   .from_de_pred_eip(from_de_pred_eip),
   .from_de_exception(from_de_exception),
+  .from_de_ucode_sigs(from_de_ucode_sigs),
   .from_de_valid(from_de_valid),
 
   .to_rr_prefix(to_rr_prefix),
@@ -626,6 +631,7 @@ dummy_fe_to_be dut_fe_to_be(
   .to_rr_ieip(to_rr_ieip),
   .to_rr_pred_eip(to_rr_pred_eip),
   .to_rr_exception(to_rr_exception),
+  .to_rr_ucode_sigs(to_rr_ucode_sigs),
   .to_rr_valid(to_rr_valid)
 );
 
@@ -682,7 +688,6 @@ begin
   accepted_cnt = 0;
   stalled_cnt  = 0;
   stream_done  = 1'b0;
-
   @(posedge clk);
   if (cur_test < NUM_TESTS_MEM)
     drive_testcase(cur_test);

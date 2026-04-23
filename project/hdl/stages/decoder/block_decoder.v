@@ -14,7 +14,8 @@ module block_decoder(
     output wire [2:0] imm_size, //in bytes
     output wire [47:0] imm,
     output wire [1:0] addressing_mode,
-    output wire [3:0] instr_length
+    output wire [3:0] instr_length,
+    output wire [95:0] ucode_sigs
 );      
 
 
@@ -74,7 +75,7 @@ module block_decoder(
         .S0(prefix_num[0]),
         .S1(prefix_num[1])
     );
-    bufferH64$  bufferH64$_opcode[7:0](opcode, opcode_byte_true);
+    bufferH256$  bufferH256$_opcode[7:0](opcode, opcode_byte_true);
 
     //Modrm logic
     wire [7:0] modrm_byte_true;
@@ -178,5 +179,12 @@ module block_decoder(
     
     bufferH16$    bufferH16$_instr_length[3:0](instr_length, instr_length_prebuf);
 
+    to_rr_ucode_lookup UCODE_LOOKUP(
+        .opcode(opcode),
+        .has_modrm(modrm_v),
+        .ext_opcode(prefix_ext),
+        .modrm_mode(modrm_byte_true[7:6]),
+        .to_rr_ucode_sigs(ucode_sigs)
+    );
 endmodule
 

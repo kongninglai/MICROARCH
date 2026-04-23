@@ -3,6 +3,7 @@ module ucode_fsm(
     input rst_n,
 
     input to_rr_valid,
+    input [95:0] to_rr_ucode_sigs,
     input rep,
     input stall,
     input interrupt,
@@ -58,12 +59,22 @@ module ucode_fsm(
     localparam OPC_IRET0            = 8'd45;
     localparam OPC_IRET1            = 8'd46;
 
-    wire [7:0] ucode_opcode;
-    wire [95:0] sig_reg, sig_mem, sig_ext, sig_ext_mem;
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg32.data")) ucoderom_reg(.opcode(ucode_opcode), .sig(sig_reg));
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem32.data")) ucoderom_mem(.opcode(ucode_opcode), .sig(sig_mem));
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext32.data")) ucoderom_ext(.opcode(ucode_opcode), .sig(sig_ext));
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem32.data")) ucoderom_ext_mem(.opcode(ucode_opcode), .sig(sig_ext_mem));
+    localparam UCODE_REP_READ_ECX = 96'b00xxxxx0x01xxxxxx000100000000000xxx00xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_REP_MOVS1    = 96'b10110xx0x01xxxxxx100100000000000xxx00xxxxxxxx1100xxxxxxxxxx0010xxxx0x0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_REP_CMPS0    = 96'b00xxxxxxxxxx01x0x000000100010000xxx00xxxxxxxxxxxxxxxxxxxxxx101010xx0x0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_REP_CMPS1    = 96'b11101111010x01xx1100110010001000xxx00xxxxxxxx0101000xxxxxxx101010xx1x0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_REP_CMPS2    = 96'b10110xx0x01xxxxxx100100000000001xxx00100xxxxx1100xxxxxxxxxx0010xxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_INTEX_INIT0  = 96'b01xxx00xx11xxxxx1100000010001000xxx00xxxxxxxxxxxx010xxx100001xx10xxx10xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_INTEX_INIT1  = 96'b01xxx00xx11xxxxx1100000010001000xxx11xxx10010xxxx010xxx101111xx11xxx10xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_IRET0        = 96'b01xxx00xx11xxxxx1100000010001000xxx00xxxxxxxxxxxx001xxxxxxx10xx11xx1x0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_IRET1        = 96'b01xxx00xx11xxxxx1100000010001001xxx1111110111xxxx001xxxxxxx10xx10xx1x0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+
+    // wire [7:0] ucode_opcode;
+    // wire [95:0] sig_reg, sig_mem, sig_ext, sig_ext_mem;
+    // ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg32.data")) ucoderom_reg(.opcode(ucode_opcode), .sig(sig_reg));
+    // ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem32.data")) ucoderom_mem(.opcode(ucode_opcode), .sig(sig_mem));
+    // ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext32.data")) ucoderom_ext(.opcode(ucode_opcode), .sig(sig_ext));
+    // ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem32.data")) ucoderom_ext_mem(.opcode(ucode_opcode), .sig(sig_ext_mem));
 
     wire counter_start, counter_dec, counter_finish;
     ecx_counter ecx_counter_inst(
@@ -81,22 +92,38 @@ module ucode_fsm(
     wire d0_in, d1_in, d2_in, d3_in;
     
     wire [3:0] state, next_state;
-    assign state = {Q3, Q2, Q1, Q0};
+
+     wire Q0_prebuf, Q1_prebuf, Q2_prebuf, Q3_prebuf,
+        Q0_bar_prebuf, Q1_bar_prebuf, Q2_bar_prebuf, Q3_bar_prebuf;
+
+    assign state = {Q3_prebuf, Q2_prebuf, Q1_prebuf, Q0_prebuf};
     assign next_state = {d3_in, d2_in, d1_in, d0_in};
 
-    wire valid_rep;
-    wire [7:0] ucode_idle;
-    and2$ and2_valid_rep(valid_rep, to_rr_valid, rep);
-    mux2_8$ mux2_ucode_idle(ucode_idle, opcode, OPC_REP_READ_ECX, valid_rep);
-    
+    wire valid_rep, valid_rep_bar;
+    // wire [7:0] ucode_idle;
+    wire [95:0] ucode_sig_idle;
+    nand2$ nand2_valid_rep(valid_rep_bar, to_rr_valid, rep);
+    bufferHInv16$ buffer_valid_rep(valid_rep, valid_rep_bar);
+    // mux2_8$ mux2_ucode_idle(ucode_idle, opcode, OPC_REP_READ_ECX, valid_rep);
+
+    wire [95:0] to_rr_ucode_sigs_buffered;
+    bufferH16$ buffer_to_rr_ucode_sigs[95:0](to_rr_ucode_sigs_buffered, to_rr_ucode_sigs);
+
+    mux2_96 mux2_ucode_sig_idle(ucode_sig_idle, to_rr_ucode_sigs_buffered, UCODE_REP_READ_ECX, valid_rep);
     wire [7:0] ucode_opcode_prebuf;
     bufferH64$  bufferH64$_ucode_opcode[7:0](ucode_opcode, ucode_opcode_prebuf);
-    mux16_8b mux16_ucode_opcode(ucode_opcode_prebuf, 
-                                ucode_idle, opcode, OPC_REP_MOVS1, OPC_REP_CMPS0, 
-                                OPC_REP_CMPS1, OPC_REP_CMPS2, OPC_INTEX_INIT0, OPC_INTEX_INIT1,
-                                OPC_IRET0, OPC_IRET1, opcode, opcode, 
-                                opcode, opcode, opcode, opcode,
-                                state[0], state[1], state[2], state[3]);
+    // mux16_8b mux16_ucode_opcode(ucode_opcode_prebuf, 
+    //                             ucode_idle, opcode, OPC_REP_MOVS1, OPC_REP_CMPS0, 
+    //                             OPC_REP_CMPS1, OPC_REP_CMPS2, OPC_INTEX_INIT0, OPC_INTEX_INIT1,
+    //                             OPC_IRET0, OPC_IRET1, opcode, opcode, 
+    //                             opcode, opcode, opcode, opcode,
+    //                             state[0], state[1], state[2], state[3]);
+    mux16_96 mux16_ucode_sig(ucode_sig,
+                             ucode_sig_idle, to_rr_ucode_sigs_buffered, UCODE_REP_MOVS1, UCODE_REP_CMPS0,
+                             UCODE_REP_CMPS1, UCODE_REP_CMPS2, UCODE_INTEX_INIT0, UCODE_INTEX_INIT1,
+                             UCODE_IRET0, UCODE_IRET1, to_rr_ucode_sigs_buffered, to_rr_ucode_sigs_buffered,
+                             to_rr_ucode_sigs_buffered,to_rr_ucode_sigs_buffered,to_rr_ucode_sigs_buffered,to_rr_ucode_sigs_buffered,
+                             Q0, Q1, Q2, Q3);
     // always @(*) begin 
     //     case (state)
     //         S_IDLE: begin 
@@ -212,9 +239,6 @@ module ucode_fsm(
     mux2$ mux2_d1_in(d1_in, Q1, D1, we);
     mux2$ mux2_d2_in(d2_in, Q2, D2, we);
     mux2$ mux2_d3_in(d3_in, Q3, D3, we);
-
-  wire Q0_prebuf, Q1_prebuf, Q2_prebuf, Q3_prebuf,
-        Q0_bar_prebuf, Q1_bar_prebuf, Q2_bar_prebuf, Q3_bar_prebuf;
         
 	dff$ dff_0(clk, d0_in, Q0_prebuf, Q0_bar_prebuf, rst_n, 1'b1);
 	dff$ dff_1(clk, d1_in, Q1_prebuf, Q1_bar_prebuf, rst_n, 1'b1);
@@ -247,7 +271,7 @@ module ucode_fsm(
     nor4$ nor_not_intex_or_iret(not_intex_or_iret, state_is_INTEX_INIT0, state_is_INTEX_INIT1, state_is_IRET0, state_is_IRET1);
     and3$ and_counter_start(counter_start, state_is_IDLE, rep, to_rr_valid);
     or2$ or_counter_dec(counter_dec, state_is_REP_CMPS0, state_is_REP_MOVS0);
-    nor4$ nor_ucode_stall_bar(ucode_stall_bar, d3_in, d2_in, d1_in, d0_in);
+    nor4$ nor_ucode_stall_bar(ucode_stall_bar, D3, D2, D1, D0);
 
     wire next_state_is_IDLE, idle_valid;
     nor4$ nor_next_state_is_IDLE(next_state_is_IDLE, d3_in, d2_in, d1_in, d0_in);
@@ -259,20 +283,20 @@ module ucode_fsm(
     // stall: state=S_IDLE & next_state != S_IDLE || state != S_IDLE & next_state != S_IDLE
     // assign ucode_stall_bar          = ~(next_state != S_IDLE);
     // assign ucode_valid          = (state == S_IDLE) ? (to_rr_valid & next_state == S_IDLE) : 1'b1;
-    wire [95:0] sig_reg_rm, sig_ext_rm, sig_idle;
-    wire addr_mode, addr_mode_prebuf; // 1 for mem mode, 1 for reg mode
-    nand2$ nand_addrmode(addr_mode_prebuf, modrm[1], modrm[0]);
-    bufferH16$  bufferH16$_addr_mode(addr_mode, addr_mode_prebuf);
-    mux2_64 mux2_reg_rm64(.in0(sig_reg[95:32]), .in1(sig_mem[95:32]), .s0(addr_mode), .out(sig_reg_rm[95:32]));
-    mux2_32 mux2_reg_rm32(.in0(sig_reg[31:0]), .in1(sig_mem[31:0]), .s0(addr_mode), .out(sig_reg_rm[31:0]));
-    mux2_64 mux2_ext_rm64(.in0(sig_ext[95:32]), .in1(sig_ext_mem[95:32]), .s0(addr_mode), .out(sig_ext_rm[95:32]));
-    mux2_32 mux2_ext_rm32(.in0(sig_ext[31:0]), .in1(sig_ext_mem[31:0]), .s0(addr_mode), .out(sig_ext_rm[31:0]));
+    // wire [95:0] sig_reg_rm, sig_ext_rm, sig_idle;
+    // wire addr_mode, addr_mode_prebuf; // 1 for mem mode, 1 for reg mode
+    // nand2$ nand_addrmode(addr_mode_prebuf, modrm[1], modrm[0]);
+    // bufferH16$  bufferH16$_addr_mode(addr_mode, addr_mode_prebuf);
+    // mux2_64 mux2_reg_rm64(.in0(sig_reg[95:32]), .in1(sig_mem[95:32]), .s0(addr_mode), .out(sig_reg_rm[95:32]));
+    // mux2_32 mux2_reg_rm32(.in0(sig_reg[31:0]), .in1(sig_mem[31:0]), .s0(addr_mode), .out(sig_reg_rm[31:0]));
+    // mux2_64 mux2_ext_rm64(.in0(sig_ext[95:32]), .in1(sig_ext_mem[95:32]), .s0(addr_mode), .out(sig_ext_rm[95:32]));
+    // mux2_32 mux2_ext_rm32(.in0(sig_ext[31:0]), .in1(sig_ext_mem[31:0]), .s0(addr_mode), .out(sig_ext_rm[31:0]));
 
-    mux4_64 mux4_sig64(.in0(sig_reg[95:32]), .in1(sig_reg_rm[95:32]), .in2(sig_ext[95:32]), .in3(sig_ext_rm[95:32]), .s0(has_modrm), .s1(ext_opcode), .out(sig_idle[95:32]));
-    mux4_32 mux4_sig32(.in0(sig_reg[31:0]), .in1(sig_reg_rm[31:0]), .in2(sig_ext[31:0]), .in3(sig_ext_rm[31:0]), .s0(has_modrm), .s1(ext_opcode), .out(sig_idle[31:0]));
+    // mux4_64 mux4_sig64(.in0(sig_reg[95:32]), .in1(sig_reg_rm[95:32]), .in2(sig_ext[95:32]), .in3(sig_ext_rm[95:32]), .s0(has_modrm), .s1(ext_opcode), .out(sig_idle[95:32]));
+    // mux4_32 mux4_sig32(.in0(sig_reg[31:0]), .in1(sig_reg_rm[31:0]), .in2(sig_ext[31:0]), .in3(sig_ext_rm[31:0]), .s0(has_modrm), .s1(ext_opcode), .out(sig_idle[31:0]));
 
-    mux2_64 mux2_ucode_sig64(.in0(sig_reg[95:32]), .in1(sig_idle[95:32]), .s0(state_is_IDLE), .out(ucode_sig[95:32]));
-    mux2_32 mux2_ucode_sig32(.in0(sig_reg[31:0]), .in1(sig_idle[31:0]), .s0(state_is_IDLE), .out(ucode_sig[31:0]));
+    // mux2_64 mux2_ucode_sig64(.in0(sig_reg[95:32]), .in1(sig_idle[95:32]), .s0(state_is_IDLE), .out(ucode_sig[95:32]));
+    // mux2_32 mux2_ucode_sig32(.in0(sig_reg[31:0]), .in1(sig_idle[31:0]), .s0(state_is_IDLE), .out(ucode_sig[31:0]));
     // assign ucode_sig = (state == S_IDLE) ? sig_idle : sig_reg;
     assign movs0 = state_is_REP_MOVS0;
     assign movs1 = state_is_REP_MOVS1;

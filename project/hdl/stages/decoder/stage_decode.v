@@ -38,7 +38,7 @@ module stage_decode(
     output wire [47:0] imm,
     output wire [1:0] addressing_mode,
     output wire [3:0] instr_length,
-
+    output wire [95:0] ucode_sigs,
     output wire ld_pr_rr, //to load register read pipeline registers signal
     output wire [1:0] exception_flags
 
@@ -63,7 +63,8 @@ module stage_decode(
         .imm_size(imm_size),
         .imm(imm),
         .addressing_mode(addressing_mode_prebuf),
-        .instr_length(instr_length)
+        .instr_length(instr_length),
+        .ucode_sigs(ucode_sigs)
     );     
 
     bufferH16$   bufferH16$_addressing_mode[1:0](addressing_mode, addressing_mode_prebuf);

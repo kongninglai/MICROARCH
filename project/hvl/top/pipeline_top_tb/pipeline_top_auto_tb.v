@@ -18,7 +18,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 130;
+localparam CYCLE_TIME_X10 = 99;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -55,6 +55,7 @@ wire  [31:0] to_rr_oeip;
 wire  [31:0] to_rr_ieip;
 wire  [31:0] to_rr_pred_eip;
 wire  [1:0]  to_rr_exception;
+wire  [95:0] to_rr_ucode_sigs;
 wire         to_rr_valid;
 
 wire [6:0] fe_to_rr_prefix;
@@ -168,6 +169,7 @@ backend_top dut (
   .to_rr_ieip(to_rr_ieip),
   .to_rr_pred_eip(to_rr_pred_eip),
   .to_rr_exception(to_rr_exception),
+  .to_rr_ucode_sigs(to_rr_ucode_sigs),
   .to_rr_valid(to_rr_valid),
 
   .from_rr_stall(from_rr_stall),
@@ -735,6 +737,7 @@ fetch_decode_top FRONTEND_TOP(
     .to_rr_pred_eip(to_rr_pred_eip),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
+    .to_rr_ucode_sigs(to_rr_ucode_sigs),
     .to_rr_valid(to_rr_valid)
 );
 

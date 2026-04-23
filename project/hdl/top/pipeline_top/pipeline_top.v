@@ -22,7 +22,7 @@ wire [31:0] to_rr_pred_eip;
 wire [31:0] to_pr_pred_eip;
 wire [1:0] to_rr_exception;
 wire to_rr_valid;
-
+wire [95:0] to_rr_ucode_sigs;
 //TLB wires
 wire [19:0] ITLB_VPN; //stage fetch a
 wire [2:0]  ITLB_PFN_OUT;
@@ -86,6 +86,7 @@ fetch_decode_top FRONTEND_TOP (
     .to_rr_pred_eip(to_rr_pred_eip),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
+    .to_rr_ucode_sigs(to_rr_ucode_sigs),
     .to_rr_valid(to_rr_valid)
 );
 
@@ -265,6 +266,7 @@ backend_top #(
     .to_rr_ieip(to_rr_ieip),
     .to_rr_pred_eip(to_rr_pred_eip),
     .to_rr_exception(to_rr_exception),
+    .to_rr_ucode_sigs(to_rr_ucode_sigs),
     .to_rr_valid(to_rr_valid),
 
     //outputs to frontend

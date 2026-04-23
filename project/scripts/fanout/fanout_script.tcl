@@ -55,7 +55,8 @@ foreach_in_collection n $hf_nets {
         if {[string match "*logic*" $ref] ||
             [string match "*Logic*" $ref] ||
             [string match "*TIE*"   $ref] ||
-            [string match "*tie*"   $ref]} {
+            [string match "*tie*"   $ref] ||
+            [string match "*GEN*"   $ref]} {
             continue
         }
 

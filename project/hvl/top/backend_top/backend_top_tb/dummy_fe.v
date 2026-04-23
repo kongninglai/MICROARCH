@@ -22,6 +22,7 @@ module dummy_fe(
     output [31:0] from_de_ieip,
     output [31:0] from_de_pred_eip,
     output [1:0]  from_de_exception,
+    output [95:0] from_de_ucode_sigs,
     output        from_de_valid
 ); 
     wire prefix_rep, prefix_op_size, prefix_seg, prefix_ext;
@@ -44,7 +45,8 @@ module dummy_fe(
         .imm_size(),
         .imm(from_de_imm),
         .addressing_mode(from_de_addr_mode),
-        .instr_length(instr_len)
+        .instr_length(instr_len),
+        .ucode_sigs(from_de_ucode_sigs)
     );
 
     assign from_de_prefix = {prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext};
@@ -89,6 +91,7 @@ module dummy_fe_to_be(
     input [31:0] from_de_ieip,
     input [31:0] from_de_pred_eip,
     input [1:0]  from_de_exception,
+    input [95:0] from_de_ucode_sigs,
     input        from_de_valid,
 
     output reg [6:0]  to_rr_prefix,
@@ -104,6 +107,7 @@ module dummy_fe_to_be(
     output reg [31:0] to_rr_ieip,
     output reg [31:0] to_rr_pred_eip,
     output reg [1:0]  to_rr_exception,
+    output reg [95:0] to_rr_ucode_sigs,
     output reg        to_rr_valid
 );
 
@@ -122,6 +126,7 @@ module dummy_fe_to_be(
             to_rr_ieip      <= 32'b0;
             to_rr_pred_eip  <= 32'b0;
             to_rr_exception <= 2'b0;
+            to_rr_ucode_sigs <= 96'b0;
             to_rr_valid     <= 1'b0;
         end else if (from_ex_flush | from_wb_flush) begin 
             to_rr_valid     <= 1'b0;
@@ -139,6 +144,7 @@ module dummy_fe_to_be(
             to_rr_ieip      <= from_de_ieip;     
             to_rr_pred_eip  <= from_de_pred_eip;
             to_rr_exception <= from_de_exception;
+            to_rr_ucode_sigs <= from_de_ucode_sigs;
             to_rr_valid     <= from_de_valid;    
         end
     end

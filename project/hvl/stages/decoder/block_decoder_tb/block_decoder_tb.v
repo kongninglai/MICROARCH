@@ -44,7 +44,8 @@ module tb_block_decoder();
         .imm_size(imm_size),
         .imm(imm),
         .addressing_mode(addressing_mode),
-        .instr_length(incr_amt)
+        .instr_length(incr_amt),
+        .ucode_sigs()
     );
 
     // 5. Reusable Verification Task

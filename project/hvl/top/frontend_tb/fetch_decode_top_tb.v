@@ -66,6 +66,7 @@ wire [31:0] to_rr_ieip;
 wire [31:0] to_rr_pred_eip;
 wire [31:0] to_pr_pred_eip;
 wire [1:0] to_rr_exception;
+wire [95:0] to_rr_ucode_sigs;
 wire to_rr_valid;
 
 //mem?
@@ -117,6 +118,7 @@ fetch_decode_top DUT (
     .to_rr_pred_eip(to_rr_pred_eip),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
+    .to_rr_ucode_sigs(to_rr_ucode_sigs),
     .to_rr_valid(to_rr_valid)
 );
 

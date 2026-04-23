@@ -64,7 +64,7 @@ module tb_stage_decode();
         .prefix_ext(prefix_ext), .opcode(opcode), .modrm(modrm), .sib(sib),
         .disp_size_mux(disp_size_mux), .disp(disp), .imm_size(imm_size), 
         .imm(imm), .addressing_mode(addressing_mode), .instr_length(instr_length),
-        .ld_pr_rr(), .exception_flags() //unused
+        .ld_pr_rr(), .exception_flags(), .ucode_sigs() //unused
     );
 
     // --------------------------------------------------------

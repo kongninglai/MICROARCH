@@ -82,7 +82,8 @@ end
         .to_rr_addressing_mode(to_rr_addressing_mode),
         .to_rr_instr_length(to_rr_instr_length),
         .from_de_eip_redirection(), //unused
-        .shft_reg_we() //unused
+        .shft_reg_we(), //unused
+        .to_rr_ucode_sigs()
     );
     
     // ---------------------------------------------------------
