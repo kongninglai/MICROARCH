@@ -5,6 +5,7 @@ initial begin
   // $vcdpluson(0, pipeline_top_auto_tb); 
   // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
+  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
 end
 
 integer i;
@@ -18,7 +19,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 99;
+localparam CYCLE_TIME_X10 = 94;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 

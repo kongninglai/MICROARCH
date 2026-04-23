@@ -2,6 +2,7 @@ module logic_tail_ptr(
     input wire clk,
     input wire rst_bar,
     input wire [3:0] incr_amt, //gated instr length
+    input wire zero_inst_len,
     input wire [3:0] offset, //eip bottom bits
     input wire shft_reg_we,
     input wire flush,
@@ -83,12 +84,6 @@ module logic_tail_ptr(
       {3'd0, 1'b0, we_cl_byte_cnt[3:0]},
       unaligned_eip_redir
     );
-
-    wire zero_inst_len;
-    nor4$ nor4$_zero_inst_len(zero_inst_len,  incr_amt[0],
-                                              incr_amt[1],
-                                              incr_amt[2],
-                                              incr_amt[3]);
 
     mux8_8 mux_tail_ptr_in(
         .Y(tail_ptr_in_w), 

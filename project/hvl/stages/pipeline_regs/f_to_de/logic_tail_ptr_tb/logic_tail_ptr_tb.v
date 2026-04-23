@@ -28,6 +28,7 @@ module logic_tail_ptr_tb;
         .clk(clk),
         .rst_bar(rst_bar),
         .incr_amt(incr_amt),       // EXACT MATCH
+        .zero_inst_len(incr_amt===4'd0),
         .offset(offset),
         .shft_reg_we(shft_reg_we), 
         .flush(flush),

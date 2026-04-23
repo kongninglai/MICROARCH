@@ -177,7 +177,7 @@ module block_decoder(
         .incr_amt(instr_length_prebuf)
     );
     
-    bufferH16$    bufferH16$_instr_length[3:0](instr_length, instr_length_prebuf);
+    bufferH64$    bufferH64$_instr_length[3:0](instr_length, instr_length_prebuf);
 
     to_rr_ucode_lookup UCODE_LOOKUP(
         .opcode(opcode),

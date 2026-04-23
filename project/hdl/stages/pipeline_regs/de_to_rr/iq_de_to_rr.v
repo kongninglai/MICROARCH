@@ -165,11 +165,11 @@ mux2_8$ mux2_8$_entry_count_d(
   flush);
 
 wire    entry_count_en;
-or3$    or3$_entry_count_en(entry_count_en, wr, rd, flush);
+nor3$   nor3$_entry_count_en(entry_count_en, wr, rd, flush);
 
 reg_n #(
   .WIDTH(COUNT_WIDTH),
-  .USE_EN_BAR(0)
+  .USE_EN_BAR(1)
 ) reg_n_entry_count (
   .clk(clk), .rst(rst_n),
   .en({COUNT_WIDTH{entry_count_en}}), .d(entry_count_d),
