@@ -423,6 +423,7 @@ module stage_ex #(
     wire [31:0] target_eip, target_eip_buf16;
     bufferH16$  bufferH16$_target_eip_buf16[31:0](target_eip_buf16, target_eip);
     wire branch_taken, mispredict;
+    wire [31:0] jump_eip;
     ex_control control (
         .r_m(regA_rm_buf64),
         .imm(to_ex_imm_buf16),
@@ -436,7 +437,7 @@ module stage_ex #(
         .sig_op_ovr(sig_op_ovr_buf16),
         .eflags_zf(eflags_zf),
         .eflags_cf(eflags_cf),
-
+        .jump_eip(jump_eip),
         .new_eip(target_eip),
         .branch_taken(branch_taken),
         .mispredict(mispredict)
@@ -450,7 +451,7 @@ module stage_ex #(
     mux4_16$ mux4_cs(from_ex_cs_target, to_ex_target_cs, ret_cs, to_ex_load_result_buf16[31:16], iret_cs, sig_cs_mux[0], sig_cs_mux[1]);
     
     wire branch_gp_exception, gp_exception;
-    cmp_gt_32b cs_limit_cmp(.in0(target_eip_buf16), .in1(to_ex_cs_limit), .gt(gp_exception));
+    cmp_gt_32b cs_limit_cmp(.in0(jump_eip), .in1(to_ex_cs_limit), .gt(gp_exception));
     and2$ and_valid_gp_ex(branch_gp_exception, gp_exception, is_taken_branch);
 
     // TODO: How to filter out the exceptions/uncod ? do we need that? hurt performance, but rare

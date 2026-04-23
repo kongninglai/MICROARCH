@@ -22,6 +22,7 @@ module backend_top #(
     input [31:0] to_rr_ieip,
     input [31:0] to_rr_pred_eip,
     input [1:0] to_rr_exception,
+    input [95:0] to_rr_ucode_sigs,
     input to_rr_valid,
 
     /*** To FRONTEND ***/
@@ -511,6 +512,7 @@ module backend_top #(
         .to_rr_ieip(to_rr_ieip),
         .to_rr_pred_eip(to_rr_pred_eip),
         .to_rr_exception(to_rr_exception),
+        .to_rr_ucode_sigs(to_rr_ucode_sigs),
         .to_rr_valid(to_rr_valid),
         .from_ag_stall_bar(from_ag_stall_bar),
         .from_wb_flush(from_wb_flush),

@@ -20,6 +20,8 @@
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shifters
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shift_reg
 
+~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucoderom.v
+
 // Test Logic 
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/decoder
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/fetch

@@ -40,6 +40,7 @@ module fetch_decode_top(
     output wire [31:0] to_rr_pred_eip,
     output wire [31:0] to_pr_pred_eip,
     output wire [1:0] to_rr_exception,
+    output wire [95:0] to_rr_ucode_sigs,
     output wire to_rr_valid
 );
 
@@ -101,7 +102,8 @@ module fetch_decode_top(
         .to_rr_addressing_mode(to_rr_addr_mode),
         .to_rr_instr_length(), //unused in top
         .from_de_eip_redirection(from_de_take_branch_prebuf),
-        .shft_reg_we(from_fetch_buffer_shft_reg_we)
+        .shft_reg_we(from_fetch_buffer_shft_reg_we),
+        .to_rr_ucode_sigs(to_rr_ucode_sigs)
     );  
 
 

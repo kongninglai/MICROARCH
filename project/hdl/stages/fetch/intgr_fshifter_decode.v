@@ -32,6 +32,7 @@ module intgr_fshifter_decode(
     output wire [47:0] to_rr_imm,
     output wire [1:0] to_rr_addressing_mode,
     output wire [3:0] to_rr_instr_length,
+    output wire [95:0] to_rr_ucode_sigs,
     output wire from_de_eip_redirection,
 
     output wire shft_reg_we
@@ -39,6 +40,8 @@ module intgr_fshifter_decode(
 
     wire [4:0]  tail_ptr;
     wire [3:0] to_pr_instr_length;
+    wire [95:0] to_pr_ucode_sigs;
+
     wire to_pr_pr_valid, to_pr_pr_valid_buf16;
     bufferH16$  bufferH16$_to_pr_pr_valid_buf16(to_pr_pr_valid_buf16, to_pr_pr_valid);
 
@@ -116,7 +119,7 @@ module intgr_fshifter_decode(
         .imm(to_pr_imm),
         .addressing_mode(to_pr_addressing_mode),
         .instr_length(to_pr_instr_length),
-
+        .ucode_sigs(to_pr_ucode_sigs),
         .ld_pr_rr(to_pr_ld_pr_rr_prebuf),
         .exception_flags(to_pr_exception_flags)
 
@@ -155,7 +158,7 @@ module intgr_fshifter_decode(
         .from_de_imm(to_pr_imm),
         .from_de_addressing_mode(to_pr_addressing_mode),
         .from_de_instr_length(to_pr_instr_length),
-
+        .from_de_ucode_sigs(to_pr_ucode_sigs),
         //outputs
         .to_rr_exception_flags(to_rr_exception_flags),
         .to_rr_i_eip(to_rr_i_eip),
@@ -174,7 +177,7 @@ module intgr_fshifter_decode(
         .to_rr_imm(to_rr_imm),
         .to_rr_addressing_mode(to_rr_addressing_mode),
         .to_rr_instr_length(to_rr_instr_length),
-
+        .to_rr_ucode_sigs(to_rr_ucode_sigs),
         .iq_full(iq_full),
         .to_rr_valid(to_rr_pr_valid)
     ); 

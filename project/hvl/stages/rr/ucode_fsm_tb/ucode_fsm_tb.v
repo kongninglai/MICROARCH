@@ -11,6 +11,7 @@ module ucode_fsm_tb;
     reg         rst_n;
 
     reg         to_rr_valid;
+    reg [95:0]  to_rr_ucode_sigs;
     reg         rep;
     reg         stall;
     reg         interrupt;
@@ -69,6 +70,7 @@ module ucode_fsm_tb;
         .clk(clk),
         .rst_n(rst_n),
         .to_rr_valid(to_rr_valid),
+        .to_rr_ucode_sigs(to_rr_ucode_sigs),
         .rep(rep),
         .stall(stall),
         .interrupt(interrupt),
@@ -104,6 +106,7 @@ module ucode_fsm_tb;
         .clk(clk),
         .rst_n(rst_n),
         .to_rr_valid(to_rr_valid),
+        .to_rr_ucode_sigs(to_rr_ucode_sigs),
         .rep(rep),
         .stall(stall),
         .interrupt(interrupt),
@@ -144,6 +147,7 @@ module ucode_fsm_tb;
     task clear_inputs;
     begin
         to_rr_valid  = 1'b0;
+        to_rr_ucode_sigs = 96'b0;
         rep          = 1'b0;
         stall        = 1'b0;
         interrupt    = 1'b0;
@@ -339,7 +343,7 @@ module ucode_fsm_tb;
         SUCCESSES = 0;
 
         reset_dut();
-
+        to_rr_ucode_sigs = {$random, $random, $random};
         // --------------------------------
         // 1. IDLE stays IDLE on normal non-special instruction
         // --------------------------------

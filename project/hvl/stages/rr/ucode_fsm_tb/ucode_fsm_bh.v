@@ -3,6 +3,7 @@ module ucode_fsm_bh(
     input rst_n,
 
     input to_rr_valid,
+    input [95:0] to_rr_ucode_sigs,
     input rep,
     input stall,
     input interrupt,
@@ -57,13 +58,17 @@ module ucode_fsm_bh(
     localparam OPC_IRET0            = 8'd45;
     localparam OPC_IRET1            = 8'd46;
 
-    reg [7:0] ucode_opcode;
-    wire [95:0] sig_reg, sig_mem, sig_ext, sig_ext_mem;
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_reg32.data")) ucoderom_reg(.opcode(ucode_opcode), .sig(sig_reg));
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_mem32.data")) ucoderom_mem(.opcode(ucode_opcode), .sig(sig_mem));
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext32.data")) ucoderom_ext(.opcode(ucode_opcode), .sig(sig_ext));
-    ucoderom #(.MEMFILE64("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem64.data"), .MEMFILE32("/home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/rr/ucode_rom/ucode_ext_mem32.data")) ucoderom_ext_mem(.opcode(ucode_opcode), .sig(sig_ext_mem));
+    localparam UCODE_REP_READ_ECX = 96'b00xxxxx0x01xxxxxx000100000000000xxx00xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_REP_MOVS1    = 96'b10110xx0x01xxxxxx100100000000000xxx00xxxxxxxx1100xxxxxxxxxx0010xxxx0x0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_REP_CMPS0    = 96'b00xxxxxxxxxx01x0x000000100010000xxx00xxxxxxxxxxxxxxxxxxxxxx101010xx0x0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_REP_CMPS1    = 96'b11101111010x01xx1100110010001000xxx00xxxxxxxx0101000xxxxxxx101010xx1x0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_REP_CMPS2    = 96'b10110xx0x01xxxxxx100100000000001xxx00100xxxxx1100xxxxxxxxxx0010xxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_INTEX_INIT0  = 96'b01xxx00xx11xxxxx1100000010001000xxx00xxxxxxxxxxxx010xxx100001xx10xxx10xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_INTEX_INIT1  = 96'b01xxx00xx11xxxxx1100000010001000xxx11xxx10010xxxx010xxx101111xx11xxx10xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_IRET0        = 96'b01xxx00xx11xxxxx1100000010001000xxx00xxxxxxxxxxxx001xxxxxxx10xx11xx1x0xxxxxxxxxxxxxxxxxxxxxxxxxx;
+    localparam UCODE_IRET1        = 96'b01xxx00xx11xxxxx1100000010001001xxx1111110111xxxx001xxxxxxx10xx10xx1x0xxxxxxxxxxxxxxxxxxxxxxxxxx;
 
+    reg [7:0] ucode_opcode;
 
     wire counter_start, counter_dec, counter_finish;
     ecx_counter_bh ecx_counter_inst(
@@ -190,23 +195,34 @@ module ucode_fsm_bh(
         endcase
     end
 
+    reg [95:0] reg_ucode_sigs;
+    assign ucode_sig = reg_ucode_sigs;
+    always @(*) begin 
+        case (state)
+            S_IDLE: begin 
+                if (to_rr_valid & rep) begin 
+                    reg_ucode_sigs = UCODE_REP_READ_ECX;
+                end else begin 
+                    reg_ucode_sigs = to_rr_ucode_sigs;
+                end
+            end
+            S_REP_MOVS0:    reg_ucode_sigs = to_rr_ucode_sigs; 
+            S_REP_MOVS1:    reg_ucode_sigs = UCODE_REP_MOVS1;
+            S_REP_CMPS0:    reg_ucode_sigs = UCODE_REP_CMPS0;
+            S_REP_CMPS1:    reg_ucode_sigs = UCODE_REP_CMPS1;
+            S_REP_CMPS2:    reg_ucode_sigs = UCODE_REP_CMPS2;
+            S_INTEX_INIT0:  reg_ucode_sigs = UCODE_INTEX_INIT0;
+            S_INTEX_INIT1:  reg_ucode_sigs = UCODE_INTEX_INIT1;
+            S_IRET0:        reg_ucode_sigs = UCODE_IRET0;
+            S_IRET1:        reg_ucode_sigs = UCODE_IRET1;
+        endcase
+    end
     assign counter_start        = (state == S_IDLE) & rep & to_rr_valid;
     assign counter_dec          = ((state == S_REP_CMPS0) | (state == S_REP_MOVS0));
     // stall: state=S_IDLE & next_state != S_IDLE || state != S_IDLE & next_state != S_IDLE
     assign ucode_stall_bar          = ~(next_state != S_IDLE);
     assign ucode_valid          = (state == S_IDLE) ? to_rr_valid : 1'b1;
-    wire [95:0] sig_reg_rm, sig_ext_rm, sig_idle;
-    wire addr_mode; // 1 for mem mode, 1 for reg mode
-    nand2$ nand_addrmode(addr_mode, modrm[1], modrm[0]);
-    mux2_64 mux2_reg_rm64(.in0(sig_reg[95:32]), .in1(sig_mem[95:32]), .s0(addr_mode), .out(sig_reg_rm[95:32]));
-    mux2_32 mux2_reg_rm32(.in0(sig_reg[31:0]), .in1(sig_mem[31:0]), .s0(addr_mode), .out(sig_reg_rm[31:0]));
-    mux2_64 mux2_ext_rm64(.in0(sig_ext[95:32]), .in1(sig_ext_mem[95:32]), .s0(addr_mode), .out(sig_ext_rm[95:32]));
-    mux2_32 mux2_ext_rm32(.in0(sig_ext[31:0]), .in1(sig_ext_mem[31:0]), .s0(addr_mode), .out(sig_ext_rm[31:0]));
-
-    mux4_64 mux4_sig64(.in0(sig_reg[95:32]), .in1(sig_reg_rm[95:32]), .in2(sig_ext[95:32]), .in3(sig_ext_rm[95:32]), .s0(has_modrm), .s1(ext_opcode), .out(sig_idle[95:32]));
-    mux4_32 mux4_sig32(.in0(sig_reg[31:0]), .in1(sig_reg_rm[31:0]), .in2(sig_ext[31:0]), .in3(sig_ext_rm[31:0]), .s0(has_modrm), .s1(ext_opcode), .out(sig_idle[31:0]));
-
-    assign ucode_sig = (state == S_IDLE) ? sig_idle : sig_reg;
+    
     assign movs0 = (state == S_REP_MOVS0);
     assign movs1 = (state == S_REP_MOVS1);
     assign cmps0 = (state == S_REP_CMPS0);

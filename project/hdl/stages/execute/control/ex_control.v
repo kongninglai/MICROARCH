@@ -12,6 +12,7 @@ module ex_control(
     input eflags_zf,
     input eflags_cf,
 
+    output [31:0] jump_eip,
     output [31:0] new_eip,
     output branch_taken,
     output mispredict
@@ -31,6 +32,7 @@ module ex_control(
 
     // ldEIP_out = ldEIP & (uncond_jmp | jne | jnbe) & mispredict
     or3$ or_jmp(branch_taken, uncond_jmp, jne, jnbe);
+    assign jump_eip = masked_eip;
     mux2_32 mux2_t_nt_eip(new_eip, ieip, masked_eip, branch_taken);
     wire accurate_predict;
     big_eq #(.WIDTH(32)) eq_pred_eip(.eq(accurate_predict), .in0(pred_eip), .in1(new_eip));

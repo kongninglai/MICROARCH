@@ -16,6 +16,10 @@
 ~/MICROARCH/project/hdl/local-lib/muxes/mux2_64.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux4_64.v
 ~/MICROARCH/project/hdl/local-lib/muxes/mux8_64.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux2_96.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_32.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_64.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux16_96.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/rr_sig.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucoderom.v
 ~/MICROARCH/project/hvl/stages/rr/ucode_fsm_tb/ucode_fsm_bh.v
