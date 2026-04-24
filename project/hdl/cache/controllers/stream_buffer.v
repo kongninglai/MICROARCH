@@ -1,4 +1,5 @@
 module stream_buffer #(
+  parameter   STREAM_BUFFER_EN=1'b1,
   parameter   RANK_BIT_WIDTH=128,
   parameter   BUS_BIT_WIDTH=32,
   parameter   RANK_BURST_SIZE=4,
@@ -89,7 +90,15 @@ nor4$   nor4$_not_writing(not_writing, stream_buffer_wr_mask[0], stream_buffer_w
 or4$         or4$_writing(writing,     stream_buffer_wr_mask[0], stream_buffer_wr_mask[1],
                                        stream_buffer_wr_mask[2], stream_buffer_wr_mask[3]);
 
-and2$   and2$_stream_buffer_hit(stream_buffer_hit, stream_buffer_hit_int, not_writing);
-or2$    or2$_stream_buffer_miss(stream_buffer_miss, stream_buffer_miss_int, writing);
+generate 
+  if (STREAM_BUFFER_EN) begin 
+    and2$   and2$_stream_buffer_hit(stream_buffer_hit, stream_buffer_hit_int, not_writing);
+    or2$    or2$_stream_buffer_miss(stream_buffer_miss, stream_buffer_miss_int, writing);
+  end else begin 
+    assign stream_buffer_hit = 1'b0;
+    assign stream_buffer_miss = 1'b1;
+  end
+endgenerate
+
 
 endmodule

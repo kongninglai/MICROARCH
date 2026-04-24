@@ -1,4 +1,5 @@
 module cc_off_core #(
+  parameter   STREAM_BUFFER_EN=1'b1,
   parameter MEM_BYTE_CAPACITY=32768,
   parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
 
@@ -61,7 +62,9 @@ wire    [2:0]   REQS, ACKS;
 
 wire    DATA_VALID_BAR;
 
-cache_controller cache_controller_inst (
+cache_controller #(
+  .STREAM_BUFFER_EN(STREAM_BUFFER_EN)
+) cache_controller_inst (
     .rst(rst), .clk(clk),
     .KB_PFN(KB_PFN), .DMA_PFN(DMA_PFN),
     .DATA_BUS(DATA_BUS),

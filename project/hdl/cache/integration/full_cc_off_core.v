@@ -1,4 +1,6 @@
 module full_cc_off_core #(
+  parameter ROW_BUFFER_EN=1'b1,
+  parameter STREAM_BUFFER_EN=1'b1,
   parameter MEM_BYTE_CAPACITY=32768,
   parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
 
@@ -120,7 +122,9 @@ dcache_controller_wbe dcache_controller_wbe_inst (
     .WBE_BUSY                       (WBE_BUSY)
 );
 
-cache_controller icache_controller_inst (
+cache_controller #(
+  .STREAM_BUFFER_EN(STREAM_BUFFER_EN)
+) icache_controller_inst (
     .rst(rst), .clk(clk),
     .KB_PFN(KB_PFN), .DMA_PFN(DMA_PFN),
     .DATA_BUS(DATA_BUS),
@@ -145,7 +149,9 @@ cache_controller icache_controller_inst (
     .CC_FSM_VALID_WR_EN_GLOBAL(ICC_FSM_VALID_WR_EN_GLOBAL)
 );
 
-cache_controller dcache_controller_inst (
+cache_controller #(
+  .STREAM_BUFFER_EN(STREAM_BUFFER_EN)
+) dcache_controller_inst (
     .rst(rst), .clk(clk),
     .KB_PFN(KB_PFN), .DMA_PFN(DMA_PFN),
     .DATA_BUS(DATA_BUS),
@@ -170,7 +176,7 @@ cache_controller dcache_controller_inst (
     .CC_FSM_VALID_WR_EN_GLOBAL(DCC_FSM_VALID_WR_EN_GLOBAL)
 );
 
-off_core_top #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) off_core_top_inst (
+off_core_top #(.CYCLE_TIME_X10(CYCLE_TIME_X10), .ROW_BUFFER_EN(ROW_BUFFER_EN)) off_core_top_inst (
   .rst(rst),
   .clk(clk),
   .DC_MEM_WR_RQ(DCC_REQS[5]),

@@ -1,5 +1,6 @@
 module full_cache #(
-
+  parameter ROW_BUFFER_EN=1'b1,
+  parameter STREAM_BUFFER_EN=1'b1,
   parameter MEM_BYTE_CAPACITY=32768,
   parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
 
@@ -811,6 +812,8 @@ bufferHInv16$   bufferHInv16$_ICACHE_STREAM_BUF_HIT_WITH_ACCESS_buf16(ICACHE_STR
 /************************************************************/
 
 full_cc_off_core #(
+  .ROW_BUFFER_EN(ROW_BUFFER_EN),
+  .STREAM_BUFFER_EN(STREAM_BUFFER_EN),
   .MEM_BYTE_CAPACITY         (MEM_BYTE_CAPACITY),
   .CYCLE_TIME_X10            (CYCLE_TIME_X10),
   .NUM_SETS                  (NUM_SETS),

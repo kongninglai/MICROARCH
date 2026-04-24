@@ -8,6 +8,12 @@ initial begin
   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
 end
 
+/******* PERFORMANCE FEATURES ********/
+localparam STREAM_BUFFER_EN    = 1'b0;
+localparam ROW_BUFFER_EN       = 1'b0;
+localparam FORWARD_EN          = 1'b0;
+localparam INSTR_Q_EN          = 1'b0;
+
 integer i;
 integer NUM_TESTS = 0;
 integer FAILURES  = 0;
@@ -19,7 +25,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 94;
+localparam CYCLE_TIME_X10 = 150;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -153,7 +159,9 @@ reg [7:0] TEST_CASE_NEW_CHAR, TEST_CASE_NEW_CHAR_WR;
 reg TEST_CASE_NEW_READY, TEST_CASE_NEW_READY_WR;
 
 /*** DUT ***/
-backend_top dut (
+backend_top #(
+  .FORWARD_EN(FORWARD_EN)
+) dut (
   .clk(clk),
   .rst_n(rst_n),
 
@@ -225,6 +233,8 @@ backend_top dut (
 );
 
 full_cache #(
+  .ROW_BUFFER_EN     (ROW_BUFFER_EN),
+  .STREAM_BUFFER_EN  (STREAM_BUFFER_EN),
   .CYCLE_TIME_X10    (CYCLE_TIME_X10),
   .TRUE_LRU          (TRUE_LRU)
 ) full_cache_inst (
@@ -716,7 +726,9 @@ reg [31:0] accepted_cnt;
 reg [31:0] stalled_cnt;
 localparam integer MAX_STREAM_CYCLES = 200000;
 
-fetch_decode_top FRONTEND_TOP(
+fetch_decode_top #(
+  .INSTR_Q_EN(INSTR_Q_EN)
+) FRONTEND_TOP(
     .clk(clk),
     .rst_bar(rst_n),
 
