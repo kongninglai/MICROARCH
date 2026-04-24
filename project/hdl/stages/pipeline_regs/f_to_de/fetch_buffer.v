@@ -36,7 +36,7 @@ module fetch_buffer(
     inv1$ inv1$_from_de_valid_bar(from_de_valid_bar, from_de_valid);
 
     nand2$ nand_eip_redir_valid_bar(from_de_eip_redirection_valid_bar, from_de_eip_redirection, from_de_valid);
-    nand3$ nand_flush(flush, from_wb_flush_bar, from_ex_flush_bar, from_de_eip_redirection_valid_bar); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid data
+    nand2$ nand_flush(flush, from_ex_flush_bar, from_de_eip_redirection_valid_bar); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid datar with invalid data
     inv1$ inv_flush_bar(flush_bar, flush);
     
     //Shift Enable Register Logic (WE = ~IF_FULL && ICACHE_VALID)
