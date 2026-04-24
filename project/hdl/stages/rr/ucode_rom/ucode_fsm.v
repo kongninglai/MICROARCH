@@ -150,8 +150,31 @@ module ucode_fsm(
     /*** SCRIPT GENERATED FSM ***/
     wire rep_movs, rep_cmps;
 
-    assign rep_movs = (rep & movs & (reg_ecx!=0));
-    assign rep_cmps = (rep & cmps & (reg_ecx!=0));
+    wire big_or_out_bar;
+    wire g0, g1, g2, g3, g4, g5, g6, g7;
+    wire h0, h1;
+
+    nor4$ n0(g0, reg_ecx[0],  reg_ecx[1],  reg_ecx[2],  reg_ecx[3]);
+    nor4$ n1(g1, reg_ecx[4],  reg_ecx[5],  reg_ecx[6],  reg_ecx[7]);
+    nor4$ n2(g2, reg_ecx[8],  reg_ecx[9],  reg_ecx[10], reg_ecx[11]);
+    nor4$ n3(g3, reg_ecx[12], reg_ecx[13], reg_ecx[14], reg_ecx[15]);
+    nor4$ n4(g4, reg_ecx[16], reg_ecx[17], reg_ecx[18], reg_ecx[19]);
+    nor4$ n5(g5, reg_ecx[20], reg_ecx[21], reg_ecx[22], reg_ecx[23]);
+    nor4$ n6(g6, reg_ecx[24], reg_ecx[25], reg_ecx[26], reg_ecx[27]);
+    nor4$ n7(g7, reg_ecx[28], reg_ecx[29], reg_ecx[30], reg_ecx[31]);
+
+    nand4$ n8(h0, g0, g1, g2, g3);
+    nand4$ n9(h1, g4, g5, g6, g7);
+
+    nor2$ n10(big_or_out_bar, h0, h1);
+
+    wire rep_bar, movs_bar, cmps_bar;
+    inv1$ inv1$_rep_bar(rep_bar, rep);
+    inv1$ inv1$_movs_bar(movs_bar, movs);
+    inv1$ inv1$_cmps_bar(cmps_bar, cmps);
+
+    nor3$ nor3$_rep_movs(rep_movs, rep_bar, movs_bar, big_or_out_bar);
+    nor3$ nor3$_rep_cmps(rep_cmps, rep_bar, cmps_bar, big_or_out_bar);
 
     /* Inverters */
 	wire Q3_bar;

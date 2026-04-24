@@ -1,0 +1,160 @@
+0x0:  ba 00 0b 00 00  // mov edx,0xb00
+0x5:  8e d2  // mov ss,edx
+0x7:  bc 00 03 00 00  // mov esp,0x300
+0xc:  ba 00 02 00 00  // mov edx,0x200
+0x11:  8e da  // mov ds,edx
+0x13:  ba 00 04 00 00  // mov edx,0x400
+0x18:  8e c2  // mov es,edx
+0x1a:  bb 00 00 00 00  // mov ebx,0x0
+0x1f:  bd 00 00 00 00  // mov ebp,0x0
+0x24:  90  // === SECTION 1: back-to-back chained XCHGs ===
+0x25:  b8 01 00 aa aa  // mov eax,0xaaaa0001
+0x2a:  b9 02 00 bb bb  // mov ecx,0xbbbb0002
+0x2f:  ba 03 00 cc cc  // mov edx,0xcccc0003
+0x34:  be 04 00 dd dd  // mov esi,0xdddd0004
+0x39:  bf 05 00 ee ee  // mov edi,0xeeee0005
+0x3e:  87 c1  // xchg eax,ecx  (d=0: eax<->ecx)
+0x40:  87 ca  // xchg ecx,edx  (d=0: ecx dep on prev)
+0x42:  87 d6  // xchg edx,esi  (d=0: edx dep on prev)
+0x44:  87 f7  // xchg esi,edi  (d=0: esi dep on prev)
+0x46:  87 f8  // xchg edi,eax  (d=0: edi dep on prev)
+0x48:  87 c1  // xchg eax,ecx  (d=0: eax dep on prev)
+0x4a:  87 ca  // xchg ecx,edx  (d=0)
+0x4c:  87 d6  // xchg edx,esi  (d=0)
+0x4e:  90  // === SECTION 2: 90+r short-form XCHGs ===
+0x4f:  b8 01 00 00 10  // mov eax,0x10000001
+0x54:  b9 02 00 00 20  // mov ecx,0x20000002
+0x59:  ba 03 00 00 30  // mov edx,0x30000003
+0x5e:  bb 04 00 00 40  // mov ebx,0x40000004
+0x63:  be 06 00 00 60  // mov esi,0x60000006
+0x68:  bf 07 00 00 70  // mov edi,0x70000007
+0x6d:  91  // xchg eax,ecx (90+1)
+0x6e:  92  // xchg eax,edx (90+2)
+0x6f:  93  // xchg eax,ebx (90+3)
+0x70:  96  // xchg eax,esi (90+6)
+0x71:  97  // xchg eax,edi (90+7)
+0x72:  91  // xchg eax,ecx (90+1 again)
+0x73:  bb 00 00 00 00  // mov ebx,0x0 (restore EBX)
+0x78:  90  // === SECTION 3: XCHG RAW deps at dist 0,1,2,3 ===
+0x79:  b8 00 00 00 11  // mov eax,0x11000000
+0x7e:  b9 00 00 00 22  // mov ecx,0x22000000
+0x83:  87 c1  // xchg eax,ecx (prod, d=0)
+0x85:  03 d0  // add edx,eax (cons eax, d=0)
+0x87:  be 00 00 00 33  // mov esi,0x33000000
+0x8c:  bf 00 00 00 44  // mov edi,0x44000000
+0x91:  87 f7  // xchg esi,edi (prod, d=0)
+0x93:  03 d7  // add edx,edi (cons edi, d=0)
+0x95:  b8 01 00 00 11  // mov eax,0x11000001
+0x9a:  b9 01 00 00 22  // mov ecx,0x22000001
+0x9f:  87 c1  // xchg eax,ecx (prod, d=1)
+0xa1:  90  // nop
+0xa2:  03 d0  // add edx,eax (cons eax, d=1)
+0xa4:  be 01 00 00 33  // mov esi,0x33000001
+0xa9:  bf 01 00 00 44  // mov edi,0x44000001
+0xae:  87 f7  // xchg esi,edi (prod, d=1)
+0xb0:  90  // nop
+0xb1:  03 d7  // add edx,edi (cons edi, d=1)
+0xb3:  b8 02 00 00 11  // mov eax,0x11000002
+0xb8:  b9 02 00 00 22  // mov ecx,0x22000002
+0xbd:  87 c1  // xchg eax,ecx (prod, d=2)
+0xbf:  90  // nop
+0xc0:  90  // nop
+0xc1:  03 d0  // add edx,eax (cons eax, d=2)
+0xc3:  be 02 00 00 33  // mov esi,0x33000002
+0xc8:  bf 02 00 00 44  // mov edi,0x44000002
+0xcd:  87 f7  // xchg esi,edi (prod, d=2)
+0xcf:  90  // nop
+0xd0:  90  // nop
+0xd1:  03 d7  // add edx,edi (cons edi, d=2)
+0xd3:  b8 03 00 00 11  // mov eax,0x11000003
+0xd8:  b9 03 00 00 22  // mov ecx,0x22000003
+0xdd:  87 c1  // xchg eax,ecx (prod, d=3)
+0xdf:  90  // nop
+0xe0:  90  // nop
+0xe1:  90  // nop
+0xe2:  03 d0  // add edx,eax (cons eax, d=3)
+0xe4:  be 03 00 00 33  // mov esi,0x33000003
+0xe9:  bf 03 00 00 44  // mov edi,0x44000003
+0xee:  87 f7  // xchg esi,edi (prod, d=3)
+0xf0:  90  // nop
+0xf1:  90  // nop
+0xf2:  90  // nop
+0xf3:  03 d7  // add edx,edi (cons edi, d=3)
+0xf5:  90  // === SECTION 4: memory XCHGs ===
+0xf6:  b8 01 00 ad de  // mov eax,0xdead0001
+0xfb:  b9 02 00 ef be  // mov ecx,0xbeef0002
+0x100:  ba 03 00 fe ca  // mov edx,0xcafe0003
+0x105:  be 04 00 0d f0  // mov esi,0xf00d0004
+0x10a:  87 43 00  // xchg [ebx+0x00],eax  (mem<->eax)
+0x10d:  87 4b 00  // xchg [ebx+0x00],ecx  (d=0: mem dep)
+0x110:  87 53 10  // xchg [ebx+0x10],edx
+0x113:  87 73 10  // xchg [ebx+0x10],esi  (d=0: mem dep)
+0x116:  87 43 20  // xchg [ebx+0x20],eax  (d=0: eax dep)
+0x119:  87 4b 04  // xchg [ebx+0x04],ecx
+0x11c:  87 53 08  // xchg [ebx+0x08],edx
+0x11f:  87 73 0c  // xchg [ebx+0x0c],esi
+0x122:  b8 44 33 22 11  // mov eax,0x11223344
+0x127:  87 83 80 00 00 00  // xchg [ebx+0x080],eax
+0x12d:  87 8b 80 00 00 00  // xchg [ebx+0x080],ecx  (d=0: mem dep)
+0x133:  87 93 c0 00 00 00  // xchg [ebx+0x0c0],edx
+0x139:  87 b3 c0 00 00 00  // xchg [ebx+0x0c0],esi  (d=0: mem dep)
+0x13f:  90  // === SECTION 5: 8-bit and 16-bit XCHGs ===
+0x140:  b0 aa  // mov al,0xaa
+0x142:  b1 55  // mov cl,0x55
+0x144:  b2 33  // mov dl,0x33
+0x146:  b3 77  // mov bl,0x77
+0x148:  86 c1  // xchg al,cl  (d=0)
+0x14a:  86 ca  // xchg cl,dl  (d=0: cl dep)
+0x14c:  86 d3  // xchg dl,bl  (d=0: dl dep)
+0x14e:  86 c2  // xchg al,dl  (d=0: al dep)
+0x150:  86 cb  // xchg cl,bl  (d=0: cl dep)
+0x152:  66 b8 34 12  // mov ax,0x1234
+0x156:  66 b9 78 56  // mov cx,0x5678
+0x15a:  66 ba bc 9a  // mov dx,0x9abc
+0x15e:  66 bb f0 de  // mov bx,0xdef0
+0x162:  66 87 c1  // xchg ax,cx  (d=0)
+0x165:  66 87 ca  // xchg cx,dx  (d=0: cx dep)
+0x168:  66 87 d3  // xchg dx,bx  (d=0: dx dep)
+0x16b:  66 87 c2  // xchg ax,dx  (d=0: ax dep)
+0x16e:  66 b8 cd ab  // mov ax,0xabcd
+0x172:  66 b9 11 11  // mov cx,0x1111
+0x176:  66 91  // xchg ax,cx (66 91)
+0x178:  66 92  // xchg ax,dx (66 92, d=0: ax dep)
+0x17a:  66 93  // xchg ax,bx (66 93, d=0: ax dep)
+0x17c:  90  // === SECTION 6: XCHG loop (swap array elements) ===
+0x17d:  bb 00 00 00 00  // mov ebx,0x0  (restore EBX=0 before loop)
+0x182:  be 40 00 00 00  // mov esi,0x40  (array base offset)
+0x187:  b9 07 00 00 00  // mov ecx,7  (loop count)
+0x18c:  8b 04 1e  // mov eax,[ebx+esi]  (load arr[0])
+0x18f:  87 44 1e 04  // xchg [ebx+esi+4],eax  (swap with next)
+0x193:  83 c6 04  // add esi,4  (advance)
+0x196:  83 c1 ff  // add ecx,-1
+0x199:  75 f4  // jne loop_top
+0x19b:  89 04 1e  // mov [ebx+esi],eax  (store last)
+0x19e:  90  // === SECTION 7: XCHG with segment override ===
+0x19f:  b8 ce fa ed fe  // mov eax,0xfeedface
+0x1a4:  b9 01 ee ff c0  // mov ecx,0xc0ffee01
+0x1a9:  26 87 45 00  // xchg es:[ebp+0],eax
+0x1ad:  26 87 4d 00  // xchg es:[ebp+0],ecx  (d=0: mem dep)
+0x1b1:  26 87 45 04  // xchg es:[ebp+4],eax  (d=0: eax dep)
+0x1b5:  f4  // hlt
+
+0x2000: 87 a7 8d 59 c6 18 ab ef 45 29 fd 83 e7 8d 01 de
+0x2010: 65 d1 67 b7 13 04 c6 c3 80 87 9c 15 84 4e be fb
+0x2020: a5 ab d2 51 1b a6 83 e2 01 68 78 1e e1 ac b1 48
+0x2030: 47 62 91 fa 32 cf 02 af 9a e1 b7 4f b4 dc 17 c0
+0x2040: d3 cb c7 42 7b 8c f6 d3 5b 55 ab 9b a0 3e 8f 73
+0x2050: 93 e0 69 a0 b7 36 dd af 72 c7 1d 5b bf 4b dc 0d
+0x2060: e0 59 1d a4 fb 12 6c de 56 f4 c2 bb 7c aa 37 4b
+0x2070: ff e7 17 ca 14 fd 7c 75 31 75 f1 50 3e 15 5e d3
+0x2080: de c4 f1 bc 12 bc 67 27 cf 4d 53 d9 9b 54 dd 07
+0x2090: ed af c8 f7 af 1d 68 73 5f 4b d3 4f 7e c8 cd 47
+0x20a0: c4 df 94 6c b8 2b 73 78 0d 40 b6 d7 fe 16 17 71
+0x20b0: 38 a3 c8 62 59 0e 98 78 88 1d d9 eb b6 0a 45 0a
+0x20c0: a3 71 e6 20 a7 0b d4 7d 25 32 e7 86 e6 2c 88 10
+0x20d0: 45 0b f7 bc 17 d5 62 e3 16 8f 59 0b 49 6e f6 a4
+0x20e0: 97 ac 2c e5 02 8c 33 0d fe 3e 37 85 8c ba c0 1d
+0x20f0: 82 05 ce 54 e0 34 f2 87 52 c6 b5 8c 9d ac cd f6
+0x5000: 52 c8 81 42 9e ef 76 e7 b1 80 7a b4 6d 88 da f1
+0x42f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4300: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
