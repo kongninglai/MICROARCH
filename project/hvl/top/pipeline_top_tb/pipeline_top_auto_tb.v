@@ -583,6 +583,17 @@ initial begin
   handle_hlt = 0;
 end
 
+integer ipc_cycles;
+real ipc;
+
+always @(posedge clk) begin
+  if (!rst_n) begin
+    ipc_cycles <= 0;
+  end else begin
+    ipc_cycles <= ipc_cycles + 1;
+  end
+end
+
 always @(posedge clk) begin
   
   if (!rst_n) begin 
@@ -602,6 +613,13 @@ always @(posedge clk) begin
     #(CYCLE_TIME);
     $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
     $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+
+    ipc = NUM_TESTS * 1.0 / ipc_cycles;
+
+    $display("IPC cycles       = %0d", ipc_cycles);
+    $display("Committed instrs = %0d", NUM_TESTS);
+    $display("IPC              = %f", ipc);
+
     $finish;
 
   end
