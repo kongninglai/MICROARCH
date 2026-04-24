@@ -1,0 +1,593 @@
+0x0:  ba 00 0b 00 00  // mov edx,0xb00
+0x5:  8e d2  // mov ss,edx
+0x7:  bc 00 03 00 00  // mov esp,0x300
+0xc:  ba 00 02 00 00  // mov edx,0x200
+0x11:  8e da  // mov ds,edx
+0x13:  ba 00 04 00 00  // mov edx,0x400
+0x18:  8e c2  // mov es,edx
+0x1a:  ba 00 0a 00 00  // mov edx,0xa00
+0x1f:  8e e2  // mov fs,edx
+0x21:  bb 00 00 00 00  // mov ebx,0x0
+0x26:  bd 00 00 00 00  // mov ebp,0x0
+0x2b:  90  // === distance=0 ===
+0x2c:  90  // --- GPR dist=0 ---
+0x2d:  b8 01 00 ad de  // mov eax,0xdead0001 (EAX prod d=0)
+0x32:  03 c8  // add ecx,eax (EAX cons)
+0x34:  b9 02 00 ef be  // mov ecx,0xbeef0002 (ECX prod d=0)
+0x39:  03 c1  // add eax,ecx (ECX cons)
+0x3b:  ba 03 00 fe ca  // mov edx,0xcafe0003 (EDX prod d=0)
+0x40:  03 c2  // add eax,edx (EDX cons)
+0x42:  bb 04 00 0d f0  // mov ebx,0xf00d0004 (EBX prod d=0)
+0x47:  03 c3  // add eax,ebx (EBX cons)
+0x49:  bb 00 00 00 00  // mov ebx,0x0 (restore EBX)
+0x4e:  bc f0 02 00 00  // mov esp,0x2f0 (ESP prod d=0)
+0x53:  8b c4  // mov eax,esp (ESP cons)
+0x55:  bc 00 03 00 00  // mov esp,0x300 (restore ESP)
+0x5a:  bd 05 00 cd ab  // mov ebp,0xabcd0005 (EBP prod d=0)
+0x5f:  8b c5  // mov eax,ebp (EBP cons)
+0x61:  bd 00 00 00 00  // mov ebp,0x0 (restore EBP)
+0x66:  be 06 00 34 12  // mov esi,0x12340006 (ESI prod d=0)
+0x6b:  03 c6  // add eax,esi (ESI cons)
+0x6d:  bf 07 00 78 56  // mov edi,0x56780007 (EDI prod d=0)
+0x72:  03 c7  // add eax,edi (EDI cons)
+0x74:  90  // --- SEG dist=0 ---
+0x75:  ba 00 02 00 00  // mov edx,0x200
+0x7a:  8e da  // mov ds,dx (DS prod d=0)
+0x7c:  8b 43 00  // mov eax,[ebx+0] (DS cons)
+0x7f:  ba 00 04 00 00  // mov edx,0x400
+0x84:  8e c2  // mov es,dx (ES prod d=0)
+0x86:  26 8b 45 00  // mov eax,es:[ebp+0] (ES cons)
+0x8a:  ba 00 0b 00 00  // mov edx,0xb00
+0x8f:  8e d2  // mov ss,dx (SS prod d=0)
+0x91:  36 8b 43 00  // mov eax,ss:[ebx+0] (SS cons)
+0x95:  ba 00 0a 00 00  // mov edx,0xa00
+0x9a:  8e e2  // mov fs,dx (FS prod d=0)
+0x9c:  64 8b 43 00  // mov eax,fs:[ebx+0] (FS cons)
+0xa0:  ba 00 0c 00 00  // mov edx,0xc00
+0xa5:  8e ea  // mov gs,dx (GS prod d=0)
+0xa7:  65 8b 43 00  // mov eax,gs:[ebx+0] (GS cons)
+0xab:  90  // --- MMX dist=0 ---
+0xac:  0f 6f 43 00  // movq mm0,mem (MM0 prod d=0)
+0xb0:  0f fe c0  // paddd mm0,mm0 (MM0 cons)
+0xb3:  0f 6f 4b 08  // movq mm1,mem (MM1 prod d=0)
+0xb7:  0f fe c9  // paddd mm1,mm1 (MM1 cons)
+0xba:  0f 6f 53 10  // movq mm2,mem (MM2 prod d=0)
+0xbe:  0f fe d2  // paddd mm2,mm2 (MM2 cons)
+0xc1:  0f 6f 5b 18  // movq mm3,mem (MM3 prod d=0)
+0xc5:  0f fe db  // paddd mm3,mm3 (MM3 cons)
+0xc8:  0f 6f 63 20  // movq mm4,mem (MM4 prod d=0)
+0xcc:  0f fe e4  // paddd mm4,mm4 (MM4 cons)
+0xcf:  0f 6f 6b 28  // movq mm5,mem (MM5 prod d=0)
+0xd3:  0f fe ed  // paddd mm5,mm5 (MM5 cons)
+0xd6:  0f 6f 73 30  // movq mm6,mem (MM6 prod d=0)
+0xda:  0f fe f6  // paddd mm6,mm6 (MM6 cons)
+0xdd:  0f 6f 7b 38  // movq mm7,mem (MM7 prod d=0)
+0xe1:  0f fe ff  // paddd mm7,mm7 (MM7 cons)
+0xe4:  90  // --- FLAGS dist=0 ---
+0xe5:  b8 01 00 00 00  // mov eax,1
+0xea:  05 ff ff ff ff  // add eax,0xffffffff (CF prod d=0)
+0xef:  83 d1 00  // adc ecx,0 (CF cons)
+0xf2:  b8 00 00 00 00  // mov eax,0
+0xf7:  05 00 00 00 00  // add eax,0 (ZF prod d=0)
+0xfc:  75 00  // jne +0 (ZF cons, not taken)
+0xfe:  be 10 00 00 00  // mov esi,0x10
+0x103:  bf 10 00 00 00  // mov edi,0x10
+0x108:  fd  // std (DF prod d=0)
+0x109:  a5  // movs (DF cons)
+0x10a:  fc  // cld
+0x10b:  90  // === distance=1 ===
+0x10c:  90  // --- GPR dist=1 ---
+0x10d:  b8 01 00 ad de  // mov eax,0xdead0001 (EAX prod d=1)
+0x112:  90  // nop
+0x113:  03 c8  // add ecx,eax (EAX cons)
+0x115:  b9 02 00 ef be  // mov ecx,0xbeef0002 (ECX prod d=1)
+0x11a:  90  // nop
+0x11b:  03 c1  // add eax,ecx (ECX cons)
+0x11d:  ba 03 00 fe ca  // mov edx,0xcafe0003 (EDX prod d=1)
+0x122:  90  // nop
+0x123:  03 c2  // add eax,edx (EDX cons)
+0x125:  bb 04 00 0d f0  // mov ebx,0xf00d0004 (EBX prod d=1)
+0x12a:  90  // nop
+0x12b:  03 c3  // add eax,ebx (EBX cons)
+0x12d:  bb 00 00 00 00  // mov ebx,0x0 (restore EBX)
+0x132:  bc f0 02 00 00  // mov esp,0x2f0 (ESP prod d=1)
+0x137:  90  // nop
+0x138:  8b c4  // mov eax,esp (ESP cons)
+0x13a:  bc 00 03 00 00  // mov esp,0x300 (restore ESP)
+0x13f:  bd 05 00 cd ab  // mov ebp,0xabcd0005 (EBP prod d=1)
+0x144:  90  // nop
+0x145:  8b c5  // mov eax,ebp (EBP cons)
+0x147:  bd 00 00 00 00  // mov ebp,0x0 (restore EBP)
+0x14c:  be 06 00 34 12  // mov esi,0x12340006 (ESI prod d=1)
+0x151:  90  // nop
+0x152:  03 c6  // add eax,esi (ESI cons)
+0x154:  bf 07 00 78 56  // mov edi,0x56780007 (EDI prod d=1)
+0x159:  90  // nop
+0x15a:  03 c7  // add eax,edi (EDI cons)
+0x15c:  90  // --- SEG dist=1 ---
+0x15d:  ba 00 02 00 00  // mov edx,0x200
+0x162:  8e da  // mov ds,dx (DS prod d=1)
+0x164:  90  // nop
+0x165:  8b 43 00  // mov eax,[ebx+0] (DS cons)
+0x168:  ba 00 04 00 00  // mov edx,0x400
+0x16d:  8e c2  // mov es,dx (ES prod d=1)
+0x16f:  90  // nop
+0x170:  26 8b 45 00  // mov eax,es:[ebp+0] (ES cons)
+0x174:  ba 00 0b 00 00  // mov edx,0xb00
+0x179:  8e d2  // mov ss,dx (SS prod d=1)
+0x17b:  90  // nop
+0x17c:  36 8b 43 00  // mov eax,ss:[ebx+0] (SS cons)
+0x180:  ba 00 0a 00 00  // mov edx,0xa00
+0x185:  8e e2  // mov fs,dx (FS prod d=1)
+0x187:  90  // nop
+0x188:  64 8b 43 00  // mov eax,fs:[ebx+0] (FS cons)
+0x18c:  ba 00 0c 00 00  // mov edx,0xc00
+0x191:  8e ea  // mov gs,dx (GS prod d=1)
+0x193:  90  // nop
+0x194:  65 8b 43 00  // mov eax,gs:[ebx+0] (GS cons)
+0x198:  90  // --- MMX dist=1 ---
+0x199:  0f 6f 43 00  // movq mm0,mem (MM0 prod d=1)
+0x19d:  90  // nop
+0x19e:  0f fe c0  // paddd mm0,mm0 (MM0 cons)
+0x1a1:  0f 6f 4b 08  // movq mm1,mem (MM1 prod d=1)
+0x1a5:  90  // nop
+0x1a6:  0f fe c9  // paddd mm1,mm1 (MM1 cons)
+0x1a9:  0f 6f 53 10  // movq mm2,mem (MM2 prod d=1)
+0x1ad:  90  // nop
+0x1ae:  0f fe d2  // paddd mm2,mm2 (MM2 cons)
+0x1b1:  0f 6f 5b 18  // movq mm3,mem (MM3 prod d=1)
+0x1b5:  90  // nop
+0x1b6:  0f fe db  // paddd mm3,mm3 (MM3 cons)
+0x1b9:  0f 6f 63 20  // movq mm4,mem (MM4 prod d=1)
+0x1bd:  90  // nop
+0x1be:  0f fe e4  // paddd mm4,mm4 (MM4 cons)
+0x1c1:  0f 6f 6b 28  // movq mm5,mem (MM5 prod d=1)
+0x1c5:  90  // nop
+0x1c6:  0f fe ed  // paddd mm5,mm5 (MM5 cons)
+0x1c9:  0f 6f 73 30  // movq mm6,mem (MM6 prod d=1)
+0x1cd:  90  // nop
+0x1ce:  0f fe f6  // paddd mm6,mm6 (MM6 cons)
+0x1d1:  0f 6f 7b 38  // movq mm7,mem (MM7 prod d=1)
+0x1d5:  90  // nop
+0x1d6:  0f fe ff  // paddd mm7,mm7 (MM7 cons)
+0x1d9:  90  // --- FLAGS dist=1 ---
+0x1da:  b8 01 00 00 00  // mov eax,1
+0x1df:  05 ff ff ff ff  // add eax,0xffffffff (CF prod d=1)
+0x1e4:  90  // nop
+0x1e5:  83 d1 00  // adc ecx,0 (CF cons)
+0x1e8:  b8 00 00 00 00  // mov eax,0
+0x1ed:  05 00 00 00 00  // add eax,0 (ZF prod d=1)
+0x1f2:  90  // nop
+0x1f3:  75 00  // jne +0 (ZF cons, not taken)
+0x1f5:  be 10 00 00 00  // mov esi,0x10
+0x1fa:  bf 10 00 00 00  // mov edi,0x10
+0x1ff:  fd  // std (DF prod d=1)
+0x200:  90  // nop
+0x201:  a5  // movs (DF cons)
+0x202:  fc  // cld
+0x203:  90  // === distance=2 ===
+0x204:  90  // --- GPR dist=2 ---
+0x205:  b8 01 00 ad de  // mov eax,0xdead0001 (EAX prod d=2)
+0x20a:  90  // nop
+0x20b:  90  // nop
+0x20c:  03 c8  // add ecx,eax (EAX cons)
+0x20e:  b9 02 00 ef be  // mov ecx,0xbeef0002 (ECX prod d=2)
+0x213:  90  // nop
+0x214:  90  // nop
+0x215:  03 c1  // add eax,ecx (ECX cons)
+0x217:  ba 03 00 fe ca  // mov edx,0xcafe0003 (EDX prod d=2)
+0x21c:  90  // nop
+0x21d:  90  // nop
+0x21e:  03 c2  // add eax,edx (EDX cons)
+0x220:  bb 04 00 0d f0  // mov ebx,0xf00d0004 (EBX prod d=2)
+0x225:  90  // nop
+0x226:  90  // nop
+0x227:  03 c3  // add eax,ebx (EBX cons)
+0x229:  bb 00 00 00 00  // mov ebx,0x0 (restore EBX)
+0x22e:  bc f0 02 00 00  // mov esp,0x2f0 (ESP prod d=2)
+0x233:  90  // nop
+0x234:  90  // nop
+0x235:  8b c4  // mov eax,esp (ESP cons)
+0x237:  bc 00 03 00 00  // mov esp,0x300 (restore ESP)
+0x23c:  bd 05 00 cd ab  // mov ebp,0xabcd0005 (EBP prod d=2)
+0x241:  90  // nop
+0x242:  90  // nop
+0x243:  8b c5  // mov eax,ebp (EBP cons)
+0x245:  bd 00 00 00 00  // mov ebp,0x0 (restore EBP)
+0x24a:  be 06 00 34 12  // mov esi,0x12340006 (ESI prod d=2)
+0x24f:  90  // nop
+0x250:  90  // nop
+0x251:  03 c6  // add eax,esi (ESI cons)
+0x253:  bf 07 00 78 56  // mov edi,0x56780007 (EDI prod d=2)
+0x258:  90  // nop
+0x259:  90  // nop
+0x25a:  03 c7  // add eax,edi (EDI cons)
+0x25c:  90  // --- SEG dist=2 ---
+0x25d:  ba 00 02 00 00  // mov edx,0x200
+0x262:  8e da  // mov ds,dx (DS prod d=2)
+0x264:  90  // nop
+0x265:  90  // nop
+0x266:  8b 43 00  // mov eax,[ebx+0] (DS cons)
+0x269:  ba 00 04 00 00  // mov edx,0x400
+0x26e:  8e c2  // mov es,dx (ES prod d=2)
+0x270:  90  // nop
+0x271:  90  // nop
+0x272:  26 8b 45 00  // mov eax,es:[ebp+0] (ES cons)
+0x276:  ba 00 0b 00 00  // mov edx,0xb00
+0x27b:  8e d2  // mov ss,dx (SS prod d=2)
+0x27d:  90  // nop
+0x27e:  90  // nop
+0x27f:  36 8b 43 00  // mov eax,ss:[ebx+0] (SS cons)
+0x283:  ba 00 0a 00 00  // mov edx,0xa00
+0x288:  8e e2  // mov fs,dx (FS prod d=2)
+0x28a:  90  // nop
+0x28b:  90  // nop
+0x28c:  64 8b 43 00  // mov eax,fs:[ebx+0] (FS cons)
+0x290:  ba 00 0c 00 00  // mov edx,0xc00
+0x295:  8e ea  // mov gs,dx (GS prod d=2)
+0x297:  90  // nop
+0x298:  90  // nop
+0x299:  65 8b 43 00  // mov eax,gs:[ebx+0] (GS cons)
+0x29d:  90  // --- MMX dist=2 ---
+0x29e:  0f 6f 43 00  // movq mm0,mem (MM0 prod d=2)
+0x2a2:  90  // nop
+0x2a3:  90  // nop
+0x2a4:  0f fe c0  // paddd mm0,mm0 (MM0 cons)
+0x2a7:  0f 6f 4b 08  // movq mm1,mem (MM1 prod d=2)
+0x2ab:  90  // nop
+0x2ac:  90  // nop
+0x2ad:  0f fe c9  // paddd mm1,mm1 (MM1 cons)
+0x2b0:  0f 6f 53 10  // movq mm2,mem (MM2 prod d=2)
+0x2b4:  90  // nop
+0x2b5:  90  // nop
+0x2b6:  0f fe d2  // paddd mm2,mm2 (MM2 cons)
+0x2b9:  0f 6f 5b 18  // movq mm3,mem (MM3 prod d=2)
+0x2bd:  90  // nop
+0x2be:  90  // nop
+0x2bf:  0f fe db  // paddd mm3,mm3 (MM3 cons)
+0x2c2:  0f 6f 63 20  // movq mm4,mem (MM4 prod d=2)
+0x2c6:  90  // nop
+0x2c7:  90  // nop
+0x2c8:  0f fe e4  // paddd mm4,mm4 (MM4 cons)
+0x2cb:  0f 6f 6b 28  // movq mm5,mem (MM5 prod d=2)
+0x2cf:  90  // nop
+0x2d0:  90  // nop
+0x2d1:  0f fe ed  // paddd mm5,mm5 (MM5 cons)
+0x2d4:  0f 6f 73 30  // movq mm6,mem (MM6 prod d=2)
+0x2d8:  90  // nop
+0x2d9:  90  // nop
+0x2da:  0f fe f6  // paddd mm6,mm6 (MM6 cons)
+0x2dd:  0f 6f 7b 38  // movq mm7,mem (MM7 prod d=2)
+0x2e1:  90  // nop
+0x2e2:  90  // nop
+0x2e3:  0f fe ff  // paddd mm7,mm7 (MM7 cons)
+0x2e6:  90  // --- FLAGS dist=2 ---
+0x2e7:  b8 01 00 00 00  // mov eax,1
+0x2ec:  05 ff ff ff ff  // add eax,0xffffffff (CF prod d=2)
+0x2f1:  90  // nop
+0x2f2:  90  // nop
+0x2f3:  83 d1 00  // adc ecx,0 (CF cons)
+0x2f6:  b8 00 00 00 00  // mov eax,0
+0x2fb:  05 00 00 00 00  // add eax,0 (ZF prod d=2)
+0x300:  90  // nop
+0x301:  90  // nop
+0x302:  75 00  // jne +0 (ZF cons, not taken)
+0x304:  be 10 00 00 00  // mov esi,0x10
+0x309:  bf 10 00 00 00  // mov edi,0x10
+0x30e:  fd  // std (DF prod d=2)
+0x30f:  90  // nop
+0x310:  90  // nop
+0x311:  a5  // movs (DF cons)
+0x312:  fc  // cld
+0x313:  90  // === distance=3 ===
+0x314:  90  // --- GPR dist=3 ---
+0x315:  b8 01 00 ad de  // mov eax,0xdead0001 (EAX prod d=3)
+0x31a:  90  // nop
+0x31b:  90  // nop
+0x31c:  90  // nop
+0x31d:  03 c8  // add ecx,eax (EAX cons)
+0x31f:  b9 02 00 ef be  // mov ecx,0xbeef0002 (ECX prod d=3)
+0x324:  90  // nop
+0x325:  90  // nop
+0x326:  90  // nop
+0x327:  03 c1  // add eax,ecx (ECX cons)
+0x329:  ba 03 00 fe ca  // mov edx,0xcafe0003 (EDX prod d=3)
+0x32e:  90  // nop
+0x32f:  90  // nop
+0x330:  90  // nop
+0x331:  03 c2  // add eax,edx (EDX cons)
+0x333:  bb 04 00 0d f0  // mov ebx,0xf00d0004 (EBX prod d=3)
+0x338:  90  // nop
+0x339:  90  // nop
+0x33a:  90  // nop
+0x33b:  03 c3  // add eax,ebx (EBX cons)
+0x33d:  bb 00 00 00 00  // mov ebx,0x0 (restore EBX)
+0x342:  bc f0 02 00 00  // mov esp,0x2f0 (ESP prod d=3)
+0x347:  90  // nop
+0x348:  90  // nop
+0x349:  90  // nop
+0x34a:  8b c4  // mov eax,esp (ESP cons)
+0x34c:  bc 00 03 00 00  // mov esp,0x300 (restore ESP)
+0x351:  bd 05 00 cd ab  // mov ebp,0xabcd0005 (EBP prod d=3)
+0x356:  90  // nop
+0x357:  90  // nop
+0x358:  90  // nop
+0x359:  8b c5  // mov eax,ebp (EBP cons)
+0x35b:  bd 00 00 00 00  // mov ebp,0x0 (restore EBP)
+0x360:  be 06 00 34 12  // mov esi,0x12340006 (ESI prod d=3)
+0x365:  90  // nop
+0x366:  90  // nop
+0x367:  90  // nop
+0x368:  03 c6  // add eax,esi (ESI cons)
+0x36a:  bf 07 00 78 56  // mov edi,0x56780007 (EDI prod d=3)
+0x36f:  90  // nop
+0x370:  90  // nop
+0x371:  90  // nop
+0x372:  03 c7  // add eax,edi (EDI cons)
+0x374:  90  // --- SEG dist=3 ---
+0x375:  ba 00 02 00 00  // mov edx,0x200
+0x37a:  8e da  // mov ds,dx (DS prod d=3)
+0x37c:  90  // nop
+0x37d:  90  // nop
+0x37e:  90  // nop
+0x37f:  8b 43 00  // mov eax,[ebx+0] (DS cons)
+0x382:  ba 00 04 00 00  // mov edx,0x400
+0x387:  8e c2  // mov es,dx (ES prod d=3)
+0x389:  90  // nop
+0x38a:  90  // nop
+0x38b:  90  // nop
+0x38c:  26 8b 45 00  // mov eax,es:[ebp+0] (ES cons)
+0x390:  ba 00 0b 00 00  // mov edx,0xb00
+0x395:  8e d2  // mov ss,dx (SS prod d=3)
+0x397:  90  // nop
+0x398:  90  // nop
+0x399:  90  // nop
+0x39a:  36 8b 43 00  // mov eax,ss:[ebx+0] (SS cons)
+0x39e:  ba 00 0a 00 00  // mov edx,0xa00
+0x3a3:  8e e2  // mov fs,dx (FS prod d=3)
+0x3a5:  90  // nop
+0x3a6:  90  // nop
+0x3a7:  90  // nop
+0x3a8:  64 8b 43 00  // mov eax,fs:[ebx+0] (FS cons)
+0x3ac:  ba 00 0c 00 00  // mov edx,0xc00
+0x3b1:  8e ea  // mov gs,dx (GS prod d=3)
+0x3b3:  90  // nop
+0x3b4:  90  // nop
+0x3b5:  90  // nop
+0x3b6:  65 8b 43 00  // mov eax,gs:[ebx+0] (GS cons)
+0x3ba:  90  // --- MMX dist=3 ---
+0x3bb:  0f 6f 43 00  // movq mm0,mem (MM0 prod d=3)
+0x3bf:  90  // nop
+0x3c0:  90  // nop
+0x3c1:  90  // nop
+0x3c2:  0f fe c0  // paddd mm0,mm0 (MM0 cons)
+0x3c5:  0f 6f 4b 08  // movq mm1,mem (MM1 prod d=3)
+0x3c9:  90  // nop
+0x3ca:  90  // nop
+0x3cb:  90  // nop
+0x3cc:  0f fe c9  // paddd mm1,mm1 (MM1 cons)
+0x3cf:  0f 6f 53 10  // movq mm2,mem (MM2 prod d=3)
+0x3d3:  90  // nop
+0x3d4:  90  // nop
+0x3d5:  90  // nop
+0x3d6:  0f fe d2  // paddd mm2,mm2 (MM2 cons)
+0x3d9:  0f 6f 5b 18  // movq mm3,mem (MM3 prod d=3)
+0x3dd:  90  // nop
+0x3de:  90  // nop
+0x3df:  90  // nop
+0x3e0:  0f fe db  // paddd mm3,mm3 (MM3 cons)
+0x3e3:  0f 6f 63 20  // movq mm4,mem (MM4 prod d=3)
+0x3e7:  90  // nop
+0x3e8:  90  // nop
+0x3e9:  90  // nop
+0x3ea:  0f fe e4  // paddd mm4,mm4 (MM4 cons)
+0x3ed:  0f 6f 6b 28  // movq mm5,mem (MM5 prod d=3)
+0x3f1:  90  // nop
+0x3f2:  90  // nop
+0x3f3:  90  // nop
+0x3f4:  0f fe ed  // paddd mm5,mm5 (MM5 cons)
+0x3f7:  0f 6f 73 30  // movq mm6,mem (MM6 prod d=3)
+0x3fb:  90  // nop
+0x3fc:  90  // nop
+0x3fd:  90  // nop
+0x3fe:  0f fe f6  // paddd mm6,mm6 (MM6 cons)
+0x401:  0f 6f 7b 38  // movq mm7,mem (MM7 prod d=3)
+0x405:  90  // nop
+0x406:  90  // nop
+0x407:  90  // nop
+0x408:  0f fe ff  // paddd mm7,mm7 (MM7 cons)
+0x40b:  90  // --- FLAGS dist=3 ---
+0x40c:  b8 01 00 00 00  // mov eax,1
+0x411:  05 ff ff ff ff  // add eax,0xffffffff (CF prod d=3)
+0x416:  90  // nop
+0x417:  90  // nop
+0x418:  90  // nop
+0x419:  83 d1 00  // adc ecx,0 (CF cons)
+0x41c:  b8 00 00 00 00  // mov eax,0
+0x421:  05 00 00 00 00  // add eax,0 (ZF prod d=3)
+0x426:  90  // nop
+0x427:  90  // nop
+0x428:  90  // nop
+0x429:  75 00  // jne +0 (ZF cons, not taken)
+0x42b:  be 10 00 00 00  // mov esi,0x10
+0x430:  bf 10 00 00 00  // mov edi,0x10
+0x435:  fd  // std (DF prod d=3)
+0x436:  90  // nop
+0x437:  90  // nop
+0x438:  90  // nop
+0x439:  a5  // movs (DF cons)
+0x43a:  fc  // cld
+0x43b:  90  // === distance=4 ===
+0x43c:  90  // --- GPR dist=4 ---
+0x43d:  b8 01 00 ad de  // mov eax,0xdead0001 (EAX prod d=4)
+0x442:  90  // nop
+0x443:  90  // nop
+0x444:  90  // nop
+0x445:  90  // nop
+0x446:  03 c8  // add ecx,eax (EAX cons)
+0x448:  b9 02 00 ef be  // mov ecx,0xbeef0002 (ECX prod d=4)
+0x44d:  90  // nop
+0x44e:  90  // nop
+0x44f:  90  // nop
+0x450:  90  // nop
+0x451:  03 c1  // add eax,ecx (ECX cons)
+0x453:  ba 03 00 fe ca  // mov edx,0xcafe0003 (EDX prod d=4)
+0x458:  90  // nop
+0x459:  90  // nop
+0x45a:  90  // nop
+0x45b:  90  // nop
+0x45c:  03 c2  // add eax,edx (EDX cons)
+0x45e:  bb 04 00 0d f0  // mov ebx,0xf00d0004 (EBX prod d=4)
+0x463:  90  // nop
+0x464:  90  // nop
+0x465:  90  // nop
+0x466:  90  // nop
+0x467:  03 c3  // add eax,ebx (EBX cons)
+0x469:  bb 00 00 00 00  // mov ebx,0x0 (restore EBX)
+0x46e:  bc f0 02 00 00  // mov esp,0x2f0 (ESP prod d=4)
+0x473:  90  // nop
+0x474:  90  // nop
+0x475:  90  // nop
+0x476:  90  // nop
+0x477:  8b c4  // mov eax,esp (ESP cons)
+0x479:  bc 00 03 00 00  // mov esp,0x300 (restore ESP)
+0x47e:  bd 05 00 cd ab  // mov ebp,0xabcd0005 (EBP prod d=4)
+0x483:  90  // nop
+0x484:  90  // nop
+0x485:  90  // nop
+0x486:  90  // nop
+0x487:  8b c5  // mov eax,ebp (EBP cons)
+0x489:  bd 00 00 00 00  // mov ebp,0x0 (restore EBP)
+0x48e:  be 06 00 34 12  // mov esi,0x12340006 (ESI prod d=4)
+0x493:  90  // nop
+0x494:  90  // nop
+0x495:  90  // nop
+0x496:  90  // nop
+0x497:  03 c6  // add eax,esi (ESI cons)
+0x499:  bf 07 00 78 56  // mov edi,0x56780007 (EDI prod d=4)
+0x49e:  90  // nop
+0x49f:  90  // nop
+0x4a0:  90  // nop
+0x4a1:  90  // nop
+0x4a2:  03 c7  // add eax,edi (EDI cons)
+0x4a4:  90  // --- SEG dist=4 ---
+0x4a5:  ba 00 02 00 00  // mov edx,0x200
+0x4aa:  8e da  // mov ds,dx (DS prod d=4)
+0x4ac:  90  // nop
+0x4ad:  90  // nop
+0x4ae:  90  // nop
+0x4af:  90  // nop
+0x4b0:  8b 43 00  // mov eax,[ebx+0] (DS cons)
+0x4b3:  ba 00 04 00 00  // mov edx,0x400
+0x4b8:  8e c2  // mov es,dx (ES prod d=4)
+0x4ba:  90  // nop
+0x4bb:  90  // nop
+0x4bc:  90  // nop
+0x4bd:  90  // nop
+0x4be:  26 8b 45 00  // mov eax,es:[ebp+0] (ES cons)
+0x4c2:  ba 00 0b 00 00  // mov edx,0xb00
+0x4c7:  8e d2  // mov ss,dx (SS prod d=4)
+0x4c9:  90  // nop
+0x4ca:  90  // nop
+0x4cb:  90  // nop
+0x4cc:  90  // nop
+0x4cd:  36 8b 43 00  // mov eax,ss:[ebx+0] (SS cons)
+0x4d1:  ba 00 0a 00 00  // mov edx,0xa00
+0x4d6:  8e e2  // mov fs,dx (FS prod d=4)
+0x4d8:  90  // nop
+0x4d9:  90  // nop
+0x4da:  90  // nop
+0x4db:  90  // nop
+0x4dc:  64 8b 43 00  // mov eax,fs:[ebx+0] (FS cons)
+0x4e0:  ba 00 0c 00 00  // mov edx,0xc00
+0x4e5:  8e ea  // mov gs,dx (GS prod d=4)
+0x4e7:  90  // nop
+0x4e8:  90  // nop
+0x4e9:  90  // nop
+0x4ea:  90  // nop
+0x4eb:  65 8b 43 00  // mov eax,gs:[ebx+0] (GS cons)
+0x4ef:  90  // --- MMX dist=4 ---
+0x4f0:  0f 6f 43 00  // movq mm0,mem (MM0 prod d=4)
+0x4f4:  90  // nop
+0x4f5:  90  // nop
+0x4f6:  90  // nop
+0x4f7:  90  // nop
+0x4f8:  0f fe c0  // paddd mm0,mm0 (MM0 cons)
+0x4fb:  0f 6f 4b 08  // movq mm1,mem (MM1 prod d=4)
+0x4ff:  90  // nop
+0x500:  90  // nop
+0x501:  90  // nop
+0x502:  90  // nop
+0x503:  0f fe c9  // paddd mm1,mm1 (MM1 cons)
+0x506:  0f 6f 53 10  // movq mm2,mem (MM2 prod d=4)
+0x50a:  90  // nop
+0x50b:  90  // nop
+0x50c:  90  // nop
+0x50d:  90  // nop
+0x50e:  0f fe d2  // paddd mm2,mm2 (MM2 cons)
+0x511:  0f 6f 5b 18  // movq mm3,mem (MM3 prod d=4)
+0x515:  90  // nop
+0x516:  90  // nop
+0x517:  90  // nop
+0x518:  90  // nop
+0x519:  0f fe db  // paddd mm3,mm3 (MM3 cons)
+0x51c:  0f 6f 63 20  // movq mm4,mem (MM4 prod d=4)
+0x520:  90  // nop
+0x521:  90  // nop
+0x522:  90  // nop
+0x523:  90  // nop
+0x524:  0f fe e4  // paddd mm4,mm4 (MM4 cons)
+0x527:  0f 6f 6b 28  // movq mm5,mem (MM5 prod d=4)
+0x52b:  90  // nop
+0x52c:  90  // nop
+0x52d:  90  // nop
+0x52e:  90  // nop
+0x52f:  0f fe ed  // paddd mm5,mm5 (MM5 cons)
+0x532:  0f 6f 73 30  // movq mm6,mem (MM6 prod d=4)
+0x536:  90  // nop
+0x537:  90  // nop
+0x538:  90  // nop
+0x539:  90  // nop
+0x53a:  0f fe f6  // paddd mm6,mm6 (MM6 cons)
+0x53d:  0f 6f 7b 38  // movq mm7,mem (MM7 prod d=4)
+0x541:  90  // nop
+0x542:  90  // nop
+0x543:  90  // nop
+0x544:  90  // nop
+0x545:  0f fe ff  // paddd mm7,mm7 (MM7 cons)
+0x548:  90  // --- FLAGS dist=4 ---
+0x549:  b8 01 00 00 00  // mov eax,1
+0x54e:  05 ff ff ff ff  // add eax,0xffffffff (CF prod d=4)
+0x553:  90  // nop
+0x554:  90  // nop
+0x555:  90  // nop
+0x556:  90  // nop
+0x557:  83 d1 00  // adc ecx,0 (CF cons)
+0x55a:  b8 00 00 00 00  // mov eax,0
+0x55f:  05 00 00 00 00  // add eax,0 (ZF prod d=4)
+0x564:  90  // nop
+0x565:  90  // nop
+0x566:  90  // nop
+0x567:  90  // nop
+0x568:  75 00  // jne +0 (ZF cons, not taken)
+0x56a:  be 10 00 00 00  // mov esi,0x10
+0x56f:  bf 10 00 00 00  // mov edi,0x10
+0x574:  fd  // std (DF prod d=4)
+0x575:  90  // nop
+0x576:  90  // nop
+0x577:  90  // nop
+0x578:  90  // nop
+0x579:  a5  // movs (DF cons)
+0x57a:  fc  // cld
+0x57b:  f4  // hlt
+
+0x2000: 59 19 b5 8d e0 bc 91 fa 77 30 72 3e c8 57 c7 d0
+0x2010: 41 ac f3 06 2a 49 6e c3 60 87 b2 c7 16 c3 be cd
+0x2020: 53 73 f7 1b 16 73 4b ae 07 dd fe f4 38 85 e4 ac
+0x2030: 5b 67 dc 71 6e d3 c9 80 af 47 33 f9 3c ae d6 59
+0x5000: 75 ae ef 6d ea 34 89 57 69 0e b7 98 38 64 10 4b
+0x5010: 55 8f 13 60 a6 28 d7 43 cd b5 40 43 8b b1 21 d8
+0x4000: 26 f4 3c 93 f6 18 bb fa 31 88 64 a8 85 90 3d 06
+0x42f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4300: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x7000: fb 32 83 14 2a f8 b0 fb 12 b1 01 cf a7 62 e0 4b
