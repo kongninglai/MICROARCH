@@ -50,6 +50,10 @@ module fetch_decode_top(
     wire from_fetch_buffer_shft_reg_we, from_de_take_branch, from_de_take_branch_prebuf;
     bufferH16$    bufferH16$_from_de_take_branch(from_de_take_branch, from_de_take_branch_prebuf);
 
+    //TODO GATE UNLATCHED TAKE BRANCH SIGNAL AND VALID SIGNAL
+    // wire redir_valid_DEBUG;
+    // and2(redir_valid_DEBUG, , );
+
     stage_fetch_a STAGE_FETCH_FRONT_HALF(
         .clk(clk),
         .rst_bar(rst_bar),

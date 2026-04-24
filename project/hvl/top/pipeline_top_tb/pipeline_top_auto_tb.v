@@ -1,12 +1,23 @@
 module pipeline_top_auto_tb;
 
 initial begin
-  $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
-  $vcdpluson(0, pipeline_top_auto_tb); 
-  // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
-  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
-  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
+    $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
+    $vcdpluson(0, pipeline_top_auto_tb); 
+    
+    // Set a timeout limit (adjust the number to give your TB enough time)
+    // #100000; 
+    
+    // $display("WATCHDOG TIMEOUT: Forcing finish to save VPD file.");
+    // $finish;
 end
+
+// initial begin
+//   $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
+//   $vcdpluson(0, pipeline_top_auto_tb); 
+//   // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
+//   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
+//   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
+// end
 
 integer i;
 integer NUM_TESTS = 0;
@@ -341,6 +352,24 @@ begin
 end
 endtask
 
+//DEBUG
+always @(posedge clk) begin
+  if (rst_n) begin
+    // Check if the execute stage is resolving a branch
+    if (from_ex_br_valid) begin
+      // Note: adjust 'dut.to_ex_oeip' if your execute stage EIP signal is named differently
+      // (e.g., it might be dut.inst_stage_ex.oeip or dut.from_mem_oeip depending on your pipeline)
+      $display("[BRANCH_RES] cyc=%0d | Branch EIP: 0x%08X | Target EIP: 0x%08X | Taken: %b | Flush: %b", 
+               dbg_cycle, dut.to_ex_oeip, from_ex_eip_target, from_ex_br_t_nt, from_ex_flush);
+    end
+    
+    // Check if the pipeline is stuck in a continuous flush state
+    if (from_ex_flush) begin
+      $display("[PIPELINE_FLUSH] Execute stage is flushing the pipeline at cyc=%0d!", dbg_cycle);
+    end
+  end
+end
+
 always @(posedge clk) begin
   if (!rst_n) begin
     dbg_cycle <= 0;
@@ -350,6 +379,18 @@ always @(posedge clk) begin
     dbg_seen_icache_x <= 1'b0;
   end else if (dbg_fetch_en) begin
     dbg_cycle <= dbg_cycle + 1;
+
+    //DEBUG
+    if (to_rr_valid && !from_rr_stall) begin
+      // This means the instruction successfully moved from Decode to the Backend
+      $display("[ISSUE] cyc=%0d | OEIP: 0x%08X | Opcode: %02h", 
+               dbg_cycle, to_rr_oeip, to_rr_opcode);
+    end else if (to_rr_valid && from_rr_stall) begin
+      // Optional: Print periodically if the backend is refusing to accept instructions
+      if ((dbg_cycle % 100) == 0)
+        $display("[STALL] cyc=%0d | Backend is stalling Frontend at OEIP: 0x%08X", 
+                 dbg_cycle, to_rr_oeip);
+    end
 
     if ((dbg_cycle % 5000) == 0) begin
       $display("[FETCH-DBG] cyc=%0d ITLB_VPN=%05h ITLB_PFN=%0h PF=%0b ICV=%0b RRV=%0b STALL=%0b IEIP=%08h",
