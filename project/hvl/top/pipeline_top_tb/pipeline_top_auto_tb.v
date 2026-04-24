@@ -610,8 +610,8 @@ always @(posedge clk) begin
   end
   if (((dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b0 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) ||
        (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.LINE_0_LOAD_DONE === 1'b1) ||
-       (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0)) &&
-        dut.inst_stage_mem.from_mem_exception === 2'b00) begin
+       (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1)) &&
+        (dut.inst_stage_mem.from_mem_exception === 2'b00) && (from_ex_flush === 1'b0)) begin
     case (dut.inst_stage_mem.mem_ds)
       2'b00: load_iters=1;
       2'b01: load_iters=2;

@@ -1,0 +1,371 @@
+// ============================================================
+// COMBINED2: AND (all 13 forms), BSF, CALL/JMP (all forms),
+//            CLD, CMOVC, CMPXCHG  -- 1 instance each
+// Segments: DS=0x200->phys 0x2000, ES=0x400->phys 0x5000,
+//           SS=0xb00->phys 0x4000, ESP=0x100
+// Far call/jmp targets live in DS memory (CS=0x200).
+// ecx accumulates OR bits to verify correct control flow.
+// ============================================================
+
+// --- Segment / stack setup ---
+0x0:   ba 00 02 00 00  // mov    edx,0x200
+0x5:   8e da           // mov    ds,edx
+0x7:   ba 00 04 00 00  // mov    edx,0x400
+0xc:   8e c2           // mov    es,edx
+0xe:   ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2           // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+
+// ============================================================
+// AND AL, imm8  (24 ib)
+// ============================================================
+0x24:  b0 ff           // mov    al,0xff
+0x26:  24 f0           // and    al,0xf0        ; al=0xf0
+
+// ============================================================
+// AND AX, imm16  (66 25 iw)
+// ============================================================
+0x28:  66 b8 ff ff     // mov    ax,0xffff
+0x2c:  66 25 0f 0f     // and    ax,0x0f0f      ; ax=0x0f0f
+
+// ============================================================
+// AND EAX, imm32  (25 id)
+// ============================================================
+0x30:  b8 ef be ad de  // mov    eax,0xdeadbeef
+0x35:  25 ff 00 ff 00  // and    eax,0x00ff00ff ; eax=0x00ad00ef
+
+// ============================================================
+// AND r/m8, imm8  (80 /4 ib)  [mem form]
+// ============================================================
+0x3a:  c6 03 aa        // mov    BYTE PTR [ebx],0xaa
+0x3d:  80 23 0f        // and    BYTE PTR [ebx],0x0f  ; [ebx]=0x0a
+
+// ============================================================
+// AND r/m16, imm16  (66 81 /4 iw)  [reg form]
+// ============================================================
+0x40:  66 b9 ff ff     // mov    cx,0xffff
+0x44:  66 81 e1 ff 00  // and    cx,0x00ff      ; cx=0x00ff
+
+// ============================================================
+// AND r/m32, imm32  (81 /4 id)  [mem form]
+// ============================================================
+0x49:  c7 43 04 ef be ad de  // mov DWORD PTR [ebx+0x4],0xdeadbeef
+0x50:  81 63 04 ff 00 ff 00  // and DWORD PTR [ebx+0x4],0x00ff00ff ; [ebx+4]=0x00ad00ef
+
+// ============================================================
+// AND r/m16, imm8 sign-ext  (66 83 /4 ib)
+// ============================================================
+0x57:  66 b9 ff ff     // mov    cx,0xffff
+0x5b:  66 83 e1 7f     // and    cx,0x7f        ; cx=0x007f
+
+// ============================================================
+// AND r/m32, imm8 sign-ext  (83 /4 ib)
+// ============================================================
+0x5f:  be ff ff ff ff  // mov    esi,0xffffffff
+0x64:  83 e6 7f        // and    esi,0x7f       ; esi=0x0000007f
+
+// ============================================================
+// AND r/m8, r8  (20 /r)  [mem-reg]
+// ============================================================
+0x67:  c6 43 08 f0     // mov    BYTE PTR [ebx+0x8],0xf0
+0x6b:  b2 0f           // mov    dl,0x0f
+0x6d:  20 53 08        // and    BYTE PTR [ebx+0x8],dl  ; [ebx+8]=0x00
+
+// ============================================================
+// AND r/m16, r16  (66 21 /r)  [reg-reg]
+// ============================================================
+0x70:  66 b8 ff ff     // mov    ax,0xffff
+0x74:  66 b9 55 55     // mov    cx,0x5555
+0x78:  66 21 c8        // and    ax,cx          ; ax=0x5555
+
+// ============================================================
+// AND r/m32, r32  (21 /r)  [mem-reg]
+// ============================================================
+0x7b:  c7 43 10 ff ff ff ff  // mov DWORD PTR [ebx+0x10],0xffffffff
+0x82:  ba 0f 0f 0f 0f  // mov    edx,0x0f0f0f0f
+0x87:  21 53 10        // and    DWORD PTR [ebx+0x10],edx  ; [ebx+0x10]=0x0f0f0f0f
+
+// ============================================================
+// AND r8, r/m8  (22 /r)  [reg-mem]
+// ============================================================
+0x8a:  b3 aa           // mov    bl,0xaa
+0x8c:  c6 43 12 0f     // mov    BYTE PTR [ebx+0x12],0x0f
+0x90:  22 5b 12        // and    bl,BYTE PTR [ebx+0x12]  ; bl=0x0a
+
+// ============================================================
+// AND r16, r/m16  (66 23 /r)  [reg-mem]
+// ============================================================
+0x93:  66 b8 ff ff     // mov    ax,0xffff
+0x97:  66 c7 43 14 55 55  // mov  WORD PTR [ebx+0x14],0x5555
+0x9d:  66 23 43 14     // and    ax,WORD PTR [ebx+0x14]  ; ax=0x5555
+
+// ============================================================
+// AND r32, r/m32  (23 /r)  [reg-mem]
+// ============================================================
+0xa1:  b8 ef be ad de  // mov    eax,0xdeadbeef
+0xa6:  c7 43 18 ff 00 ff 00  // mov DWORD PTR [ebx+0x18],0x00ff00ff
+0xad:  23 43 18        // and    eax,DWORD PTR [ebx+0x18]  ; eax=0x00ad00ef
+
+// ============================================================
+// BSF r16, r/m16  (66 0f bc)
+// ============================================================
+0xb0:  66 b9 20 00     // mov    cx,0x0020
+0xb4:  66 0f bc c1     // bsf    ax,cx          ; ax=5
+
+// ============================================================
+// BSF r32, r/m32  (0f bc)  [mem form]
+// ============================================================
+0xb8:  c7 43 1c 08 00 00 00  // mov DWORD PTR [ebx+0x1c],0x8
+0xbf:  0f bc 7b 1c     // bsf    edi,DWORD PTR [ebx+0x1c]  ; edi=3
+
+// ============================================================
+// CLD  (fc)
+// ============================================================
+0xc3:  fc              // cld
+
+// ============================================================
+// CMOVC r16, r/m16  (66 0f 42)  CF=1 -> move happens
+// ============================================================
+0xc4:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0xc9:  83 c0 01        // add    eax,0x1        ; CF=1
+0xcc:  66 b8 ad de     // mov    ax,0xdead
+0xd0:  66 b9 34 12     // mov    cx,0x1234
+0xd4:  66 0f 42 c1     // cmovc  ax,cx          ; ax=0x1234
+
+// ============================================================
+// CMOVC r32, r/m32  (0f 42)  CF=0 -> no move
+// ============================================================
+0xd8:  b8 00 00 00 00  // mov    eax,0x0
+0xdd:  83 c0 00        // add    eax,0x0        ; CF=0
+0xe0:  b9 ef be ad de  // mov    ecx,0xdeadbeef
+0xe5:  ba 22 22 22 22  // mov    edx,0x22222222
+0xea:  0f 42 ca        // cmovc  ecx,edx        ; ecx=0xdeadbeef (no move)
+
+// ============================================================
+// CMPXCHG r/m8, r8  (0f b0)  match -> exchange
+// ============================================================
+0xed:  b0 42           // mov    al,0x42
+0xef:  b1 ff           // mov    cl,0xff
+0xf1:  0f b0 c8        // cmpxchg al,cl         ; al=0xff, ZF=1
+
+// ============================================================
+// CMPXCHG r/m16, r16  (66 0f b1)  no match
+// ============================================================
+0xf4:  66 b8 00 00     // mov    ax,0x0000
+0xf8:  66 b9 cd ab     // mov    cx,0xabcd
+0xfc:  66 0f b1 c8     // cmpxchg ax,cx         ; no match, ZF=0
+
+// ============================================================
+// CMPXCHG r/m32, r32  (0f b1)  [mem form, match]
+// ============================================================
+0x100: b8 78 56 34 12  // mov    eax,0x12345678
+0x105: c7 03 78 56 34 12  // mov  DWORD PTR [ebx],0x12345678
+0x10b: b9 be ba fe ca  // mov    ecx,0xcafebabe
+0x110: 0f b1 0b        // cmpxchg DWORD PTR [ebx],ecx  ; match -> [ebx]=0xcafebabe
+
+// ============================================================
+// CALL / JMP section
+// ecx accumulates OR bits to verify correct control flow.
+// All subroutines placed at end (0x160+), main flow jumps over them.
+// ============================================================
+0x113: b9 00 00 00 00  // mov    ecx,0x0
+
+// CALL rel16  (66 e8 cw)
+// sub_A at 0x153: or ecx,0x1 ; ret
+// from 0x118 (size 4): next=0x11c, rel = 0x153 - 0x11c = 0x37
+0x118: 66 e8 37 00     // callw  0x153          ; -> sub_A
+
+// CALL rel32  (e8 cd)
+// sub_B at 0x15a: or ecx,0x2 ; ret
+// from 0x11c (size 5): next=0x121, rel = 0x15a - 0x121 = 0x39
+0x11c: e8 39 00 00 00  // call   0x15a          ; -> sub_B
+0x121: 81 c9 04 00 00 00  // or   ecx,0x4       ; after return from sub_B
+
+// CALL r/m32  (ff /2)
+// sub_C at 0x161: or ecx,0x8 ; ret
+0x127: b8 61 01 00 00  // mov    eax,0x161
+0x12c: ff d0           // call   eax            ; -> sub_C
+0x12e: 81 c9 10 00 00 00  // or   ecx,0x10      ; after return from sub_C
+
+// CALL r/m16  (66 ff /2)
+// sub_D at 0x168: or ecx,0x20 ; ret
+0x134: 66 b8 68 01     // mov    ax,0x168
+0x138: 66 ff d0        // call   ax             ; -> sub_D
+0x13b: 81 c9 40 00 00 00  // or   ecx,0x40      ; after return from sub_D
+
+// CALL ptr16:32  (9a cp)
+// DS:0x70 (phys 0x2070): or ecx,0x80 ; retf
+0x141: 9a 70 00 00 00 00 02  // call  0x200:0x70
+
+// CALL ptr16:16  (66 9a cd)
+// DS:0x80 (phys 0x2080): or ecx,0x100 ; retf
+0x148: 66 9a 80 00 00 02  // callw 0x200:0x80
+
+// Jump over subroutines to JMP tests
+// from 0x14e (size 5): next=0x153, target=0x17c, rel = 0x17c - 0x153 = 0x29
+0x14e: e9 29 00 00 00  // jmp    0x17c
+
+// sub_A at 0x153:
+0x153: 81 c9 01 00 00 00  // or   ecx,0x1
+0x159: c3              // ret
+
+// sub_B at 0x15a:
+0x15a: 81 c9 02 00 00 00  // or   ecx,0x2
+0x160: c3              // ret
+
+// sub_C at 0x161:
+0x161: 81 c9 08 00 00 00  // or   ecx,0x8
+0x167: c3              // ret
+
+// sub_D at 0x168:
+0x168: 81 c9 20 00 00 00  // or   ecx,0x20
+0x16e: c3              // ret
+
+// ============================================================
+// JMP tests start at 0x17c
+// ============================================================
+
+// JMP rel8  (eb cb)  -- 32-bit, no prefix
+// from 0x17c (size 2): next=0x17e, target=0x183, rel=0x05
+0x17c: eb 05           // jmp    +5 -> 0x183
+0x17e: 0d 00 00 00 ff  // [POISON - or eax,0xff000000]
+0x183: 81 c9 80 00 00 00  // or   ecx,0x80
+
+// JMP rel8  (66 eb cb)  -- 16-bit, clears EIP[31:16]
+// from 0x189 (size 3): next=0x18c, target=0x191, rel=0x05
+0x189: 66 eb 05        // jmpw   +5 -> 0x191
+0x18c: 0d 00 00 00 ff  // [POISON]
+0x191: 81 c9 00 01 00 00  // or   ecx,0x100
+
+// JMP rel16  (66 e9 cw)
+// from 0x197 (size 4): next=0x19b, target=0x1a0, rel=0x05
+0x197: 66 e9 05 00     // jmpw   +5 -> 0x1a0
+0x19b: 0d 00 00 00 ff  // [POISON]
+0x1a0: 81 c9 00 02 00 00  // or   ecx,0x200
+
+// JMP rel32  (e9 cd)
+// from 0x1a6 (size 5): next=0x1ab, target=0x1b0, rel=0x05
+0x1a6: e9 05 00 00 00  // jmp    +5 -> 0x1b0
+0x1ab: 0d 00 00 00 ff  // [POISON]
+0x1b0: 81 c9 00 04 00 00  // or   ecx,0x400
+
+// JMP r/m32  (ff /4)
+// edx=0x1c2 (poison at 0x1bd is 5 bytes -> 0x1bd-0x1c1, target=0x1c2)
+0x1b6: ba c2 01 00 00  // mov    edx,0x1c2
+0x1bb: ff e2           // jmp    edx            ; -> 0x1c2
+0x1bd: 0d 00 00 00 ff  // [POISON]
+0x1c2: 81 c9 00 08 00 00  // or   ecx,0x800
+
+// JMP r/m16  (66 ff /4)
+// cx=0x1d4 (poison at 0x1cf is 5 bytes -> 0x1cf-0x1d3, target=0x1d4)
+0x1c8: 66 b9 d4 01     // mov    cx,0x1d4
+0x1cc: 66 ff e1        // jmp    cx             ; -> 0x1d4
+0x1cf: 0d 00 00 00 ff  // [POISON]
+0x1d4: 81 c9 00 10 00 00  // or   ecx,0x1000
+
+// JMP ptr16:16  (66 ea)  -- far jump 16-bit offset
+// DS:0x30 (phys 0x2030): or ecx,0x2000 ; far jmp back CS=0x0000:0x1e0
+0x1da: 66 ea 30 00 00 02  // jmpw   0x200:0x0030
+0x1e0: 81 c9 00 20 00 00  // or   ecx,0x2000
+
+// JMP ptr16:32  (ea cp)  -- far jump 32-bit offset
+// DS:0x40 (phys 0x2040): or ecx,0x4000 ; far jmp back CS=0x0000:0x1ed
+0x1e6: ea 40 00 00 00 00 02  // jmp    0x200:0x00000040
+0x1ed: 81 c9 00 40 00 00  // or   ecx,0x4000
+
+// JNE rel8  (75 cb)  -- taken (ZF=0)
+// from 0x1f3: mov eax,1 ; add eax,0 -> ZF=0 ; jne +5 -> 0x1fd
+0x1f3: b8 01 00 00 00  // mov    eax,0x1
+0x1f8: 83 c0 00        // add    eax,0x0        ; ZF=0
+0x1fb: 75 05           // jne    +5 -> 0x202
+0x1fd: 0d 00 00 00 ff  // [POISON]
+0x202: 81 c9 00 80 00 00  // or   ecx,0x8000
+
+// JNE rel8  (75 cb)  -- not taken (ZF=1)
+0x208: b8 00 00 00 00  // mov    eax,0x0
+0x20d: 83 c0 00        // add    eax,0x0        ; ZF=1
+0x210: 75 05           // jne    +5 -> 0x217 (not taken, falls through to 0x212)
+0x212: 81 c9 00 00 01 00  // or   ecx,0x10000   ; executes (not taken)
+0x218: 90              // nop
+
+// JNBE rel8  (77 cb)  -- taken (CF=0, ZF=0)
+0x219: b8 01 00 00 00  // mov    eax,0x1
+0x21e: 83 c0 00        // add    eax,0x0        ; CF=0, ZF=0
+0x221: 77 05           // jnbe   +5 -> 0x228
+0x223: 0d 00 00 00 ff  // [POISON]
+0x228: 81 c9 00 00 02 00  // or   ecx,0x20000
+
+// JNBE rel8  (77 cb)  -- not taken (CF=1)
+0x22e: b8 ff ff ff ff  // mov    eax,0xffffffff
+0x233: 83 c0 01        // add    eax,0x1        ; CF=1
+0x236: 77 05           // jnbe   +5 -> 0x23d (not taken, falls through to 0x238)
+0x238: 81 c9 00 00 04 00  // or   ecx,0x40000   ; executes (not taken)
+0x23e: 90              // nop
+
+// JNE rel16  (66 0f 85 cw)  -- taken (ZF=0)
+// 66 0f 85 = 3 bytes + rel16 = 5 bytes total
+// from 0x247 (size 5): next=0x24c, rel=5, target=0x251
+0x23f: b8 01 00 00 00  // mov    eax,0x1
+0x244: 83 c0 00        // add    eax,0x0        ; ZF=0
+0x247: 66 0f 85 05 00  // jne16  +5 -> 0x251
+0x24c: 0d 00 00 00 ff  // [POISON]
+0x251: 81 c9 00 00 08 00  // or   ecx,0x80000
+
+// JNE rel32  (0f 85 cd)  -- taken (ZF=0)
+// 0f 85 = 2 bytes + rel32 = 6 bytes total
+// from 0x25f (size 6): next=0x265, rel=5, target=0x26a
+0x257: b8 01 00 00 00  // mov    eax,0x1
+0x25c: 83 c0 00        // add    eax,0x0        ; ZF=0
+0x25f: 0f 85 05 00 00 00  // jne32  +5 -> 0x26a
+0x265: 0d 00 00 00 ff  // [POISON]
+0x26a: 81 c9 00 00 10 00  // or   ecx,0x100000
+
+// JNBE rel16  (66 0f 87 cw)  -- taken (CF=0, ZF=0)
+// from 0x278 (size 5): next=0x27d, rel=5, target=0x282
+0x270: b8 01 00 00 00  // mov    eax,0x1
+0x275: 83 c0 00        // add    eax,0x0        ; CF=0, ZF=0
+0x278: 66 0f 87 05 00  // jnbe16 +5 -> 0x282
+0x27d: 0d 00 00 00 ff  // [POISON]
+0x282: 81 c9 00 00 20 00  // or   ecx,0x200000
+
+// JNBE rel32  (0f 87 cd)  -- taken (CF=0, ZF=0)
+// from 0x290 (size 6): next=0x296, rel=5, target=0x29b
+0x288: b8 01 00 00 00  // mov    eax,0x1
+0x28d: 83 c0 00        // add    eax,0x0        ; CF=0, ZF=0
+0x290: 0f 87 05 00 00 00  // jnbe32 +5 -> 0x29b
+0x296: 0d 00 00 00 ff  // [POISON]
+0x29b: 81 c9 00 00 40 00  // or   ecx,0x400000
+
+// HLT
+0x2a1: f4              // hlt
+
+// ============================================================
+// DS memory: far call/jmp targets (physical addresses)
+// TLB: VPN 0x02000 -> PFN 0x00002, so DS virt 0x2000+off = phys 0x2000+off
+// DS:0x30 (phys 0x2030): or ecx,0x2000 ; far jmp back CS=0x0000:0x1e0
+//   0d 00 20 00 00  ea e0 01 00 00 00 00
+// DS:0x40 (phys 0x2040): or ecx,0x4000 ; far jmp back CS=0x0000:0x1ed
+//   0d 00 40 00 00  ea ed 01 00 00 00 00
+// DS:0x70 (phys 0x2070): or ecx,0x80 ; retf (cb)
+//   81 c9 80 00 00 00  cb
+// DS:0x80 (phys 0x2080): or ecx,0x100 ; retf (cb)
+//   81 c9 00 01 00 00  cb
+// ============================================================
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2030: 0d 00 20 00 00 ea e0 01 00 00 00 00 00 00 00 00
+0x2040: 0d 00 40 00 00 ea ed 01 00 00 00 00 00 00 00 00
+0x2050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2070: 81 c9 80 00 00 00 cb 00 00 00 00 00 00 00 00 00
+0x2080: 81 c9 00 01 00 00 cb 00 00 00 00 00 00 00 00 00
+0x2090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+0x5000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

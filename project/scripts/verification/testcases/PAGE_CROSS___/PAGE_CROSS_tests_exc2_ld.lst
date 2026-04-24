@@ -1,0 +1,47 @@
+// Change line 4 of both tlb_init.v and main.py to 000010100000000000011001101
+// Change line 6 of both tlb_init.v and main.py to 000010100000000000101011101
+// Change DS limit to 0xfffff in both project/hdl/prf/regfile_seg.v and main.py
+
+// TLB Mappings:
+// 0x0A000 -> Unmapped (Causes PF if accessed)
+// 0x0A001 -> Physical 0x4000
+// 0x0A002 -> Physical 0x5000 (Added for additional range)
+
+0x0:  ba 00 0c 00 00      // mov    edx,0xc00  (SS Segment)
+0x5:  8e d2               // mov    ss,edx
+0x7:  bc ff 0f 00 00      // mov    esp,0xfff  (Stack Pointer)
+0xc:  ba 00 0a 00 00      // mov    edx,0xa00  (DS = 0xa00)
+0x11: 8e da               // mov    ds,edx
+0x13: bb 00 00 00 00      // mov    ebx,0x0    (Initial offset)
+
+// --- LOADS (Triggering crossings after EBX fix) ---
+0x18: 8b 83 fd 0f 00 00   // mov    eax,DWORD PTR [ebx+0xffd] <- PF (Retry w/ EBX=0x1000)
+0x1e: 8b 8b fe 0f 00 00   // mov    ecx,DWORD PTR [ebx+0xffe]
+0x24: 8b 93 ff 0f 00 00   // mov    edx,DWORD PTR [ebx+0xfff] <- Page/Cache Cross
+0x2a: 8b b3 00 10 00 00   // mov    esi,DWORD PTR [ebx+0x1000]
+0x30: 8a 83 ff 0f 00 00   // mov    al, BYTE PTR [ebx+0xfff]
+0x36: 8a 8b 00 10 00 00   // mov    cl, BYTE PTR [ebx+0x1000]
+0x3c: 8a 93 01 10 00 00   // mov    dl, BYTE PTR [ebx+0x1001]
+0x42: 8a b3 02 10 00 00   // mov    dh, BYTE PTR [ebx+0x1002]
+0x48: 8b bb ff 0f 00 00   // mov    edi,DWORD PTR [ebx+0xfff]
+0x4e: 66 8b 83 ff 0f 00 00// mov    ax, WORD PTR [ebx+0xfff]  <- Page/Cache Cross
+0x55: 8b 83 fd 0f 00 00   // mov    eax,DWORD PTR [ebx+0xffd]
+0x5b: b8 01 00 00 00      // mov    eax,0x1
+0x60: 03 83 fd 0f 00 00   // add    eax,DWORD PTR [ebx+0xffd]
+0x66: 8b 8b fb 0f 00 00   // mov    ecx,DWORD PTR [ebx+0xffb]
+0x6c: 8b 93 01 10 00 00   // mov    edx,DWORD PTR [ebx+0x1001]
+0x72: f4                  // hlt
+
+// --- Exception Handler (0xc0) ---
+0xc0: bb 00 10 00 00      // mov    ebx,0x1000 (Skip the unmapped page)
+0xc5: cf                  // iretd             (Retry 0x18)
+
+0x2070: c0 00 00 00 00 00 00 00  // Fault handler at 0xc0
+// Physical Page 0x4000 (Virtual 0x0A001: 0x1000 - 0x1FFF)
+0x4fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4ff0: aa bb cc dd ee ff 11 22 33 44 55 66 77 88 99 a0 // 0x4FFF is 'a0'
+
+// Physical Page 0x5000 (Virtual 0x0A002: 0x2000 - 0x2FFF)
+0x5000: b1 c2 d3 e4 f5 06 17 28 39 4a 5b 6c 7d 8e 9f a0
+0x5010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
