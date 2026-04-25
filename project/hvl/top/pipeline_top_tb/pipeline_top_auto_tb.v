@@ -1,15 +1,15 @@
 module pipeline_top_auto_tb;
 
-initial begin
-    $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
-    $vcdpluson(0, pipeline_top_auto_tb); 
+// initial begin
+//     $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
+//     $vcdpluson(0, pipeline_top_auto_tb); 
     
-    //Set a timeout limit (adjust the number to give your TB enough time)
-    // #100000; 
+//     //Set a timeout limit (adjust the number to give your TB enough time)
+//     // #100000; 
     
-    // $display("WATCHDOG TIMEOUT: Forcing finish to save VPD file.");
-    // $finish;
-end
+//     // $display("WATCHDOG TIMEOUT: Forcing finish to save VPD file.");
+//     // $finish;
+// end
 
 // initial begin
 //   $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
