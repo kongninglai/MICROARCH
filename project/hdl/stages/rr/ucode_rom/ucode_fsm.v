@@ -102,7 +102,9 @@ module ucode_fsm(
     wire valid_rep, valid_rep_bar;
     // wire [7:0] ucode_idle;
     wire [95:0] ucode_sig_idle;
-    nand2$ nand2_valid_rep(valid_rep_bar, to_rr_valid, rep);
+    wire to_rr_valid_buf16;
+    bufferH16$  bufferH16$_to_rr_valid_buf16(to_rr_valid_buf16, to_rr_valid);
+    nand2$ nand2_valid_rep(valid_rep_bar, to_rr_valid_buf16, rep);
     bufferHInv16$ buffer_valid_rep(valid_rep, valid_rep_bar);
     // mux2_8$ mux2_ucode_idle(ucode_idle, opcode, OPC_REP_READ_ECX, valid_rep);
 
@@ -202,15 +204,15 @@ module ucode_fsm(
 	wire and_1_2_out;
 	or2$ and_1_0(and_1_0_out,and_1_1_out,and_1_2_out);
 	nand4$ and_1_1(and_1_1_out,Q1_bar,Q0_bar,interrupt_bar,exception_bar);
-	nand4$ and_1_2(and_1_2_out,to_rr_valid,rep_cmps,Q3_bar,Q2_bar);
+	nand4$ and_1_2(and_1_2_out,to_rr_valid_buf16,rep_cmps,Q3_bar,Q2_bar);
 	wire and_2_0_out;
 	wire and_2_1_out;
-	nand4$ and_2_0(and_2_0_out,and_2_1_out,exception_bar,to_rr_valid,iret);
+	nand4$ and_2_0(and_2_0_out,and_2_1_out,exception_bar,to_rr_valid_buf16,iret);
 	and4$ and_2_1(and_2_1_out,interrupt_bar,Q2_bar,Q1_bar,Q0_bar);
 	wire and_3_0_out;
 	wire and_3_1_out;
-	nand4$ and_3_0(and_3_0_out,and_3_1_out,rep_movs,interrupt_bar,exception_bar);
-	and4$ and_3_1(and_3_1_out,to_rr_valid,Q2_bar,Q1_bar,Q0_bar);
+	nand4$ and_3_0(and_3_0_out,and_3_1_out,to_rr_valid_buf16,interrupt_bar,exception_bar);
+	and4$ and_3_1(and_3_1_out,rep_movs,Q2_bar,Q1_bar,Q0_bar);
 	wire and_4_0_out;
 	wire and_4_1_out;
 	nand4$ and_4_0(and_4_0_out,and_4_1_out,Q3_bar,Q1,Q0_bar);

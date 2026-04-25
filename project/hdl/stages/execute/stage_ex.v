@@ -422,12 +422,12 @@ module stage_ex #(
     // Control
     wire [31:0] target_eip, target_eip_buf16;
     bufferH16$  bufferH16$_target_eip_buf16[31:0](target_eip_buf16, target_eip);
-    wire branch_taken, mispredict;
+    wire branch_taken, mispredict_bar;
     wire [31:0] jump_eip;
     ex_control control (
-        .r_m(regA_rm_buf64),
-        .imm(to_ex_imm_buf16),
-        .load_result(to_ex_load_result_buf16),
+        .r_m(regA_rm),
+        .imm(to_ex_imm),
+        .load_result(to_ex_load_result),
         .rel_eip(to_ex_rel_eip),
         .pred_eip(to_ex_pred_eip),
         .ieip(to_ex_ieip_buf16),
@@ -440,7 +440,7 @@ module stage_ex #(
         .jump_eip(jump_eip),
         .new_eip(target_eip),
         .branch_taken(branch_taken),
-        .mispredict(mispredict)
+        .mispredict_bar(mispredict_bar)
     ); 
 
     wire is_taken_branch;
@@ -468,9 +468,10 @@ module stage_ex #(
     or2$ or_from_ex_exception(from_ex_exception[1], to_ex_exception[1], branch_gp_exception);
     assign from_ex_exception[0] = to_ex_exception[0];
 
-    wire valid_ld_CS, valid_ld_EIP;
+    wire valid_ld_CS, valid_ld_EIP, sig_ldEIP_bar;
+    inv1$ inv1_sig_ldEIP_bar(sig_ldEIP_bar, sig_ldEIP);
     and2$ and2_valid_ldCS(valid_ld_CS, valid_instruction, sig_ldCS);
-    and3$ and3_valid_ldEIP(valid_ld_EIP, valid_instruction, sig_ldEIP, mispredict);
+    nor3$ nor3_valid_ldEIP(valid_ld_EIP, valid_instruction_bar, sig_ldEIP_bar, mispredict_bar);
     wire from_ex_flush_bar;
     nor3$ nor_flush_bar(from_ex_flush_bar, valid_ld_CS, valid_ld_EIP, from_ex_cmps_found);
     bufferHInv64$ bufferHInv64$_from_ex_flush(from_ex_flush, from_ex_flush_bar);

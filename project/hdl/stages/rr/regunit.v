@@ -81,17 +81,38 @@ module regunit(
     // gprd2_idx: 0(mod=modrm[2:0]), 1(ESI/110), 2(base)
     // gprd3_idx: index(sib[5:3])
     bufferH16$  bufferH16$_gprd0_idx[2:0](gprd0_idx, gprd0_idx_prebuf);
-    mux4$ mux4_gprd0_idx[2:0](gprd0_idx_prebuf, 3'b000, 3'b001, 3'b111, 3'b100, from_rr_sig_gprd0_mux[0], from_rr_sig_gprd0_mux[1]);
     bufferH16$  bufferH16$_gprd0_ds[1:0](gprd0_ds, gprd0_ds_prebuf);
-    mux4$ mux4_gprd0_ds[1:0](gprd0_ds_prebuf, from_rr_sig_ds, 2'b10, 2'b10, 2'b10, from_rr_sig_gprd0_mux[0], from_rr_sig_gprd0_mux[1]);
+
+    wire [2:0] dummy_gprd0_idx_ds;
+    mux4_8$ mux4_gprd0_idx_ds
+    (
+      {dummy_gprd0_idx_ds, gprd0_idx_prebuf, gprd0_ds_prebuf},
+      {3'd0, 3'b000, from_rr_sig_ds},
+      {3'd0, 3'b001, 2'b10},
+      {3'd0, 3'b111, 2'b10},
+      {3'd0, 3'b100, 2'b10},
+      from_rr_sig_gprd0_mux[0], 
+      from_rr_sig_gprd0_mux[1]
+    );
     
     mux2$  mux2_gprd1_idx[2:0](gprd1_idx, from_rr_modrm[5:3], from_rr_opcode[2:0], from_rr_sig_gprd1_mux);
     assign gprd1_ds = from_rr_sig_ds;
     
     bufferH16$  bufferH16$_gprd2_idx[2:0](gprd2_idx, gprd2_idx_prebuf);
-    mux4$ mux4_gprd2_idx[2:0](gprd2_idx_prebuf, from_rr_modrm[2:0], 3'b110, gp_base, 3'b000, from_rr_sig_gprd2_mux[0], from_rr_sig_gprd2_mux[1]);
-    mux4$ mux4_gprd2_ds[1:0](gprd2_ds, from_rr_sig_ds, 2'b10, 2'b10, 2'b10, from_rr_sig_gprd2_mux[0], from_rr_sig_gprd2_mux[1]);
-    
+        
+    wire [2:0] dummy_gprd2_idx_ds;
+    mux4_8$ mux4_gprd2_idx_ds
+    (
+      {dummy_gprd2_idx_ds, gprd2_idx_prebuf, gprd2_ds},
+      {3'd0, from_rr_modrm[2:0], from_rr_sig_ds},
+      {3'd0, 3'b110, 2'b10},
+      {3'd0, gp_base, 2'b10},
+      {3'd0, 3'b000, 2'b10},
+      from_rr_sig_gprd2_mux[0], 
+      from_rr_sig_gprd2_mux[1]
+    );
+
+
     bufferH16$  bufferH16$_gprd3_idx[2:0](gprd3_idx, from_rr_sib[5:3]);
     assign gprd3_ds = 2'b10;
 
@@ -104,16 +125,27 @@ module regunit(
     // base2: gprd0
     mux2_32 mux2_32_srcregA(.out(to_rr_srcregA), .in0(gprd0_data), .in1(gprd2_data), .s0(from_rr_sig_srcregA_mux));
     // mux2$ mux2_sregA_ds[1:0](srcregA_ds, gprd0_ds, gprd2_ds, from_rr_sig_srcregA_mux);
-    wire [2:0] to_dep_srcregA_idx_prebuf, to_dep_srcregB_idx_prebuf, to_dep_srcregC_idx_prebuf;
-    bufferH16$  bufferH16$_to_dep_srcregA_idx[2:0](to_dep_srcregA_idx, to_dep_srcregA_idx_prebuf);
-    bufferH16$  bufferH16$_to_dep_srcregB_idx[2:0](to_dep_srcregB_idx, to_dep_srcregB_idx_prebuf);
-    mux2$ mux2_sregA_idx[2:0](to_dep_srcregA_idx_prebuf, gprd0_idx, gprd2_idx, from_rr_sig_srcregA_mux);
-    mux2$ mux2_srcA_size[1:0](to_dep_srcA_size, gprd0_ds, gprd1_ds, from_rr_sig_srcregA_mux);
+
+    wire [2:0] dummy_srcregA_idx_size;
+    mux2_8$ mux2_8$_srcregA_idx_size
+    (
+      {dummy_srcregA_idx_size, to_dep_srcregA_idx, to_dep_srcA_size},
+      {3'd0, gprd0_idx, gprd0_ds},
+      {3'd0, gprd2_idx, gprd1_ds},
+      from_rr_sig_srcregA_mux
+    );
 
     mux2_32 mux2_32_srcregB(.out(to_rr_srcregB), .in0(gprd0_data), .in1(gprd1_data), .s0(from_rr_sig_srcregB_mux));
     // mux2$ mux2_sregB_ds[1:0](srcregB_ds, gprd0_ds, gprd1_ds, from_rr_sig_srcregB_mux);
-    mux2$ mux2_sregB_idx[2:0](to_dep_srcregB_idx_prebuf, gprd0_idx, gprd1_idx, from_rr_sig_srcregB_mux);
-    mux2$ mux2_srcB_size[1:0](to_dep_srcB_size, gprd0_ds, gprd1_ds, from_rr_sig_srcregB_mux);
+
+    wire [2:0] dummy_srcregB_idx_size;
+    mux2_8$ mux2_8$_srcregB_idx_size
+    (
+      {dummy_srcregB_idx_size, to_dep_srcregB_idx, to_dep_srcB_size},
+      {3'd0, gprd0_idx, gprd0_ds},
+      {3'd0, gprd1_idx, gprd1_ds},
+      from_rr_sig_srcregB_mux
+    );
 
     assign to_rr_srcregC = gprd0_data;
     // assign srcregC_ds = gprd0_ds;
@@ -128,7 +160,6 @@ module regunit(
 
     assign to_rr_basereg2 = gprd0_data;
     assign to_dep_basereg2_idx = gprd0_idx;
-    
 
     regfile_gp gprf (
         .clk(clk),

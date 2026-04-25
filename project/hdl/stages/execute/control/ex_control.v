@@ -15,7 +15,7 @@ module ex_control(
     output [31:0] jump_eip,
     output [31:0] new_eip,
     output branch_taken,
-    output mispredict
+    output mispredict_bar
 ); 
     wire [31:0] unmasked_eip, eip_mask, masked_eip;
     mux8_32 mux_eip(unmasked_eip, r_m, imm, rel_eip, load_result[31:0], {load_result[63:48], load_result[15:0]}, iret_eip, , , sig_eip_mux[0], sig_eip_mux[1], sig_eip_mux[2]);
@@ -36,5 +36,6 @@ module ex_control(
     mux2_32 mux2_t_nt_eip(new_eip, ieip, masked_eip, branch_taken);
     wire accurate_predict;
     big_eq #(.WIDTH(32)) eq_pred_eip(.eq(accurate_predict), .in0(pred_eip), .in1(new_eip));
-    inv1$ inv_mispredict(mispredict, accurate_predict);
+    // inv1$ inv_mispredict(mispredict, accurate_predict);
+    assign mispredict_bar = accurate_predict;
 endmodule 

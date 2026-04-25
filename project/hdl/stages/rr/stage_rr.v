@@ -219,11 +219,11 @@ module stage_rr #(
     bufferH16$  bufferH16$_to_regunit_modrm[5:0](to_regunit_modrm, to_rr_modrm[5:0]);
     assign to_regunit_sib = to_rr_sib[5:0];
     bufferH16$ bufferH16$_to_regunit_has_sib(to_regunit_has_sib, to_rr_addr_mode[1]);
-    bufferH16$ bufferH16$_to_regunit_sig_gprd0_mux[1:0](to_regunit_sig_gprd0_mux, gprd0_mux);
+    assign to_regunit_sig_gprd0_mux = gprd0_mux;
     assign to_regunit_sig_gprd1_mux = gprd1_mux;
-    bufferH16$ bufferH16$_to_regunit_sig_gprd2_mux[1:0](to_regunit_sig_gprd2_mux, gprd2_mux);
-    bufferH16$ bufferH16$_to_regunit_sig_srcregA_mux(to_regunit_sig_srcregA_mux, srcregA_mux);
-    bufferH16$ bufferH16$_to_regunit_sig_srcregB_mux(to_regunit_sig_srcregB_mux, srcregB_mux);
+    assign to_regunit_sig_gprd2_mux = gprd2_mux;
+    assign to_regunit_sig_srcregA_mux = srcregA_mux;
+    assign to_regunit_sig_srcregB_mux = srcregB_mux;
     bufferH16$ bufferH16$_to_regunit_sig_ds[1:0](to_regunit_sig_ds, ds_with_override);
     assign to_regunit_sig_srcsreg_mux = srcsreg_mux;
     assign to_regunit_sig_segrd0_mux = segrd0_mux;

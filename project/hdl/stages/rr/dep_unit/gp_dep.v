@@ -6,9 +6,8 @@ module get_pid(
     wire size_is_8;
     nor2$ nor2_size_is_8(size_is_8, size[1], size[0]);
 
-    wire [2:0] shifted_idx;
-    assign shifted_idx = {1'b0, idx[1:0]};
-    mux2$ mux2_pidx[2:0](pidx, idx, shifted_idx, size_is_8);
+    bufferH16$  bufferH16$_pidx[1:0](pidx[1:0], idx[1:0]);
+    mux2$ mux2_pidx(pidx[2], idx[2], 1'b0, size_is_8);
 
 endmodule
 
