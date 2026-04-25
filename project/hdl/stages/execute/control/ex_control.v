@@ -51,7 +51,7 @@ module ex_control(
     inv1$ inv_equal_targets(equal_targets_bar, equal_targets);
     and2$ and2_branch_taken_wrong_targets(branch_taken_wrong_target, equal_targets_bar, branch_taken);
     xor2$ xor2_wrong_direction(wrong_direction, branch_taken, pred_dir);
-    or2$ or2_mispredict(mispredict, wrong_direction, branch_taken_wrong_target);
+    nor2$ or2_mispredict(mispredict_bar, wrong_direction, branch_taken_wrong_target);
     // big_eq #(.WIDTH(1)) eq_pred_dir(.eq(accurate_predict), .in0(pred_dir), .in1(branch_taken));
     // inv1$ inv_mispredict(mispredict, accurate_predict);
 endmodule 

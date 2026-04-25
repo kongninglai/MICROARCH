@@ -25,7 +25,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 99;
+localparam CYCLE_TIME_X10 = 103;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -58,6 +58,10 @@ wire [47:0] to_rr_imm;
 wire [2:0]  to_rr_imm_size;
 wire [1:0]  to_rr_addr_mode;
 
+wire        to_rr_pred_dir;
+wire  [3:0] to_rr_pht_idx;
+wire  [3:0] from_ex_pht_idx;
+
 wire  [31:0] to_rr_oeip;
 wire  [31:0] to_rr_ieip;
 wire  [31:0] to_rr_pred_eip;
@@ -78,7 +82,7 @@ wire [11:0]  F_PAGE_OFFSET;
 
 wire [15:0]  from_rr_cs;
 wire         from_ex_ld_cs;
-wire [3:0]   from_ex_pht_idx;
+// wire [3:0]   from_ex_pht_idx;
 wire [31:0]  to_pr_pred_eip;
 
 /*** CACHE / TLB INTERNAL WIRES ***/
@@ -142,7 +146,7 @@ wire from_wb_flush;
 
 assign from_rr_cs = from_regunit_CS;
 assign from_ex_ld_cs = 1'b0;
-assign from_ex_pht_idx = 4'd0;
+// assign from_ex_pht_idx = 4'd0;
 
 reg [31:0] wb_ieip;
 reg [31:0] wb_eflags;
@@ -180,7 +184,9 @@ backend_top #(
   .to_rr_exception(to_rr_exception),
   .to_rr_ucode_sigs(to_rr_ucode_sigs),
   .to_rr_valid(to_rr_valid),
-
+  .to_rr_pred_dir(to_rr_pred_dir),
+  .to_rr_pht_idx(to_rr_pht_idx),
+  .from_ex_pht_idx(from_ex_pht_idx),
   .from_rr_stall(from_rr_stall),
   .from_regunit_CS(from_regunit_CS),
   .from_regunit_cs_limit(from_regunit_cs_limit),
@@ -769,6 +775,8 @@ fetch_decode_top #(
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
     .to_rr_ucode_sigs(to_rr_ucode_sigs),
+    .to_rr_pred_dir(to_rr_pred_dir),
+    .to_rr_pht_idx(to_rr_pht_idx),
     .to_rr_valid(to_rr_valid)
 );
 
@@ -910,6 +918,10 @@ initial begin
   $finish;
 end
 
+initial begin 
+  #(40000 * CYCLE_TIME);
+  $finish;
+end
 // Auto-generated memory initialization (Verilog-2005)
 
 initial begin
