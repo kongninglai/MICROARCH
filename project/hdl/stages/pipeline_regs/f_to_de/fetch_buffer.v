@@ -29,13 +29,13 @@ module fetch_buffer(
     wire v_cl_ld, v_cl_ld_bar, from_de_cache_line_load_signal, from_de_eip_redirection_valid_bar, fb_req_cl_stable;
     wire [4:0] wr_cl_byte_cnt;
     wire flush, flush_bar;
-    wire from_ex_flush_bar, from_wb_flush_bar, from_de_valid_bar;
+    wire from_ex_flush_bar, from_wb_flush_bar, from_de_valid_bar, true_consume_prebuf;
 
     inv1$ inv1$_from_ex_flush_bar(from_ex_flush_bar, from_ex_flush);
     inv1$ inv1$_from_wb_flush_bar(from_wb_flush_bar, from_wb_flush);
     inv1$ inv1$_from_de_valid_bar(from_de_valid_bar, from_de_valid);
 
-    nand2$ nand_eip_redir_valid_bar(from_de_eip_redirection_valid_bar, from_de_eip_redirection, from_de_valid);
+    nand2$ nand_eip_redir_valid_bar(from_de_eip_redirection_valid_bar, from_de_eip_redirection, true_consume_prebuf);
     nand3$ nand_flush(flush, from_wb_flush_bar, from_ex_flush_bar, from_de_eip_redirection_valid_bar); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid data
     inv1$ inv_flush_bar(flush_bar, flush);
     
@@ -49,7 +49,7 @@ module fetch_buffer(
 
     //True Consume Logic
     wire [3:0] gated_instr_len, gated_instr_len_prebuf;
-    wire true_consume, true_consume_prebuf; 
+    wire true_consume; 
     nor2$ nor_true_consume(true_consume_prebuf, from_de_valid_bar, from_de_stall); //only consume instruction (decr tail ptr) if de is valid and not stalled
     wire true_consume_bar;
     inv1$ inv1$_true_consume_bar(true_consume_bar, true_consume_prebuf);

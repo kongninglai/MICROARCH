@@ -868,22 +868,22 @@ always @(posedge clk) begin
             $display("[HEARTBEAT] Pipeline is moving! Reached Architectural State %0d / 12146", NUM_TESTS);
         end
 
-        if (NUM_TESTS >= 7600) begin
-            if ((NUM_TESTS % 5) == 0) begin
-                // Print a highly visible alert to your terminal
-                $display("==================================================");
-                $display("[DEEP DEBUG] State %0d committed! EIP: 0x%08X", NUM_TESTS, arch_snap_oeip);
-                $display("==================================================");
+        // if (NUM_TESTS >= 7600) begin
+        //     if ((NUM_TESTS % 5) == 0) begin
+        //         // Print a highly visible alert to your terminal
+        //         $display("==================================================");
+        //         $display("[DEEP DEBUG] State %0d committed! EIP: 0x%08X", NUM_TESTS, arch_snap_oeip);
+        //         $display("==================================================");
                 
-                // This calls your existing task to dump the full register state to results_cmp.txt
-                print_arch_status(0); 
-            end
-        end
+        //         // This calls your existing task to dump the full register state to results_cmp.txt
+        //         print_arch_status(0); 
+        //     end
+        // end
         
         NUM_TESTS = NUM_TESTS + 1;
 
         //$display("[COMMIT] Macro-op finished at OEIP: 0x%08X", arch_snap_oeip); //DEBUG
-        $display("EIP: 0x%08X | ECX: %0d", arch_snap_oeip, arch_snap_gpr[1]);
+        // $display("EIP: 0x%08X | ECX: %0d", arch_snap_oeip, arch_snap_gpr[1]);
 
         // Start recording the new instruction's snapshot
         take_arch_snapshot(wb_commit_oeip, wb_commit_ieip, wb_commit_eflags);
