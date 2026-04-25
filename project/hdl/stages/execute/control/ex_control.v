@@ -18,9 +18,18 @@ module ex_control(
     output mispredict_bar
 ); 
     wire [31:0] unmasked_eip, eip_mask, masked_eip;
-    mux8_32 mux_eip(unmasked_eip, r_m, imm, rel_eip, load_result[31:0], {load_result[63:48], load_result[15:0]}, iret_eip, , , sig_eip_mux[0], sig_eip_mux[1], sig_eip_mux[2]);
-    mux2_32 mux_eip_mask(eip_mask, 32'hffff_ffff, 32'h0000_ffff, sig_op_ovr);
-    and2$ and2_masked_eip[31:0](masked_eip, unmasked_eip, eip_mask);
+
+    mux16_32 mux_eip
+    (
+      masked_eip,
+      r_m, imm, rel_eip, load_result[31:0], {load_result[63:48], load_result[15:0]}, iret_eip, , ,
+      {16'd0, r_m[15:0]}, {16'd0, imm[15:0]}, {16'd0, rel_eip[15:0]}, {16'd0, load_result[15:0]}, {16'd0, load_result[15:0]}, {16'd0, iret_eip[15:0]}, , ,
+      sig_eip_mux[0], sig_eip_mux[1], sig_eip_mux[2], sig_op_ovr
+    );
+
+    // mux8_32 mux_eip(unmasked_eip, r_m, imm, rel_eip, load_result[31:0], {load_result[63:48], load_result[15:0]}, iret_eip, , , sig_eip_mux[0], sig_eip_mux[1], sig_eip_mux[2]);
+    // mux2_32 mux_eip_mask(eip_mask, 32'hffff_ffff, 32'h0000_ffff, sig_op_ovr);
+    // and2$ and2_masked_eip[31:0](masked_eip, unmasked_eip, eip_mask);
 
     wire ne, nbe, jne, jnbe, uncond_jmp, jmp;
     // ne = (ZF==0), nbe = ((CF==0) & (ZF==0))
