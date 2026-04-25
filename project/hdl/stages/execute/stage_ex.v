@@ -487,8 +487,8 @@ module stage_ex #(
     mux2_16$ mux2_cs(from_ex_cs, to_ex_cs, from_ex_cs_target, valid_ld_CS);
 
     assign from_ex_br_t_nt = branch_taken;
-    // and2$ and_br_valid(from_ex_br_valid, sig_ldEIP, from_ex_valid);
-    assign from_ex_br_valid = sig_ldEIP;
+    and2$ and_br_valid(from_ex_br_valid, sig_ldEIP, to_ex_valid);
+    // assign from_ex_br_valid = sig_ldEIP;
 
     wire [31:0] from_ex_eip_target_prebuf;
     mux2_32 mux2_32_eip_target(from_ex_eip_target_prebuf, target_eip_buf16, to_ex_ieip_buf16, sig_cmps2);
