@@ -25,7 +25,7 @@ generate
       nor3$ and_0_0(eq,in_inv[0],in_inv[1],in_inv[2]);
     end
     4: begin : width4_gen
-      and4$ and_0_0(eq,in[0],in[1],in[2],in[3]);
+      nor4$ and_0_0(eq,in_inv[0],in_inv[1],in_inv[2],in_inv[3]);
     end
     5: begin : width5_gen
       wire and_0_0_out;

@@ -8,6 +8,12 @@ initial begin
   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
 end
 
+/******* PERFORMANCE FEATURES ********/
+localparam STREAM_BUFFER_EN    = 1'b1;
+localparam ROW_BUFFER_EN       = 1'b1;
+localparam FORWARD_EN          = 1'b1;
+localparam INSTR_Q_EN          = 1'b1;
+
 integer i;
 integer NUM_TESTS = 0;
 integer FAILURES  = 0;
@@ -19,7 +25,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 94;
+localparam CYCLE_TIME_X10 = 93;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -153,7 +159,9 @@ reg [7:0] TEST_CASE_NEW_CHAR, TEST_CASE_NEW_CHAR_WR;
 reg TEST_CASE_NEW_READY, TEST_CASE_NEW_READY_WR;
 
 /*** DUT ***/
-backend_top dut (
+backend_top #(
+  .FORWARD_EN(FORWARD_EN)
+) dut (
   .clk(clk),
   .rst_n(rst_n),
 
@@ -225,6 +233,8 @@ backend_top dut (
 );
 
 full_cache #(
+  .ROW_BUFFER_EN     (ROW_BUFFER_EN),
+  .STREAM_BUFFER_EN  (STREAM_BUFFER_EN),
   .CYCLE_TIME_X10    (CYCLE_TIME_X10),
   .TRUE_LRU          (TRUE_LRU)
 ) full_cache_inst (
@@ -386,7 +396,7 @@ reg [31:0] combined_mask;
 reg [31:0] saved_ieip, halt_oeip;
 
 // Pending Read/Wrote buffer: each entry tagged with the ieip of the instruction
-localparam MAX_PENDING_MEM = 128;
+localparam MAX_PENDING_MEM = 65536;
 reg        pend_mem_is_wr [0:MAX_PENDING_MEM-1]; // 0=Read, 1=Wrote
 reg [7:0]  pend_mem_val   [0:MAX_PENDING_MEM-1];
 reg [31:0] pend_mem_va    [0:MAX_PENDING_MEM-1];
@@ -583,6 +593,17 @@ initial begin
   handle_hlt = 0;
 end
 
+integer ipc_cycles;
+real ipc;
+
+always @(posedge clk) begin
+  if (!rst_n) begin
+    ipc_cycles <= 0;
+  end else begin
+    ipc_cycles <= ipc_cycles + 1;
+  end
+end
+
 always @(posedge clk) begin
   
   if (!rst_n) begin 
@@ -602,6 +623,13 @@ always @(posedge clk) begin
     #(CYCLE_TIME);
     $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
     $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+
+    ipc = NUM_TESTS * 1.0 / ipc_cycles;
+
+    $display("IPC cycles       = %0d", ipc_cycles);
+    $display("Committed instrs = %0d", NUM_TESTS);
+    $display("IPC              = %f", ipc);
+
     $finish;
 
   end
@@ -611,7 +639,7 @@ always @(posedge clk) begin
   if (((dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b0 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) ||
        (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.LINE_0_LOAD_DONE === 1'b1) ||
        (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1)) &&
-        (dut.inst_stage_mem.from_mem_exception === 2'b00) && (from_ex_flush === 1'b0)) begin
+        (dut.inst_stage_mem.from_mem_exception === 2'b00) && (dut.inst_stage_mem.from_ex_flush === 1'b0)) begin
     case (dut.inst_stage_mem.mem_ds)
       2'b00: load_iters=1;
       2'b01: load_iters=2;
@@ -698,7 +726,9 @@ reg [31:0] accepted_cnt;
 reg [31:0] stalled_cnt;
 localparam integer MAX_STREAM_CYCLES = 200000;
 
-fetch_decode_top FRONTEND_TOP(
+fetch_decode_top #(
+  .INSTR_Q_EN(INSTR_Q_EN)
+) FRONTEND_TOP(
     .clk(clk),
     .rst_bar(rst_n),
 

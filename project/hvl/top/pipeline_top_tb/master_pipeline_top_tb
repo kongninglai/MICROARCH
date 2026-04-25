@@ -22,6 +22,8 @@
 
 // Test Logic
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/decoder
+~/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr/de_to_rr_no_instr_q.v
+~/MICROARCH/project/hdl/stages/fetch/intgr_fshfter_decode_no_instr_q.v
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/fetch
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de

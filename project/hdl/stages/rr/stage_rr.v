@@ -26,6 +26,7 @@ module stage_rr #(
     input [8:0] from_dep_mem_fw_control_sigs,
     input [8:0] from_dep_ex_fw_control_sigs,
 
+    input from_ex_flush,
     input from_wb_flush,
     input from_ex_cmps_found,
     input interrupt,
@@ -130,11 +131,15 @@ module stage_rr #(
     wire to_rr_prefix_0_buf16, to_rr_addr_mode_0_buf16;
     bufferH16$  bufferH16$_to_rr_prefix_0_buf16(to_rr_prefix_0_buf16, to_rr_prefix[0]);
     bufferH16$  bufferH16$_to_rr_addr_mode_0_buf16(to_rr_addr_mode_0_buf16, to_rr_addr_mode[0]);
+
+    wire to_rr_valid_bar, rr_valid_and_not_flush;
+    inv1$ inv1_to_rr_valid(to_rr_valid_bar, to_rr_valid);
+    nor2$ nor2_rr_valid_and_not_flush(rr_valid_and_not_flush, to_rr_valid_bar, from_ex_flush);
     ucode_fsm ucode_fsm_inst (
         .clk(clk),
         .rst_n(rst_n),
         .to_rr_ucode_sigs(to_rr_ucode_sigs),
-        .to_rr_valid(to_rr_valid),
+        .to_rr_valid(rr_valid_and_not_flush),
         .rep(from_rr_rep),
         .stall(fsm_stall),
         .interrupt(1'b0),
@@ -214,11 +219,11 @@ module stage_rr #(
     bufferH16$  bufferH16$_to_regunit_modrm[5:0](to_regunit_modrm, to_rr_modrm[5:0]);
     assign to_regunit_sib = to_rr_sib[5:0];
     bufferH16$ bufferH16$_to_regunit_has_sib(to_regunit_has_sib, to_rr_addr_mode[1]);
-    bufferH16$ bufferH16$_to_regunit_sig_gprd0_mux[1:0](to_regunit_sig_gprd0_mux, gprd0_mux);
+    assign to_regunit_sig_gprd0_mux = gprd0_mux;
     assign to_regunit_sig_gprd1_mux = gprd1_mux;
-    bufferH16$ bufferH16$_to_regunit_sig_gprd2_mux[1:0](to_regunit_sig_gprd2_mux, gprd2_mux);
-    bufferH16$ bufferH16$_to_regunit_sig_srcregA_mux(to_regunit_sig_srcregA_mux, srcregA_mux);
-    bufferH16$ bufferH16$_to_regunit_sig_srcregB_mux(to_regunit_sig_srcregB_mux, srcregB_mux);
+    assign to_regunit_sig_gprd2_mux = gprd2_mux;
+    assign to_regunit_sig_srcregA_mux = srcregA_mux;
+    assign to_regunit_sig_srcregB_mux = srcregB_mux;
     bufferH16$ bufferH16$_to_regunit_sig_ds[1:0](to_regunit_sig_ds, ds_with_override);
     assign to_regunit_sig_srcsreg_mux = srcsreg_mux;
     assign to_regunit_sig_segrd0_mux = segrd0_mux;
