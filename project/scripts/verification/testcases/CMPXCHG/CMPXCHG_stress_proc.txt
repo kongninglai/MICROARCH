@@ -1,0 +1,135 @@
+0x0:  ba 00 0b 00 00  // mov edx,0xb00
+0x5:  8e d2  // mov ss,edx
+0x7:  bc 00 03 00 00  // mov esp,0x300
+0xc:  ba 00 02 00 00  // mov edx,0x200
+0x11:  8e da  // mov ds,edx
+0x13:  ba 00 04 00 00  // mov edx,0x400
+0x18:  8e c2  // mov es,edx
+0x1a:  bb 00 00 00 00  // mov ebx,0x0
+0x1f:  bd 00 00 00 00  // mov ebp,0x0
+0x24:  b0 42  // mov al,0x42
+0x26:  b1 42  // mov cl,0x42
+0x28:  0f b0 c8  // cmpxchg al,cl  (match: al==al, ZF=1)
+0x2b:  b0 10  // mov al,0x10
+0x2d:  b2 99  // mov dl,0x99
+0x2f:  0f b0 d0  // cmpxchg al,dl  (no match: al=0x10!=0x10? wait)
+0x32:  b0 55  // mov al,0x55
+0x34:  b1 55  // mov cl,0x55
+0x36:  b2 aa  // mov dl,0xaa
+0x38:  0f b0 d1  // cmpxchg cl,dl  (match: al==cl=0x55, cl<-dl=0xaa, ZF=1)
+0x3b:  b0 11  // mov al,0x11
+0x3d:  b1 22  // mov cl,0x22
+0x3f:  b2 33  // mov dl,0x33
+0x41:  0f b0 d1  // cmpxchg cl,dl  (no match: al=0x11!=cl=0x22, al<-0x22, ZF=0)
+0x44:  66 b8 cd ab  // mov ax,0xabcd
+0x48:  66 b9 cd ab  // mov cx,0xabcd
+0x4c:  66 ba 34 12  // mov dx,0x1234
+0x50:  66 0f b1 d1  // cmpxchg cx,dx  (match: ax==cx=0xabcd, cx<-0x1234, ZF=1)
+0x54:  66 b8 01 00  // mov ax,0x0001
+0x58:  66 b9 02 00  // mov cx,0x0002
+0x5c:  66 ba 03 00  // mov dx,0x0003
+0x60:  66 0f b1 d1  // cmpxchg cx,dx  (no match: ax=1!=cx=2, ax<-2, ZF=0)
+0x64:  b8 ef be ad de  // mov eax,0xdeadbeef
+0x69:  b9 ef be ad de  // mov ecx,0xdeadbeef
+0x6e:  ba be ba fe ca  // mov edx,0xcafebabe
+0x73:  0f b1 d1  // cmpxchg ecx,edx  (match: eax==ecx, ecx<-edx, ZF=1)
+0x76:  b8 01 00 00 00  // mov eax,0x1
+0x7b:  b9 02 00 00 00  // mov ecx,0x2
+0x80:  ba 03 00 00 00  // mov edx,0x3
+0x85:  0f b1 d1  // cmpxchg ecx,edx  (no match: eax=1!=ecx=2, eax<-2, ZF=0)
+0x88:  b8 02 00 00 00  // mov eax,0x2  (eax was loaded with 2 from prev no-match)
+0x8d:  b9 02 00 00 00  // mov ecx,0x2
+0x92:  ba 99 00 00 00  // mov edx,0x99
+0x97:  0f b1 d1  // cmpxchg ecx,edx  (match: eax==ecx=2, ecx<-0x99, ZF=1)
+0x9a:  b8 99 00 00 00  // mov eax,0x99
+0x9f:  0f b1 d1  // cmpxchg ecx,edx  (match again: eax==ecx=0x99, ecx<-edx)
+0xa2:  c7 43 00 ce fa ed fe  // mov [ebx+0],0xfeedface
+0xa9:  b8 ce fa ed fe  // mov eax,0xfeedface
+0xae:  be 11 11 11 11  // mov esi,0x11111111
+0xb3:  0f b1 73 00  // cmpxchg [ebx+0],esi  (match: eax==mem, mem<-esi, ZF=1)
+0xb7:  8b 7b 00  // mov edi,[ebx+0]  (should be 0x11111111)
+0xba:  c7 43 04 aa aa aa aa  // mov [ebx+4],0xaaaaaaaa
+0xc1:  b8 bb bb bb bb  // mov eax,0xbbbbbbbb  (different from mem)
+0xc6:  be cc cc cc cc  // mov esi,0xcccccccc
+0xcb:  0f b1 73 04  // cmpxchg [ebx+4],esi  (no match: eax!=mem, eax<-mem, ZF=0)
+0xcf:  8b 7b 04  // mov edi,[ebx+4]  (still 0xaaaaaaaa)
+0xd2:  c7 45 00 78 56 34 12  // mov [ebp+0],0x12345678  (ES:0)
+0xd9:  26 c7 45 00 78 56 34 12  // es: mov [ebp+0],0x12345678
+0xe1:  b8 78 56 34 12  // mov eax,0x12345678
+0xe6:  be 00 00 ad de  // mov esi,0xdead0000
+0xeb:  26 0f b1 75 00  // es: cmpxchg [ebp+0],esi  (match, ZF=1)
+0xf0:  be 10 00 00 00  // mov esi,0x10  (array base)
+0xf5:  b9 04 00 00 00  // mov ecx,4  (loop count)
+0xfa:  8b 04 1e  // mov eax,[ebx+esi]  (load current)
+0xfd:  ba ff ff ff ff  // mov edx,0xffffffff
+0x102:  0f b1 14 1e  // cmpxchg [ebx+esi],edx  (try replace)
+0x106:  83 c6 04  // add esi,4
+0x109:  83 c1 ff  // add ecx,-1
+0x10c:  75 ec  // jne loop
+0x10e:  f4  // hlt
+
+0x2000: f6 96 9f 2d 05 20 aa 6e 31 4d c5 f3 79 69 6d a3
+0x2010: bd 55 a6 d5 ef 2a ff c4 ea 6d a3 70 ec 4f ae 1a
+0x2020: 59 c7 1e 58 28 da 40 6e cc 12 23 89 ab 34 c6 61
+0x2030: 8e 7b 70 db 30 2e f0 ba d4 de 4b c6 fb 08 12 82
+0x2040: 43 3b 67 ab c6 34 1b 48 57 02 82 0c f2 e6 a3 12
+0x2050: 1c 3e 56 d3 36 ef cb 9c 1b 8e 22 d7 54 df 1f 44
+0x2060: f0 1e 44 df 36 d4 1b 65 77 e9 b1 a9 04 f2 53 a8
+0x2070: 71 d1 86 fd 64 77 81 4f 8b 2a 45 53 b1 7a 90 7b
+0x2080: ed 1d d5 d1 0c 32 8f d6 6e 6d 8f b8 f1 ea ee 93
+0x2090: cc 76 86 1f de 56 9a d2 40 ad 0e a5 ea 90 96 e2
+0x20a0: 23 d7 6a 2b 6b 0a 94 40 d2 61 d8 e4 62 75 4a 3e
+0x20b0: 09 1e 3e 13 e5 b5 5b 3f 66 28 f6 8c ae 61 fa 62
+0x20c0: b8 a9 d9 79 1d a4 35 5b ca 93 6c 08 6f 55 3b f8
+0x20d0: 0b 84 f1 83 fc 11 51 ff a1 3f 12 3c 1c 65 60 98
+0x20e0: 5b c0 c4 f1 2c a5 2a bb 7a 57 a4 3a d1 ed 04 8a
+0x20f0: 1b 65 f0 22 09 18 c7 28 ed 99 63 eb 4e 03 c3 ac
+0x5000: 12 70 99 6c 1e 73 52 52 c4 ec 1e ee 0c 98 2e cf
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4110: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4120: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4130: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4140: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4150: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4160: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4170: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4180: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4190: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x41a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x41b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x41c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x41d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x41e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x41f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4210: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4220: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4230: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4240: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4250: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4260: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4270: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4280: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4290: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x42a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x42b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x42c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x42d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x42e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x42f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
