@@ -56,7 +56,7 @@
         output wire to_rr_valid
 ); 
 
-        localparam ENTRY_BIT_WIDTH = 318;
+        localparam ENTRY_BIT_WIDTH = 322;
         localparam VALID_BIT       = 218;
         localparam COUNT_WIDTH     = 3;
 

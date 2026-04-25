@@ -27,7 +27,7 @@
  */
 
 module iq_de_to_rr #(
-  parameter ENTRY_BIT_WIDTH = 318,
+  parameter ENTRY_BIT_WIDTH = 322,
   parameter VALID_BIT       = 218,
   parameter NUM_ENTRIES     = 4,
   parameter PTR_WIDTH       = $clog2(NUM_ENTRIES),

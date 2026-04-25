@@ -480,7 +480,9 @@ module stage_ex #(
     bufferHInv64$ bufferHInv64$_from_ex_flush(from_ex_flush, from_ex_flush_bar);
     assign from_ex_ld_cs = valid_ld_CS;
     
-    mux2_32 mux2_ieip(from_ex_ieip, to_ex_ieip_buf16, from_ex_eip_target, from_ex_flush);
+    wire [31:0] predicted_eip_or_ieip;
+    mux2_32 mux2_predicted_eip_or_ieip(predicted_eip_or_ieip, to_ex_ieip_buf16, to_ex_pred_eip, to_ex_pred_dir);
+    mux2_32 mux2_ieip(from_ex_ieip, predicted_eip_or_ieip, from_ex_eip_target, from_ex_flush);
     mux2_16$ mux2_cs(from_ex_cs, to_ex_cs, from_ex_cs_target, valid_ld_CS);
 
     assign from_ex_br_t_nt = branch_taken;
