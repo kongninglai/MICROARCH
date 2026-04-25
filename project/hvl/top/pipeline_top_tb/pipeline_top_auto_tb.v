@@ -30,7 +30,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 160;
+localparam CYCLE_TIME_X10 = 109;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
