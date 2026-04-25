@@ -1,0 +1,50 @@
+// Change line 4 of both tlb_init.v and main.py to 000010100000000000011001101
+// Change line 6 of both tlb_init.v and main.py to 000010100000000000101011101
+// Change DS limit to 0xfffff in both project/hdl/prf/regfile_seg.v and main.py
+
+0x0:  ba 00 0c 00 00      // mov    edx,0xc00  (SS Segment)
+0x5:  8e d2               // mov    ss,edx
+0x7:  bc ff 0f 00 00      // mov    esp,0xfff  (Stack Pointer)
+0xc:  ba 00 0a 00 00      // mov    edx,0xa00  (DS = 0xa00)
+0x11: 8e da               // mov    ds,edx
+0x13: bb 00 00 00 00      // mov    ebx,0x0    (Initial offset)
+0x18: c7 83 fd 0f 00 00 ef be ad de  // mov    DWORD PTR [ebx+0xffd],0xdeadbeef <- PF HERE
+0x22: 8b 83 fd 0f 00 00   // mov    eax,DWORD PTR [ebx+0xffd]
+0x28: c7 83 fe 0f 00 00 be ba fe ca  // mov    DWORD PTR [ebx+0xffe],0xcafebabe
+0x32: 8b 8b fe 0f 00 00   // mov    ecx,DWORD PTR [ebx+0xffe]
+0x38: c7 83 ff 0f 00 00 78 56 34 12  // mov    DWORD PTR [ebx+0xfff],0x12345678
+0x42: 8b 93 ff 0f 00 00   // mov    edx,DWORD PTR [ebx+0xfff]
+0x48: c7 83 00 10 00 00 fe ca ef be  // mov    DWORD PTR [ebx+0x1000],0xbeefcafe
+0x52: 8b b3 00 10 00 00   // mov    esi,DWORD PTR [ebx+0x1000]
+0x58: c6 83 ff 0f 00 00 aa// mov    BYTE PTR [ebx+0xfff],0xaa
+0x5f: c6 83 00 10 00 00 bb// mov    BYTE PTR [ebx+0x1000],0xbb
+0x66: c6 83 01 10 00 00 cc// mov    BYTE PTR [ebx+0x1001],0xcc
+0x6d: c6 83 02 10 00 00 dd// mov    BYTE PTR [ebx+0x1002],0xdd
+0x74: 8b bb ff 0f 00 00   // mov    edi,DWORD PTR [ebx+0xfff]
+0x7a: 66 c7 83 ff 0f 00 00 34 12  // mov    WORD PTR [ebx+0xfff],0x1234
+0x83: 66 8b 83 ff 0f 00 00// mov    ax,WORD PTR [ebx+0xfff]
+0x8a: c7 83 fd 0f 00 00 01 00 00 00  // mov    DWORD PTR [ebx+0xffd],0x1
+0x94: b8 01 00 00 00      // mov    eax,0x1
+0x99: 03 83 fd 0f 00 00   // add    eax,DWORD PTR [ebx+0xffd]
+0x9f: c7 83 fb 0f 00 00 34 12 cd ab  // mov    DWORD PTR [ebx+0xffb],0xabcd1234
+0xa9: 8b 8b fb 0f 00 00   // mov    ecx,DWORD PTR [ebx+0xffb]
+0xaf: c7 83 01 10 00 00 aa 55 aa 55  // mov    DWORD PTR [ebx+0x1001],0x55aa55aa
+0xb9: 8b 93 01 10 00 00   // mov    edx,DWORD PTR [ebx+0x1001]
+0xbf: f4                  // hlt
+
+// Handler (Still at 0xc0 as per your IDT entry)
+0xc0: bb 00 10 00 00      // mov    ebx,0x1000 (Fix offset to skip unmapped page)
+0xc5: cf                  // iretd             (Return and re-execute 0x18)
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2070: c0 00 00 00 00 00 00 00
+
+0x5ff0: aa bb cc dd ee ff 11 22 33 44 55 66 77 88 99 a0
+0x4000: b1 c2 d3 e4 f5 06 17 28 39 4a 5b 6c 7d 8e 9f a0
+0x4010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
