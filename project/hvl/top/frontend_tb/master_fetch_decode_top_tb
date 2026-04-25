@@ -11,38 +11,38 @@
 +libext+.v
 
 // Automatic Directory Search 
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/adders
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/comparators
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/extenders
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/gates
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/muxes
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/regs
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shifters
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shift_reg
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/decoders
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/adders
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/comparators
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/extenders
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/gates
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/muxes
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/regs
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shifters
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shift_reg
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/decoders
 
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucoderom.v
 
 // Test Logic 
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/fetch
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/tlb
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/top
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/tag_stores
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/data_stores
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/controllers
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/integration
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/off-core/top
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/off-core/memory
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/off-core/io
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/off-core/arbiter
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/encoders
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/decoder
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/fetch
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/de_to_rr
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/pipeline_regs/f_to_de
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/tlb
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/top
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/tag_stores
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/data_stores
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/controllers
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/integration
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/off-core/top
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/off-core/memory
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/off-core/io
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/off-core/arbiter
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/encoders
 
-/home/ecelrc/students/aak3265/MICROARCH/project/hdl/top/frontend/fetch_decode_top.v
+/home/ecelrc/students/var2427/MICROARCH/project/hdl/top/frontend/fetch_decode_top.v
 
 // Testbench for Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/frontend_tb/fetch_decode_top_tb.v
-// /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/frontend_tb/fetch_decode_top_tb2.v
-// /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/frontend_tb/fetch_decode_top_tb3.v
+/home/ecelrc/students/var2427/MICROARCH/project/hvl/top/frontend_tb/fetch_decode_top_tb.v
+// /home/ecelrc/students/var2427/MICROARCH/project/hvl/top/frontend_tb/fetch_decode_top_tb2.v
+// /home/ecelrc/students/var2427/MICROARCH/project/hvl/top/frontend_tb/fetch_decode_top_tb3.v

@@ -1,23 +1,18 @@
 module pipeline_top_auto_tb;
 
 initial begin
-    $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
-    $vcdpluson(0, pipeline_top_auto_tb); 
-    
-    //Set a timeout limit (adjust the number to give your TB enough time)
-    // #100000; 
-    
-    // $display("WATCHDOG TIMEOUT: Forcing finish to save VPD file.");
-    // $finish;
+  // $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
+  // $vcdpluson(0, pipeline_top_auto_tb); 
+  // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
+  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
+  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
 end
 
-// initial begin
-//   $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
-//   $vcdpluson(0, pipeline_top_auto_tb); 
-//   // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
-//   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
-//   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
-// end
+/******* PERFORMANCE FEATURES ********/
+localparam STREAM_BUFFER_EN    = 1'b1;
+localparam ROW_BUFFER_EN       = 1'b1;
+localparam FORWARD_EN          = 1'b1;
+localparam INSTR_Q_EN          = 1'b1;
 
 integer i;
 integer NUM_TESTS = 0;
@@ -30,28 +25,28 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 160;
+localparam CYCLE_TIME_X10 = 99;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
 reg clk;
 reg rst_n;
 
-// wire [6:0]  from_de_prefix;
-// wire [7:0]  from_de_opcode;
-// wire [7:0]  from_de_modrm;
-// wire [7:0]  from_de_sib;
-// wire [31:0] from_de_disp;
-// wire [1:0]  from_de_dispsize;
-// wire [47:0] from_de_imm;
-// wire [2:0]  from_de_imm_size;
-// wire [1:0]  from_de_addr_mode;
+wire [6:0]  from_de_prefix;
+wire [7:0]  from_de_opcode;
+wire [7:0]  from_de_modrm;
+wire [7:0]  from_de_sib;
+wire [31:0] from_de_disp;
+wire [1:0]  from_de_dispsize;
+wire [47:0] from_de_imm;
+wire [2:0]  from_de_imm_size;
+wire [1:0]  from_de_addr_mode;
 
-// wire  [31:0] from_de_oeip;
-// wire  [31:0] from_de_ieip;
-// wire  [31:0] from_de_pred_eip;
-// wire  [1:0]  from_de_exception;
-// wire         from_de_valid;
+wire  [31:0] from_de_oeip;
+wire  [31:0] from_de_ieip;
+wire  [31:0] from_de_pred_eip;
+wire  [1:0]  from_de_exception;
+wire         from_de_valid;
 
 wire [6:0]  to_rr_prefix;
 wire [7:0]  to_rr_opcode;
@@ -66,8 +61,6 @@ wire [1:0]  to_rr_addr_mode;
 wire  [31:0] to_rr_oeip;
 wire  [31:0] to_rr_ieip;
 wire  [31:0] to_rr_pred_eip;
-wire         to_rr_pred_dir;
-wire  [3:0]  to_rr_pht_idx;
 wire  [1:0]  to_rr_exception;
 wire  [95:0] to_rr_ucode_sigs;
 wire         to_rr_valid;
@@ -149,6 +142,7 @@ wire from_wb_flush;
 
 assign from_rr_cs = from_regunit_CS;
 assign from_ex_ld_cs = 1'b0;
+assign from_ex_pht_idx = 4'd0;
 
 reg [31:0] wb_ieip;
 reg [31:0] wb_eflags;
@@ -165,7 +159,9 @@ reg [7:0] TEST_CASE_NEW_CHAR, TEST_CASE_NEW_CHAR_WR;
 reg TEST_CASE_NEW_READY, TEST_CASE_NEW_READY_WR;
 
 /*** DUT ***/
-backend_top dut (
+backend_top #(
+  .FORWARD_EN(FORWARD_EN)
+) dut (
   .clk(clk),
   .rst_n(rst_n),
 
@@ -181,8 +177,6 @@ backend_top dut (
   .to_rr_oeip(to_rr_oeip),
   .to_rr_ieip(to_rr_ieip),
   .to_rr_pred_eip(to_rr_pred_eip),
-  .to_rr_pred_dir(to_rr_pred_dir),
-  .to_rr_pht_idx(to_rr_pht_idx),
   .to_rr_exception(to_rr_exception),
   .to_rr_ucode_sigs(to_rr_ucode_sigs),
   .to_rr_valid(to_rr_valid),
@@ -194,7 +188,6 @@ backend_top dut (
   .from_ex_br_t_nt(from_ex_br_t_nt),
   .from_ex_br_valid(from_ex_br_valid),
   .from_ex_eip_target(from_ex_eip_target),
-  .from_ex_pht_idx(from_ex_pht_idx),
   .from_wb_flush(from_wb_flush),
 
   /*** CACHE INTERFACE ***/
@@ -240,6 +233,8 @@ backend_top dut (
 );
 
 full_cache #(
+  .ROW_BUFFER_EN     (ROW_BUFFER_EN),
+  .STREAM_BUFFER_EN  (STREAM_BUFFER_EN),
   .CYCLE_TIME_X10    (CYCLE_TIME_X10),
   .TRUE_LRU          (TRUE_LRU)
 ) full_cache_inst (
@@ -348,27 +343,9 @@ task clear_inputs;
 begin
   to_de_outbytes = {128{1'b0}};
   to_de_valid = 1'b0;
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/verification/gen_testcases.mem", mem_in);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/verification/gen_testcases.mem", mem_in);
 end
 endtask
-
-// //DEBUG
-// always @(posedge clk) begin
-//   if (rst_n) begin
-//     // Check if the execute stage is resolving a branch
-//     if (from_ex_br_valid) begin
-//       // Note: adjust 'dut.to_ex_oeip' if your execute stage EIP signal is named differently
-//       // (e.g., it might be dut.inst_stage_ex.oeip or dut.from_mem_oeip depending on your pipeline)
-//       $display("[BRANCH_RES] cyc=%0d | Branch EIP: 0x%08X | Target EIP: 0x%08X | Taken: %b | Flush: %b", 
-//                dbg_cycle, dut.to_ex_oeip, from_ex_eip_target, from_ex_br_t_nt, from_ex_flush);
-//     end
-    
-//     // Check if the pipeline is stuck in a continuous flush state
-//     if (from_ex_flush) begin
-//       $display("[PIPELINE_FLUSH] Execute stage is flushing the pipeline at cyc=%0d!", dbg_cycle);
-//     end
-//   end
-// end
 
 always @(posedge clk) begin
   if (!rst_n) begin
@@ -379,18 +356,6 @@ always @(posedge clk) begin
     dbg_seen_icache_x <= 1'b0;
   end else if (dbg_fetch_en) begin
     dbg_cycle <= dbg_cycle + 1;
-
-    //DEBUG
-    if (to_rr_valid && !from_rr_stall) begin
-      // This means the instruction successfully moved from Decode to the Backend
-      $display("[ISSUE] cyc=%0d | OEIP: 0x%08X | Opcode: %02h", 
-               dbg_cycle, to_rr_oeip, to_rr_opcode);
-    end else if (to_rr_valid && from_rr_stall) begin
-      // Optional: Print periodically if the backend is refusing to accept instructions
-      if ((dbg_cycle % 100) == 0)
-        $display("[STALL] cyc=%0d | Backend is stalling Frontend at OEIP: 0x%08X", 
-                 dbg_cycle, to_rr_oeip);
-    end
 
     if ((dbg_cycle % 5000) == 0) begin
       $display("[FETCH-DBG] cyc=%0d ITLB_VPN=%05h ITLB_PFN=%0h PF=%0b ICV=%0b RRV=%0b STALL=%0b IEIP=%08h",
@@ -431,7 +396,7 @@ reg [31:0] combined_mask;
 reg [31:0] saved_ieip, halt_oeip;
 
 // Pending Read/Wrote buffer: each entry tagged with the ieip of the instruction
-localparam MAX_PENDING_MEM = 128;
+localparam MAX_PENDING_MEM = 65536;
 reg        pend_mem_is_wr [0:MAX_PENDING_MEM-1]; // 0=Read, 1=Wrote
 reg [7:0]  pend_mem_val   [0:MAX_PENDING_MEM-1];
 reg [31:0] pend_mem_va    [0:MAX_PENDING_MEM-1];
@@ -588,7 +553,7 @@ endtask
 task run_python_golden;
 begin
   auto_checker_ready = 1'b0;
-  auto_checker_rc = $system("/usr/bin/python3.11 /home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/readmemh.py && /usr/bin/python3.11 /home/ecelrc/students/aak3265/MICROARCH/project/scripts/verification/gen_test_cases.py && /usr/bin/python3.11 /home/ecelrc/students/aak3265/MICROARCH/project/scripts/verification/main.py > /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/results_script.txt");
+  auto_checker_rc = $system("/usr/bin/python3.11 /home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/readmemh.py && /usr/bin/python3.11 /home/ecelrc/students/var2427/MICROARCH/project/scripts/verification/gen_test_cases.py && /usr/bin/python3.11 /home/ecelrc/students/var2427/MICROARCH/project/scripts/verification/main.py > /home/ecelrc/students/var2427/MICROARCH/project/hvl/top/pipeline_top_tb/results_script.txt");
   if (auto_checker_rc == 0)
     auto_checker_ready = 1'b1;
   else begin
@@ -603,14 +568,14 @@ begin
   if (!auto_checker_done) begin
     auto_checker_done = 1'b1;
     if (auto_checker_ready) begin
-      auto_checker_rc = $system("diff /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/results_script.txt /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/results_cmp.txt > /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/diff_output.txt");
+      auto_checker_rc = $system("diff /home/ecelrc/students/var2427/MICROARCH/project/hvl/top/pipeline_top_tb/results_script.txt /home/ecelrc/students/var2427/MICROARCH/project/hvl/top/pipeline_top_tb/results_cmp.txt > /home/ecelrc/students/var2427/MICROARCH/project/hvl/top/pipeline_top_tb/diff_output.txt");
       if (auto_checker_rc == 0) begin
         SUCCESSES = SUCCESSES + 1;
         $display("PASS: RESULTS MATCH");
       end else begin
         FAILURES = FAILURES + 1;
         $display("FAIL: RESULTS MISMATCH");
-        auto_checker_rc = $system("cat /home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/diff_output.txt");
+        auto_checker_rc = $system("cat /home/ecelrc/students/var2427/MICROARCH/project/hvl/top/pipeline_top_tb/diff_output.txt");
       end
     end else begin
       $display("AUTO_CHECKER: Skipping diff because golden output was not generated.");
@@ -623,8 +588,20 @@ endtask
 integer load_iters, k, m, n, difference, starting_point;
 
 reg handle_hlt;
+
 initial begin
   handle_hlt = 0;
+end
+
+integer ipc_cycles;
+real ipc;
+
+always @(posedge clk) begin
+  if (!rst_n) begin
+    ipc_cycles <= 0;
+  end else begin
+    ipc_cycles <= ipc_cycles + 1;
+  end
 end
 
 always @(posedge clk) begin
@@ -646,6 +623,13 @@ always @(posedge clk) begin
     #(CYCLE_TIME);
     $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);
     $display("SUCCESSES = %d out of %d\n", SUCCESSES, FAILURES + SUCCESSES);
+
+    ipc = NUM_TESTS * 1.0 / ipc_cycles;
+
+    $display("IPC cycles       = %0d", ipc_cycles);
+    $display("Committed instrs = %0d", NUM_TESTS);
+    $display("IPC              = %f", ipc);
+
     $finish;
 
   end
@@ -654,8 +638,8 @@ always @(posedge clk) begin
   end
   if (((dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b0 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) ||
        (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.LINE_0_LOAD_DONE === 1'b1) ||
-       (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0)) &&
-        dut.inst_stage_mem.from_mem_exception === 2'b00) begin
+       (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1)) &&
+        (dut.inst_stage_mem.from_mem_exception === 2'b00) && (dut.inst_stage_mem.from_ex_flush === 1'b0)) begin
     case (dut.inst_stage_mem.mem_ds)
       2'b00: load_iters=1;
       2'b01: load_iters=2;
@@ -740,9 +724,11 @@ end
 reg        stream_done;
 reg [31:0] accepted_cnt;
 reg [31:0] stalled_cnt;
-localparam integer MAX_STREAM_CYCLES = 50000;
+localparam integer MAX_STREAM_CYCLES = 200000;
 
-fetch_decode_top FRONTEND_TOP(
+fetch_decode_top #(
+  .INSTR_Q_EN(INSTR_Q_EN)
+) FRONTEND_TOP(
     .clk(clk),
     .rst_bar(rst_n),
 
@@ -780,8 +766,6 @@ fetch_decode_top FRONTEND_TOP(
     .to_rr_oeip(to_rr_oeip),
     .to_rr_ieip(to_rr_ieip),
     .to_rr_pred_eip(to_rr_pred_eip),
-    .to_rr_pred_dir(to_rr_pred_dir),
-    .to_rr_pht_idx(to_rr_pht_idx),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
     .to_rr_ucode_sigs(to_rr_ucode_sigs),
@@ -862,28 +846,7 @@ always @(posedge clk) begin
         // Print the finalized snapshot to the text file.
         flush_pending_for_oeip(arch_snap_oeip);
         print_arch_status(0); 
-
-        //DEBUG
-        if ((NUM_TESTS % 100) == 0) begin
-            $display("[HEARTBEAT] Pipeline is moving! Reached Architectural State %0d / 12146", NUM_TESTS);
-        end
-
-        if (NUM_TESTS >= 7600) begin
-            if ((NUM_TESTS % 5) == 0) begin
-                // Print a highly visible alert to your terminal
-                $display("==================================================");
-                $display("[DEEP DEBUG] State %0d committed! EIP: 0x%08X", NUM_TESTS, arch_snap_oeip);
-                $display("==================================================");
-                
-                // This calls your existing task to dump the full register state to results_cmp.txt
-                print_arch_status(0); 
-            end
-        end
-        
         NUM_TESTS = NUM_TESTS + 1;
-
-        //$display("[COMMIT] Macro-op finished at OEIP: 0x%08X", arch_snap_oeip); //DEBUG
-        $display("EIP: 0x%08X | ECX: %0d", arch_snap_oeip, arch_snap_gpr[1]);
 
         // Start recording the new instruction's snapshot
         take_arch_snapshot(wb_commit_oeip, wb_commit_ieip, wb_commit_eflags);
@@ -917,7 +880,7 @@ initial begin
 `endif
   clk = 1'b1;
   rst_n = 1'b0;
-  file_handle_cmp = $fopen("/home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/results_cmp.txt", "w");
+  file_handle_cmp = $fopen("/home/ecelrc/students/var2427/MICROARCH/project/hvl/top/pipeline_top_tb/results_cmp.txt", "w");
   if (file_handle_cmp == 0) begin
     $display("Error: Failed to open results_cmp.txt!");
   end
@@ -950,262 +913,262 @@ end
 // Auto-generated memory initialization (Verilog-2005)
 
 initial begin
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank0_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank1_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank2_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank3_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank4_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank5_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank6_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank7_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank8_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank9_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank10_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank11_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank12_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank13_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank14_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[15].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[0].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[1].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[2].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[3].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[4].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[5].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[6].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[7].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[8].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[9].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[10].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[11].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[12].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[13].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[14].sram128x8$_inst.mem);
-  $readmemh("/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/testcase_cache_large_proc/mem_rank15_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank0_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[0].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank1_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[1].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank2_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[2].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank3_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[3].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank4_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[4].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank5_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[5].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank6_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[6].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank7_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[7].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank8_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[8].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank9_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[9].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank10_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[10].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank11_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[11].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank12_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[12].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank13_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[13].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank14_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[14].rank_inst.chip_generation[15].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip0.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[0].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip1.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[1].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip2.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[2].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip3.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[3].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip4.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[4].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip5.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[5].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip6.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[6].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip7.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[7].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip8.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[8].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip9.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[9].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip10.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[10].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip11.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[11].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip12.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[12].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip13.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[13].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip14.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[14].sram128x8$_inst.mem);
+  $readmemh("/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/mem_init/mem_rank15_chip15.hex", full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.main_memory_inst.rank_generation[15].rank_inst.chip_generation[15].sram128x8$_inst.mem);
 end
 
 

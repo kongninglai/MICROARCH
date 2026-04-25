@@ -36,7 +36,13 @@ module ex_control(
     assign jump_eip = masked_eip;
     mux2_32 mux2_t_nt_eip(new_eip, ieip, masked_eip, branch_taken);
     wire accurate_predict;
-    //big_eq #(.WIDTH(32)) eq_pred_eip(.eq(accurate_predict), .in0(pred_eip), .in1(new_eip));
-    big_eq #(.WIDTH(1)) eq_pred_dir(.eq(accurate_predict), .in0(pred_dir), .in1(branch_taken));
-    inv1$ inv_mispredict(mispredict, accurate_predict);
+    // misprediction = (pred_dir == branch taken) | (branch_taken & )
+    wire equal_targets, equal_targets_bar, branch_taken_wrong_target, wrong_direction;
+    big_eq #(.WIDTH(32)) eq_pred_eip(.eq(equal_targets), .in0(pred_eip), .in1(new_eip));
+    inv1$ inv_equal_targets(equal_targets_bar, equal_targets);
+    and2$ and2_branch_taken_wrong_targets(branch_taken_wrong_target, equal_targets_bar, branch_taken);
+    xor2$ xor2_wrong_direction(wrong_direction, branch_taken, pred_dir);
+    or2$ or2_mispredict(mispredict, wrong_direction, branch_taken_wrong_target);
+    // big_eq #(.WIDTH(1)) eq_pred_dir(.eq(accurate_predict), .in0(pred_dir), .in1(branch_taken));
+    // inv1$ inv_mispredict(mispredict, accurate_predict);
 endmodule 
