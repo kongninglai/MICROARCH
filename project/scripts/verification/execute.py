@@ -105,17 +105,17 @@ class Executor:
             seg = self.sro
         return seg, addr
 
-    def read_rm(self, seg, addr, size):
+    def read_rm(self, seg, addr, size, should_print=1):
         # Register value
         if seg is None:
             return self.get_reg(addr, size)
 
         # Otherwise, it's a memory value
         if size == 1:
-            return self.mmu.read_byte(seg, addr) & 0xFF
+            return self.mmu.read_byte(seg, addr, should_print=should_print) & 0xFF
         elif size == 2:
-            return self.mmu.read_word(seg, addr) & 0xFFFF
-        return self.mmu.read_dword(seg, addr) & 0xFFFFFFFF
+            return self.mmu.read_word(seg, addr, should_print=should_print) & 0xFFFF
+        return self.mmu.read_dword(seg, addr, should_print=should_print) & 0xFFFFFFFF
 
     def write_rm(self, seg, addr, val, size):
         if seg is None:
@@ -572,8 +572,9 @@ class Executor:
                     modrm = self.fetch8()
                     mod, reg, rm = (modrm >> 6) & 3, (modrm >> 3) & 7, modrm & 7
                     size = 2 if self.oso else 4
-                    val = self.pop(size)
                     seg, addr = self.get_rm(mod, rm)
+                    dummy = self.read_rm(seg, addr, size, should_print=0)
+                    val = self.pop(size)
                     self.write_rm(seg, addr, val, size)
 
                 elif op >= 0x88 and op <= 0x8B:  # MOV r, r/m and MOV r/m, r

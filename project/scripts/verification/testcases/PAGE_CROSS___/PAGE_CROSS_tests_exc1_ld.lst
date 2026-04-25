@@ -1,0 +1,40 @@
+// Change line 4 of both tlb_init.v and main.py to 000010100000000000011001101
+
+// TLB Setup:
+// VPN 0x0A000 -> PFN 0x00005 (Physical 0x5000)
+// VPN 0x0A001 -> PFN 0x00004 (Physical 0x4000)
+
+0x0:  ba 00 0c 00 00      // mov    edx,0xc00  (SS Segment)
+0x5:  8e d2               // mov    ss,edx
+0x7:  bc ff 0f 00 00      // mov    esp,0xfff  (Stack Pointer)
+0xc:  ba 00 04 00 00      // mov    edx,0x400  (Bad DS to trigger PF)
+0x11: 8e da               // mov    ds,edx
+0x13: bb 00 00 00 00      // mov    ebx,0x0
+
+// --- PAGE FAULT & CACHE CROSSING TESTS (LOADS) ---
+0x18: 8b 83 fd 0f 00 00   // mov    eax,DWORD PTR [ebx+0xffd] <- PF & Cache Cross
+0x1e: 8b 8b fe 0f 00 00   // mov    ecx,DWORD PTR [ebx+0xffe] <- Cache Cross
+0x24: 8b 93 ff 0f 00 00   // mov    edx,DWORD PTR [ebx+0xfff] <- Page/Cache Cross
+0x2a: 8b b3 00 10 00 00   // mov    esi,DWORD PTR [ebx+0x1000]
+0x30: 8a bb ff 0f 00 00   // mov    bh, BYTE PTR [ebx+0xfff]
+0x36: b7 00               // mov    bh, 0x00                  <- FIX: Reset BH
+0x38: 66 8b 83 ff 0f 00 00// mov    ax, WORD PTR [ebx+0xfff]  <- Page/Cache Cross
+0x3f: 8b 8b fb 0f 00 00   // mov    ecx,DWORD PTR [ebx+0xffb]
+0x45: 8b 93 01 10 00 00   // mov    edx,DWORD PTR [ebx+0x1001]
+0x4b: f4                  // hlt
+
+// --- Exception Handler (at 0xc0 via IDT 0x2070) ---
+0xc0: ba 00 0a 00 00      // mov    edx,0xa00  (Load valid segment)
+0xc5: 8e da               // mov    ds,edx     (Fix DS)
+0xc7: cf                  // iretd             (Return and retry 0x18)
+
+0x2070: c0 00 00 00 00 00 00 00  // Vector 14 -> 0xc0
+
+// Physical Page 5 (Mapped to Virtual 0x0A000)
+0x5fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 DE AD BE
+
+// Physical Page 4 (Mapped to Virtual 0x0A001)
+0x4000: EF CA FE BA 00 00 00 00 00 00 00 00 00 00 00 00
+0x4010: 78 56 34 12 00 00 00 00 00 00 00 00 00 00 00 00

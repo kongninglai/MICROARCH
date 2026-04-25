@@ -1,0 +1,24 @@
+0x000: ba 00 02 00 00  // mov edx,0x00000200
+0x005: 8e da           // mov ds,dx
+0x007: ba 00 04 00 00  // mov edx,0x00000400
+0x00c: 8e c2           // mov es,dx
+0x00e: ba 00 0b 00 00  // mov edx,0x00000b00
+0x013: 8e d2           // mov ss,dx
+0x015: bc 00 01 00 00  // mov esp,0x00000100
+0x01a: bb 00 00 00 00  // mov ebx,0x00000000
+0x01f: fc              // cld
+0x020: b8 00 00 00 00  // mov eax,0x00000000
+0x025: ba 01 00 00 00  // mov edx,0x00000001
+0x02a: e8 10 00 00 00  // call acquire_lock
+0x02f: 8b 4b 04        // mov ecx,[ebx+0x04]
+0x032: 83 c1 01        // add ecx,1
+0x035: 89 4b 04        // mov [ebx+0x04],ecx
+0x038: c7 03 00 00 00 00  // mov dword [ebx],0
+0x03e: f4              // hlt
+0x03f: 0f b1 53 00     // acquire_lock: cmpxchg [ebx+0x00],edx
+0x043: 75 fa           // jne acquire_lock
+0x045: c3              // ret
+
+0x2000: 00 00 00 00 29 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

@@ -1,4 +1,5 @@
 module backend_top #(
+  parameter FORWARD_EN=1'b1,
   parameter CYCLE_TIME_X10=98,
   parameter TRUE_LRU=1,
   parameter AG_CONTROL_SIGS_WIDTH=98,
@@ -461,7 +462,10 @@ module backend_top #(
     bufferH16$  bufferH16$_ex_or_wb_flush_bar(ex_or_wb_flush_bar, ex_or_wb_flush_bar_prebuf);
     inv1$ inv1_wb_flush_bar(wb_flush_bar, from_wb_flush);
 
-    dep_unit dut (
+
+    dep_unit #(
+        .FORWARD_EN(FORWARD_EN)
+    ) dep_dut (
         .from_ag_dstidA(from_ag_dstidA),
         .from_ag_dstidB(from_ag_dstidB),
         .from_ag_dstA_size(from_ag_dstA_size),
@@ -534,6 +538,7 @@ module backend_top #(
         .to_rr_ucode_sigs(to_rr_ucode_sigs),
         .to_rr_valid(to_rr_valid),
         .from_ag_stall_bar(from_ag_stall_bar),
+        .from_ex_flush(from_ex_flush),
         .from_wb_flush(from_wb_flush),
         .from_ex_cmps_found(from_ex_cmps_found),
         .interrupt(DMA_INT),

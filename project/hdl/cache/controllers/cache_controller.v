@@ -1,4 +1,5 @@
 module cache_controller #(
+  parameter   STREAM_BUFFER_EN=1'b1,
   parameter   RANK_BIT_WIDTH=128,
   parameter   BUS_BIT_WIDTH=32,
   parameter   RANK_BURST_SIZE=4,
@@ -353,7 +354,9 @@ reg_n #(
 
 wire    [RANK_BIT_WIDTH-1:0]                SB_DATA_OUT;
 
-stream_buffer stream_buffer_inst (
+stream_buffer #(
+  .STREAM_BUFFER_EN(STREAM_BUFFER_EN)
+) stream_buffer_inst (
   .clk(clk), .rst(rst),
   .stream_buffer_wr_mask(CC_STREAM_BUF_WR_MASK_GATED),
   .cache_addr(CACHE_PHYS_ADDR), .cache_controller_next_line_addr(Q_CC_NL_PHYS_ADDR),

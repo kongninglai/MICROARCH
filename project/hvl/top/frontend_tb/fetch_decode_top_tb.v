@@ -533,8 +533,8 @@ task verify_instruction;
 
             // 2. BEFORE PRINT: Capture state before the rising edge (the shift hasn't happened yet)
             $display("  [SHIFT BUFFER BEFORE] data=%h | tail_ptr=%0d", 
-                     DUT.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.to_de_outbytes, 
-                     DUT.FETCHBUFF_DECODESTAGE_DEPR.tail_ptr);
+                     DUT.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.to_de_outbytes, 
+                     DUT.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.tail_ptr);
 
             // Run comparison logic
             assert_all_fields(inst_name, exp_ieip, exp_oeip, exp_prefix, exp_opcode, 
@@ -547,8 +547,8 @@ task verify_instruction;
             #1; 
 
             $display("  [SHIFT BUFFER AFTER ] data=%h | tail_ptr=%0d", 
-                     DUT.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.to_de_outbytes, 
-                     DUT.FETCHBUFF_DECODESTAGE_DEPR.tail_ptr);
+                     DUT.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.to_de_outbytes, 
+                     DUT.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.tail_ptr);
 
             // Return to negedge to stay in sync with the file parser
             @(negedge clk); 

@@ -1,0 +1,36 @@
+0x000: ba 00 02 00 00  // mov edx,0x00000200
+0x005: 8e da           // mov ds,dx
+0x007: ba 00 04 00 00  // mov edx,0x00000400
+0x00c: 8e c2           // mov es,dx
+0x00e: ba 00 0b 00 00  // mov edx,0x00000b00
+0x013: 8e d2           // mov ss,dx
+0x015: bc 00 01 00 00  // mov esp,0x00000100
+0x01a: bb 00 00 00 00  // mov ebx,0x00000000
+0x01f: fc              // cld
+0x020: be 00 00 00 00  // mov esi,0x00000000
+0x025: bf 80 00 00 00  // mov edi,0x00000080
+0x02a: b9 10 00 00 00  // mov ecx,0x00000010
+0x02f: e8 0d 00 00 00  // call memcmp_dwords
+0x034: 89 43 40        // mov [ebx+0x40],eax
+0x037: 89 73 44        // mov [ebx+0x44],esi
+0x03a: 89 7b 48        // mov [ebx+0x48],edi
+0x03d: 89 4b 4c        // mov [ebx+0x4c],ecx
+0x040: f4              // hlt
+0x041: f3 a7           // memcmp_dwords: repe cmpsd
+0x043: b8 00 00 00 00  // mov eax,0x00000000
+0x048: 75 01           // jne mismatch
+0x04a: c3              // ret
+0x04b: b8 01 00 00 00  // mismatch: mov eax,0x00000001
+0x050: c3              // ret
+
+0x2000: 2e f6 62 dd 70 7f b0 f7 2e 3f c4 38 11 4c 3c a3
+0x2010: 17 ba 0d d5 9f 60 e1 c3 39 cf 5b bd 38 29 bb b0
+0x2020: 98 83 a8 4c f8 06 d0 21 8d db 7c db 36 1a 90 f3
+0x2030: 57 26 9b e2 c9 d7 ad 40 f9 87 f1 fe b1 f3 de 18
+0x2040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5080: 2e f6 62 dd 70 7f b0 f7 2e 3f c4 38 11 4c 3c a3
+0x5090: 17 ba 0d d5 9f 60 e1 c3 39 cf 5b bd 38 29 bb b0
+0x50a0: 98 83 a8 4c f8 06 d0 21 8d db 7d db 36 1a 90 f3
+0x50b0: 57 26 9b e2 c9 d7 ad 40 f9 87 f1 fe b1 f3 de 18
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

@@ -3,7 +3,7 @@ module pipeline_top(
     input wire rst_bar
 );
 
-localparam CYCLE_TIME_X10 = 100;
+localparam CYCLE_TIME_X10 = 95;
 localparam TRUE_LRU       = 1;
 
 //decode wires

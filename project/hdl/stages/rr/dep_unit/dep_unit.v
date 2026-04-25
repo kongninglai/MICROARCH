@@ -1,4 +1,6 @@
-module dep_unit(
+module dep_unit #(
+    parameter FORWARD_EN = 1'b1
+)(
     /* FROM AG */
     input   [2:0]   from_ag_dstidA,
     input   [2:0]   from_ag_dstidB,
@@ -199,24 +201,36 @@ module dep_unit(
     wire load_en_or_rep, dep_and_load_en_bar, buffered_dep_and_load_en;
     wire any_dep;
     nand3$ nand3_any_dep(any_dep, dep_ag_bar, dep_mem_bar, dep_ex_bar);
-    big_or #(
-      .WIDTH(5)
-    ) big_or_load_en_or_rep (
-      .out(load_en_or_rep),
-      .in({from_rr_rw[1], from_rr_rw[0], from_rr_rep, from_ag_valid_mem_inst, from_mem_valid_mem_inst})
-    );
-    nand2$ nand2_dep_and_load_en_bar(dep_and_load_en_bar, any_dep, load_en_or_rep);
-    wire addr_dep_or_mem_dep;
-    nand4$ nand4_addr_dep_or_mem_dep(addr_dep_or_mem_dep, addr_src_dep_bar_ag, addr_src_dep_bar_mem, addr_src_dep_bar_ex, dep_and_load_en_bar);
-    assign data_dep = addr_dep_or_mem_dep;
-    wire inv_buffered_dep_and_load_en, mem_fw_en, ex_fw_en, ag_fw_en;
-    nand2$ nand_mem_fw_en(mem_fw_en, from_mem_valid, dep_and_load_en_bar);
-    nand2$ nand_ex_fw_en(ex_fw_en, from_ex_valid, dep_and_load_en_bar);
-    nand2$ nand_ag_fw_en(ag_fw_en, from_ag_valid, dep_and_load_en_bar);
 
-    wire [6:0] MEM_FW_CONTROL_SIGS_DUMMY, AG_FW_CONTROL_SIGS_DUMMY, EX_FW_CONTROL_SIGS_DUMMY;
+    generate 
+        if (FORWARD_EN) begin 
+            big_or #(
+            .WIDTH(5)
+            ) big_or_load_en_or_rep (
+            .out(load_en_or_rep),
+            .in({from_rr_rw[1], from_rr_rw[0], from_rr_rep, from_ag_valid_mem_inst, from_mem_valid_mem_inst})
+            );
+            nand2$ nand2_dep_and_load_en_bar(dep_and_load_en_bar, any_dep, load_en_or_rep);
+            wire addr_dep_or_mem_dep;
+            nand4$ nand4_addr_dep_or_mem_dep(addr_dep_or_mem_dep, addr_src_dep_bar_ag, addr_src_dep_bar_mem, addr_src_dep_bar_ex, dep_and_load_en_bar);
+            assign data_dep = addr_dep_or_mem_dep;
+            wire inv_buffered_dep_and_load_en, mem_fw_en, ex_fw_en, ag_fw_en;
+            nand2$ nand_mem_fw_en(mem_fw_en, from_mem_valid, dep_and_load_en_bar);
+            nand2$ nand_ex_fw_en(ex_fw_en, from_ex_valid, dep_and_load_en_bar);
+            nand2$ nand_ag_fw_en(ag_fw_en, from_ag_valid, dep_and_load_en_bar);
 
-    mux2_16$ mux2_16_mem_fw_A({MEM_FW_CONTROL_SIGS_DUMMY, MEM_FW_CONTROL_SIGS}, {7'd0, MEM_FW_A, MEM_FW_B, MEM_FW_C, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB}, 16'd0, mem_fw_en);
-    mux2_16$ mux2_16_ag_fw_A ({ AG_FW_CONTROL_SIGS_DUMMY,  AG_FW_CONTROL_SIGS}, {7'd0, EX_FW_A, EX_FW_B, EX_FW_C, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB},       16'd0, ex_fw_en);
-    mux2_16$ mux2_16_ex_fw_A ({ EX_FW_CONTROL_SIGS_DUMMY,  EX_FW_CONTROL_SIGS}, {7'd0, AG_FW_A, AG_FW_B, AG_FW_C, AG_FW_SREG, AG_FW_MMA, AG_FW_MMB},       16'd0, ag_fw_en);
+            wire [6:0] MEM_FW_CONTROL_SIGS_DUMMY, AG_FW_CONTROL_SIGS_DUMMY, EX_FW_CONTROL_SIGS_DUMMY;
+
+            mux2_16$ mux2_16_mem_fw_A({MEM_FW_CONTROL_SIGS_DUMMY, MEM_FW_CONTROL_SIGS}, {7'd0, MEM_FW_A, MEM_FW_B, MEM_FW_C, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB}, 16'd0, mem_fw_en);
+            mux2_16$ mux2_16_ag_fw_A ({ AG_FW_CONTROL_SIGS_DUMMY,  AG_FW_CONTROL_SIGS}, {7'd0, EX_FW_A, EX_FW_B, EX_FW_C, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB},       16'd0, ex_fw_en);
+            mux2_16$ mux2_16_ex_fw_A ({ EX_FW_CONTROL_SIGS_DUMMY,  EX_FW_CONTROL_SIGS}, {7'd0, AG_FW_A, AG_FW_B, AG_FW_C, AG_FW_SREG, AG_FW_MMA, AG_FW_MMB},       16'd0, ag_fw_en);
+        end else begin 
+            assign data_dep = any_dep;
+            assign MEM_FW_CONTROL_SIGS = 9'b0;
+            assign AG_FW_CONTROL_SIGS = 9'b0;
+            assign EX_FW_CONTROL_SIGS = 9'b0;
+        end
+    endgenerate
+
+    
 endmodule

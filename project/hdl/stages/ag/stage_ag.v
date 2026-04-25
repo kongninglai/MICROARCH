@@ -187,9 +187,11 @@ module stage_ag #(
     /* NOTE: moved from_ag_valid logic below. -VR, 3/31/2026 */
 
     wire is_mem_inst_bar, stall_if_mem_inst_bar, mem_inst_needs_stall;
+    wire to_ag_valid_bar;
+    inv1$   inv1$_to_ag_valid(to_ag_valid_bar, to_ag_valid);
     nor2$   nor2$_is_mem_inst(is_mem_inst_bar, rw[1], rw[0]);
     nor4$   nor4$_stall_if_mem_inst(stall_if_mem_inst_bar, from_mem_valid_store_inst, from_ex_valid_store_inst, from_wb_stall_if_mem_en, from_wb_valid_store_inst);
-    nor2$   nor2$_mem_inst_needs_stall(mem_inst_needs_stall, is_mem_inst_bar, stall_if_mem_inst_bar);
+    nor3$   nor3$_mem_inst_needs_stall(mem_inst_needs_stall, is_mem_inst_bar, stall_if_mem_inst_bar, to_ag_valid_bar);
     nor2$   nor2$_from_ag_stall_bar(from_ag_stall_bar, from_mem_stall, mem_inst_needs_stall);
     inv1$   inv1$_from_ag_we_pipe_reg(from_ag_we_pipe_reg, from_mem_stall);
 

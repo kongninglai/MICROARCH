@@ -14,6 +14,15 @@ SIM_LOG="$SCRIPT_DIR/sim/simv_run.log"
 
 rm -f "$RESULTS_CMP" "$DIFF_OUTPUT" "$SIM_LOG"
 
+print_ipc() {
+    echo ""
+    echo "----- IPC -----"
+    grep -E "IPC cycles|Committed instrs|IPC[[:space:]]*=" "$SIM_LOG" || {
+        echo "IPC not found in simulator log"
+    }
+    echo "---------------"
+}
+
 sim_rc=0
 (
     cd "$SCRIPT_DIR/sim"
@@ -50,6 +59,7 @@ fi
 if diff "$RESULTS_SCRIPT" "$RESULTS_CMP" > "$DIFF_OUTPUT"; then
     echo ""
     echo "PASS: RESULTS MATCH"
+    print_ipc
     echo ""
 else
     echo "FAIL: RESULTS MISMATCH"

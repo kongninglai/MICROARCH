@@ -1,4 +1,5 @@
 module off_core_top #(
+  parameter ROW_BUFFER_EN=1'b1,
   parameter MEM_BYTE_CAPACITY=32768,
   parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
 
@@ -94,7 +95,7 @@ dmac #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) dmac_inst (
   .DMAC_BUSY      (DMAC_BUSY     )     , .DATA_VALID_BAR(DATA_VALID_BAR), .DMA_INT(DMA_INT)
 );
 
-mcu #(.CYCLE_TIME_X10(CYCLE_TIME_X10)) mcu_inst (
+mcu #(.CYCLE_TIME_X10(CYCLE_TIME_X10), .ROW_BUFFER_EN(ROW_BUFFER_EN)) mcu_inst (
   .rst          (rst          )    , .clk(clk), 
   .DC_MEM_WR_ACK(DC_MEM_WR_ACK)    , .DMA_MEM_WR_ACK(DMA_MEM_WR_ACK),
   .DC_MEM_RD_ACK(DC_MEM_RD_ACK)    , .IC_MEM_RD_ACK(IC_MEM_RD_ACK),

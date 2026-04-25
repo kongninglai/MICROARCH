@@ -20,7 +20,6 @@ if ! [[ "$PER_TEST_TIMEOUT_SEC" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-# Prevent parallel runs from clobbering shared artifacts (program.txt/results files).
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
     echo "Another test_all_instructions.sh run is already active." >&2
@@ -40,12 +39,16 @@ PASS=0
 FAIL=0
 INDEX=0
 
+IPC_SUM="0"
+IPC_COUNT=0
+
 echo "Regression run: $(date)" > "$RESULTS_FILE"
 echo "========================================" >> "$RESULTS_FILE"
 echo "Total tests: $TOTAL_TESTS" >> "$RESULTS_FILE"
 if [[ "$PER_TEST_TIMEOUT_SEC" -gt 0 ]]; then
     echo "Per-test timeout: ${PER_TEST_TIMEOUT_SEC}s" >> "$RESULTS_FILE"
 fi
+echo "" >> "$RESULTS_FILE"
 
 echo "Running $TOTAL_TESTS tests from $TESTCASES_DIR"
 if [[ "$PER_TEST_TIMEOUT_SEC" -gt 0 ]]; then
@@ -71,28 +74,50 @@ for testfile in "${TESTFILES[@]}"; do
         bash execute_test_case.sh > "$testlog" 2>&1 || rc=$?
     fi
 
+    # Extract IPC from log.
+    # Expected line: IPC              = 0.123456
+    ipc="$(awk '
+        /^IPC[[:space:]]*=/ {
+            print $3
+        }
+    ' "$testlog" | tail -n 1)"
+
+    if [[ -z "$ipc" ]]; then
+        ipc="N/A"
+    else
+        IPC_SUM="$(awk -v a="$IPC_SUM" -v b="$ipc" 'BEGIN { printf "%.12f", a + b }')"
+        IPC_COUNT=$((IPC_COUNT + 1))
+    fi
+
     if [[ "$rc" -eq 0 ]] && grep -q "PASS: RESULTS MATCH" "$testlog"; then
-        echo "PASS: $testname" >> "$RESULTS_FILE"
-        echo "[$INDEX/$TOTAL_TESTS] PASS"
+        echo "PASS: $testname  IPC=$ipc" >> "$RESULTS_FILE"
+        echo "[$INDEX/$TOTAL_TESTS] PASS  IPC=$ipc"
         PASS=$((PASS + 1))
     else
         if [[ "$rc" -eq 124 ]]; then
-            echo "FAIL: $testname (TIMEOUT ${PER_TEST_TIMEOUT_SEC}s)" >> "$RESULTS_FILE"
-            echo "[$INDEX/$TOTAL_TESTS] FAIL (timeout)"
+            echo "FAIL: $testname (TIMEOUT ${PER_TEST_TIMEOUT_SEC}s)  IPC=$ipc" >> "$RESULTS_FILE"
+            echo "[$INDEX/$TOTAL_TESTS] FAIL (timeout)  IPC=$ipc"
         elif [[ "$rc" -ne 0 ]]; then
-            echo "FAIL: $testname (RC=$rc)" >> "$RESULTS_FILE"
-            echo "[$INDEX/$TOTAL_TESTS] FAIL (rc=$rc)"
+            echo "FAIL: $testname (RC=$rc)  IPC=$ipc" >> "$RESULTS_FILE"
+            echo "[$INDEX/$TOTAL_TESTS] FAIL (rc=$rc)  IPC=$ipc"
         else
-            echo "FAIL: $testname" >> "$RESULTS_FILE"
-            echo "[$INDEX/$TOTAL_TESTS] FAIL"
+            echo "FAIL: $testname  IPC=$ipc" >> "$RESULTS_FILE"
+            echo "[$INDEX/$TOTAL_TESTS] FAIL  IPC=$ipc"
         fi
         echo "  log: $testlog"
         FAIL=$((FAIL + 1))
     fi
 done
 
+if [[ "$IPC_COUNT" -gt 0 ]]; then
+    AVG_IPC="$(awk -v sum="$IPC_SUM" -v cnt="$IPC_COUNT" 'BEGIN { printf "%.6f", sum / cnt }')"
+else
+    AVG_IPC="N/A"
+fi
+
 echo "========================================" >> "$RESULTS_FILE"
 echo "Total: $((PASS + FAIL))  PASSED: $PASS  FAILED: $FAIL" >> "$RESULTS_FILE"
+echo "Average IPC over $IPC_COUNT tests: $AVG_IPC" >> "$RESULTS_FILE"
 
 echo ""
 cat "$RESULTS_FILE"
