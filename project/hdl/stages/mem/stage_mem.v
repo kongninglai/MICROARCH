@@ -519,7 +519,7 @@ nor2$   nor2$_no_mem_exception(no_mem_exception, from_mem_exception[0], from_mem
 bufferH16$    bufferH16$_no_mem_exception_buf16(no_mem_exception_buf16, no_mem_exception);
 
 wire MEM_VALID_LOAD_INST_BAR;
-nand2$   nand2$_MEM_VALID_LOAD_INST_BAR(MEM_VALID_LOAD_INST_BAR, rw_buf16[1], to_mem_valid_buf256);
+nand3$   nand3$_MEM_VALID_LOAD_INST_BAR(MEM_VALID_LOAD_INST_BAR, rw_buf16[1], to_mem_valid_buf256, D_RD_TLB_PAGE_FAULT_OUT_BAR);
 bufferHInv16$ bufferHInv16$_MEM_VALID_LOAD_INST(MEM_VALID_LOAD_INST, MEM_VALID_LOAD_INST_BAR);
 
 /*** STORE PIPELINE REGISTERS ***/
