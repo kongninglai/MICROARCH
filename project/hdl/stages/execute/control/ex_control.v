@@ -35,8 +35,10 @@ module ex_control(
     or3$ or_jmp(branch_taken, uncond_jmp, jne, jnbe);
     assign jump_eip = masked_eip;
     mux2_32 mux2_t_nt_eip(new_eip, ieip, masked_eip, branch_taken);
-    wire accurate_predict;
-    //big_eq #(.WIDTH(32)) eq_pred_eip(.eq(accurate_predict), .in0(pred_eip), .in1(new_eip));
-    big_eq #(.WIDTH(1)) eq_pred_dir(.eq(accurate_predict), .in0(pred_dir), .in1(branch_taken));
+    wire accurate_predict_eip, accurate_predict_dir;
+    big_eq #(.WIDTH(32)) eq_pred_eip(.eq(accurate_predict_eip), .in0(pred_eip), .in1(new_eip));
+    big_eq #(.WIDTH(1)) eq_pred_dir(.eq(accurate_predict_dir), .in0(pred_dir), .in1(branch_taken));
+    and2$ and_accurate_predict(accurate_predict, accurate_predict_eip, accurate_predict_dir);
+
     inv1$ inv_mispredict(mispredict, accurate_predict);
 endmodule 
