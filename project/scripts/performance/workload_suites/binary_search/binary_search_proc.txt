@@ -1,0 +1,42 @@
+0x000: ba 00 02 00 00  // mov edx,0x00000200
+0x005: 8e da           // mov ds,dx
+0x007: ba 00 04 00 00  // mov edx,0x00000400
+0x00c: 8e c2           // mov es,dx
+0x00e: ba 00 0b 00 00  // mov edx,0x00000b00
+0x013: 8e d2           // mov ss,dx
+0x015: bc 00 01 00 00  // mov esp,0x00000100
+0x01a: bb 00 00 00 00  // mov ebx,0x00000000
+0x01f: fc              // cld
+0x020: ba 00 00 00 00  // mov edx,0x00000000
+0x025: b9 0f 00 00 00  // mov ecx,0x0000000f
+0x02a: bf 13 00 00 00  // mov edi,0x00000013
+0x02f: b8 ff ff ff ff  // mov eax,0xffffffff
+0x034: e8 04 00 00 00  // call binary_search_16
+0x039: 89 43 40        // mov [ebx+0x40],eax
+0x03c: f4              // hlt
+0x03d: 89 d6           // binary_search_16: mov esi,edx
+0x03f: 03 f1           // add esi,ecx
+0x041: d1 fe           // sar esi,1
+0x043: 89 f5           // mov ebp,esi
+0x045: c1 e5 02        // sal ebp,2
+0x048: 8b 6c 2b 00     // mov ebp,[ebx+ebp+0x00]
+0x04c: 83 c5 00        // add ebp,0
+0x04f: 19 fd           // sbb ebp,edi
+0x051: 75 03           // jne not_equal
+0x053: 89 f0           // mov eax,esi
+0x055: c3              // ret
+0x056: 77 07           // not_equal: jnbe greater
+0x058: 89 f2           // mov edx,esi
+0x05a: 83 c2 01        // add edx,1
+0x05d: eb de           // jmp binary_search_16
+0x05f: 89 f1           // greater: mov ecx,esi
+0x061: 83 c1 ff        // add ecx,-1
+0x064: eb d7           // jmp binary_search_16
+
+0x2000: 01 00 00 00 03 00 00 00 05 00 00 00 07 00 00 00
+0x2010: 09 00 00 00 0b 00 00 00 0d 00 00 00 0f 00 00 00
+0x2020: 11 00 00 00 13 00 00 00 15 00 00 00 17 00 00 00
+0x2030: 19 00 00 00 1b 00 00 00 1d 00 00 00 1f 00 00 00
+0x2040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

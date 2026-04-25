@@ -9,10 +9,10 @@ initial begin
 end
 
 /******* PERFORMANCE FEATURES ********/
-localparam STREAM_BUFFER_EN    = 1'b0;
-localparam ROW_BUFFER_EN       = 1'b0;
-localparam FORWARD_EN          = 1'b0;
-localparam INSTR_Q_EN          = 1'b0;
+localparam STREAM_BUFFER_EN    = 1'b1;
+localparam ROW_BUFFER_EN       = 1'b1;
+localparam FORWARD_EN          = 1'b1;
+localparam INSTR_Q_EN          = 1'b1;
 
 integer i;
 integer NUM_TESTS = 0;
@@ -25,7 +25,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 150;
+localparam CYCLE_TIME_X10 = 95;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -396,7 +396,7 @@ reg [31:0] combined_mask;
 reg [31:0] saved_ieip, halt_oeip;
 
 // Pending Read/Wrote buffer: each entry tagged with the ieip of the instruction
-localparam MAX_PENDING_MEM = 128;
+localparam MAX_PENDING_MEM = 65536;
 reg        pend_mem_is_wr [0:MAX_PENDING_MEM-1]; // 0=Read, 1=Wrote
 reg [7:0]  pend_mem_val   [0:MAX_PENDING_MEM-1];
 reg [31:0] pend_mem_va    [0:MAX_PENDING_MEM-1];
@@ -638,8 +638,8 @@ always @(posedge clk) begin
   end
   if (((dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b0 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1) ||
        (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.LINE_0_LOAD_DONE === 1'b1) ||
-       (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0)) &&
-        dut.inst_stage_mem.from_mem_exception === 2'b00) begin
+       (dut.inst_stage_mem.rw_buf16[1] === 1'b1 && dut.inst_stage_mem.NEEDS_LINE_1_LOAD === 1'b1 && dut.inst_stage_mem.DOING_LINE_1_LOAD === 1'b1 && dut.from_mem_stall === 1'b0 && dut.inst_stage_mem.from_mem_valid === 1'b1)) &&
+        (dut.inst_stage_mem.from_mem_exception === 2'b00) && (dut.inst_stage_mem.from_ex_flush === 1'b0)) begin
     case (dut.inst_stage_mem.mem_ds)
       2'b00: load_iters=1;
       2'b01: load_iters=2;

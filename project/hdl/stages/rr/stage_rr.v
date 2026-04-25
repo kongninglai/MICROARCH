@@ -26,6 +26,7 @@ module stage_rr #(
     input [8:0] from_dep_mem_fw_control_sigs,
     input [8:0] from_dep_ex_fw_control_sigs,
 
+    input from_ex_flush,
     input from_wb_flush,
     input from_ex_cmps_found,
     input interrupt,
@@ -130,11 +131,15 @@ module stage_rr #(
     wire to_rr_prefix_0_buf16, to_rr_addr_mode_0_buf16;
     bufferH16$  bufferH16$_to_rr_prefix_0_buf16(to_rr_prefix_0_buf16, to_rr_prefix[0]);
     bufferH16$  bufferH16$_to_rr_addr_mode_0_buf16(to_rr_addr_mode_0_buf16, to_rr_addr_mode[0]);
+
+    wire to_rr_valid_bar, rr_valid_and_not_flush;
+    inv1$ inv1_to_rr_valid(to_rr_valid_bar, to_rr_valid);
+    nor2$ nor2_rr_valid_and_not_flush(rr_valid_and_not_flush, to_rr_valid_bar, from_ex_flush);
     ucode_fsm ucode_fsm_inst (
         .clk(clk),
         .rst_n(rst_n),
         .to_rr_ucode_sigs(to_rr_ucode_sigs),
-        .to_rr_valid(to_rr_valid),
+        .to_rr_valid(rr_valid_and_not_flush),
         .rep(from_rr_rep),
         .stall(fsm_stall),
         .interrupt(1'b0),

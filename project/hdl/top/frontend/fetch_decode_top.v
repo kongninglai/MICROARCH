@@ -69,7 +69,7 @@ module fetch_decode_top #(
     );
 
     generate 
-        if (INSTR_Q_EN) begin 
+        if (INSTR_Q_EN) begin : ENABLE_INSTRQ
             intgr_fshifter_decode FETCHBUFF_DECODESTAGE_DEPR(
                 .clk(clk),
                 .rst_bar(rst_bar),
@@ -109,7 +109,7 @@ module fetch_decode_top #(
                 .shft_reg_we(from_fetch_buffer_shft_reg_we),
                 .to_rr_ucode_sigs(to_rr_ucode_sigs)
             );
-        end else begin 
+        end else begin : DISABLE_INSTRQ
             intgr_fshifter_decode_no_instr_q FETCHBUFF_DECODESTAGE_DEPR(
                 .clk(clk),
                 .rst_bar(rst_bar),

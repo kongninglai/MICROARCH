@@ -1,0 +1,21 @@
+0x000: ba 00 02 00 00  // mov edx,0x00000200
+0x005: 8e da           // mov ds,dx
+0x007: ba 00 04 00 00  // mov edx,0x00000400
+0x00c: 8e c2           // mov es,dx
+0x00e: ba 00 0b 00 00  // mov edx,0x00000b00
+0x013: 8e d2           // mov ss,dx
+0x015: bc 00 01 00 00  // mov esp,0x00000100
+0x01a: bb 00 00 00 00  // mov ebx,0x00000000
+0x01f: fc              // cld
+0x020: e8 01 00 00 00  // call accum2
+0x025: f4              // hlt
+0x026: 0f 6f 03        // accum2: movq mm0,[ebx]
+0x029: 0f 6f 4b 08     // movq mm1,[ebx+0x08]
+0x02d: 0f fe c1        // paddd mm0,mm1
+0x030: 0f 7f 43 40     // movq [ebx+0x40],mm0
+0x034: c3              // ret
+
+0x2000: ff ff ff ff 05 00 00 00 02 00 00 00 ff ff ff ff
+0x2040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

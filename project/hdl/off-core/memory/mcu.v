@@ -1,5 +1,5 @@
 module mcu #(
-  parameter ROW_BUFFER_EN=1'b0,
+  parameter ROW_BUFFER_EN=1'b1,
   parameter MEM_BYTE_CAPACITY=32768,
   parameter MEM_ADDR_WIDTH=$clog2(MEM_BYTE_CAPACITY),
 
@@ -633,7 +633,7 @@ wire IC_ADDR_HIT, IC_PLUS_HIT_D, IC_PLUS_HIT, DC_ADDR_HIT, DC_PLUS_HIT_D, DC_PLU
 bufferH16$    bufferH16$_DC_PLUS_HIT_buf16(DC_PLUS_HIT_buf16, DC_PLUS_HIT);
 
 generate 
-  if (ROW_BUFFER_EN) begin 
+  if (ROW_BUFFER_EN) begin : ENABLE_ROW_BUFFER
     big_eq #(
       .WIDTH(MEM_ADDR_WIDTH-RANK_BURST_SIZE)
     ) big_eq_IC_ADDR_HIT (
@@ -647,7 +647,7 @@ generate
       .in0(ADDR_BUS[MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]), .in1(DC_PLUS_ADDR),
       .eq(DC_ADDR_HIT)
     );
-  end else begin 
+  end else begin : DISABLE_ROW_BUFFER
     assign IC_ADDR_HIT = 1'b0;
     assign DC_ADDR_HIT = 1'b0;
   end

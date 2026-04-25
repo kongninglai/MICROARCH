@@ -521,6 +521,7 @@ module backend_top #(
         .to_rr_ucode_sigs(to_rr_ucode_sigs),
         .to_rr_valid(to_rr_valid),
         .from_ag_stall_bar(from_ag_stall_bar),
+        .from_ex_flush(from_ex_flush),
         .from_wb_flush(from_wb_flush),
         .from_ex_cmps_found(from_ex_cmps_found),
         .interrupt(DMA_INT),
