@@ -74,10 +74,14 @@ module logic_imm(
       sum_1_lower[1]
     );
 
+    wire rel8_sign, rel16_sign;
+    bufferH64$  bufferH64$_rel8_sign(rel8_sign, rel8[7]);
+    bufferH16$  bufferH16$_rel16_sign(rel16_sign, rel16[15]);
+
     mux4_16$  mux4_16$_bp_imm_low
     (
       bp_imm[15:0],
-      {{8{rel8[7]}}, rel8},
+      {{8{rel8_sign}}, rel8},
       rel16,
       rel32[15:0],
       ,
@@ -88,8 +92,8 @@ module logic_imm(
     mux4_16$  mux4_16$_bp_imm_high
     (
       bp_imm[31:16],
-      {16{rel8[7]}},
-      {16{rel16[15]}},
+      {16{rel8_sign}},
+      {16{rel16_sign}},
       rel32[31:16],
       ,
       imm_size[0],
@@ -182,14 +186,17 @@ module logic_imm(
         .S0(total_offset[0]), .S1(total_offset[1]), .S2(total_offset[2]), .S3(total_offset[3])
     );
 
+    wire [1:0] imm_size_buf16;
+    bufferH16$  bufferH16$_imm_size_buf16[1:0](imm_size_buf16, imm_size);
+
     //Layer 2: 0.22ns through data delay
     mux4_48 imm_size_mux(
         .IN0(imm_bytes8),
         .IN1(imm_bytes16),
         .IN2(imm_bytes32),
         .IN3(imm_bytes48),
-        .S0(imm_size[0]),
-        .S1(imm_size[1]),
+        .S0(imm_size_buf16[0]),
+        .S1(imm_size_buf16[1]),
         .Y(imm_bytes)
     );
 

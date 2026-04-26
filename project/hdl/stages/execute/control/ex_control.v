@@ -41,7 +41,9 @@ module ex_control(
     nor2$ nor_uncond(uncond_jmp, sig_con_jump[0], sig_con_jump[1]);
 
     // ldEIP_out = ldEIP & (uncond_jmp | jne | jnbe) & mispredict
-    or3$ or_jmp(branch_taken, uncond_jmp, jne, jnbe);
+    wire branch_taken_bar;
+    nor3$ or_jmp(branch_taken_bar, uncond_jmp, jne, jnbe);
+    bufferHInv64$ bufferHInv64$_branch_taken(branch_taken, branch_taken_bar);
     assign jump_eip = masked_eip;
     mux2_32 mux2_t_nt_eip(new_eip, ieip, masked_eip, branch_taken);
     wire accurate_predict;

@@ -47,5 +47,7 @@ module br_target(
     nor4$ or_rel32( .out(is_rel32), .in0(eq_jne_rel32), .in1(eq_jnbe_rel32), .in2(eq_call_rel32), .in3(eq_jmp_rel32));
     nand3$ or_hit( .out(hit), .in0(is_rel8), .in1(is_rel16), .in2(is_rel32));
 
-    PA_32b TARGET_rel32_adder(.in0(i_eip), .in1(imm), .s(bp_eip_target));
+    wire [31:0] bp_eip_target_prebuf;
+    PA_32b TARGET_rel32_adder(.in0(i_eip), .in1(imm), .s(bp_eip_target_prebuf));
+    bufferH16$    bufferH16$_bp_eip_target[31:0](bp_eip_target, bp_eip_target_prebuf);
 endmodule

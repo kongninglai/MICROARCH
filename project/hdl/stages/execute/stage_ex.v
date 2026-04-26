@@ -487,7 +487,10 @@ module stage_ex #(
     mux2_16$ mux2_cs(from_ex_cs, to_ex_cs, from_ex_cs_target, valid_ld_CS);
 
     assign from_ex_br_t_nt = branch_taken;
-    and2$ and_br_valid(from_ex_br_valid, sig_ldEIP, to_ex_valid);
+
+    wire from_ex_br_valid_bar;
+    nand2$ and_br_valid(from_ex_br_valid_bar, sig_ldEIP, to_ex_valid);
+    bufferHInv16$ bufferHInv16$_from_ex_br_valid(from_ex_br_valid, from_ex_br_valid_bar);
     // assign from_ex_br_valid = sig_ldEIP;
 
     wire [31:0] from_ex_eip_target_prebuf;
