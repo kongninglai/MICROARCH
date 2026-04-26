@@ -34,6 +34,7 @@ module tb_bp();
     wire [7:0] sib; 
     wire [1:0] disp_size_mux;
     wire [31:0] disp; 
+    wire [3:0] disp_offset;
     wire [2:0] imm_size;
     wire [47:0] imm;
     wire [1:0] addressing_mode;
@@ -81,6 +82,7 @@ module tb_bp();
         .sib(sib), 
         .disp_size_mux(disp_size_mux),
         .disp(disp), 
+        .disp_offset(disp_offset),
         .imm_size(imm_size),
         .imm(imm),
         .addressing_mode(addressing_mode),
@@ -92,12 +94,13 @@ module tb_bp();
         .clk(clk),
         .rst_bar(rst_bar),
         .opcode(opcode),
-        .imm(imm),
+        .cache_line(cache_line),
         .op_size_overload(prefix_op_size),
         .prefix_ext(prefix_ext),
         .is_branch(is_branch), 
         .o_eip(o_eip),
         .i_eip(i_eip),
+        .total_offset(disp_offset),
         .br_t_nt_ex_d(br_t_nt_ex_d),
         .br_valid_ex_d(br_valid_ex_d),
         .ext_pht_idx(ext_pht_idx),
@@ -155,7 +158,7 @@ module tb_bp();
             dyn_exp_tgt = i_eip + exp_tgt; //Calculate dynamic expected target based on test EIP and offset
             #30; 
             // CAPTURE COMBINATIONAL OUTPUTS RIGHT BEFORE THE CLOCK EDGE!
-            last_hash = PREDICTOR.hash_out; 
+            last_hash = pht_idx; 
             captured_pred = cur_instr_prediction;
             captured_tgt = bp_eip_target;
 

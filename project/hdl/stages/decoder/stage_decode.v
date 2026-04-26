@@ -49,6 +49,7 @@ module stage_decode(
     bufferH16$  bufferH16$_modrm[7:0](modrm, modrm_prebuf);
     wire modrm_v;
     wire [1:0] addressing_mode_prebuf;
+    wire [3:0] disp_offset;
     block_decoder DECODER(
         .cache_line(cache_line),
         .prefix_rep(prefix_rep),
@@ -62,6 +63,7 @@ module stage_decode(
         .sib(sib),
         .disp_size_mux(disp_size_mux),
         .disp(disp),
+        .disp_offset(disp_offset),
         .imm_size(imm_size),
         .imm(imm),
         .addressing_mode(addressing_mode_prebuf),
@@ -134,10 +136,11 @@ module stage_decode(
         .clk(clk),
         .rst_bar(rst_bar),
         .opcode(opcode),
-        .imm(imm),
+        .cache_line(cache_line),
         .op_size_overload(prefix_op_size),
         .prefix_ext(prefix_ext),
         .is_branch(is_branch),
+        .total_offset(disp_offset),
         .o_eip(o_eip), //used to predict cur instruction in decode
         .i_eip(i_eip),
         .br_t_nt_ex_d(br_t_nt_ex_d), //used to update pht for instr in execute stage

@@ -11,6 +11,7 @@ module tb_br_target();
     wire [2:0] prefix_seg_ov_id, imm_size;
     wire [7:0] opcode, modrm, sib;
     wire [1:0] disp_size_mux, addressing_mode;
+    wire [3:0] disp_offset;
     wire [31:0] disp;
     wire [47:0] imm;
     wire [3:0] instr_length;
@@ -37,6 +38,7 @@ module tb_br_target();
         .sib(sib), 
         .disp_size_mux(disp_size_mux),
         .disp(disp), 
+        .disp_offset(disp_offset),
         .imm_size(imm_size),
         .imm(imm),
         .addressing_mode(addressing_mode),
@@ -46,9 +48,10 @@ module tb_br_target();
     // 5. Instantiate Branch Target Calculator
     br_target target_uut (
         .i_eip(i_eip),
+        .total_offset(disp_offset),
         .prefix_ext(prefix_ext), // Hooked up!
         .opcode(opcode),
-        .imm(imm),
+        .cache_bits(cache_line),
         .op_size_overload(prefix_op_size), // Hooked up!
         .hit(hit),
         .bp_eip_target(bp_eip_target)
@@ -69,7 +72,6 @@ module tb_br_target();
                 $display("     EXPECTED: Hit=%b | Target=%h", exp_hit, exp_target);
                 $display("     ACTUAL  : Hit=%b | Target=%h", hit, bp_eip_target);
                 FAILURES = FAILURES + 1;
-                $display("     ACTUAL  : ieip=%b | Target32=%h, | Target16=%h, | Target8=%h", i_eip, target_uut.target_rel32, target_uut.target_rel16, target_uut.target_rel8);
             end
             #5; // Padding before next test
         end

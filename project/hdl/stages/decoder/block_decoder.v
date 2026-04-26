@@ -11,6 +11,7 @@ module block_decoder(
     output wire [7:0] sib, 
     output wire [1:0] disp_size_mux,
     output wire [31:0] disp, 
+    output wire [3:0] disp_offset,
     output wire [2:0] imm_size, //in bytes
     output wire [47:0] imm,
     output wire [1:0] addressing_mode,
