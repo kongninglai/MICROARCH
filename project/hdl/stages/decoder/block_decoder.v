@@ -167,10 +167,6 @@ module block_decoder(
                                           {7'd0, is_sib_true_prelim, disp_size_prelim, disp_size_inbytes_prelim, disp_plus_sib}, 
                                           is_modrm_true);
 
-
-    wire [3:0] instr_length_prebuf;
-
-
     wire [3:0] instr_length_prebuf;
 
     logic_incr_amt EIP_INCR_AMT(

@@ -13,5 +13,7 @@ module mux3_onehot_slice(
         end
     endgenerate
 
-    or3$ FINAL_MUX_VALUE(.out(out), .in0(and_wire[0]), .in1(and_wire[1]), .in2(and_wire[2]));
+    wire prebuf_out;
+    nor3$ FINAL_MUX_VALUE(.out(prebuf_out), .in0(and_wire[0]), .in1(and_wire[1]), .in2(and_wire[2]));
+    bufferHInv16$ bufferHInv16$_out(.out(out), .in(prebuf_out));
 endmodule

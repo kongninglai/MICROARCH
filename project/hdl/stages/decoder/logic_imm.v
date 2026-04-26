@@ -105,6 +105,7 @@ module logic_imm(
     );
 
     //Layer 2: 0.22ns through data delay
+    wire [47:0] imm_bytes_prebuf;
     mux4_48 imm_size_mux(
         .IN0(imm_bytes8),
         .IN1(imm_bytes16),
@@ -114,5 +115,7 @@ module logic_imm(
         .S1(imm_size[1]),
         .Y(imm_bytes)
     );
+
+    //bufferH64$ bufferH64$_imm_bytes[47:0](imm_bytes, imm_bytes_prebuf);
 
 endmodule

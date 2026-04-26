@@ -58,6 +58,7 @@ module logic_stall_flush(
       tail_ptr[4]
     );
 
+    wire instr_invalid;
     mux16 mux16_instr_invalid
     (
       instr_invalid,

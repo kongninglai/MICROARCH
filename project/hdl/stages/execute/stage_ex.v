@@ -145,9 +145,12 @@ module stage_ex #(
 
     wire [8:0] EX_FW_CONTROL_SIGS;
 
+
+    wire prebuf_sig_ldEIP;
+    bufferH64$  bufferH64$_sig_ldEIP(sig_ldEIP, prebuf_sig_ldEIP);
     ex_sig #(.EX_CONTROL_SIGS_WIDTH(EX_CONTROL_SIGS_WIDTH)) ex_sig_parsing (
         .ucode_sig(to_ex_control_sigs),.ldAB(sig_ldAB),.dstA_size(sig_dstA_size),.dstB_size(sig_dstB_size),
-        .ldREGS(sig_ldREGS),.ldEFLAGS(sig_ldEFLAGS),.ldEIP(sig_ldEIP),.ldCS(sig_ldCS),.alu_srcb_mux(sig_alu_srcb_mux),.shf_srcb_mux(sig_shf_srcb_mux),
+        .ldREGS(sig_ldREGS),.ldEFLAGS(sig_ldEFLAGS),.ldEIP(prebuf_sig_ldEIP),.ldCS(sig_ldCS),.alu_srcb_mux(sig_alu_srcb_mux),.shf_srcb_mux(sig_shf_srcb_mux),
         .eflags_mux(sig_eflags_mux),.eip_mux(sig_eip_mux),.cs_mux(sig_cs_mux),.mmx_op(sig_mmx_op),.alu_op(sig_alu_op),.shf_op(sig_shf_op),
         .movs0(sig_movs0), .movs1(sig_movs1), .cmps0(sig_cmps0), .cmps1(sig_cmps1), .cmps2(sig_cmps2_prebuf), .con_jmp(sig_con_jmp),.cmpxchg(sig_cmpxchg),.cmovc(sig_cmovc),
         .gp_dsta_mux(sig_gp_dsta_mux),.gp_dstb_mux(sig_gp_dstb_mux),.seg_dst_mux(sig_seg_dst_mux),.mm_dst_mux(sig_mm_dst_mux),

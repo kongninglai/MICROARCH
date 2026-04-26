@@ -67,9 +67,13 @@ module br_target(
     PA_32b TARGET_rel8_adder(.in0(i_eip), .in1(offset_rel8_ext), .s(target_rel8));
 
     //Select the Correct Branch Target 
+    wire [2:0] buf_in_sel;
+    wire [31:0] prebuf_bp_ep_target;
+    bufferH256$ bufferH256$_in_sel[2:0](buf_in_sel, in_sel);
     mux3_onehot DUT(
-        .in_sel(in_sel),
+        .in_sel(buf_in_sel),
         .in0(target_rel8), .in1(target_rel16), .in2(target_rel32),
         .out(bp_eip_target)
     );
+
 endmodule

@@ -14,12 +14,12 @@ generate
                     {(OUT_WIDTH-INP_WIDTH){in_buf16[INP_WIDTH-1]}},
                     in_buf16[INP_WIDTH-1:0]
                   }; 
-  end else if (OUT_WIDTH - INP_WIDTH >= 16) begin : se_buf64_gen
-    wire [INP_WIDTH-1:0] in_buf64;
-    bufferH64$  bufferH64$_in_buf64[INP_WIDTH-1:0](in_buf64, in);
+  end else if (OUT_WIDTH - INP_WIDTH >= 16) begin : se_buf256_gen
+    wire [INP_WIDTH-1:0] in_buf256;
+    bufferH256$  bufferH256$_in_buf256[INP_WIDTH-1:0](in_buf256, in);
     assign out  = {
-                    {(OUT_WIDTH-INP_WIDTH){in_buf64[INP_WIDTH-1]}},
-                    in_buf64[INP_WIDTH-1:0]
+                    {(OUT_WIDTH-INP_WIDTH){in_buf256[INP_WIDTH-1]}},
+                    in_buf256[INP_WIDTH-1:0]
                   }; 
   end else begin : se_no_buf_gen
     assign out  = {

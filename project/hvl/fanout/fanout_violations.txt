@@ -1,3 +1,0 @@
-VIOLATION: flush_ex fanout=6 drv=PORT (expected buffer)
-VIOLATION: br_t_nt_ex_d fanout=48 drv=PORT (expected buffer)
-VIOLATION: br_valid_ex_d fanout=16 drv=PORT (expected buffer)
