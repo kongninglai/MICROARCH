@@ -70,8 +70,10 @@ module predictor(
     );
 
     //only predict taken if the instruction in decosde is actually a branch, otherwise not taken
-    and2$ FINAL_PREDICTION(
-        .out(br_t_nt_out),
+    wire br_t_nt_out_bar;
+    nand2$ FINAL_PREDICTION(
+        .out(br_t_nt_out_bar),
         .in0(from_de_br_valid), .in1(t_nt1)
     );
+    bufferHInv16$ bufferHInv16$_br_t_nt_out(br_t_nt_out, br_t_nt_out_bar);
 endmodule
