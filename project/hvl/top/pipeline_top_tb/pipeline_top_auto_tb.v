@@ -10,10 +10,14 @@ initial begin
 end
 
 /******* PERFORMANCE FEATURES ********/
+
+/* without the instruction queue the timing will be worse */
+/* To disable instruction queue, please increase the cycle time */
 localparam STREAM_BUFFER_EN    = 1'b1;
 localparam ROW_BUFFER_EN       = 1'b1;
 localparam FORWARD_EN          = 1'b1;
 localparam INSTR_Q_EN          = 1'b1;
+localparam BP_EN               = 1'b1;
 
 integer i;
 integer NUM_TESTS = 0;
@@ -27,6 +31,7 @@ reg auto_checker_done;
 `endif
 
 localparam CYCLE_TIME_X10 = 93;
+// localparam CYCLE_TIME_X10 = 120;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -734,7 +739,8 @@ reg [31:0] stalled_cnt;
 localparam integer MAX_STREAM_CYCLES = 200000;
 
 fetch_decode_top #(
-  .INSTR_Q_EN(INSTR_Q_EN)
+  .INSTR_Q_EN(INSTR_Q_EN),
+  .BP_EN(BP_EN)
 ) FRONTEND_TOP(
     .clk(clk),
     .rst_bar(rst_n),

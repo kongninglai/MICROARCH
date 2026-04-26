@@ -1,4 +1,6 @@
-module stage_decode(
+module stage_decode #(
+    parameter BP_EN=1'b1
+)(
     input wire [127:0] cache_line,
     input wire [4:0] tail_ptr,
     input wire [31:0] eip_target_ex, //comes from execute stage
@@ -100,7 +102,9 @@ module stage_decode(
     //Decode logic tells what type of branch is currently being decoded
     wire [1:0] branch_type;
     wire is_branch;
-    logic_branch BRANCH_TYPE( //for instruction in decode (if branch)
+    logic_branch #(
+        .BP_EN(BP_EN)
+    ) BRANCH_TYPE( //for instruction in decode (if branch)
         .opcode(opcode),
         .modrm(modrm), 
         .v_modrm(modrm_v),
@@ -111,7 +115,10 @@ module stage_decode(
 
     wire hit;
     wire cur_instr_prediction;
-    choose_eip EIP_LOGIC(
+    wire bp_pred_dir;
+    choose_eip #(
+        .BP_EN(BP_EN)
+    ) EIP_LOGIC(
         .clk(clk),
         .rst_bar(rst_bar),
 
@@ -154,12 +161,20 @@ module stage_decode(
         .bp_eip_target(bp_eip_target), 
         .hit(hit),
 
-        .cur_instr_prediction(cur_instr_prediction),
+        .cur_instr_prediction(bp_pred_dir),
         .pht_idx(pht_idx),
         .ghr_out() //used internally only
     );
 
     assign pred_dir = cur_instr_prediction;
+
+    generate
+        if (BP_EN) begin 
+            assign cur_instr_prediction = bp_pred_dir;
+        end else begin 
+            assign cur_instr_prediction = 1'b0;
+        end
+    endgenerate
 
 endmodule
 

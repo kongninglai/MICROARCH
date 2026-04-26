@@ -2,7 +2,9 @@
 Branch Type: 00 (not a branch), 01 (unconditional near), 10 (conditional near), 11(far)
 */
 
-module choose_eip(
+module choose_eip #(
+    parameter BP_EN=1'b1
+)(
     input wire clk,
     input wire rst_bar, 
 
@@ -59,13 +61,22 @@ module choose_eip(
     bufferH64$ bufferH64$_ld_eip(ld_eip, ld_eip_prebuf);
 
     //Generating Signals for Mux Select
-    wire [1:0] eip_sel; 
+    wire [1:0] eip_sel;
+    wire bp_take_branch; 
     wire stall, is_branch, cond_take, uncond_take, branch_type_0_bar, take_branch_w;
     inv1$ INV_lower(branch_type_0_bar, branch_type[0]); //if branch type is not 00, then it's a branch
     nand4$ AND_COND_PRED(cond_take, cur_instr_prediction, ld_eip, branch_type[1], branch_type_0_bar); //if branch can be resolved AND predictor says taken AND unconditional
     nand2$ AND_UNCOND_PRED(uncond_take, branch_type[0], ld_eip); //if unconditional branch AND resolvable
-    nand2$ OR_TAKE_BRANCH(take_branch, uncond_take, cond_take); //if unconditional branch OR (resolvable conditional branch AND predictor says taken)
+    nand2$ OR_TAKE_BRANCH(bp_take_branch, uncond_take, cond_take); //if unconditional branch OR (resolvable conditional branch AND predictor says taken)
     
+    generate 
+        if (BP_EN) begin 
+            assign take_branch = bp_take_branch;
+        end else begin 
+            assign take_branch = 1'b0;
+        end
+    endgenerate
+
     mux4_32 MUX_CHOOSE_EIP(
         .in0(i_eip), 
         .in1(bp_eip_target), 

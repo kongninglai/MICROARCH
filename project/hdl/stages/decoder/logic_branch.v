@@ -2,7 +2,9 @@
 Branch Type: 00 (not a branch), 01 (unconditional near), 10 (conditional near), 11(far)
 */
 
-module logic_branch(
+module logic_branch #(
+    parameter BP_EN=1'b1
+)(
     input wire [7:0] opcode,
     input wire [7:0] modrm, 
     input wire v_modrm,
@@ -41,11 +43,19 @@ module logic_branch(
     nand2$ is_cond_final(.out(is_cond), .in0(is_cond_np), .in1(is_cond_p));
 
     // drive out
-    assign branch_type[1] = is_cond;
-    assign branch_type[0] = is_uncond;
+    generate 
+        if (BP_EN) begin 
+            assign branch_type[1] = is_cond;
+            assign branch_type[0] = is_uncond;
 
-    wire is_branch_bar;
-    nor2$ BRANCH(.out(is_branch_bar), .in0(is_uncond), .in1(is_cond));
-    bufferHInv64$ bufferHInv64$_is_branch(is_branch, is_branch_bar);
+            wire is_branch_bar;
+            nor2$ BRANCH(.out(is_branch_bar), .in0(is_uncond), .in1(is_cond));
+            bufferHInv64$ bufferHInv64$_is_branch(is_branch, is_branch_bar);
+        end else begin 
+            assign branch_type = 2'b0;
+            assign is_branch = 1'b0;
+        end
+    endgenerate
+   
 
 endmodule

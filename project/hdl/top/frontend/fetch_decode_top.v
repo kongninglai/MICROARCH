@@ -1,5 +1,6 @@
 module fetch_decode_top #(
-    parameter INSTR_Q_EN=1'b1
+    parameter INSTR_Q_EN=1'b1,
+    parameter BP_EN=1'b1
 )(
     input wire clk,
     input wire rst_bar,
@@ -76,7 +77,9 @@ module fetch_decode_top #(
 
     generate 
         if (INSTR_Q_EN) begin : ENABLE_INSTRQ
-            intgr_fshifter_decode FETCHBUFF_DECODESTAGE_DEPR(
+            intgr_fshifter_decode #(
+                .BP_EN(BP_EN)
+            ) FETCHBUFF_DECODESTAGE_DEPR(
                 .clk(clk),
                 .rst_bar(rst_bar),
 
@@ -118,7 +121,9 @@ module fetch_decode_top #(
                 .to_rr_ucode_sigs(to_rr_ucode_sigs)
             );
         end else begin : DISABLE_INSTRQ
-            intgr_fshifter_decode_no_instr_q FETCHBUFF_DECODESTAGE_DEPR(
+            intgr_fshifter_decode_no_instr_q #(
+                .BP_EN(BP_EN)
+            ) FETCHBUFF_DECODESTAGE_DEPR(
                 .clk(clk),
                 .rst_bar(rst_bar),
 

@@ -143,6 +143,7 @@ module stage_rr #(
         .clk(clk),
         .rst_n(rst_n),
         .to_rr_ucode_sigs(to_rr_ucode_sigs),
+        .raw_to_rr_valid(to_rr_valid),
         .to_rr_valid(rr_valid_and_not_flush),
         .rep(from_rr_rep),
         .stall(fsm_stall),
