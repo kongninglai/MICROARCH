@@ -56,8 +56,11 @@ module choose_eip(
     inv1$ INV_lower(branch_type_0_bar, branch_type[0]); //if branch type is not 00, then it's a branch
     and4$ AND_COND_PRED(cond_take, cur_instr_prediction, hit, branch_type[1], branch_type_0_bar); //if branch can be resolved AND predictor says taken AND unconditional
     and2$ AND_UNCOND_PRED(uncond_take, branch_type[0], hit); //if unconditional branch AND resolvable
-    or2$ OR_TAKE_BRANCH(take_branch_w, uncond_take, cond_take); //if unconditional branch OR (resolvable conditional branch AND predictor says taken)
-    and2$ BR_VALID_AND(take_branch, take_branch_w, instr_valid);
+    nor2$ OR_TAKE_BRANCH(take_branch_w, uncond_take, cond_take); //if unconditional branch OR (resolvable conditional branch AND predictor says taken)
+
+    wire instr_valid_bar;
+    inv1$ inv1$_instr_valid_bar(instr_valid_bar, instr_valid);
+    nor2$ BR_VALID_AND(take_branch, take_branch_w, instr_valid_bar);
     
     mux4_32 MUX_CHOOSE_EIP(
         .in0(i_eip), 
