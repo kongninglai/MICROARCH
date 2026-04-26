@@ -50,6 +50,8 @@ module stage_decode(
     wire modrm_v;
     wire [1:0] addressing_mode_prebuf;
     wire [31:0] bp_imm;
+    wire [2:0] sum_1_lower;
+    wire [31:0] i_eip_br;
     block_decoder DECODER(
         .cache_line(cache_line),
         .prefix_rep(prefix_rep),
@@ -67,6 +69,7 @@ module stage_decode(
         .imm(imm),
         .bp_imm(bp_imm),
         .addressing_mode(addressing_mode_prebuf),
+        .sum_1_lower(sum_1_lower),
         .instr_length(instr_length),
         .ucode_sigs(ucode_sigs)
     );     
@@ -113,6 +116,7 @@ module stage_decode(
         .rst_bar(rst_bar),
 
         //eip incr logic
+        .sum_1_lower(sum_1_lower),
         .instr_length(instr_length),
 
         .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal
@@ -125,6 +129,7 @@ module stage_decode(
         .branch_type(branch_type),
         .hit(hit),
         
+        .i_eip_br(i_eip_br),
         .i_eip(i_eip),
         .o_eip(o_eip),
         .ld_eip(ld_eip),
@@ -141,7 +146,7 @@ module stage_decode(
         .prefix_ext(prefix_ext),
         .is_branch(is_branch),
         .o_eip(o_eip), //used to predict cur instruction in decode
-        .i_eip(i_eip),
+        .i_eip(i_eip_br),
         .br_t_nt_ex_d(br_t_nt_ex_d), //used to update pht for instr in execute stage
         .br_valid_ex_d(br_valid_ex_d), //used to update pht for instr in execute stage
         .ext_pht_idx(pht_idx_ex_d), //used to update pht for instr in execute stage

@@ -26,7 +26,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 95;
+localparam CYCLE_TIME_X10 = 93;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 

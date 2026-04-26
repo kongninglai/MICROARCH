@@ -157,9 +157,9 @@ module PA_32b (
 	wire	[1:0]		Gi_im12, Pi_im12;
 	wire	[1:0]		Gi_im13, Pi_im13;
 	wire	[1:0]		Gi_im14, Pi_im14;
-	wire	[1:0]		Gi_im15, Pi_im15, Gi_im15_buf64, Pi_im15_buf16;
+	wire	[1:0]		Gi_im15, Pi_im15, Gi_im15_buf16, Pi_im15_buf16;
 
-  bufferH64$  bufferH64$_Gi_im15_buf64[1:0](Gi_im15_buf64, Gi_im15);
+  bufferH16$  bufferH64$_Gi_im15_buf16[1:0](Gi_im15_buf16, Gi_im15);
   bufferH16$  bufferH16$_Pi_im15_buf16[1:0](Pi_im15_buf16, Pi_im15);
 	
 	genvar l;
@@ -288,22 +288,22 @@ module PA_32b (
 	wire	P15_m1, P16_m1, P17_m1, P18_m1, P19_m1, P20_m1, P21_m1, P22_m1,
 			P23_m1, P24_m1, P25_m1, P26_m1, P27_m1, P28_m1, P29_m1, P30_m1;
 			
-	gen_prop_2 gp4_im16(G15_m1, P15_m1, Pi_i[15],   Pi_im15_buf16[0], Gi_i[15]  , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im17(G16_m1, P16_m1, Pi_im1[8],  Pi_im15_buf16[0], Gi_im1[8] , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im18(G17_m1, P17_m1, Pi_im2[4],  Pi_im15_buf16[0], Gi_im2[4] , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im19(G18_m1, P18_m1, Pi_im3_buf16[4],  Pi_im15_buf16[0], Gi_im3_buf16[4] , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im20(G19_m1, P19_m1, Pi_im4[2],  Pi_im15_buf16[0], Gi_im4[2] , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im21(G20_m1, P20_m1, Pi_im5[2],  Pi_im15_buf16[0], Gi_im5[2] , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im22(G21_m1, P21_m1, Pi_im6[2],  Pi_im15_buf16[0], Gi_im6[2] , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im23(G22_m1, P22_m1, Pi_im7_buf16[2],  Pi_im15_buf16[0], Gi_im7_buf16[2] , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im24(G23_m1, P23_m1, Pi_im8[1],  Pi_im15_buf16[0], Gi_im8[1] , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im25(G24_m1, P24_m1, Pi_im9[1],  Pi_im15_buf16[0], Gi_im9[1] , Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im26(G25_m1, P25_m1, Pi_im10[1], Pi_im15_buf16[0], Gi_im10[1], Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im27(G26_m1, P26_m1, Pi_im11[1], Pi_im15_buf16[0], Gi_im11[1], Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im28(G27_m1, P27_m1, Pi_im12[1], Pi_im15_buf16[0], Gi_im12[1], Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im29(G28_m1, P28_m1, Pi_im13[1], Pi_im15_buf16[0], Gi_im13[1], Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im30(G29_m1, P29_m1, Pi_im14[1], Pi_im15_buf16[0], Gi_im14[1], Gi_im15_buf64[0]);
-	gen_prop_2 gp4_im31(G30_m1, P30_m1, Pi_im15[1], Pi_im15_buf16[0], Gi_im15[1], Gi_im15_buf64[0]);
+	gen_prop_2 gp4_im16(G15_m1, P15_m1, Pi_i[15],   Pi_im15_buf16[0], Gi_i[15]  , Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im17(G16_m1, P16_m1, Pi_im1[8],  Pi_im15_buf16[0], Gi_im1[8] , Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im18(G17_m1, P17_m1, Pi_im2[4],  Pi_im15_buf16[0], Gi_im2[4] , Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im19(G18_m1, P18_m1, Pi_im3_buf16[4],  Pi_im15_buf16[0], Gi_im3_buf16[4] , Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im20(G19_m1, P19_m1, Pi_im4[2],  Pi_im15_buf16[0], Gi_im4[2] , Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im21(G20_m1, P20_m1, Pi_im5[2],  Pi_im15_buf16[0], Gi_im5[2] , Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im22(G21_m1, P21_m1, Pi_im6[2],  Pi_im15_buf16[0], Gi_im6[2] , Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im23(G22_m1, P22_m1, Pi_im7_buf16[2],  Pi_im15_buf16[0], Gi_im7_buf16[2] , Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im24(G23_m1, P23_m1, Pi_im8[1],  Pi_im15_buf16[0], Gi_im8[1] , Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im25(G24_m1, P24_m1, Pi_im9[1],  Pi_im15_buf16[0], Gi_im9[1] , Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im26(G25_m1, P25_m1, Pi_im10[1], Pi_im15_buf16[0], Gi_im10[1], Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im27(G26_m1, P26_m1, Pi_im11[1], Pi_im15_buf16[0], Gi_im11[1], Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im28(G27_m1, P27_m1, Pi_im12[1], Pi_im15_buf16[0], Gi_im12[1], Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im29(G28_m1, P28_m1, Pi_im13[1], Pi_im15_buf16[0], Gi_im13[1], Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im30(G29_m1, P29_m1, Pi_im14[1], Pi_im15_buf16[0], Gi_im14[1], Gi_im15_buf16[0]);
+	gen_prop_2 gp4_im31(G30_m1, P30_m1, Pi_im15[1], Pi_im15_buf16[0], Gi_im15[1], Gi_im15_buf16[0]);
 	
 	// Sums
 	
@@ -323,7 +323,7 @@ module PA_32b (
 	xor3LL xor3LL_13(s[18], G17_m1, in0[18], in1[18]);
 	xor3LL xor3LL_14(s[17], G16_m1, in0[17], in1[17]);
 	xor3LL xor3LL_15(s[16], G15_m1, in0[16], in1[16]);
-	xor3LL xor3LL_16(s[15], Gi_im15_buf64[0], in0[15], in1[15]);
+	xor3LL xor3LL_16(s[15], Gi_im15[0], in0[15], in1[15]);
 	xor3LL xor3LL_17(s[14], Gi_im14[0], in0[14], in1[14]);
 	xor3LL xor3LL_18(s[13], Gi_im13[0], in0[13], in1[13]);
 	xor3LL xor3LL_19(s[12], Gi_im12[0], in0[12], in1[12]);

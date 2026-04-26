@@ -15,6 +15,7 @@ module block_decoder(
     output wire [47:0] imm,
     output wire [31:0] bp_imm,
     output wire [1:0] addressing_mode,
+    output wire [2:0] sum_1_lower,
     output wire [3:0] instr_length,
     output wire [95:0] ucode_sigs
 );      
@@ -142,12 +143,11 @@ module block_decoder(
     bufferH256$   bufferH256$_disp_offset[3:0](disp_offset, disp_offset_prebuf);
 
     wire [47:0] imm_bytes;
-    wire [1:0] sum_1_lower;
     logic_imm LOGIC_IMM(
         .cache_bits(cache_line_buf[127:8]), 
         .total_offset(disp_offset),
         .imm_size(imm_size_true),
-        .sum_1_lower(sum_1_lower),
+        .sum_1_lower(sum_1_lower[1:0]),
         .imm_bytes(imm_bytes),
         .bp_imm(bp_imm)
     );  
