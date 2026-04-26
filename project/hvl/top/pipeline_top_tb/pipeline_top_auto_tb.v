@@ -25,7 +25,7 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 103;
+localparam CYCLE_TIME_X10 = 95;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -918,10 +918,6 @@ initial begin
   $finish;
 end
 
-initial begin 
-  #(40000 * CYCLE_TIME);
-  $finish;
-end
 // Auto-generated memory initialization (Verilog-2005)
 
 initial begin

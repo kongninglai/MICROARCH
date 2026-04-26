@@ -49,6 +49,7 @@ module stage_decode(
     bufferH16$  bufferH16$_modrm[7:0](modrm, modrm_prebuf);
     wire modrm_v;
     wire [1:0] addressing_mode_prebuf;
+    wire [31:0] bp_imm;
     block_decoder DECODER(
         .cache_line(cache_line),
         .prefix_rep(prefix_rep),
@@ -64,6 +65,7 @@ module stage_decode(
         .disp(disp),
         .imm_size(imm_size),
         .imm(imm),
+        .bp_imm(bp_imm),
         .addressing_mode(addressing_mode_prebuf),
         .instr_length(instr_length),
         .ucode_sigs(ucode_sigs)
@@ -134,7 +136,7 @@ module stage_decode(
         .clk(clk),
         .rst_bar(rst_bar),
         .opcode(opcode),
-        .imm(imm),
+        .imm(bp_imm),
         .op_size_overload(prefix_op_size),
         .prefix_ext(prefix_ext),
         .is_branch(is_branch),

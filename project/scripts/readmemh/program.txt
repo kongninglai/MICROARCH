@@ -1,27 +1,33 @@
-0x0:  b0 02           //    mov    al,0x2
-0x2:  c1 e0 08        //    shl    eax,0x8
-0x5:  b1 01           //    mov    cl,0x1
-0x7:  b2 03           //    mov    dl,0x3
-0x9:  b3 04           //    mov    bl,0x4
-0xb:  66 bc 05 00     //    mov    sp,0x5
-0xf:  66 bd 06 00     //    mov    bp,0x6
-0x13: 66 bf 07 00     //    mov    di,0x7
-0x17: 66 be 08 00     //    mov    si,0x8
-0x1b: 0f 6f 06        //    movq   mm0,QWORD PTR [esi]
-0x1e: 0f 6f 09        //    movq   mm1,QWORD PTR [ecx]
-0x21: 0f 6f 12        //    movq   mm2,QWORD PTR [edx]
-0x24: 0f 6f 1b        //    movq   mm3,QWORD PTR [ebx]
-0x27: 0f 6f 27        //    movq   mm4,QWORD PTR [edi]
-0x2a: 0f e0 e8        //    pavgb  mm5,mm0
-0x2d: 0f e3 e8        //    pavgw  mm5,mm0
-0x30: 0f 63 f5        //    packsswb mm6,mm5
-0x33: 0f 6b fe        //    packssdw mm7,mm6
-0x36: 0f fe e9        //    paddd  mm5,mm1
-0x39: 0f fe ea        //    paddd  mm5,mm2
-0x3c: 8e c3           //    mov    es,ebx
-0x3e: 8e e1           //    mov    fs,ecx
-0x40: 8e ea           //    mov    gs,edx
-0x42: 8e d5           //    mov    ss,ebp
-0x44: 8e d8           //    mov    ds,eax
-0x46: 8c 01           //    mov    WORD PTR [ecx],es
-0x48: f4              //    hlt
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  b8 11 11 11 11  // mov    eax,0x11111111
+0x29:  b9 22 22 22 22  // mov    ecx,0x22222222
+0x2e:  91  // xchg   ecx,eax
+0x2f:  b8 aa aa aa aa  // mov    eax,0xaaaaaaaa
+0x34:  ba bb bb bb bb  // mov    edx,0xbbbbbbbb
+0x39:  92  // xchg   edx,eax
+0x3a:  be 78 56 34 12  // mov    esi,0x12345678
+0x3f:  bf 21 43 65 87  // mov    edi,0x87654321
+0x44:  87 fe  // xchg   esi,edi
+0x46:  c7 03 ef be ad de  // mov    DWORD PTR [ebx],0xdeadbeef
+0x4c:  b8 78 56 34 12  // mov    eax,0x12345678
+0x51:  87 03  // xchg   DWORD PTR [ebx],eax
+0x53:  b8 aa 00 00 00  // mov    eax,0xaa
+0x58:  b9 55 00 00 00  // mov    ecx,0x55
+0x5d:  86 c8  // xchg   al,cl
+0x5f:  66 66 b8 34 12  // data16 mov ax,0x1234
+0x64:  66 66 b9 78 56  // data16 mov cx,0x5678
+0x69:  66 87 c8  // xchg   ax,cx
+0x6c:  66 66 b8 cd ab  // data16 mov ax,0xabcd
+0x71:  66 66 b9 34 12  // data16 mov cx,0x1234
+0x76:  66 91  // xchg   cx,ax
+0x78:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

@@ -5,7 +5,9 @@ module logic_imm(
     input wire [127:8] cache_bits, //bytes 1-14 of the instruction cache
     input wire [3:0] total_offset, //ready at 6.45ns from p_m_s_d_adder
     input wire [1:0] imm_size, //ready at 4.2ns (comes from logic_true_modrm)
-    output wire [47:0] imm_bytes
+    input wire [1:0] sum_1_lower,
+    output wire [47:0] imm_bytes,
+    output wire [31:0] bp_imm
 );  
 
     wire [7:0] cache_bytes [1:14];
@@ -17,6 +19,82 @@ module logic_imm(
             assign cache_bytes[i] = cache_bits[(i*8)+7 : (i*8)];
         end
     endgenerate
+
+    wire [7:0] rel8;
+    wire [15:0] rel16;
+    wire [31:0] rel32;
+
+    // Only real possibilites are inst. lengths 2, 3, 4 (supported 5 just for fun)
+    // 2 = 10, 3 = 11, 4 = 00, 5 = 01
+    mux4_8$  mux4_8$_rel8
+    (
+      rel8,
+      cache_bytes[3],
+      cache_bytes[4],
+      cache_bytes[1],
+      cache_bytes[2],
+      sum_1_lower[0],
+      sum_1_lower[1]
+    );
+
+    // Only real possibilities are override, opcode, rel16 (4) |OR| override, dummy_override, ext_opcode, opcode, rel16 (6) (supported 7 just for fun)
+    // 4 = 00, 5 = 01, 6 = 10, 7 = 11
+    mux4_16$  mux4_16$_rel16
+    (
+      rel16,
+      {cache_bytes[3], cache_bytes[2]},
+      {cache_bytes[4], cache_bytes[3]},
+      {cache_bytes[5], cache_bytes[4]},
+      {cache_bytes[6], cache_bytes[5]},
+      sum_1_lower[0],
+      sum_1_lower[1]
+    );
+
+    // Only real possibilities are opcode, rel32 (5) |OR| ext_opcode, opcode, rel32 (6) |OR| dummy_override, ext_opcode, opcode, rel32 (7) (supported 8 just for fun)
+    // 5 = 01, 6 = 10, 7 = 11, 8 = 00
+    mux4_16$  mux4_16$_rel32_low
+    (
+      rel32[15:0],
+      {cache_bytes[5], cache_bytes[4]},
+      {cache_bytes[2], cache_bytes[1]},
+      {cache_bytes[3], cache_bytes[2]},
+      {cache_bytes[4], cache_bytes[3]},
+      sum_1_lower[0],
+      sum_1_lower[1]
+    );
+
+    mux4_16$  mux4_16$_rel32_high
+    (
+      rel32[31:16],
+      {cache_bytes[7], cache_bytes[6]},
+      {cache_bytes[4], cache_bytes[3]},
+      {cache_bytes[5], cache_bytes[4]},
+      {cache_bytes[6], cache_bytes[5]},
+      sum_1_lower[0],
+      sum_1_lower[1]
+    );
+
+    mux4_16$  mux4_16$_bp_imm_low
+    (
+      bp_imm[15:0],
+      {{8{rel8[7]}}, rel8},
+      rel16,
+      rel32[15:0],
+      ,
+      imm_size[0],
+      imm_size[1]
+    );
+
+    mux4_16$  mux4_16$_bp_imm_high
+    (
+      bp_imm[31:16],
+      {16{rel8[7]}},
+      {16{rel16[15]}},
+      rel32[31:16],
+      ,
+      imm_size[0],
+      imm_size[1]
+    );
 
     //Layer 1: takes 1.1ns
     wire [47:0] imm_bytes48, imm_bytes32, imm_bytes16, imm_bytes8;
