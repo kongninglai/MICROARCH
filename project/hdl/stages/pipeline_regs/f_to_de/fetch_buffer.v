@@ -43,7 +43,9 @@ module fetch_buffer(
     
     //Shift Enable Register Logic (WE = ~IF_FULL && ICACHE_VALID)
     wire shft_reg_we_internal, shft_reg_we_internal_prebuf;
-    nand3$ nand_shft_reg_we_internal(shft_reg_we_internal_prebuf, v_cl_ld_bar, from_de_valid_bar, flush_bar); //also shift when consuming instructions (branch taken or flush in execute)
+    wire vinny_signal;
+    nand2$  nand2$_vinny_signal(vinny_signal, tail_ptr_less_than_16, ICACHE_VALID);
+    nand2$ nand_shft_reg_we_internal(shft_reg_we_internal_prebuf, vinny_signal, from_de_valid_bar); //also shift when consuming instructions (branch taken or flush in execute)
     bufferH64$    bufferH64$_shft_reg_we_internal(shft_reg_we_internal, shft_reg_we_internal_prebuf);
 
     //Generate fetch buffer enable signal

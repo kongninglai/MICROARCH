@@ -59,6 +59,7 @@ module bp(
         .br_t_nt_out(cur_instr_prediction)
     );
 
+    wire [31:0] bp_eip_target_ungated;
     br_target BR_TARGET(
         .i_eip (i_eip),
         .opcode (opcode),
@@ -66,8 +67,10 @@ module bp(
         .op_size_overload(op_size_overload),
         .prefix_ext(prefix_ext),
         .hit(hit), //currently not used since we're hardcoding to not hit
-        .bp_eip_target (bp_eip_target)
+        .bp_eip_target (bp_eip_target_ungated)
     );
-    
+    wire [31:0] bp_eip_target_bar;
+    nand2$ nand2$_bp_eip_target_bar[31:0](bp_eip_target_bar, bp_eip_target_ungated, is_branch);
+    bufferHInv16$ bufferHInv16$_bp_eip_target[31:0](bp_eip_target, bp_eip_target_bar);
 endmodule
 
