@@ -430,7 +430,7 @@ module stage_ex #(
     ex_control control (
         .r_m(regA_rm),
         .imm(to_ex_imm),
-        .load_result(to_ex_load_result),
+        .load_result(to_ex_load_result_buf16),
         .rel_eip(to_ex_rel_eip),
         .pred_eip(to_ex_pred_eip),
         .pred_dir(to_ex_pred_dir),
