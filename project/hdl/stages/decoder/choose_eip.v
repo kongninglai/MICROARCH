@@ -57,15 +57,14 @@ module choose_eip #(
     wire ld_eip_prebuf;
     inv1$ INV_FLUSH(not_flush, flush_ex);
     nand2$ NAND_VALID_LD(nand_valid_ld, instr_valid, ld_pr_rr);
-    nand2$ NAND_FINAL(ld_eip_prebuf, not_flush, nand_valid_ld);
-    bufferH64$ bufferH64$_ld_eip(ld_eip, ld_eip_prebuf);
+    nand2$ NAND_FINAL(ld_eip, not_flush, nand_valid_ld);
 
     //Generating Signals for Mux Select
     wire [1:0] eip_sel;
     wire bp_take_branch; 
     wire stall, is_branch, cond_take, uncond_take, branch_type_0_bar, take_branch_w;
     inv1$ INV_lower(branch_type_0_bar, branch_type[0]); //if branch type is not 00, then it's a branch
-    nand4$ AND_COND_PRED(cond_take, cur_instr_prediction, ld_eip, branch_type[1], branch_type_0_bar); //if branch can be resolved AND predictor says taken AND unconditional
+    nand3$ AND_COND_PRED(cond_take, cur_instr_prediction, ld_eip, branch_type[1]); //if branch can be resolved AND predictor says taken AND unconditional
     nand2$ AND_UNCOND_PRED(uncond_take, branch_type[0], ld_eip); //if unconditional branch AND resolvable
     nand2$ OR_TAKE_BRANCH(bp_take_branch, uncond_take, cond_take); //if unconditional branch OR (resolvable conditional branch AND predictor says taken)
     
@@ -89,10 +88,20 @@ module choose_eip #(
 
     wire [31:0] o_eip_prebuf;
 
-    reg_n #(.WIDTH(32)) EIP_REG(
-        .clk(clk), .rst(rst_bar),
-        .en({32{ld_eip}}), .d(eip_true),
-        .q(o_eip_prebuf)
+    reg_n_16 #(.WIDTH(16), .USE_EN_BAR(1'b0), .RESET_TO_ONES(1'b0)) FEIP_REG_high (
+        .clk(clk),
+        .rst(rst_bar),
+        .en(ld_eip),
+        .d(eip_true[31:16]),
+        .q(o_eip_prebuf[31:16])
+    );
+
+    reg_n_16 #(.WIDTH(16), .USE_EN_BAR(1'b0), .RESET_TO_ONES(1'b0)) FEIP_REG_low (
+        .clk(clk),
+        .rst(rst_bar),
+        .en(ld_eip),
+        .d(eip_true[15:0]),
+        .q(o_eip_prebuf[15:0])
     );
 
     bufferH256$    bufferH256$_o_eip[31:0](o_eip, o_eip_prebuf);

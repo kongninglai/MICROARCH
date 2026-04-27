@@ -41,11 +41,15 @@ initial begin
   in0 = {WIDTH{1'b1}}; in1 = {WIDTH{1'b1}} >> 24; #40; check(out, out_exp);
   in0 = 0; in1 = {WIDTH{1'b1}}; #40; check(out, out_exp);
   in0 = 0; in1 = 1;
-  repeat (1 << 8) begin
+  repeat (1 << 13) begin
     #40;
     check(out, out_exp);
     in0  = $random;
-    in1  = $random;
+    if (($random & 32'h7FFFFFFF) % 4 == 0) begin
+      in1 = in0;
+    end else begin
+      in1 = $random;
+    end
   end
 
   $display("FAILURES = %d out of %d\n", FAILURES, FAILURES + SUCCESSES);

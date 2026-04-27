@@ -66,7 +66,7 @@ module shift_reg(
             reg_n #(
                 .WIDTH(8),
                 .USE_EN_BAR(0)
-            ) reg_n_disk_addr (
+            ) reg_n_shift_reg_bytes (
                 .clk(clk), .rst(rst_n),
                 .en({8{en_buf16[i]}}), .d(d[i]),
                 .q(q[i])

@@ -1,8 +1,8 @@
 module  PA_4b_tb;
 
 initial begin
-  // $vcdplusfile("PA_4b_tb.dump.vpd");
-  // $vcdpluson(0, PA_4b_tb); 
+  $vcdplusfile("PA_4b_tb.dump.vpd");
+  $vcdpluson(0, PA_4b_tb); 
 end
 
 localparam WIDTH = 4;

@@ -327,17 +327,19 @@ module stage_ex #(
     mux2_32 mux2_cmp_in0(cmp_in0, f_srcregC, temp_cmps0, sig_cmps2);
     mux2_32 mux2_cmp_in1(cmp_in1, regA_rm_buf64, temp_cmps1, sig_cmps2);
 
+    wire neq_32;
     ex_cmp cmp (
         .ds(sig_ds_buf64),
         .in0(cmp_in0),
         .in1(cmp_in1),
         .cmp_eflags(cmp_eflags),
-        .cmp_eflags_mask(cmp_eflags_mask)
+        .cmp_eflags_mask(cmp_eflags_mask),
+        .neq_32(neq_32)
     );
     // from_ex_cmps_found = sig_cmps1 & zf=0 & valid_instruction
     wire cmp_zf_is_0;
     inv1$ inv1_cmps_zf(cmp_zf_is_0, cmp_eflags_buf16[6]);
-    and3$ and_cmps_found(from_ex_cmps_found, sig_cmps2, cmp_zf_is_0, valid_instruction);
+    and3$ and_cmps_found(from_ex_cmps_found, sig_cmps2, neq_32, valid_instruction);
     // NOT
     wire [31:0] not_out;
     ex_not not_inst (
