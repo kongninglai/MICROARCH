@@ -2,6 +2,11 @@
 
 module tb_intgr_fshifter_decode_rigorous();
 
+    initial begin
+        $vcdplusfile("intgr_fshifter_decode_rigorous.vpd");
+        $vcdpluson(0, tb_intgr_fshifter_decode_rigorous);
+    end
+
     // ---------------------------------------------------------
     // 0. Parameters & Signals
     // ---------------------------------------------------------
@@ -116,11 +121,13 @@ module tb_intgr_fshifter_decode_rigorous();
             if (to_rr_pr_valid === exp_valid &&
                (exp_valid == 0 || (to_rr_opcode === exp_opcode && (to_rr_modrm === exp_modrm || to_rr_addressing_mode === 2'b00)))) begin
                 $display("  PASS | %0s", test_name);
+                $display("     DEBUG  : shift reg=%h, tail_ptr=%h", uut.to_de_outbytes, uut.tail_ptr);
                 SUCCESSES = SUCCESSES + 1;
             end else begin
                 $display("  FAIL | %0s", test_name);
                 $display("     EXPECTED: Valid=%b | Opcode=%h | ModRM=%h", exp_valid, exp_opcode, exp_modrm);
                 $display("     ACTUAL  : Valid=%b | Opcode=%h | ModRM=%h", to_rr_pr_valid, to_rr_opcode, to_rr_modrm);
+                $display("     DEBUG  : shift reg=%h, tail_ptr=%h", uut.to_de_outbytes, uut.tail_ptr);
                 FAILURES = FAILURES + 1;
             end
         end
@@ -179,13 +186,15 @@ module tb_intgr_fshifter_decode_rigorous();
         // SCENARIO 2: LOAD 2ND CACHE LINE & JUMP GAUNTLET
         // =========================================================
         $display("\n--- SCENARIO 2: Line Merge & Jump Gauntlet ---");
-        clear_cache_line();
+        $display("     DEBUG  : shift reg=%h, tail_ptr=%h (start s2 before clear)", uut.to_de_outbytes, uut.tail_ptr);
+        //clear_cache_line();
         load_cache_byte(0, 8'hCC); // imm byte 2
         load_cache_byte(1, 8'hDD); // imm byte 3 (ADD complete)
         load_cache_byte(2, 8'hEB); // JMP rel8
         load_cache_byte(3, 8'h05); // JMP displacement
         load_cache_byte(4, 8'h75); // JNE rel8
         load_cache_byte(5, 8'h02); // JNE displacement
+        $display("     DEBUG  : shift reg=%h, tail_ptr=%h (start s2 after load)", uut.to_de_outbytes, uut.tail_ptr);
 
         from_f_icache_valid = 1;
 

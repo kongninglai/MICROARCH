@@ -16,6 +16,8 @@ module stage_rr #(
     input [31:0] to_rr_oeip,
     input [31:0] to_rr_ieip,
     input [31:0] to_rr_pred_eip,
+    input to_rr_pred_dir,
+    input [3:0] to_rr_pht_idx,
     input [1:0]  to_rr_exception,
     input [95:0] to_rr_ucode_sigs,
     input to_rr_valid,
@@ -96,6 +98,8 @@ module stage_rr #(
     output [31:0] from_rr_oeip,
     output [31:0] from_rr_ieip,
     output [31:0] from_rr_pred_eip,
+    output from_rr_pred_dir,
+    output [3:0] from_rr_pht_idx,
     output [1:0] from_rr_exception,
     output from_rr_valid,
     output from_rr_ucode_valid,
@@ -139,6 +143,7 @@ module stage_rr #(
         .clk(clk),
         .rst_n(rst_n),
         .to_rr_ucode_sigs(to_rr_ucode_sigs),
+        .raw_to_rr_valid(to_rr_valid),
         .to_rr_valid(rr_valid_and_not_flush),
         .rep(from_rr_rep),
         .stall(fsm_stall),
@@ -387,6 +392,8 @@ module stage_rr #(
     assign from_rr_cs=from_regunit_CS;
     
     assign from_rr_pred_eip = to_rr_pred_eip;
+    assign from_rr_pred_dir = to_rr_pred_dir;
+    assign from_rr_pht_idx = to_rr_pht_idx;
     // assign from_rr_exception = to_rr_exception;
 
     mux2$ mux2_from_rr_exception[1:0](from_rr_exception, to_rr_exception, 2'b00, handling_intex);

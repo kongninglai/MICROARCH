@@ -1,5 +1,5 @@
 module reg_rr_to_ag #(
-    parameter REG_SIZE=692
+    parameter REG_SIZE=697
 )(CLK, Din, Q, QBAR, CLR, PRE,en);
     input  CLK;
     input  CLR;

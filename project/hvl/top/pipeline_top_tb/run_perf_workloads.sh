@@ -7,10 +7,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TESTCASES_DIR="/home/ecelrc/students/var2427/MICROARCH/project/scripts/performance/workload_suites"
 PROGRAM_TXT="/home/ecelrc/students/var2427/MICROARCH/project/scripts/readmemh/program.txt"
 RESULTS_DIR="/home/ecelrc/students/var2427/MICROARCH/project/scripts/performance/sim_results"
-RESULTS_FILE="$RESULTS_DIR/performance_results.txt"
 LOG_DIR="$RESULTS_DIR/test_logs"
 LOCK_FILE="$RESULTS_DIR/.test_all_instructions.lock"
 PER_TEST_TIMEOUT_SEC="${PER_TEST_TIMEOUT_SEC:-0}"
+
+if [[ "$#" -ne 1 ]]; then
+    echo "Usage: $0 <results_file_name>" >&2
+    exit 1
+fi
+
+RESULTS_FILE_NAME="$1"
+if [[ -z "$RESULTS_FILE_NAME" || "$RESULTS_FILE_NAME" == */* ]]; then
+    echo "results_file_name must be a file name, not a path" >&2
+    exit 1
+fi
+
+RESULTS_FILE="$RESULTS_DIR/$RESULTS_FILE_NAME"
 
 mkdir -p "$RESULTS_DIR"
 mkdir -p "$LOG_DIR"

@@ -18,6 +18,7 @@
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/muxes
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/regs
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shifters
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/decoders
 
 // Test Logic 
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/decoder

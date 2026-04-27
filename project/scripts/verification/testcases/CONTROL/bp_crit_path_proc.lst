@@ -1,0 +1,210 @@
+// Change CS_LIMIT to 0xFFFFF in both ~/MICROARCH/project/hdl/PRF/regfile_seg.v and ~/MICROARCH/project/scripts/verification/main.py
+// Change TLB in both ~/MICROARCH/project/hdl/cache/tlb/tlb_init.txt and ~/MICROARCH/project/scripts/verification/main.py
+// New TLB: line 2 = 000000000000000111110101101
+// New TLB: line 3 = 000000000000001000001011101
+
+// Relative carry-out testcase. Addresses below are physical.
+// Relative instructions execute from EIP 0x0001Fxxx and compute 0x00020xxx.
+0x0000: b8 00 08 00 00  // mov eax, 0x00000800
+0x0005: ff e0  // jmp eax
+0x0800: b8 00 0b 00 00  // mov eax, 0x00000b00
+0x0805: 8e d0  // mov ss, ax
+0x0807: bc 00 01 00 00  // mov esp, 0x00000100
+0x080c: ba 00 00 01 00  // mov edx, 0x00010000
+0x0811: b8 f8 fe 01 00  // mov eax, 0x0001fef8
+0x0816: ff e0  // jmp eax
+0x2ef8: b8 01 00 00 00  // mov eax, 0x00000001
+0x2efd: 83 c0 00  // add eax, 0 ; ZF=0 CF=0
+0x5100: 66 ba 06 ff  // mov dx, 0xff06
+0x5104: ff e2  // jmp edx
+0x2f00: 0f 87 fa 01 00 00  // JNBE rel32 target=0x00020100 inc=0x0001ff06 rel=+506
+0x5106: 66 ba 0c ff  // mov dx, 0xff0c
+0x510a: ff e2  // jmp edx
+0x2f06: 0f 85 fa 01 00 00  // JNE rel32 target=0x00020106 inc=0x0001ff0c rel=+506
+0x510c: 66 ba 11 ff  // mov dx, 0xff11
+0x5110: ff e2  // jmp edx
+0x2f0c: e9 fb 01 00 00  // JMP rel32 target=0x0002010c inc=0x0001ff11 rel=+507
+0x2f11: e8 d2 01 00 00  // CALL rel32 target=0x000200e8 inc=0x0001ff16 rel=+466
+0x50e8: c3  // ret ; near RET
+0x50f0: c2 04 00  // ret 0x0004 ; near RET imm16
+0x2f16: 90  // nop ; pad rel8 block near 0x20000
+0x2f17: 90  // nop ; pad rel8 block near 0x20000
+0x2f18: 90  // nop ; pad rel8 block near 0x20000
+0x2f19: 90  // nop ; pad rel8 block near 0x20000
+0x2f1a: 90  // nop ; pad rel8 block near 0x20000
+0x2f1b: 90  // nop ; pad rel8 block near 0x20000
+0x2f1c: 90  // nop ; pad rel8 block near 0x20000
+0x2f1d: 90  // nop ; pad rel8 block near 0x20000
+0x2f1e: 90  // nop ; pad rel8 block near 0x20000
+0x2f1f: 90  // nop ; pad rel8 block near 0x20000
+0x2f20: 90  // nop ; pad rel8 block near 0x20000
+0x2f21: 90  // nop ; pad rel8 block near 0x20000
+0x2f22: 90  // nop ; pad rel8 block near 0x20000
+0x2f23: 90  // nop ; pad rel8 block near 0x20000
+0x2f24: 90  // nop ; pad rel8 block near 0x20000
+0x2f25: 90  // nop ; pad rel8 block near 0x20000
+0x2f26: 90  // nop ; pad rel8 block near 0x20000
+0x2f27: 90  // nop ; pad rel8 block near 0x20000
+0x2f28: 90  // nop ; pad rel8 block near 0x20000
+0x2f29: 90  // nop ; pad rel8 block near 0x20000
+0x2f2a: 90  // nop ; pad rel8 block near 0x20000
+0x2f2b: 90  // nop ; pad rel8 block near 0x20000
+0x2f2c: 90  // nop ; pad rel8 block near 0x20000
+0x2f2d: 90  // nop ; pad rel8 block near 0x20000
+0x2f2e: 90  // nop ; pad rel8 block near 0x20000
+0x2f2f: 90  // nop ; pad rel8 block near 0x20000
+0x2f30: 90  // nop ; pad rel8 block near 0x20000
+0x2f31: 90  // nop ; pad rel8 block near 0x20000
+0x2f32: 90  // nop ; pad rel8 block near 0x20000
+0x2f33: 90  // nop ; pad rel8 block near 0x20000
+0x2f34: 90  // nop ; pad rel8 block near 0x20000
+0x2f35: 90  // nop ; pad rel8 block near 0x20000
+0x2f36: 90  // nop ; pad rel8 block near 0x20000
+0x2f37: 90  // nop ; pad rel8 block near 0x20000
+0x2f38: 90  // nop ; pad rel8 block near 0x20000
+0x2f39: 90  // nop ; pad rel8 block near 0x20000
+0x2f3a: 90  // nop ; pad rel8 block near 0x20000
+0x2f3b: 90  // nop ; pad rel8 block near 0x20000
+0x2f3c: 90  // nop ; pad rel8 block near 0x20000
+0x2f3d: 90  // nop ; pad rel8 block near 0x20000
+0x2f3e: 90  // nop ; pad rel8 block near 0x20000
+0x2f3f: 90  // nop ; pad rel8 block near 0x20000
+0x2f40: 90  // nop ; pad rel8 block near 0x20000
+0x2f41: 90  // nop ; pad rel8 block near 0x20000
+0x2f42: 90  // nop ; pad rel8 block near 0x20000
+0x2f43: 90  // nop ; pad rel8 block near 0x20000
+0x2f44: 90  // nop ; pad rel8 block near 0x20000
+0x2f45: 90  // nop ; pad rel8 block near 0x20000
+0x2f46: 90  // nop ; pad rel8 block near 0x20000
+0x2f47: 90  // nop ; pad rel8 block near 0x20000
+0x2f48: 90  // nop ; pad rel8 block near 0x20000
+0x2f49: 90  // nop ; pad rel8 block near 0x20000
+0x2f4a: 90  // nop ; pad rel8 block near 0x20000
+0x2f4b: 90  // nop ; pad rel8 block near 0x20000
+0x2f4c: 90  // nop ; pad rel8 block near 0x20000
+0x2f4d: 90  // nop ; pad rel8 block near 0x20000
+0x2f4e: 90  // nop ; pad rel8 block near 0x20000
+0x2f4f: 90  // nop ; pad rel8 block near 0x20000
+0x2f50: 90  // nop ; pad rel8 block near 0x20000
+0x2f51: 90  // nop ; pad rel8 block near 0x20000
+0x2f52: 90  // nop ; pad rel8 block near 0x20000
+0x2f53: 90  // nop ; pad rel8 block near 0x20000
+0x2f54: 90  // nop ; pad rel8 block near 0x20000
+0x2f55: 90  // nop ; pad rel8 block near 0x20000
+0x2f56: 90  // nop ; pad rel8 block near 0x20000
+0x2f57: 90  // nop ; pad rel8 block near 0x20000
+0x2f58: 90  // nop ; pad rel8 block near 0x20000
+0x2f59: 90  // nop ; pad rel8 block near 0x20000
+0x2f5a: 90  // nop ; pad rel8 block near 0x20000
+0x2f5b: 90  // nop ; pad rel8 block near 0x20000
+0x2f5c: 90  // nop ; pad rel8 block near 0x20000
+0x2f5d: 90  // nop ; pad rel8 block near 0x20000
+0x2f5e: 90  // nop ; pad rel8 block near 0x20000
+0x2f5f: 90  // nop ; pad rel8 block near 0x20000
+0x2f60: 90  // nop ; pad rel8 block near 0x20000
+0x2f61: 90  // nop ; pad rel8 block near 0x20000
+0x2f62: 90  // nop ; pad rel8 block near 0x20000
+0x2f63: 90  // nop ; pad rel8 block near 0x20000
+0x2f64: 90  // nop ; pad rel8 block near 0x20000
+0x2f65: 90  // nop ; pad rel8 block near 0x20000
+0x2f66: 90  // nop ; pad rel8 block near 0x20000
+0x2f67: 90  // nop ; pad rel8 block near 0x20000
+0x2f68: 90  // nop ; pad rel8 block near 0x20000
+0x2f69: 90  // nop ; pad rel8 block near 0x20000
+0x2f6a: 90  // nop ; pad rel8 block near 0x20000
+0x2f6b: 90  // nop ; pad rel8 block near 0x20000
+0x2f6c: 90  // nop ; pad rel8 block near 0x20000
+0x2f6d: 90  // nop ; pad rel8 block near 0x20000
+0x2f6e: 90  // nop ; pad rel8 block near 0x20000
+0x2f6f: 90  // nop ; pad rel8 block near 0x20000
+0x2f70: 90  // nop ; pad rel8 block near 0x20000
+0x2f71: 90  // nop ; pad rel8 block near 0x20000
+0x2f72: 90  // nop ; pad rel8 block near 0x20000
+0x2f73: 90  // nop ; pad rel8 block near 0x20000
+0x2f74: 90  // nop ; pad rel8 block near 0x20000
+0x2f75: 90  // nop ; pad rel8 block near 0x20000
+0x2f76: 90  // nop ; pad rel8 block near 0x20000
+0x2f77: 90  // nop ; pad rel8 block near 0x20000
+0x2f78: 90  // nop ; pad rel8 block near 0x20000
+0x2f79: 90  // nop ; pad rel8 block near 0x20000
+0x2f7a: 90  // nop ; pad rel8 block near 0x20000
+0x2f7b: 90  // nop ; pad rel8 block near 0x20000
+0x2f7c: 90  // nop ; pad rel8 block near 0x20000
+0x2f7d: 90  // nop ; pad rel8 block near 0x20000
+0x2f7e: 90  // nop ; pad rel8 block near 0x20000
+0x2f7f: 90  // nop ; pad rel8 block near 0x20000
+0x2f80: 90  // nop ; pad rel8 block near 0x20000
+0x2f81: 90  // nop ; pad rel8 block near 0x20000
+0x2f82: 90  // nop ; pad rel8 block near 0x20000
+0x5005: 66 ba 86 ff  // mov dx, 0xff86
+0x5009: ff e2  // jmp edx
+0x2f83: 90  // nop ; pad before JNBE rel8
+0x2f84: 77 7f  // JNBE rel8 target=0x00020005 inc=0x0001ff86 rel=+127
+0x500b: 66 ba 8c ff  // mov dx, 0xff8c
+0x500f: ff e2  // jmp edx
+0x2f86: 90  // nop ; pad before JNE rel8
+0x2f87: 90  // nop ; pad before JNE rel8
+0x2f88: 90  // nop ; pad before JNE rel8
+0x2f89: 90  // nop ; pad before JNE rel8
+0x2f8a: 75 7f  // JNE rel8 target=0x0002000b inc=0x0001ff8c rel=+127
+0x5011: 66 ba 92 ff  // mov dx, 0xff92
+0x5015: ff e2  // jmp edx
+0x2f8c: 90  // nop ; pad before JMP rel8
+0x2f8d: 90  // nop ; pad before JMP rel8
+0x2f8e: 90  // nop ; pad before JMP rel8
+0x2f8f: 90  // nop ; pad before JMP rel8
+0x2f90: eb 7f  // JMP rel8 target=0x00020011 inc=0x0001ff92 rel=+127
+0x5112: 66 ba 99 ff  // mov dx, 0xff99
+0x5116: ff e2  // jmp edx
+0x2f92: 26 0f 87 79 01 00 00  // seg+JNBE rel32 target=0x00020112 inc=0x0001ff99 rel=+377
+0x5118: 66 ba a0 ff  // mov dx, 0xffa0
+0x511c: ff e2  // jmp edx
+0x2f99: 26 0f 85 78 01 00 00  // seg+JNE rel32 target=0x00020118 inc=0x0001ffa0 rel=+376
+0x511e: 66 ba a6 ff  // mov dx, 0xffa6
+0x5122: ff e2  // jmp edx
+0x2fa0: 26 e9 78 01 00 00  // seg+JMP rel32 target=0x0002011e inc=0x0001ffa6 rel=+376
+0x2fa6: 26 e8 44 01 00 00  // seg+CALL rel32 target=0x000200f0 inc=0x0001ffac rel=+324
+0x5017: 66 ba af ff  // mov dx, 0xffaf
+0x501b: ff e2  // jmp edx
+0x2fac: 26 77 68  // seg+JNBE rel8 target=0x00020017 inc=0x0001ffaf rel=+104
+0x501d: 66 ba b2 ff  // mov dx, 0xffb2
+0x5021: ff e2  // jmp edx
+0x2faf: 26 75 6b  // seg+JNE rel8 target=0x0002001d inc=0x0001ffb2 rel=+107
+0x5023: 66 ba b5 ff  // mov dx, 0xffb5
+0x5027: ff e2  // jmp edx
+0x2fb2: 26 eb 6e  // seg+JMP rel8 target=0x00020023 inc=0x0001ffb5 rel=+110
+0x2fb5: f4  // hlt
+
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x4010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x4020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x4030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x4040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x4050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x4060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x4070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x4080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x4090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x40a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x40b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x40c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x40d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x40e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  // initialized SS stack
+
+// Relative offset audit:
+// JNBE rel32: start=0x0001ff00 inc=0x0001ff06 target=0x00020100 rel=+506
+// JNE rel32: start=0x0001ff06 inc=0x0001ff0c target=0x00020106 rel=+506
+// JMP rel32: start=0x0001ff0c inc=0x0001ff11 target=0x0002010c rel=+507
+// CALL rel32: start=0x0001ff11 inc=0x0001ff16 target=0x000200e8 rel=+466
+// JNBE rel8: start=0x0001ff84 inc=0x0001ff86 target=0x00020005 rel=+127
+// JNE rel8: start=0x0001ff8a inc=0x0001ff8c target=0x0002000b rel=+127
+// JMP rel8: start=0x0001ff90 inc=0x0001ff92 target=0x00020011 rel=+127
+// seg+JNBE rel32: start=0x0001ff92 inc=0x0001ff99 target=0x00020112 rel=+377
+// seg+JNE rel32: start=0x0001ff99 inc=0x0001ffa0 target=0x00020118 rel=+376
+// seg+JMP rel32: start=0x0001ffa0 inc=0x0001ffa6 target=0x0002011e rel=+376
+// seg+CALL rel32: start=0x0001ffa6 inc=0x0001ffac target=0x000200f0 rel=+324
+// seg+JNBE rel8: start=0x0001ffac inc=0x0001ffaf target=0x00020017 rel=+104
+// seg+JNE rel8: start=0x0001ffaf inc=0x0001ffb2 target=0x0002001d rel=+107
+// seg+JMP rel8: start=0x0001ffb2 inc=0x0001ffb5 target=0x00020023 rel=+110

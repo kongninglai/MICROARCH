@@ -35,13 +35,19 @@ module fetch_buffer(
     inv1$ inv1$_from_wb_flush_bar(from_wb_flush_bar, from_wb_flush);
     inv1$ inv1$_from_de_valid_bar(from_de_valid_bar, from_de_valid);
 
-    nand2$ nand_eip_redir_valid_bar(from_de_eip_redirection_valid_bar, from_de_eip_redirection, from_de_valid);
-    nand2$ nand_flush(flush, from_ex_flush_bar, from_de_eip_redirection_valid_bar); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid datar with invalid data
+    wire true_consume, true_consume_prebuf; 
+
+    nand2$ nand_eip_redir_valid_bar(from_de_eip_redirection_valid_bar, from_de_eip_redirection, true_consume);
+    nand2$ nand_flush(flush, from_ex_flush_bar, from_de_eip_redirection_valid_bar); //only flush when there is a valid cache line load signal to prevent flushing the buffer with invalid data
     inv1$ inv_flush_bar(flush_bar, flush);
     
     //Shift Enable Register Logic (WE = ~IF_FULL && ICACHE_VALID)
     wire shft_reg_we_internal, shft_reg_we_internal_prebuf;
-    nand3$ nand_shft_reg_we_internal(shft_reg_we_internal_prebuf, v_cl_ld_bar, from_de_valid_bar, flush_bar); //also shift when consuming instructions (branch taken or flush in execute)
+    wire vinny_signal, vinny_signal_bar;
+    wire tail_ptr_less_than_16; //can replace mag comp with inverter bc need to look at only bit 4 to see if greater than 16
+    nand2$  nand2$_vinny_signal(vinny_signal, tail_ptr_less_than_16, ICACHE_VALID);
+    bufferHInv64$   bufferHInv64$_vinny_signal_bar(vinny_signal_bar, vinny_signal);
+    nand2$ nand_shft_reg_we_internal(shft_reg_we_internal_prebuf, vinny_signal, from_de_valid_bar); //also shift when consuming instructions (branch taken or flush in execute)
     bufferH64$    bufferH64$_shft_reg_we_internal(shft_reg_we_internal, shft_reg_we_internal_prebuf);
 
     //Generate fetch buffer enable signal
@@ -49,14 +55,12 @@ module fetch_buffer(
 
     //True Consume Logic
     wire [3:0] gated_instr_len, gated_instr_len_prebuf;
-    wire true_consume, true_consume_prebuf; 
     nor2$ nor_true_consume(true_consume_prebuf, from_de_valid_bar, from_de_stall); //only consume instruction (decr tail ptr) if de is valid and not stalled
     wire true_consume_bar;
     inv1$ inv1$_true_consume_bar(true_consume_bar, true_consume_prebuf);
     bufferH64$  bufferH64$_true_consume(true_consume, true_consume_prebuf);
 
     //Cache Line Load Sign Generation
-    wire tail_ptr_less_than_16;
     inv1$ inv1$_tail_ptr_less_than_16(tail_ptr_less_than_16, tail_ptr[4]);
     nand3$ nand_v_cl_ld_bar(v_cl_ld_bar, tail_ptr_less_than_16, flush_bar, ICACHE_VALID); 
     bufferHInv64$   bufferHInv64$_v_cl_ld(v_cl_ld, v_cl_ld_bar);
@@ -86,7 +90,7 @@ module fetch_buffer(
     genvar g;
     generate
         for (g = 0; g < 31; g = g + 1) begin : WR_EN_GATE
-            and2$ and_wr_en_gate(wr_en[g], wr_en_ungated[g], v_cl_ld);
+            and2$ and_wr_en_gate(wr_en[g], wr_en_ungated[g], vinny_signal_bar);
         end
     endgenerate
     mux16_32 we_mask_mux(

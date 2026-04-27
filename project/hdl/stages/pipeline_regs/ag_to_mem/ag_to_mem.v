@@ -1,6 +1,6 @@
 module ag_to_mem #(
     parameter MEM_CONTROL_SIGS_WIDTH=61,
-    parameter REG_SIZE=697+MEM_CONTROL_SIGS_WIDTH
+    parameter REG_SIZE=702+MEM_CONTROL_SIGS_WIDTH
 )(
     input clk,
     input rst_n,
@@ -32,6 +32,8 @@ module ag_to_mem #(
     input [31:0]     from_ag_oeip,
     input [31:0]     from_ag_ieip,
     input [31:0]     from_ag_pred_eip,
+    input            from_ag_pred_dir,
+    input [3:0]      from_ag_pht_idx,
     input [1:0]      from_ag_exception,
     input            from_ag_valid,
     
@@ -61,6 +63,8 @@ module ag_to_mem #(
     output [31:0]     to_mem_oeip,
     output [31:0]     to_mem_ieip,
     output [31:0]     to_mem_pred_eip,
+    output            to_mem_pred_dir,
+    output [3:0]      to_mem_pht_idx,
     output [1:0]      to_mem_exception,
     output            to_mem_valid
 );
@@ -68,8 +72,8 @@ module ag_to_mem #(
     wire [REG_SIZE-1:0] reg_din, reg_q, reg_qb;
     wire valid_with_flush;
     and2$ and2_valid(valid_with_flush, flush_bar, from_ag_valid);
-    assign reg_din = {from_ag_control_sigs, from_ag_dstidA, from_ag_dstidB, from_ag_srcregA, from_ag_srcregB, from_ag_srcregC, from_ag_srcSREG, from_ag_MMA, from_ag_MMB, from_ag_target_cs, from_ag_ld_addr, from_ag_ld_offset, from_ag_ld_slim, from_ag_st_addr, from_ag_st_offset, from_ag_st_slim, from_ag_inc_esp, from_ag_dec_esp, from_ag_imm, from_ag_rel_eip, from_ag_cs, from_ag_oeip, from_ag_ieip, from_ag_pred_eip, from_ag_exception, valid_with_flush};
-    assign           { to_mem_control_sigs,  to_mem_dstidA,  to_mem_dstidB,  to_mem_srcregA,  to_mem_srcregB,  to_mem_srcregC,  to_mem_srcSREG,  to_mem_MMA,  to_mem_MMB,  to_mem_target_cs,  to_mem_ld_addr,  to_mem_ld_offset,  to_mem_ld_slim,  to_mem_st_addr,  to_mem_st_offset,  to_mem_st_slim,  to_mem_inc_esp,  to_mem_dec_esp,  to_mem_imm,  to_mem_rel_eip,  to_mem_cs,  to_mem_oeip,  to_mem_ieip,  to_mem_pred_eip,  to_mem_exception,  to_mem_valid} = reg_q;
+    assign reg_din = {from_ag_control_sigs, from_ag_dstidA, from_ag_dstidB, from_ag_srcregA, from_ag_srcregB, from_ag_srcregC, from_ag_srcSREG, from_ag_MMA, from_ag_MMB, from_ag_target_cs, from_ag_ld_addr, from_ag_ld_offset, from_ag_ld_slim, from_ag_st_addr, from_ag_st_offset, from_ag_st_slim, from_ag_inc_esp, from_ag_dec_esp, from_ag_imm, from_ag_rel_eip, from_ag_cs, from_ag_oeip, from_ag_ieip, from_ag_pred_eip, from_ag_pred_dir, from_ag_pht_idx, from_ag_exception, valid_with_flush};
+    assign           { to_mem_control_sigs,  to_mem_dstidA,  to_mem_dstidB,  to_mem_srcregA,  to_mem_srcregB,  to_mem_srcregC,  to_mem_srcSREG,  to_mem_MMA,  to_mem_MMB,  to_mem_target_cs,  to_mem_ld_addr,  to_mem_ld_offset,  to_mem_ld_slim,  to_mem_st_addr,  to_mem_st_offset,  to_mem_st_slim,  to_mem_inc_esp,  to_mem_dec_esp,  to_mem_imm,  to_mem_rel_eip,  to_mem_cs,  to_mem_oeip,  to_mem_ieip,  to_mem_pred_eip,  to_mem_pred_dir,  to_mem_pht_idx,  to_mem_exception,  to_mem_valid} = reg_q;
     
     wire flush, we_with_flush_bar, we_with_flush;
     inv1$ inv_flush_bar(flush, flush_bar);

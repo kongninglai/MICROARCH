@@ -182,7 +182,7 @@ module tb_stage_decode();
         // --------------------------------------------------------
         cache_line = 128'd0;
         load_cache_byte(0, 8'hEB); load_cache_byte(1, 8'h05); 
-        check_result("JMP rel8 (No BTB Hit)  ", 1'b1, o_eip + 2, 1'b1);
+        check_result("JMP rel8 (No BTB Hit)  ", 1'b1, o_eip + 2 + 8'h05, 1'b1);
 
         tail_ptr = 5'd15; // Ensure high enough for rest of tests
 
@@ -205,7 +205,7 @@ module tb_stage_decode();
         // --------------------------------------------------------
         cache_line = 128'd0;
         load_cache_byte(0, 8'hE8); load_cache_byte(1, 8'h44); load_cache_byte(2, 8'h33); load_cache_byte(3, 8'h22); load_cache_byte(4, 8'h11);
-        check_result("5-Byte Br (CALL rel32) ", 1'b1, o_eip + 5, 1'b1);
+        check_result("5-Byte Br (CALL rel32) ", 1'b1, o_eip + 5 + 32'h11223344, 1'b1);
 
         // --------------------------------------------------------
         // TEST 8: Length = 6 Bytes: JNE rel32 (0F 85 44 33 22 11)
@@ -227,7 +227,7 @@ module tb_stage_decode();
         // TEST 10: Valid Instruction Restored
         // --------------------------------------------------------
         tail_ptr = 5'd15;
-        check_result("Valid Inst Restored    ", 1'b1, o_eip + 5, 1'b1);
+        check_result("Valid Inst Restored    ", 1'b1, o_eip + 5 + 32'h11223344, 1'b1);
 
         // --------------------------------------------------------
         // TEST 11: CS Segment Override + REP Prefix + ADD EAX, EBX

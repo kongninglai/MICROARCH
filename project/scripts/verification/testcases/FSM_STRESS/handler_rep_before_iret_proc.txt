@@ -1,0 +1,234 @@
+0x000: ba 00 02 00 00  // mov edx,0x00000200
+0x005: 8e da           // mov ds,dx
+0x007: ba 00 04 00 00  // mov edx,0x00000400
+0x00c: 8e c2           // mov es,dx
+0x00e: ba 00 0b 00 00  // mov edx,0x00000b00
+0x013: 8e d2           // mov ss,dx
+0x015: bc 00 01 00 00  // mov esp,0x00000100
+0x01a: bb 00 00 00 00  // mov ebx,0x00000000
+0x01f: fc              // cld
+0x020: bd 00 04 00 00  // mov ebp,0x00000400
+0x025: 26 c7 45 00 aa bb cc dd  // GP first, then repaired: mov es:[ebp],0xddccbbaa
+0x02d: b8 33 33 33 33  // mov eax,0x33333333
+0x032: 89 83 80 01 00 00  // mov [ebx+0x180],eax
+0x038: f4              // hlt
+0x039: 90              // nop
+0x03a: 90              // nop
+0x03b: 90              // nop
+0x03c: 90              // nop
+0x03d: 90              // nop
+0x03e: 90              // nop
+0x03f: 90              // nop
+0x040: 90              // nop
+0x041: 90              // nop
+0x042: 90              // nop
+0x043: 90              // nop
+0x044: 90              // nop
+0x045: 90              // nop
+0x046: 90              // nop
+0x047: 90              // nop
+0x048: 90              // nop
+0x049: 90              // nop
+0x04a: 90              // nop
+0x04b: 90              // nop
+0x04c: 90              // nop
+0x04d: 90              // nop
+0x04e: 90              // nop
+0x04f: 90              // nop
+0x050: 90              // nop
+0x051: 90              // nop
+0x052: 90              // nop
+0x053: 90              // nop
+0x054: 90              // nop
+0x055: 90              // nop
+0x056: 90              // nop
+0x057: 90              // nop
+0x058: 90              // nop
+0x059: 90              // nop
+0x05a: 90              // nop
+0x05b: 90              // nop
+0x05c: 90              // nop
+0x05d: 90              // nop
+0x05e: 90              // nop
+0x05f: 90              // nop
+0x060: 90              // nop
+0x061: 90              // nop
+0x062: 90              // nop
+0x063: 90              // nop
+0x064: 90              // nop
+0x065: 90              // nop
+0x066: 90              // nop
+0x067: 90              // nop
+0x068: 90              // nop
+0x069: 90              // nop
+0x06a: 90              // nop
+0x06b: 90              // nop
+0x06c: 90              // nop
+0x06d: 90              // nop
+0x06e: 90              // nop
+0x06f: 90              // nop
+0x070: 90              // nop
+0x071: 90              // nop
+0x072: 90              // nop
+0x073: 90              // nop
+0x074: 90              // nop
+0x075: 90              // nop
+0x076: 90              // nop
+0x077: 90              // nop
+0x078: 90              // nop
+0x079: 90              // nop
+0x07a: 90              // nop
+0x07b: 90              // nop
+0x07c: 90              // nop
+0x07d: 90              // nop
+0x07e: 90              // nop
+0x07f: 90              // nop
+0x080: 90              // nop
+0x081: 90              // nop
+0x082: 90              // nop
+0x083: 90              // nop
+0x084: 90              // nop
+0x085: 90              // nop
+0x086: 90              // nop
+0x087: 90              // nop
+0x088: 90              // nop
+0x089: 90              // nop
+0x08a: 90              // nop
+0x08b: 90              // nop
+0x08c: 90              // nop
+0x08d: 90              // nop
+0x08e: 90              // nop
+0x08f: 90              // nop
+0x090: 90              // nop
+0x091: 90              // nop
+0x092: 90              // nop
+0x093: 90              // nop
+0x094: 90              // nop
+0x095: 90              // nop
+0x096: 90              // nop
+0x097: 90              // nop
+0x098: 90              // nop
+0x099: 90              // nop
+0x09a: 90              // nop
+0x09b: 90              // nop
+0x09c: 90              // nop
+0x09d: 90              // nop
+0x09e: 90              // nop
+0x09f: 90              // nop
+0x0a0: 90              // nop
+0x0a1: 90              // nop
+0x0a2: 90              // nop
+0x0a3: 90              // nop
+0x0a4: 90              // nop
+0x0a5: 90              // nop
+0x0a6: 90              // nop
+0x0a7: 90              // nop
+0x0a8: 90              // nop
+0x0a9: 90              // nop
+0x0aa: 90              // nop
+0x0ab: 90              // nop
+0x0ac: 90              // nop
+0x0ad: 90              // nop
+0x0ae: 90              // nop
+0x0af: 90              // nop
+0x0b0: 90              // nop
+0x0b1: 90              // nop
+0x0b2: 90              // nop
+0x0b3: 90              // nop
+0x0b4: 90              // nop
+0x0b5: 90              // nop
+0x0b6: 90              // nop
+0x0b7: 90              // nop
+0x0b8: 90              // nop
+0x0b9: 90              // nop
+0x0ba: 90              // nop
+0x0bb: 90              // nop
+0x0bc: 90              // nop
+0x0bd: 90              // nop
+0x0be: 90              // nop
+0x0bf: 90              // nop
+0x0c0: 90              // nop
+0x0c1: 90              // nop
+0x0c2: 90              // nop
+0x0c3: 90              // nop
+0x0c4: 90              // nop
+0x0c5: 90              // nop
+0x0c6: 90              // nop
+0x0c7: 90              // nop
+0x0c8: 90              // nop
+0x0c9: 90              // nop
+0x0ca: 90              // nop
+0x0cb: 90              // nop
+0x0cc: 90              // nop
+0x0cd: 90              // nop
+0x0ce: 90              // nop
+0x0cf: 90              // nop
+0x0d0: 90              // nop
+0x0d1: 90              // nop
+0x0d2: 90              // nop
+0x0d3: 90              // nop
+0x0d4: 90              // nop
+0x0d5: 90              // nop
+0x0d6: 90              // nop
+0x0d7: 90              // nop
+0x0d8: 90              // nop
+0x0d9: 90              // nop
+0x0da: 90              // nop
+0x0db: 90              // nop
+0x0dc: 90              // nop
+0x0dd: 90              // nop
+0x0de: 90              // nop
+0x0df: 90              // nop
+0x0e0: 90              // nop
+0x0e1: 90              // nop
+0x0e2: 90              // nop
+0x0e3: 90              // nop
+0x0e4: 90              // nop
+0x0e5: 90              // nop
+0x0e6: 90              // nop
+0x0e7: 90              // nop
+0x0e8: 90              // nop
+0x0e9: 90              // nop
+0x0ea: 90              // nop
+0x0eb: 90              // nop
+0x0ec: 90              // nop
+0x0ed: 90              // nop
+0x0ee: 90              // nop
+0x0ef: 90              // nop
+0x0f0: 90              // nop
+0x0f1: 90              // nop
+0x0f2: 90              // nop
+0x0f3: 90              // nop
+0x0f4: 90              // nop
+0x0f5: 90              // nop
+0x0f6: 90              // nop
+0x0f7: 90              // nop
+0x0f8: 90              // nop
+0x0f9: 90              // nop
+0x0fa: 90              // nop
+0x0fb: 90              // nop
+0x0fc: 90              // nop
+0x0fd: 90              // nop
+0x0fe: 90              // nop
+0x0ff: 90              // nop
+0x100: bd 00 03 00 00  // handler: mov ebp,0x00000300
+0x105: be 00 01 00 00  // mov esi,0x00000100
+0x10a: bf 80 00 00 00  // mov edi,0x00000080
+0x10f: b9 04 00 00 00  // mov ecx,0x00000004
+0x114: f3 a5           // rep movsd, immediately before iret
+0x116: cf              // iretd
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2060: 00 00 00 00 00 00 00 00
+0x2068: 00 01 00 00 00 00 00 00
+0x2100: 11 11 11 11 22 22 22 22 33 33 33 33 44 44 44 44
+0x2180: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5300: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

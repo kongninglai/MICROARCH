@@ -30,6 +30,8 @@ module stage_ex #(
     input [31:0]    to_ex_oeip,
     input [31:0]    to_ex_ieip,
     input [31:0]    to_ex_pred_eip,
+    input           to_ex_pred_dir, 
+    input [3:0]     to_ex_pht_idx,
     input [1:0]     to_ex_exception,
     input           to_ex_valid,
 
@@ -58,7 +60,7 @@ module stage_ex #(
     output              from_ex_br_valid,
     output [15:0]       from_ex_cs_target,
     output [31:0]       from_ex_eip_target,
-    /*TODO: ADD from_ex_pht_idx[3:0] */
+    output [3:0]        from_ex_pht_idx,
 
     output [16:0]       from_ex_control_sigs,
     output [2:0]        from_ex_dstidA, 
@@ -118,6 +120,7 @@ module stage_ex #(
     // assign from_ex_store_queue_alloc_line_1 = to_ex_store_queue_alloc_line_1;
     assign from_ex_store_data_shf_amt = to_ex_store_data_shf_amt;
     assign from_ex_oeip = to_ex_oeip;
+    assign from_ex_pht_idx = to_ex_pht_idx;
 
     bufferH16$  bufferH16$_from_ex_valid(from_ex_valid, to_ex_valid);
     /*** Control Signals ***/
@@ -427,9 +430,10 @@ module stage_ex #(
     ex_control control (
         .r_m(regA_rm),
         .imm(to_ex_imm),
-        .load_result(to_ex_load_result),
+        .load_result(to_ex_load_result_buf16),
         .rel_eip(to_ex_rel_eip),
         .pred_eip(to_ex_pred_eip),
+        .pred_dir(to_ex_pred_dir),
         .ieip(to_ex_ieip_buf16),
         .iret_eip(iret_eip),
         .sig_con_jump(sig_con_jmp),
@@ -477,12 +481,17 @@ module stage_ex #(
     bufferHInv64$ bufferHInv64$_from_ex_flush(from_ex_flush, from_ex_flush_bar);
     assign from_ex_ld_cs = valid_ld_CS;
     
-    mux2_32 mux2_ieip(from_ex_ieip, to_ex_ieip_buf16, from_ex_eip_target, from_ex_flush);
+    wire [31:0] predicted_eip_or_ieip;
+    mux2_32 mux2_predicted_eip_or_ieip(predicted_eip_or_ieip, to_ex_ieip_buf16, to_ex_pred_eip, to_ex_pred_dir);
+    mux2_32 mux2_ieip(from_ex_ieip, predicted_eip_or_ieip, from_ex_eip_target, from_ex_flush);
     mux2_16$ mux2_cs(from_ex_cs, to_ex_cs, from_ex_cs_target, valid_ld_CS);
 
     assign from_ex_br_t_nt = branch_taken;
-    // and2$ and_br_valid(from_ex_br_valid, sig_ldEIP, from_ex_valid);
-    assign from_ex_br_valid = sig_ldEIP;
+
+    wire from_ex_br_valid_bar;
+    nand2$ and_br_valid(from_ex_br_valid_bar, sig_ldEIP, to_ex_valid);
+    bufferHInv16$ bufferHInv16$_from_ex_br_valid(from_ex_br_valid, from_ex_br_valid_bar);
+    // assign from_ex_br_valid = sig_ldEIP;
 
     wire [31:0] from_ex_eip_target_prebuf;
     mux2_32 mux2_32_eip_target(from_ex_eip_target_prebuf, target_eip_buf16, to_ex_ieip_buf16, sig_cmps2);
