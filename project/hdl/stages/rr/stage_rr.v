@@ -265,10 +265,21 @@ module stage_rr #(
     mux4$ mux4_ff_ldB(ff_ldB, 1'bx, 1'b1, 1'b0, 1'b1, to_regunit_modrm[4], to_regunit_modrm[5]);
     mux4$ mux4_ldEIP(ff_from_rr_ldEIP, 1'bx, 1'b1, 1'b1, 1'b0, to_regunit_modrm[4], to_regunit_modrm[5]);
 
-    mux2$ mux2_store_data_mux[3:0](from_rr_store_data_mux, store_data_mux, ff_store_data_mux, opcode_ff);
-    mux2$ mux2_rw[1:0](from_rr_rw, rw, ff_from_rr_rw, opcode_ff);
-    mux2$ mux2_ldEIP(from_rr_ldEIP, ldEIP, ff_from_rr_ldEIP, opcode_ff);
-    mux2$ mux2_ldB(ff_from_rr_ldB, ldAB[0], ff_ldB, opcode_ff);
+
+    wire not_handling_intex;
+    wire opcode_ff_and_not_handling_intex;
+    inv1$ inv1$_not_handling_intex(not_handling_intex, handling_intex);
+    and2$ and2$_opcode_ff_and_not_handling_intex(opcode_ff_and_not_handling_intex, opcode_ff, not_handling_intex);
+    
+
+    mux2_8$ mux2_store_data_mux
+    (
+      {from_rr_store_data_mux, from_rr_rw, from_rr_ldEIP, ff_from_rr_ldB}, 
+      {store_data_mux, rw, ldEIP, ldAB[0]}, 
+      {ff_store_data_mux, ff_from_rr_rw, ff_from_rr_ldEIP, ff_ldB}, 
+      opcode_ff_and_not_handling_intex
+    );
+    
     wire ret_with_imm;
     big_eq #(.WIDTH(7)) eq_ret_with_imm(.eq(ret_with_imm), .in0({to_regunit_opcode[7:4], to_regunit_opcode[2:0]}), .in1(7'h62));
     assign from_rr_control_sigs={{ldAB[1], ff_from_rr_ldB}, dstA_size, dstB_size, ldREGS, ldEFLAGS,
@@ -395,8 +406,14 @@ module stage_rr #(
     assign from_rr_pred_dir = to_rr_pred_dir;
     assign from_rr_pht_idx = to_rr_pht_idx;
     // assign from_rr_exception = to_rr_exception;
-
-    mux2$ mux2_from_rr_exception[1:0](from_rr_exception, to_rr_exception, 2'b00, handling_intex);
+    wire [5:0] dummy_from_rr_exception;
+    mux2_8$ mux2_from_rr_exception
+    (
+      {dummy_from_rr_exception, from_rr_exception}, 
+      {6'd0, to_rr_exception}, 
+      8'd0, 
+      handling_intex
+    );
     // if data_dep: bubble -> valid = 0
     // from_rr_valid = to_rr_valid & ~data_dep
     wire is_hlt, is_hlt_valid_bar, is_not_hlt, valid_dep_bar;
