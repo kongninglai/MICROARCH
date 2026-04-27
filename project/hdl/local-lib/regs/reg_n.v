@@ -31,3 +31,35 @@ endgenerate
 
 
 endmodule
+
+module  reg_n_16 #(
+  parameter   WIDTH=16,
+  parameter   USE_EN_BAR=0,
+  parameter   RESET_TO_ONES=0
+) (
+  input               clk, rst, en,
+  input   [WIDTH-1:0] d,
+
+  output  [WIDTH-1:0] q
+);
+
+wire      [WIDTH-1:0] in;
+
+genvar i;
+generate
+  if (USE_EN_BAR == 0) begin : active_high_gen
+    mux2_16$     mux2$_in_en(in, q, d, en);
+  end else begin : active_low_gen
+    mux2_16$     mux2$_in_enbar(in, d, q, en);
+  end
+
+  if (RESET_TO_ONES == 0) begin : reset_to_zeros_gen
+    dff16$      dff$_q(clk, in, q, , rst, 1'b1);
+  end else begin : reset_to_ones_gen
+    dff16$      dff$_q(clk, in, q, , 1'b1, rst);
+  end
+
+endgenerate
+
+
+endmodule

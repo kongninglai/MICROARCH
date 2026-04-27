@@ -4,8 +4,16 @@ module ex_cmp(
     input [31:0]     in1,
 
     output [31:0] cmp_eflags,
-    output [31:0] cmp_eflags_mask
+    output [31:0] cmp_eflags_mask,
+    output        neq_32
 ); 
+
+    big_neq #(
+      .WIDTH(32)
+    ) big_neq_neq_32 (
+      .in0(in0), .in1(in1),
+      .neq(neq_32)
+    );
     
     wire [31:0] sbb_out, sbb_out_buf16, sbb_cout;
     SUB_32b SUB32_SBB(.in0(in0), .in1(in1), .cin(1'b0), .s(sbb_out), .cout(sbb_cout));

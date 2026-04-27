@@ -92,8 +92,8 @@ or4$         or4$_writing(writing,     stream_buffer_wr_mask[0], stream_buffer_w
 
 generate 
   if (STREAM_BUFFER_EN) begin : ENABLE_STREAM_BUFFER
-    and2$   and2$_stream_buffer_hit(stream_buffer_hit, stream_buffer_hit_int, not_writing);
-    or2$    or2$_stream_buffer_miss(stream_buffer_miss, stream_buffer_miss_int, writing);
+    nor2$     nor2$_stream_buffer_hit(stream_buffer_hit, stream_buffer_miss_int, writing);
+    nand2$    nand2$_stream_buffer_miss(stream_buffer_miss, stream_buffer_hit_int, not_writing);
   end else begin : DISABLE_STREAM_BUFFER
     assign stream_buffer_hit = 1'b0;
     assign stream_buffer_miss = 1'b1;

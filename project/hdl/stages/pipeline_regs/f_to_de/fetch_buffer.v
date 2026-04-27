@@ -51,7 +51,8 @@ module fetch_buffer(
     bufferH64$    bufferH64$_shft_reg_we_internal(shft_reg_we_internal, shft_reg_we_internal_prebuf);
 
     //Generate fetch buffer enable signal
-    nand2$ nand_shft_reg_we(shft_reg_we, v_cl_ld_bar, flush_bar); //do not enable any time there is a valid instruction in decodeto prevent shifting by a cache line each time
+    assign shft_reg_we = v_cl_ld;
+    // nand2$ nand_shft_reg_we(shft_reg_we, v_cl_ld_bar, flush_bar); //do not enable any time there is a valid instruction in decodeto prevent shifting by a cache line each time
 
     //True Consume Logic
     wire [3:0] gated_instr_len, gated_instr_len_prebuf;
@@ -62,7 +63,7 @@ module fetch_buffer(
 
     //Cache Line Load Sign Generation
     inv1$ inv1$_tail_ptr_less_than_16(tail_ptr_less_than_16, tail_ptr[4]);
-    nand3$ nand_v_cl_ld_bar(v_cl_ld_bar, tail_ptr_less_than_16, flush_bar, ICACHE_VALID); 
+    nand2$ nand_v_cl_ld_bar(v_cl_ld_bar, tail_ptr_less_than_16, ICACHE_VALID); 
     bufferHInv64$   bufferHInv64$_v_cl_ld(v_cl_ld, v_cl_ld_bar);
     
     //Tail Pointer Logic

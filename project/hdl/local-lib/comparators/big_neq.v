@@ -83,15 +83,14 @@ generate
       assign neq = or_0_0_out;
     end
     12: begin : width12_gen
-      wire or_0_0_out;
-      wire or_0_1_out;
-      wire or_0_2_out;
-      wire or_0_3_out;
-      or4$ or_0_0(or_0_0_out,or_0_1_out,or_0_2_out,or_0_3_out,in[0]);
-      or4$ or_0_1(or_0_1_out,in[1],in[2],in[3],in[4]);
-      or4$ or_0_2(or_0_2_out,in[5],in[6],in[7],in[8]);
-      or3$ or_0_3(or_0_3_out,in[9],in[10],in[11]);
-      assign neq = or_0_0_out;
+      // Optimized for stream buffer compares
+      wire nor_0_0_out;
+      wire nor_0_1_out;
+      wire nor_0_2_out;
+      nand3$ nand_neq(neq,nor_0_0_out,nor_0_1_out,nor_0_2_out);
+      nor4$ nor_0_0(nor_0_0_out,in[0],in[1],in[2],in[3]);
+      nor4$ nor_0_1(nor_0_1_out,in[4],in[5],in[6],in[7]);
+      nor4$ nor_0_2(nor_0_2_out,in[8],in[9],in[10],in[11]);
     end
     13: begin : width13_gen
       wire or_0_0_out;
@@ -440,18 +439,28 @@ generate
       wire or_0_8_out;
       wire or_0_9_out;
       wire or_0_10_out;
-      or4$ or_0_0(or_0_0_out,or_0_1_out,or_0_2_out,or_0_3_out,or_0_4_out);
-      or4$ or_0_1(or_0_1_out,in[0],in[1],in[2],in[3]);
-      or4$ or_0_2(or_0_2_out,in[4],in[5],in[6],in[7]);
-      or4$ or_0_3(or_0_3_out,in[8],in[9],in[10],in[11]);
-      or4$ or_0_4(or_0_4_out,in[12],in[13],in[14],or_0_5_out);
-      or4$ or_0_5(or_0_5_out,or_0_6_out,or_0_7_out,or_0_8_out,or_0_9_out);
-      or4$ or_0_6(or_0_6_out,in[15],in[16],in[17],in[18]);
-      or4$ or_0_7(or_0_7_out,in[19],in[20],in[21],in[22]);
-      or4$ or_0_8(or_0_8_out,in[23],in[24],in[25],in[26]);
-      or4$ or_0_9(or_0_9_out,in[27],in[28],in[29],or_0_10_out);
-      or2$ or_0_10(or_0_10_out,in[30],in[31]);
-      assign neq = or_0_0_out;
+      // Optimized for stream buffer compares
+      wire nor_0_0_out;
+      wire nor_0_1_out;
+      wire nor_0_2_out;
+      wire nor_0_3_out;
+      wire nor_0_4_out;
+      wire nor_0_5_out;
+      wire nor_0_6_out;
+      wire nor_0_7_out;
+      wire nand_0_0_out;
+      wire nand_0_1_out;
+      or2$   or_neq(neq, nand_0_0_out, nand_0_1_out);
+      nand4$ nand_0_0(nand_0_0_out,nor_0_0_out,nor_0_1_out,nor_0_2_out,nor_0_3_out);
+      nand4$ nand_0_1(nand_0_1_out,nor_0_4_out,nor_0_5_out,nor_0_6_out,nor_0_7_out);
+      nor4$ nor_0_0(nor_0_0_out,in[0],in[1],in[2],in[3]);
+      nor4$ nor_0_1(nor_0_1_out,in[4],in[5],in[6],in[7]);
+      nor4$ nor_0_2(nor_0_2_out,in[8],in[9],in[10],in[11]);
+      nor4$ nor_0_3(nor_0_3_out,in[12],in[13],in[14],in[15]);
+      nor4$ nor_0_4(nor_0_4_out,in[16],in[17],in[18],in[19]);
+      nor4$ nor_0_5(nor_0_5_out,in[20],in[21],in[22],in[23]);
+      nor4$ nor_0_6(nor_0_6_out,in[24],in[25],in[26],in[27]);
+      nor4$ nor_0_7(nor_0_7_out,in[28],in[29],in[30],in[31]);
     end
   endcase
 endgenerate

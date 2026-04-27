@@ -1,0 +1,383 @@
+// ============================================================
+// COMBINED7: Prefix spam stress test
+// Gratuitous 0x66, segment overrides (26/2E/36/3E/64/65),
+// and prefixes before 0x0F extended opcodes.
+// 0x66 applied where it does NOT change behavior (reg-direct).
+// Segment overrides where they do and don't matter.
+// DS=0x200->phys 0x2000, ES=0x400->phys 0x5000, SS=0xb00->phys 0x4000
+// FS=0xa00->phys 0x5000, GS not initialized (won't use for mem)
+// ============================================================
+
+// --- Setup ---
+0x0:   ba 00 02 00 00  // mov    edx,0x200
+0x5:   8e da           // mov    ds,edx
+0x7:   ba 00 04 00 00  // mov    edx,0x400
+0xc:   8e c2           // mov    es,edx
+0xe:   ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2           // mov    ss,edx
+0x15:  ba 00 0a 00 00  // mov    edx,0xa00
+0x1a:  8e e2           // mov    fs,edx
+0x1c:  bc 00 01 00 00  // mov    esp,0x100
+0x21:  bb 00 00 00 00  // mov    ebx,0x0
+0x26:  bd 00 00 00 00  // mov    ebp,0x0
+
+// ============================================================
+// SECTION 1: Segment overrides on register-direct ops (no effect)
+// The segment prefix is ignored for reg-reg instructions.
+// ============================================================
+
+// 26 (ES:) before reg-reg ADD — meaningless but must decode
+0x2b:  b8 01 00 00 00  // mov    eax,0x1
+0x30:  b9 02 00 00 00  // mov    ecx,0x2
+0x35:  26 01 c8        // es: add eax,ecx        ; ES prefix ignored, eax=3
+
+// 2E (CS:) before reg-reg AND
+0x38:  b8 ff 00 ff 00  // mov    eax,0x00FF00FF
+0x3d:  b9 0f 0f 0f 0f  // mov    ecx,0x0F0F0F0F
+0x42:  2e 21 c8        // cs: and eax,ecx        ; CS prefix ignored, eax=0x000F000F
+
+// 36 (SS:) before reg-reg OR
+0x45:  b8 f0 f0 f0 f0  // mov    eax,0xF0F0F0F0
+0x4a:  b9 0f 0f 0f 0f  // mov    ecx,0x0F0F0F0F
+0x4f:  36 09 c8        // ss: or eax,ecx         ; SS prefix ignored, eax=0xFFFFFFFF
+
+// 3E (DS:) before reg-reg XOR (using ADD to simulate)
+0x52:  be aa aa aa aa  // mov    esi,0xAAAAAAAA
+0x57:  bf 55 55 55 55  // mov    edi,0x55555555
+0x5c:  3e 01 fe        // ds: add esi,edi        ; DS prefix ignored, esi=0xFFFFFFFF
+
+// 64 (FS:) before reg-reg MOV
+0x5f:  b8 de ad be ef  // mov    eax,0xDEADBEEF
+0x64:  64 89 c1        // fs: mov ecx,eax        ; FS prefix ignored, ecx=0xDEADBEEF
+
+// 65 (GS:) before reg-reg SBB (with CF=0)
+0x67:  b8 00 00 00 00  // mov    eax,0x0
+0x6c:  05 00 00 00 00  // add    eax,0x0         ; CF=0
+0x71:  ba 10 00 00 00  // mov    edx,0x10
+0x76:  be 03 00 00 00  // mov    esi,0x3
+0x7b:  65 19 f2        // gs: sbb edx,esi        ; GS prefix ignored, edx=0xD
+
+// ============================================================
+// SECTION 2: Segment overrides on memory ops (meaningful)
+// Each override changes which physical memory is accessed.
+// ============================================================
+
+// DS: (3E) explicit on DS-default — redundant but valid
+0x7e:  c7 43 00 11 11 11 11  // mov [ebx+0x00],0x11111111  ; DS:0x00
+0x85:  3e 8b 43 00     // ds: mov eax,[ebx+0x00]  ; DS prefix explicit, eax=0x11111111
+
+// ES: (26) override — accesses ES segment (phys 0x5000)
+0x89:  26 c7 45 00 22 22 22 22  // es: mov [ebp+0x00],0x22222222
+0x91:  26 8b 4d 00     // es: mov ecx,[ebp+0x00]  ; ecx=0x22222222
+
+// SS: (36) override — accesses SS segment (phys 0x4000)
+0x95:  bf 80 00 00 00  // mov    edi,0x80
+0x9a:  36 c7 07 33 33 33 33  // ss: mov [edi],0x33333333  ; SS:0x80
+0xa1:  36 8b 17        // ss: mov edx,[edi]       ; edx=0x33333333
+
+// FS: (64) override — accesses FS segment (phys 0x5000, same PFN as ES)
+0xa4:  64 c7 45 10 44 44 44 44  // fs: mov [ebp+0x10],0x44444444
+0xac:  64 8b 75 10     // fs: mov esi,[ebp+0x10]  ; esi=0x44444444
+
+// ============================================================
+// SECTION 3: 0x66 prefix on 32-bit reg-direct ops (no effect)
+// In 32-bit mode, 0x66 switches to 16-bit operand size.
+// On reg-direct, it changes the operation. But here we test
+// that the prefix is correctly consumed even when stacked
+// with segment overrides.
+// ============================================================
+
+// 66 + 26 (ES) before ADD reg,reg (16-bit add)
+0xb0:  66 b8 ff 7f     // mov    ax,0x7FFF
+0xb4:  66 b9 01 00     // mov    cx,0x1
+0xb8:  66 26 01 c8     // es: add ax,cx           ; 16-bit add, ax=0x8000
+
+// 26 + 66 (reversed order) before OR reg,reg
+0xbc:  66 b8 f0 00     // mov    ax,0x00F0
+0xc0:  66 b9 0f 00     // mov    cx,0x000F
+0xc4:  26 66 09 c8     // es: or ax,cx            ; 16-bit or, ax=0x00FF
+
+// 36 (SS) + 66 before AND reg,reg
+0xc8:  66 b8 ff ff     // mov    ax,0xFFFF
+0xcc:  66 b9 0f 0f     // mov    cx,0x0F0F
+0xd0:  36 66 21 c8     // ss: and ax,cx           ; 16-bit and, ax=0x0F0F
+
+// 64 (FS) + 66 before MOV reg,reg
+0xd4:  66 b8 34 12     // mov    ax,0x1234
+0xd8:  64 66 89 c1     // fs: mov cx,ax           ; 16-bit mov, cx=0x1234
+
+// ============================================================
+// SECTION 4: Segment overrides + 66 on MEMORY ops
+// ============================================================
+
+// 26 66 ADD [mem],reg (ES:, 16-bit)
+0xdc:  26 66 c7 45 20 00 00  // es: mov WORD [ebp+0x20],0x0000
+0xe3:  66 b8 ff 00     // mov    ax,0x00FF
+0xe7:  26 66 01 45 20  // es: add WORD [ebp+0x20],ax  ; ES:[0x20] = 0x00FF
+
+// 36 66 OR [mem],imm16 (SS:, 16-bit)
+0xec:  36 66 c7 47 00 00 f0  // ss: mov WORD [edi],0xF000  ; SS:0x80
+0xf3:  36 66 81 0f 0f 00     // ss: or WORD [edi],0x000F   ; SS:0x80 = 0xF00F
+
+// 64 AND [mem],imm32 (FS:)
+0xf9:  64 c7 45 20 ff ff ff ff  // fs: mov [ebp+0x20],0xFFFFFFFF
+0x101: 64 81 65 20 0f 0f 0f 0f  // fs: and [ebp+0x20],0x0F0F0F0F  ; -> 0x0F0F0F0F
+
+// ============================================================
+// SECTION 5: Prefixes before 0x0F extended opcodes
+// CPU treats 0x0F as a "prefix" internally, so test 66 and
+// segment overrides stacked before 0x0F.
+// ============================================================
+
+// --- BSF with segment override (reg-reg, override meaningless) ---
+0x109: b9 10 00 00 00  // mov    ecx,0x10
+0x10e: 26 0f bc c1     // es: bsf eax,ecx        ; ES prefix ignored, eax=4
+0x112: 2e 0f bc d1     // cs: bsf edx,ecx        ; CS prefix ignored, edx=4
+0x116: 36 0f bc f1     // ss: bsf esi,ecx        ; SS prefix ignored, esi=4
+0x11a: 3e 0f bc f9     // ds: bsf edi,ecx        ; DS prefix ignored, edi=4
+0x11e: 64 0f bc c1     // fs: bsf eax,ecx        ; FS prefix ignored, eax=4
+0x122: 65 0f bc d1     // gs: bsf edx,ecx        ; GS prefix ignored, edx=4
+
+// --- BSF with 66 prefix (16-bit BSF) + segment override ---
+0x126: 66 b9 20 00     // mov    cx,0x0020
+0x12a: 66 26 0f bc c1  // es: bsf ax,cx          ; 16-bit, ES ignored, ax=5
+0x12f: 66 36 0f bc d1  // ss: bsf dx,cx          ; 16-bit, SS ignored, dx=5
+0x134: 66 64 0f bc f1  // fs: bsf si,cx          ; 16-bit, FS ignored, si=5
+
+// --- BSF from memory with segment override (meaningful) ---
+0x139: c7 43 00 08 00 00 00  // mov [ebx+0x00],0x8  ; DS:0x00
+0x140: 26 c7 45 00 04 00 00 00  // es: mov [ebp+0x00],0x4  ; ES:0x00
+0x148: 0f bc 03        // bsf eax,[ebx]          ; DS:0x00=8, eax=3
+0x14b: 26 0f bc 4d 00  // es: bsf ecx,[ebp+0x00] ; ES:0x00=4, ecx=2
+
+// --- CMOVC with all segment overrides (reg-reg, all ignored) ---
+0x150: b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x155: 05 01 00 00 00  // add    eax,0x1         ; CF=1
+0x15a: b9 aa aa aa aa  // mov    ecx,0xAAAAAAAA
+0x15f: ba 55 55 55 55  // mov    edx,0x55555555
+0x164: 26 0f 42 ca     // es: cmovc ecx,edx      ; CF=1, ecx=0x55555555
+0x168: 2e 0f 42 ca     // cs: cmovc ecx,edx      ; (already moved, same result)
+0x16c: 36 0f 42 ca     // ss: cmovc ecx,edx
+0x170: 3e 0f 42 ca     // ds: cmovc ecx,edx
+0x174: 64 0f 42 ca     // fs: cmovc ecx,edx
+0x178: 65 0f 42 ca     // gs: cmovc ecx,edx
+
+// --- CMOVC 16-bit with seg override + 66 before 0F ---
+0x17c: 66 b8 11 11     // mov    ax,0x1111
+0x180: 66 b9 22 22     // mov    cx,0x2222
+0x184: 66 26 0f 42 c1  // es: cmovc ax,cx        ; CF still=1, ax=0x2222
+0x189: 66 36 0f 42 c1  // ss: cmovc ax,cx        ; ax=0x2222
+
+// --- CMPXCHG with segment overrides (reg-reg, ignored) ---
+0x18e: b8 42 00 00 00  // mov    eax,0x42
+0x193: b9 ff 00 00 00  // mov    ecx,0xFF
+0x198: 26 0f b0 c8     // es: cmpxchg al,cl      ; ES ignored
+0x19c: b8 42 00 00 00  // mov    eax,0x42
+0x1a1: b9 ff 00 00 00  // mov    ecx,0xFF
+0x1a6: 36 0f b0 c8     // ss: cmpxchg al,cl      ; SS ignored
+0x1aa: b8 42 00 00 00  // mov    eax,0x42
+0x1af: b9 ff 00 00 00  // mov    ecx,0xFF
+0x1b4: 64 0f b0 c8     // fs: cmpxchg al,cl      ; FS ignored
+
+// --- CMPXCHG 16-bit with 66 + seg override before 0F ---
+0x1b8: 66 b8 34 12     // mov    ax,0x1234
+0x1bc: 66 b9 78 56     // mov    cx,0x5678
+0x1c0: 66 26 0f b1 c8  // es: cmpxchg ax,cx      ; 16-bit, ES ignored
+
+// --- CMPXCHG from memory with ES override (meaningful) ---
+0x1c5: 26 c7 45 08 ef be ad de  // es: mov [ebp+0x08],0xDEADBEEF
+0x1cd: b8 ef be ad de  // mov    eax,0xDEADBEEF  ; EAX matches
+0x1d2: b9 be ba fe ca  // mov    ecx,0xCAFEBABE
+0x1d7: 26 0f b1 4d 08  // es: cmpxchg [ebp+0x08],ecx  ; match, [ES:8]=0xCAFEBABE
+
+// ============================================================
+// SECTION 6: MMX with prefixes before 0x0F
+// ============================================================
+
+// MOVQ with segment overrides (reg-reg, override meaningless)
+0x1dc: c7 43 00 01 02 03 04  // mov [ebx+0x00],0x04030201
+0x1e3: c7 43 04 05 06 07 08  // mov [ebx+0x04],0x08070605
+0x1ea: 0f 6f 03              // movq mm0,[ebx]           ; normal load
+0x1ed: 26 0f 6f c8           // es: movq mm1,mm0         ; ES ignored, mm1=mm0
+0x1f1: 2e 0f 6f d1           // cs: movq mm2,mm1         ; CS ignored
+0x1f5: 36 0f 6f da           // ss: movq mm3,mm2         ; SS ignored
+0x1f9: 3e 0f 6f e3           // ds: movq mm4,mm3         ; DS ignored
+0x1fd: 64 0f 6f ec           // fs: movq mm5,mm4         ; FS ignored
+0x201: 65 0f 6f f5           // gs: movq mm6,mm5         ; GS ignored
+
+// MOVQ store with segment override (meaningful — writes to ES)
+0x205: 26 0f 7f 75 10  // es: movq [ebp+0x10],mm6  ; store to ES:0x10
+
+// MOVQ load from ES with override (meaningful)
+0x20a: 26 0f 6f 7d 10  // es: movq mm7,[ebp+0x10]  ; load from ES:0x10
+
+// PADDW with seg override before 0F (reg-reg, ignored)
+0x20f: c7 43 08 01 00 01 00  // mov [ebx+0x08],0x00010001
+0x216: c7 43 0c 01 00 01 00  // mov [ebx+0x0c],0x00010001
+0x21d: 0f 6f 43 08           // movq mm0,[ebx+0x08]
+0x221: 26 0f fd c1           // es: paddw mm0,mm1        ; ES ignored
+
+// PADDD with seg override
+0x225: 36 0f fe d3           // ss: paddd mm2,mm3        ; SS ignored
+
+// PAVGB with seg override
+0x229: 64 0f e0 e5           // fs: pavgb mm4,mm5        ; FS ignored
+
+// PAVGW with seg override
+0x22d: 65 0f e3 f7           // gs: pavgw mm6,mm7        ; GS ignored
+
+// PACKSSWB with seg override
+0x231: 26 0f 63 c1           // es: packsswb mm0,mm1     ; ES ignored
+
+// PACKSSDW with seg override
+0x235: 36 0f 6b d3           // ss: packssdw mm2,mm3     ; SS ignored
+
+// PADDW from memory with ES override (meaningful)
+0x239: 26 c7 45 18 10 00 20 00  // es: mov [ebp+0x18],0x00200010
+0x241: 26 c7 45 1c 30 00 40 00  // es: mov [ebp+0x1c],0x00400030
+0x249: 0f 6f 43 08           // movq mm0,[ebx+0x08]      ; reload mm0
+0x24d: 26 0f fd 45 18        // es: paddw mm0,[ebp+0x18]  ; add from ES memory
+
+// Store result
+0x252: 0f 7f 43 10           // movq [ebx+0x10],mm0
+
+// ============================================================
+// SECTION 7: Multiple stacked prefixes (66 + seg + 0F)
+// Test that decoder handles prefix accumulation correctly.
+// ============================================================
+
+// 66 + 26 + 0F BC (BSF r16, r/m16 with ES override, reg-reg)
+0x256: 66 b9 40 00     // mov    cx,0x0040
+0x25a: 66 26 0f bc c1  // es: bsf ax,cx          ; ax=6
+
+// 26 + 66 + 0F BC (reversed prefix order)
+0x25f: 26 66 0f bc d1  // es: bsf dx,cx          ; dx=6
+
+// 36 + 66 + 0F 42 (CMOVC r16,r16 with SS override)
+0x264: b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x269: 05 01 00 00 00  // add    eax,0x1         ; CF=1
+0x26e: 66 b8 aa aa     // mov    ax,0xAAAA
+0x272: 66 b9 55 55     // mov    cx,0x5555
+0x276: 36 66 0f 42 c1  // ss: cmovc ax,cx        ; CF=1, ax=0x5555
+
+// 64 + 66 + 0F B1 (CMPXCHG r/m16,r16 with FS override, reg-reg)
+0x27b: 66 b8 34 12     // mov    ax,0x1234
+0x27f: 66 b9 78 56     // mov    cx,0x5678
+0x283: 64 66 0f b1 c8  // fs: cmpxchg ax,cx      ; FS ignored, 16-bit
+
+// ============================================================
+// SECTION 8: Segment overrides on branches (ignored but decoded)
+// ============================================================
+
+0x288: b8 01 00 00 00  // mov    eax,0x1
+0x28d: 83 c0 00        // add    eax,0x0         ; ZF=0, CF=0
+
+// 26 (ES) before JNE rel8
+0x290: 26 75 05        // es: jne +5 -> 0x298
+0x293: 0d 00 00 00 ff  // [POISON]
+0x298: 0d 01 00 00 00  // or     eax,0x1
+
+// 36 (SS) before JNBE rel8
+0x29d: 36 77 05        // ss: jnbe +5 -> 0x2a5
+0x2a0: 0d 00 00 00 ff  // [POISON]
+0x2a5: 0d 02 00 00 00  // or     eax,0x2
+
+// 2E (CS) before JMP rel8
+0x2aa: 2e eb 05        // cs: jmp +5 -> 0x2b2
+0x2ad: 0d 00 00 00 ff  // [POISON]
+0x2b2: 0d 04 00 00 00  // or     eax,0x4
+
+// 64 (FS) before JMP rel32
+0x2b7: 64 e9 05 00 00 00  // fs: jmp +5 -> 0x2c2
+0x2bd: 0d 00 00 00 ff     // [POISON]
+0x2c2: 0d 08 00 00 00     // or  eax,0x8
+
+// 65 (GS) before CALL rel32 + RET
+// sub at 0x2d5: or eax,0x20 ; ret
+// from 0x2c7 (size 6 with prefix): next=0x2cd, rel = 0x2d5 - 0x2cd = 0x08
+0x2c7: 65 e8 08 00 00 00  // gs: call 0x2d5
+0x2cd: 0d 10 00 00 00     // or  eax,0x10
+0x2d2: e9 06 00 00 00     // jmp 0x2dd  ; skip sub
+
+// sub:
+0x2d7: 0d 20 00 00 00  // or     eax,0x20
+0x2dc: c3              // ret
+
+// 26 before 0F 85 (JNE rel32)
+0x2dd: 26 0f 85 05 00 00 00  // es: jne +5 -> 0x2e9
+0x2e4: 0d 00 00 00 ff        // [POISON]
+0x2e9: 0d 40 00 00 00        // or  eax,0x40
+
+// 36 before 0F 87 (JNBE rel32)
+0x2ee: 36 0f 87 05 00 00 00  // ss: jnbe +5 -> 0x2fa
+0x2f5: 0d 00 00 00 ff        // [POISON]
+0x2fa: 0d 80 00 00 00        // or  eax,0x80
+
+// ============================================================
+// SECTION 9: Segment overrides on PUSH/POP (ignored)
+// ============================================================
+0x2ff: b8 ef be ad de  // mov    eax,0xDEADBEEF
+0x304: 26 50           // es: push eax            ; ES ignored
+0x306: 36 58           // ss: pop eax             ; SS ignored (stack always uses SS)
+0x308: 64 50           // fs: push eax            ; FS ignored
+0x30a: 65 58           // gs: pop eax             ; GS ignored
+
+// ============================================================
+// SECTION 10: Segment overrides on NOT/SAL/SAR (memory)
+// ============================================================
+
+// NOT with ES override (meaningful)
+0x30c: 26 c7 45 20 78 56 34 12  // es: mov [ebp+0x20],0x12345678
+0x314: 26 f7 55 20     // es: not DWORD [ebp+0x20]  ; -> 0xEDCBA987
+
+// SAL with SS override (meaningful)
+0x318: bf 78 00 00 00  // mov    edi,0x78
+0x31d: 36 c7 07 01 00 00 00  // ss: mov [edi],0x1  ; SS:0x78
+0x324: 36 d1 27        // ss: shl DWORD [edi],1    ; SS:0x78 = 2
+
+// SAR with FS override (meaningful)
+0x327: 64 c7 45 24 00 00 00 80  // fs: mov [ebp+0x24],0x80000000
+0x32f: 64 d1 7d 24     // fs: sar DWORD [ebp+0x24],1  ; -> 0xC0000000
+
+// ============================================================
+// SECTION 11: Single prefix combos (1 seg + 1 size max)
+// ============================================================
+
+// 36 before memory MOV (SS override, meaningful)
+0x333: 36 c7 07 ab ab ab ab  // ss: mov [edi],0xABABABAB  ; SS:0x78
+0x33a: 36 8b 07        // ss: mov eax,[edi]       ; eax=0xABABABAB
+
+// 26 before memory MOV (ES override, meaningful)
+0x33d: 26 c7 45 28 cd cd cd cd  // es: mov [ebp+0x28],0xCDCDCDCD
+0x345: 26 8b 4d 28     // es: mov ecx,[ebp+0x28]  ; ecx=0xCDCDCDCD
+
+// 66 before ADD (single 66, 16-bit)
+0x349: 66 b8 ff 7f     // mov    ax,0x7FFF
+0x34d: 66 b9 01 00     // mov    cx,0x1
+0x351: 66 01 c8        // add    ax,cx            ; 16-bit, ax=0x8000
+
+// 66 + 36 before 0F BC (single seg + single 66, BSF r16)
+0x354: 66 b9 80 00     // mov    cx,0x0080
+0x358: 66 36 0f bc c1  // ss: bsf ax,cx           ; 16-bit, SS ignored (reg-reg), ax=7
+
+// ============================================================
+// HLT
+// ============================================================
+0x35d: f4              // hlt
+
+// ============================================================
+// Data memory
+// ============================================================
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+0x5000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

@@ -1,20 +1,21 @@
-module PA_4b (
+module HA_4b (
   input		[3:0]	in0, in1,
-	output	[3:0]	s
+	output	[3:0]	s,
+  output        cout
 );
 	
 	// Stage 0
 	
-	wire  [2:-1]	Gi_i;
+	wire  [3:-1]	Gi_i;
 
-	wire	[2:-1]   Pi_i;
+	wire	[3:-1]   Pi_i;
 			
 	assign Gi_i[-1] = 1'b0;
 	assign Pi_i[-1] = 1'b0;
 	
 	// gen_prop(gen, prop, in0, in1);
 	
-	gen_prop	gen_prop_0[2:0](Gi_i[2:0], Pi_i[2:0], in0[2:0], in1[2:0]);
+	gen_prop	gen_prop_0[3:0](Gi_i[3:0], Pi_i[3:0], in0[3:0], in1[3:0]);
 	
 	// Stage 1
 	
@@ -69,5 +70,17 @@ module PA_4b (
 	xor3LL xor3LL_29(s[2], Gi_im2[0], in0[2], in1[2]);
 	xor3LL xor3LL_30(s[1], Gi_im1[0], in0[1], in1[1]);
 	xor3LL xor3LL_31(s[0], Gi_i[-1], in0[0], in1[0]);	
+
+  wire c3_t0, c3_t1, c3_t2;
+  wire s3_t0_bar, s3_t1_bar;
+  inv1$  inv1$_s3_t0_bar(s3_t0_bar, s3_t0);
+  inv1$  inv1$_s3_t1_bar(s3_t1_bar, s3_t1);
+  nand2$ nand2$_c3_t0(c3_t0, Pi_i[3], Gi_i[2]);
+  nand2$ nand3$_c3_t1(c3_t1, Pi_i[3], s3_t0_bar);
+  nand2$ nand3$_c3_t2(c3_t2, Pi_i[3], s3_t1_bar);
+
+  wire Gi_i_3_bar;
+  inv1$   inv1$_Gi_i_3_bar(Gi_i_3_bar, Gi_i[3]);  
+  nand4$  nand4$_cout (cout, Gi_i_3_bar, c3_t0, c3_t1, c3_t2);
 	
 endmodule

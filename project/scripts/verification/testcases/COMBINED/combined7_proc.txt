@@ -1,0 +1,351 @@
+// ============================================================
+// COMBINED8: SIB addressing modes, 8/16-bit memory ALU,
+//            store-to-load forwarding, segment register moves,
+//            accumulator short-form ALU, back-to-back same-line
+//            memory access patterns.
+// DS=0x200->phys 0x2000, ES=0x400->phys 0x5000, SS=0xb00->phys 0x4000
+// SIB restriction: base != 101 (EBP), index != 100 (ESP)
+// ============================================================
+
+// --- Setup ---
+0x0:   ba 00 02 00 00  // mov    edx,0x200
+0x5:   8e da           // mov    ds,edx
+0x7:   ba 00 04 00 00  // mov    edx,0x400
+0xc:   8e c2           // mov    es,edx
+0xe:   ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2           // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+
+// ============================================================
+// SECTION 1: SIB addressing — [base + index*scale + disp]
+// base=EBX(011), index=ESI(110)/EDI(111)/ECX(001)
+// Never base=101(EBP), never index=100(ESP)
+// ============================================================
+
+// Init memory
+0x24:  c7 03 aa aa aa aa           // mov [ebx],0xAAAAAAAA           ; DS:0x00
+0x2a:  c7 43 10 bb bb bb bb        // mov [ebx+0x10],0xBBBBBBBB     ; DS:0x10
+0x31:  c7 43 20 cc cc cc cc        // mov [ebx+0x20],0xCCCCCCCC     ; DS:0x20
+0x38:  c7 43 40 dd dd dd dd        // mov [ebx+0x40],0xDDDDDDDD     ; DS:0x40
+
+// [ebx + esi*1] — SIB=0x33 (scale=00, index=110=esi, base=011=ebx)
+0x3f:  be 10 00 00 00  // mov    esi,0x10
+0x44:  8b 04 33        // mov    eax,[ebx+esi*1]  ; DS:0x10 = 0xBBBBBBBB
+
+// [ebx + esi*2] — SIB=0x73 (scale=01, index=110=esi, base=011=ebx)
+0x47:  8b 0c 73        // mov    ecx,[ebx+esi*2]  ; DS:0x20 = 0xCCCCCCCC
+
+// [ebx + esi*4] — SIB=0xB3 (scale=10, index=110=esi, base=011=ebx)
+0x4a:  8b 14 b3        // mov    edx,[ebx+esi*4]  ; DS:0x40 = 0xDDDDDDDD
+
+// [ebx + edi*1 + disp8] — SIB=0x3B (scale=00, index=111=edi, base=011=ebx)
+0x4d:  bf 00 00 00 00  // mov    edi,0x0
+0x52:  8b 44 3b 10     // mov    eax,[ebx+edi*1+0x10]  ; DS:0x10 = 0xBBBBBBBB
+
+// [ebx + ecx*1 + disp32] — SIB=0x0B (scale=00, index=001=ecx, base=011=ebx)
+0x56:  b9 00 00 00 00  // mov    ecx,0x0
+0x5b:  8b 84 0b 20 00 00 00  // mov eax,[ebx+ecx*1+0x20]  ; DS:0x20 = 0xCCCCCCCC
+
+// [ebx + edi*2 + disp8] — SIB=0x7B (scale=01, index=111=edi, base=011=ebx)
+0x62:  8b 44 7b 20     // mov    eax,[ebx+edi*2+0x20]  ; edi=0, DS:0x20 = 0xCCCCCCCC
+
+// Write via SIB: [ebx + esi*1] — SIB=0x33
+0x66:  c7 04 33 12 34 56 78  // mov [ebx+esi*1],0x78563412  ; DS:0x10
+
+// Read back to verify
+0x6d:  8b 43 10        // mov    eax,[ebx+0x10]   ; eax = 0x78563412
+
+// ============================================================
+// SECTION 2: 8-bit memory ALU operations
+// ============================================================
+
+// ADD r/m8, imm8 — memory
+0x70:  c6 43 00 10     // mov    BYTE [ebx+0x00],0x10
+0x74:  80 43 00 0f     // add    BYTE [ebx+0x00],0x0F  ; -> 0x1F
+
+// ADD r/m8, r8 — memory
+0x78:  c6 43 01 20     // mov    BYTE [ebx+0x01],0x20
+0x7c:  b0 05           // mov    al,0x05
+0x7e:  00 43 01        // add    BYTE [ebx+0x01],al    ; -> 0x25
+
+// ADD r8, r/m8 — memory source
+0x81:  c6 43 02 30     // mov    BYTE [ebx+0x02],0x30
+0x85:  b1 07           // mov    cl,0x07
+0x87:  02 4b 02        // add    cl,BYTE [ebx+0x02]    ; cl = 0x37
+
+// AND r/m8, imm8 — memory
+0x8a:  c6 43 03 ff     // mov    BYTE [ebx+0x03],0xFF
+0x8e:  80 63 03 0f     // and    BYTE [ebx+0x03],0x0F  ; -> 0x0F
+
+// OR r/m8, imm8 — memory
+0x92:  c6 43 04 f0     // mov    BYTE [ebx+0x04],0xF0
+0x96:  80 4b 04 0f     // or     BYTE [ebx+0x04],0x0F  ; -> 0xFF
+
+// NOT r/m8 — memory
+0x9a:  c6 43 05 aa     // mov    BYTE [ebx+0x05],0xAA
+0x9e:  f6 53 05        // not    BYTE [ebx+0x05]       ; -> 0x55
+
+// ============================================================
+// SECTION 3: 16-bit memory ALU operations
+// ============================================================
+
+// ADD r/m16, imm16 — memory
+0xa1:  66 c7 43 06 00 10  // mov WORD [ebx+0x06],0x1000
+0xa7:  66 81 43 06 34 12  // add WORD [ebx+0x06],0x1234  ; -> 0x2234
+
+// ADD r/m16, r16 — memory
+0xad:  66 c7 43 08 00 20  // mov WORD [ebx+0x08],0x2000
+0xb3:  66 b8 56 07     // mov    ax,0x0756
+0xb7:  66 01 43 08     // add    WORD [ebx+0x08],ax    ; -> 0x2756
+
+// AND r/m16, imm16 — memory
+0xbb:  66 c7 43 0a ff ff  // mov WORD [ebx+0x0a],0xFFFF
+0xc1:  66 81 63 0a 0f 0f  // and WORD [ebx+0x0a],0x0F0F  ; -> 0x0F0F
+
+// OR r/m16, r16 — memory
+0xc7:  66 c7 43 0c 00 f0  // mov WORD [ebx+0x0c],0xF000
+0xcd:  66 b9 0f 00     // mov    cx,0x000F
+0xd1:  66 09 4b 0c     // or     WORD [ebx+0x0c],cx    ; -> 0xF00F
+
+// NOT r/m16 — memory
+0xd5:  66 c7 43 0e f0 0f  // mov WORD [ebx+0x0e],0x0FF0
+0xdb:  66 f7 53 0e     // not    WORD [ebx+0x0e]       ; -> 0xF00F
+
+// ============================================================
+// SECTION 4: Store-to-load forwarding stress
+// ============================================================
+
+// Dword store then load — same address, same size
+0xdf:  c7 43 10 ef be ad de  // mov [ebx+0x10],0xDEADBEEF
+0xe6:  8b 43 10              // mov eax,[ebx+0x10]  ; 0xDEADBEEF
+
+// Dword store then byte loads from same line
+0xe9:  c7 43 14 78 56 34 12  // mov [ebx+0x14],0x12345678
+0xf0:  8a 43 14              // mov al,[ebx+0x14]   ; al = 0x78
+0xf3:  8a 4b 15              // mov cl,[ebx+0x15]   ; cl = 0x56
+0xf6:  8a 53 16              // mov dl,[ebx+0x16]   ; dl = 0x34
+0xf9:  8a 73 17              // mov dh,[ebx+0x17]   ; dh = 0x12
+
+// Byte stores then dword load
+0xfc:  c6 43 18 aa           // mov BYTE [ebx+0x18],0xAA
+0x100: c6 43 19 bb           // mov BYTE [ebx+0x19],0xBB
+0x104: c6 43 1a cc           // mov BYTE [ebx+0x1a],0xCC
+0x108: c6 43 1b dd           // mov BYTE [ebx+0x1b],0xDD
+0x10c: 8b 43 18              // mov eax,[ebx+0x18]  ; eax = 0xDDCCBBAA
+
+// Word store then word load
+0x10f: 66 c7 43 1c 34 12  // mov WORD [ebx+0x1c],0x1234
+0x115: 66 8b 43 1c        // mov ax,[ebx+0x1c]     ; ax = 0x1234
+
+// Back-to-back stores to same dword, then read
+0x119: c7 43 20 11 11 11 11  // mov [ebx+0x20],0x11111111
+0x120: c7 43 20 22 22 22 22  // mov [ebx+0x20],0x22222222
+0x127: 8b 43 20              // mov eax,[ebx+0x20]  ; eax = 0x22222222
+
+// Store, read different line, read original
+0x12a: c7 43 24 aa bb cc dd  // mov [ebx+0x24],0xDDCCBBAA
+0x131: 8b 83 00 01 00 00     // mov eax,[ebx+0x100] ; different line
+0x137: 8b 4b 24              // mov ecx,[ebx+0x24]  ; ecx = 0xDDCCBBAA
+
+// ============================================================
+// SECTION 5: Segment register moves
+// ============================================================
+
+// Read segment registers
+0x13a: 66 8c c0        // mov    ax,es            ; ax = 0x0400
+0x13d: 66 8c c9        // mov    cx,cs            ; cx = 0x0000
+0x140: 66 8c d2        // mov    dx,ss            ; dx = 0x0B00
+0x143: 66 8c d8        // mov    ax,ds            ; ax = 0x0200
+0x146: 66 8c e0        // mov    ax,fs            ; ax = 0x0A00
+
+// Write FS, read back, restore
+0x149: b8 00 0c 00 00  // mov    eax,0x0C00
+0x14e: 8e e0           // mov    fs,eax           ; FS = 0x0C00
+0x150: 66 8c e0        // mov    ax,fs            ; ax = 0x0C00
+0x153: b8 00 0a 00 00  // mov    eax,0x0A00
+0x158: 8e e0           // mov    fs,eax           ; restore FS
+
+// MOV Sreg from memory
+0x15a: c7 43 28 00 04 00 00  // mov [ebx+0x28],0x0400
+0x161: 8e 43 28        // mov    es,[ebx+0x28]    ; ES = 0x0400
+
+// MOV Sreg to memory
+0x164: 66 8c 5b 2c     // mov    [ebx+0x2c],ds   ; [DS:0x2c] = 0x0200
+
+// ============================================================
+// SECTION 6: Accumulator short-form ALU + memory interleave
+// ============================================================
+
+// ADD AL,imm8 then store
+0x168: b0 10           // mov    al,0x10
+0x16a: 04 20           // add    al,0x20          ; al = 0x30
+0x16c: 88 43 30        // mov    [ebx+0x30],al
+
+// AND AL,imm8 then store
+0x16f: b0 ff           // mov    al,0xFF
+0x171: 24 55           // and    al,0x55          ; al = 0x55
+0x173: 88 43 31        // mov    [ebx+0x31],al
+
+// OR AL,imm8 then store
+0x176: b0 a0           // mov    al,0xA0
+0x178: 0c 05           // or     al,0x05          ; al = 0xA5
+0x17a: 88 43 32        // mov    [ebx+0x32],al
+
+// ADD AX,imm16 then store
+0x17d: 66 b8 00 10     // mov    ax,0x1000
+0x181: 66 05 34 12     // add    ax,0x1234        ; ax = 0x2234
+0x185: 66 89 43 34     // mov    [ebx+0x34],ax
+
+// AND AX,imm16 then store
+0x189: 66 b8 ff ff     // mov    ax,0xFFFF
+0x18d: 66 25 0f f0     // and    ax,0xF00F        ; ax = 0xF00F
+0x191: 66 89 43 36     // mov    [ebx+0x36],ax
+
+// OR AX,imm16 then store
+0x195: 66 b8 00 f0     // mov    ax,0xF000
+0x199: 66 0d 0f 00     // or     ax,0x000F        ; ax = 0xF00F
+0x19d: 66 89 43 38     // mov    [ebx+0x38],ax
+
+// ADD EAX,imm32 then store
+0x1a1: b8 00 00 00 10  // mov    eax,0x10000000
+0x1a6: 05 78 56 34 12  // add    eax,0x12345678   ; eax = 0x22345678
+0x1ab: 89 43 3c        // mov    [ebx+0x3c],eax
+
+// AND EAX,imm32 then store
+0x1ae: b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x1b3: 25 0f 0f 0f 0f  // and    eax,0x0F0F0F0F  ; eax = 0x0F0F0F0F
+0x1b8: 89 43 40        // mov    [ebx+0x40],eax
+
+// OR EAX,imm32 then store
+0x1bb: b8 00 f0 00 f0  // mov    eax,0xF000F000
+0x1c0: 0d 0f 00 0f 00  // or     eax,0x000F000F   ; eax = 0xF00FF00F
+0x1c5: 89 43 44        // mov    [ebx+0x44],eax
+
+// ============================================================
+// SECTION 7: Back-to-back same cache line writes + reads
+// All accesses within DS:0x50–0x5F (one 16-byte cache line)
+// ============================================================
+
+0x1c8: c7 43 50 01 00 00 00  // mov [ebx+0x50],0x1
+0x1cf: c7 43 54 02 00 00 00  // mov [ebx+0x54],0x2
+0x1d6: c7 43 58 03 00 00 00  // mov [ebx+0x58],0x3
+0x1dd: c7 43 5c 04 00 00 00  // mov [ebx+0x5c],0x4
+0x1e4: 8b 43 50              // mov eax,[ebx+0x50]  ; 1
+0x1e7: 8b 4b 54              // mov ecx,[ebx+0x54]  ; 2
+0x1ea: 8b 53 58              // mov edx,[ebx+0x58]  ; 3
+0x1ed: 8b 73 5c              // mov esi,[ebx+0x5c]  ; 4
+0x1f0: 01 4b 50              // add [ebx+0x50],ecx  ; [0x50] = 3
+0x1f3: 01 53 54              // add [ebx+0x54],edx  ; [0x54] = 5
+0x1f6: 01 73 58              // add [ebx+0x58],esi  ; [0x58] = 7
+0x1f9: 8b 43 50              // mov eax,[ebx+0x50]  ; 3
+0x1fc: 03 43 54              // add eax,[ebx+0x54]  ; 8
+0x1ff: 03 43 58              // add eax,[ebx+0x58]  ; 15
+0x202: 03 43 5c              // add eax,[ebx+0x5c]  ; 19
+0x205: 89 43 5c              // mov [ebx+0x5c],eax  ; [0x5c] = 19
+
+// ============================================================
+// SECTION 8: CALL/JMP with memory interleave
+// ============================================================
+
+0x208: b8 01 00 00 00  // mov    eax,0x1
+0x20d: 83 c0 00        // add    eax,0x0          ; ZF=0, CF=0
+
+// Store then branch
+0x210: c7 43 60 de ad 00 00  // mov [ebx+0x60],0x0000ADDE
+0x217: 75 05           // jne    +5 -> 0x21e
+// verify: 0x217+2=0x219, 0x219+5=0x21e ✓
+0x219: 0d 00 00 00 ff  // [POISON]
+0x21e: 8b 4b 60        // mov    ecx,[ebx+0x60]   ; ecx = 0x0000ADDE
+
+// CALL with memory ops before and after
+// sub_A at 0x237: add eax,ecx ; ret
+// from 0x221 (size 5): next=0x226, rel = 0x237 - 0x226 = 0x11
+0x221: e8 11 00 00 00  // call   0x237
+// verify: 0x221+5=0x226, 0x226+0x11=0x237 ✓
+0x226: 89 43 64        // mov    [ebx+0x64],eax   ; store result
+0x229: 8b 53 64        // mov    edx,[ebx+0x64]   ; read back
+
+// JMP over subroutines
+// from 0x22c (size 5): next=0x231, target=0x23a, rel = 0x23a - 0x231 = 0x09
+0x22c: e9 09 00 00 00  // jmp    0x23a
+// verify: 0x22c+5=0x231, 0x231+0x09=0x23a ✓
+
+0x231: 90 90 90 90 90 90  // padding (not executed)
+
+// sub_A:
+0x237: 01 c8           // add    eax,ecx
+0x239: c3              // ret
+
+// Continue after jmp
+0x23a: 77 05           // jnbe   +5 -> 0x241
+// verify: 0x23a+2=0x23c, 0x23c+5=0x241 ✓
+0x23c: 0d 00 00 00 ff  // [POISON]
+0x241: 90              // nop
+
+// CALL with load-use dependency after return
+// sub_B at 0x257: mov [ebx+0x68],0xCAFEBABE ; ret
+// from 0x242 (size 5): next=0x247, rel = 0x257 - 0x247 = 0x10
+0x242: e8 10 00 00 00  // call   0x257
+// verify: 0x242+5=0x247, 0x247+0x10=0x257 ✓
+0x247: 8b 43 68        // mov    eax,[ebx+0x68]   ; load what sub stored
+0x24a: 83 c0 01        // add    eax,0x1          ; use loaded value
+
+// JMP over sub_B
+// from 0x24d (size 5): next=0x252, target=0x25f, rel = 0x25f - 0x252 = 0x0d
+0x24d: e9 0d 00 00 00  // jmp    0x25f
+// verify: 0x24d+5=0x252, 0x252+0x0d=0x25f ✓
+
+0x252: 90 90 90 90 90  // padding (not executed)
+
+// sub_B:
+0x257: c7 43 68 be ba fe ca  // mov [ebx+0x68],0xCAFEBABE
+0x25e: c3              // ret
+
+// Continue after jmp
+0x25f: 89 43 6c        // mov    [ebx+0x6c],eax   ; store final result
+
+// ============================================================
+// SECTION 9: SIB with ES segment override (meaningful)
+// SIB=0x33 (scale=00, index=110=esi, base=011=ebx) — both legal
+// ============================================================
+
+0x262: be 08 00 00 00  // mov    esi,0x8
+0x267: 26 c7 44 33 00 99 99 99 99  // es: mov [ebx+esi*1+0x0],0x99999999
+// verify SIB=0x33: base=011(ebx)✓, index=110(esi)✓
+// effective: ES:[ebx+esi*1+0] = ES:[0+8+0] = ES:0x08 -> phys 0x5008
+0x270: 26 8b 44 33 00  // es: mov eax,[ebx+esi*1+0x0]  ; eax = 0x99999999
+
+// SIB with different scale: [ebx + edi*2 + disp8]
+// SIB=0x7B (scale=01, index=111=edi, base=011=ebx)
+0x275: bf 04 00 00 00  // mov    edi,0x4
+0x27a: 26 c7 44 7b 00 88 88 88 88  // es: mov [ebx+edi*2+0x0],0x88888888
+// verify SIB=0x7B: base=011(ebx)✓, index=111(edi)✓
+// effective: ES:[0+4*2+0] = ES:0x08 -> phys 0x5008 (overwrites previous)
+0x283: 26 8b 4c 7b 00  // es: mov ecx,[ebx+edi*2+0x0]  ; ecx = 0x88888888
+
+// ============================================================
+// HLT
+// ============================================================
+0x288: f4              // hlt
+
+// ============================================================
+// Data memory
+// ============================================================
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+0x5000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
