@@ -31,22 +31,54 @@ module fetch_pointer(
         .out(eip_true) 
     );
 
-    wire shft_reg_we_buf64;
-    bufferH64$    bufferH64$_shft_reg_we_buf64(shft_reg_we_buf64, shft_reg_we);
+    // wire shft_reg_we_buf64;
+    // bufferH64$    bufferH64$_shft_reg_we_buf64(shft_reg_we_buf64, shft_reg_we);
 
-    reg_n #(.WIDTH(32), .USE_EN_BAR(1'b0), .RESET_TO_ONES(1'b0)) FEIP_REG (
+    wire fetch_ptr_load_en_bar;
+    nor3$ nor3$_fetch_ptr_load_en_bar(fetch_ptr_load_en_bar, shft_reg_we, from_ex_flush, from_de_take_branch);
+
+    reg_n_16 #(.WIDTH(16), .USE_EN_BAR(1'b1), .RESET_TO_ONES(1'b0)) FEIP_REG_high (
         .clk(clk),
         .rst(rst_bar),
-        .en({{28{shft_reg_we_buf64}}, 4'd0}),
-        .d(eip_true),
-        .q(feip_reg_out32_prebuf)
+        .en(fetch_ptr_load_en_bar),
+        .d(eip_true[31:16]),
+        .q(feip_reg_out32_prebuf[31:16])
+    );
+
+    reg_n_16 #(.WIDTH(16), .USE_EN_BAR(1'b1), .RESET_TO_ONES(1'b0)) FEIP_REG_low (
+        .clk(clk),
+        .rst(rst_bar),
+        .en(fetch_ptr_load_en_bar),
+        .d(eip_true[15:0]),
+        .q(feip_reg_out32_prebuf[15:0])
     );
 
     bufferH16$    bufferH16$_feip_reg_out32[31:0](feip_reg_out32, feip_reg_out32_prebuf);
 
-    PA_32b CS_FEIP_ADDER(
-        .in0({from_rr_cs_reg, 16'h0000}), .in1({feip_reg_out32[31:4], 4'd0}),
-	      .s(ic_addr)
+    wire cout;
+    HA_4b CS_FEIP_ADDER (
+      .in0(from_rr_cs_reg[3:0]), .in1(feip_reg_out32[19:16]),
+      .s(ic_addr[19:16]),
+      .cout(cout)
     );
+
+    wire [11:0] inc_cs;
+    big_increment #(
+      .WIDTH(12)
+    ) big_increment_inc_cs (
+      .a(from_rr_cs_reg[15:4]),
+      .s(inc_cs)
+    );
+
+    wire [3:0] dummy;
+    mux2_16$  mux2_16$_ic_addr
+    (
+      {dummy, ic_addr[31:20]},
+      {4'd0, from_rr_cs_reg[15:4]},
+      {4'd0, inc_cs},
+      cout
+    );
+
+    assign ic_addr[15:0] = feip_reg_out32[15:0];
 
 endmodule

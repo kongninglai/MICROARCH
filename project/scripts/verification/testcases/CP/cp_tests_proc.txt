@@ -1,0 +1,299 @@
+// ============================================================
+// Critical Path Test
+// 1. D$ hit/miss stress: working set > 512B, writes then reads
+//    to force dirty-line writeback evictions
+// 2. GPR dependency chains: back-to-back RAW hazards
+// 3. Branch prediction target: near relative JNE/JNBE/JMP/CALL
+// Segments: DS=0x200->phys 0x2000, SS=0xb00->phys 0x4000
+// ============================================================
+
+// --- Setup ---
+0x0:   ba 00 02 00 00  // mov    edx,0x200
+0x5:   8e da           // mov    ds,edx
+0x7:   ba 00 0b 00 00  // mov    edx,0xb00
+0xc:   8e d2           // mov    ss,edx
+0xe:   bc 00 01 00 00  // mov    esp,0x100
+0x13:  bb 00 00 00 00  // mov    ebx,0x0
+
+// ============================================================
+// SECTION 1: D$ stress — write 576 bytes (36 cache lines × 16B)
+// then read back to force evictions of dirty lines.
+// Writes at DS:0x000–0x23F (576 bytes > 512B D$).
+// ============================================================
+
+// --- Write pass: fill 576 bytes with known data ---
+0x18:  c7 03 01 01 01 01              // mov [ebx+0x00],0x01010101
+0x1e:  c7 43 04 02 02 02 02           // mov [ebx+0x04],0x02020202
+0x25:  c7 43 08 03 03 03 03           // mov [ebx+0x08],0x03030303
+0x2c:  c7 43 0c 04 04 04 04           // mov [ebx+0x0c],0x04040404
+0x33:  c7 43 10 05 05 05 05           // mov [ebx+0x10],0x05050505
+0x3a:  c7 43 14 06 06 06 06           // mov [ebx+0x14],0x06060606
+0x41:  c7 43 18 07 07 07 07           // mov [ebx+0x18],0x07070707
+0x48:  c7 43 1c 08 08 08 08           // mov [ebx+0x1c],0x08080808
+0x4f:  c7 43 20 09 09 09 09           // mov [ebx+0x20],0x09090909
+0x56:  c7 43 24 0a 0a 0a 0a           // mov [ebx+0x24],0x0a0a0a0a
+0x5d:  c7 43 28 0b 0b 0b 0b           // mov [ebx+0x28],0x0b0b0b0b
+0x64:  c7 43 2c 0c 0c 0c 0c           // mov [ebx+0x2c],0x0c0c0c0c
+0x6b:  c7 43 30 0d 0d 0d 0d           // mov [ebx+0x30],0x0d0d0d0d
+0x72:  c7 43 34 0e 0e 0e 0e           // mov [ebx+0x34],0x0e0e0e0e
+0x79:  c7 43 38 0f 0f 0f 0f           // mov [ebx+0x38],0x0f0f0f0f
+0x80:  c7 43 3c 10 10 10 10           // mov [ebx+0x3c],0x10101010
+// 0x40–0x7F (lines 4–7)
+0x87:  c7 43 40 11 11 11 11           // mov [ebx+0x40],0x11111111
+0x8e:  c7 43 50 22 22 22 22           // mov [ebx+0x50],0x22222222
+0x95:  c7 43 60 33 33 33 33           // mov [ebx+0x60],0x33333333
+0x9c:  c7 43 70 44 44 44 44           // mov [ebx+0x70],0x44444444
+// 0x80–0xFF (lines 8–15) — these start evicting earlier lines
+0xa3:  c7 83 80 00 00 00 55 55 55 55  // mov [ebx+0x80],0x55555555
+0xad:  c7 83 90 00 00 00 66 66 66 66  // mov [ebx+0x90],0x66666666
+0xb7:  c7 83 a0 00 00 00 77 77 77 77  // mov [ebx+0xa0],0x77777777
+0xc1:  c7 83 b0 00 00 00 88 88 88 88  // mov [ebx+0xb0],0x88888888
+0xcb:  c7 83 c0 00 00 00 99 99 99 99  // mov [ebx+0xc0],0x99999999
+0xd5:  c7 83 d0 00 00 00 aa aa aa aa  // mov [ebx+0xd0],0xaaaaaaaa
+0xdf:  c7 83 e0 00 00 00 bb bb bb bb  // mov [ebx+0xe0],0xbbbbbbbb
+0xe9:  c7 83 f0 00 00 00 cc cc cc cc  // mov [ebx+0xf0],0xcccccccc
+// 0x100–0x1FF (lines 16–31) — more evictions, dirty writebacks
+0xf3:  c7 83 00 01 00 00 dd dd dd dd  // mov [ebx+0x100],0xdddddddd
+0xfd:  c7 83 10 01 00 00 ee ee ee ee  // mov [ebx+0x110],0xeeeeeeee
+0x107: c7 83 20 01 00 00 ff ff ff ff  // mov [ebx+0x120],0xffffffff
+0x111: c7 83 30 01 00 00 ab ab ab ab  // mov [ebx+0x130],0xabababab
+0x11b: c7 83 40 01 00 00 cd cd cd cd  // mov [ebx+0x140],0xcdcdcdcd
+0x125: c7 83 50 01 00 00 ef ef ef ef  // mov [ebx+0x150],0xefefefef
+0x12f: c7 83 60 01 00 00 12 34 56 78  // mov [ebx+0x160],0x78563412
+0x139: c7 83 70 01 00 00 9a bc de f0  // mov [ebx+0x170],0xf0debc9a
+0x143: c7 83 80 01 00 00 fe dc ba 98  // mov [ebx+0x180],0x98badcfe
+0x14d: c7 83 90 01 00 00 76 54 32 10  // mov [ebx+0x190],0x10325476
+0x157: c7 83 a0 01 00 00 de ad be ef  // mov [ebx+0x1a0],0xefbeadde
+0x161: c7 83 b0 01 00 00 ca fe ba be  // mov [ebx+0x1b0],0xbebafeca
+0x16b: c7 83 c0 01 00 00 0d f0 ad 0b  // mov [ebx+0x1c0],0x0badf00d
+0x175: c7 83 d0 01 00 00 fa ce b0 0c  // mov [ebx+0x1d0],0x0cb0cefa
+0x17f: c7 83 e0 01 00 00 ba ad f0 0d  // mov [ebx+0x1e0],0x0df0adba
+0x189: c7 83 f0 01 00 00 c0 ff ee 00  // mov [ebx+0x1f0],0x00eeffc0
+// 0x200–0x23F (lines 32–35) — overflow past 512B, guaranteed evictions
+0x193: c7 83 00 02 00 00 11 22 33 44  // mov [ebx+0x200],0x44332211
+0x19d: c7 83 10 02 00 00 55 66 77 88  // mov [ebx+0x210],0x88776655
+0x1a7: c7 83 20 02 00 00 99 aa bb cc  // mov [ebx+0x220],0xccbbaa99
+0x1b1: c7 83 30 02 00 00 dd ee ff 00  // mov [ebx+0x230],0x00ffeedd
+
+// --- Read pass: re-read early lines (evicted, dirty writeback) ---
+0x1bb: 8b 03              // mov eax,[ebx+0x00]   ; miss (evicted by 0x200+)
+0x1bd: 8b 4b 2e           // mov ecx,[ebx+0x2e]   ; miss
+0x1c0: 8b 53 20           // mov edx,[ebx+0x20]   ; miss
+0x1c3: 8b 73 30           // mov esi,[ebx+0x30]   ; miss
+0x1c6: 8b 7b 40           // mov edi,[ebx+0x40]   ; miss
+0x1c9: 8b 43 50           // mov eax,[ebx+0x50]   ; miss
+0x1cc: 8b 4b 60           // mov ecx,[ebx+0x60]   ; miss
+0x1cf: 8b 53 70           // mov edx,[ebx+0x70]   ; miss
+// These reads evict 0x200+ lines, which are dirty → writeback
+0x1d2: 8b 83 80 00 00 00  // mov eax,[ebx+0x80]   ; miss (evicts dirty 0x200)
+0x1d8: 8b 8b 90 00 00 00  // mov ecx,[ebx+0x90]   ; miss (evicts dirty 0x210)
+0x1de: 8b 93 a0 00 00 00  // mov edx,[ebx+0xa0]   ; miss (evicts dirty 0x220)
+0x1e4: 8b b3 b0 00 00 00  // mov esi,[ebx+0xb0]   ; miss (evicts dirty 0x230)
+
+// --- Re-read 0x200+ (evicted again, writeback of 0x00+ dirty lines) ---
+0x1ea: 8b 83 00 02 00 00  // mov eax,[ebx+0x200]  ; miss, writeback 0x00
+0x1f0: 8b 8b 10 02 00 00  // mov ecx,[ebx+0x210]  ; miss, writeback 0x10
+0x1f6: 8b 93 20 02 00 00  // mov edx,[ebx+0x220]  ; miss, writeback 0x20
+0x1fc: 8b b3 30 02 00 00  // mov esi,[ebx+0x230]  ; miss, writeback 0x30
+
+// --- Interleaved write-then-read (dirty line stress) ---
+0x202: c7 43 00 de ad be ef           // mov [ebx+0x00],0xefbeadde  ; write (miss, evict 0x200)
+0x209: 8b 43 00                       // mov eax,[ebx+0x00]         ; hit (just written)
+0x20c: c7 83 00 02 00 00 ca fe ba be  // mov [ebx+0x200],0xbebafeca ; write (miss, evict 0x00 dirty)
+0x216: 8b 83 00 02 00 00              // mov eax,[ebx+0x200]        ; hit
+
+// ============================================================
+// SECTION 2: GPR dependency chains — back-to-back RAW hazards
+// Each instruction depends on the result of the previous one.
+// ============================================================
+
+// Chain 1: EAX dependency chain (5 deep)
+0x21c: b8 01 00 00 00  // mov    eax,0x1
+0x221: 83 c0 02        // add    eax,0x2        ; eax=3 (depends on mov)
+0x224: 83 c0 03        // add    eax,0x3        ; eax=6 (depends on prev add)
+0x227: 83 c0 04        // add    eax,0x4        ; eax=10 (depends on prev add)
+0x22a: 83 c0 05        // add    eax,0x5        ; eax=15 (depends on prev add)
+0x22d: 89 43 00        // mov    [ebx+0x00],eax ; store result (depends on eax)
+
+// Chain 2: cross-register dependency (EAX->ECX->EDX->ESI->EDI)
+0x230: b8 10 00 00 00  // mov    eax,0x10
+0x235: 89 c1           // mov    ecx,eax        ; ecx=0x10 (RAW on eax)
+0x237: 89 ca           // mov    edx,ecx        ; edx=0x10 (RAW on ecx)
+0x239: 89 d6           // mov    esi,edx        ; esi=0x10 (RAW on edx)
+0x23b: 89 f7           // mov    edi,esi        ; edi=0x10 (RAW on esi)
+0x23d: 01 f8           // add    eax,edi        ; eax=0x20 (RAW on edi)
+
+// Chain 3: load-use dependency (memory -> register -> ALU)
+0x23f: c7 43 04 42 00 00 00  // mov [ebx+0x04],0x42
+0x246: 8b 43 04              // mov eax,[ebx+0x04]  ; load (may stall)
+0x249: 83 c0 01              // add eax,0x1         ; depends on load result
+0x24c: 89 43 08              // mov [ebx+0x08],eax  ; store (depends on add)
+0x24f: 8b 4b 08              // mov ecx,[ebx+0x08]  ; load (depends on store)
+0x252: 83 c1 01              // add ecx,0x1         ; depends on load
+0x255: 89 4b 0c              // mov [ebx+0x0c],ecx  ; store
+
+// Chain 4: mixed ALU + memory dependency with different registers
+0x258: b8 ff 00 00 00  // mov    eax,0xff
+0x25d: b9 01 00 00 00  // mov    ecx,0x1
+0x262: 01 c8           // add    eax,ecx        ; eax=0x100 (RAW on both)
+0x264: 89 43 10        // mov    [ebx+0x10],eax ; store (RAW on eax)
+0x267: 8b 53 10        // mov    edx,[ebx+0x10] ; load (store-to-load)
+0x26a: 01 d0           // add    eax,edx        ; eax=0x200 (RAW on edx)
+
+// ============================================================
+// SECTION 3: Branch prediction target computation
+// Near relative branches: JNE, JNBE, JMP rel, CALL rel
+// Mix of taken/not-taken to stress predictor.
+// ============================================================
+
+// --- Setup flags: ZF=0, CF=0 (JNE taken, JNBE taken) ---
+0x26c: b8 01 00 00 00  // mov    eax,0x1
+0x271: 83 c0 00        // add    eax,0x0        ; ZF=0, CF=0
+
+// JNE rel8 — taken, skip poison
+0x274: 75 05           // jne    +5 -> 0x27b
+0x276: 0d 00 00 00 ff  // [POISON]
+0x27b: 0d 01 00 00 00  // or     eax,0x1
+
+// JNBE rel8 — taken, skip poison
+0x280: 77 05           // jnbe   +5 -> 0x287
+0x282: 0d 00 00 00 ff  // [POISON]
+0x287: 0d 02 00 00 00  // or     eax,0x2
+
+// JMP rel8 — unconditional
+0x28c: eb 05           // jmp    +5 -> 0x293
+0x28e: 0d 00 00 00 ff  // [POISON]
+0x293: 0d 04 00 00 00  // or     eax,0x4
+
+// JNE rel32 — taken
+0x298: 0f 85 05 00 00 00  // jne +5 -> 0x2a3
+0x29e: 0d 00 00 00 ff     // [POISON]
+0x2a3: 0d 08 00 00 00     // or  eax,0x8
+
+// JNBE rel32 — taken
+0x2a8: 0f 87 05 00 00 00  // jnbe +5 -> 0x2b3
+0x2ae: 0d 00 00 00 ff     // [POISON]
+0x2b3: 0d 10 00 00 00     // or  eax,0x10
+
+// JMP rel32 — unconditional
+0x2b8: e9 05 00 00 00  // jmp +5 -> 0x2c2
+0x2bd: 0d 00 00 00 ff  // [POISON]
+0x2c2: 0d 20 00 00 00  // or  eax,0x20
+
+// CALL rel32 + RET — tests branch target + return prediction
+// sub at 0x2d6: or eax,0x80 ; ret
+// from 0x2c7 (size 5): next=0x2cc, rel = 0x2d6 - 0x2cc = 0x0a
+0x2c7: e8 0a 00 00 00  // call   0x2d6
+0x2cc: 0d 40 00 00 00  // or     eax,0x40       ; after return
+0x2d1: e9 06 00 00 00  // jmp    0x2dc          ; skip sub
+
+// sub:
+0x2d6: 0d 80 00 00 00  // or     eax,0x80
+0x2db: c3              // ret
+
+// --- Not-taken branches (test predictor with opposite outcome) ---
+// Set ZF=1 (JNE not taken), CF=1 (JNBE not taken)
+0x2dc: b8 ff ff ff ff  // mov    eax,0xffffffff
+0x2e1: 83 c0 01        // add    eax,0x1        ; eax=0, ZF=1, CF=1
+
+// JNE rel8 — NOT taken (ZF=1)
+0x2e4: 75 05           // jne    +5 -> 0x2eb (not taken)
+0x2e6: 0d 01 00 00 00  // or     eax,0x1        ; executes (fall-through)
+
+// JNBE rel8 — NOT taken (CF=1)
+0x2eb: 77 05           // jnbe   +5 -> 0x2f2 (not taken)
+0x2ed: 0d 02 00 00 00  // or     eax,0x2        ; executes
+
+// JNE rel32 — NOT taken
+0x2f2: 0f 85 05 00 00 00  // jne +5 (not taken)
+0x2f8: 0d 04 00 00 00     // or  eax,0x4        ; executes
+
+// JNBE rel32 — NOT taken
+0x2fd: 0f 87 05 00 00 00  // jnbe +5 (not taken)
+0x303: 0d 08 00 00 00     // or  eax,0x8        ; executes
+
+// --- Rapid branch sequence (stress decode target computation) ---
+0x308: b8 01 00 00 00  // mov    eax,0x1
+0x30d: 83 c0 00        // add    eax,0x0        ; ZF=0, CF=0
+0x310: 75 00           // jne    +0 (taken, target=next instr — no skip)
+0x312: 77 00           // jnbe   +0 (taken, target=next instr)
+0x314: eb 00           // jmp    +0 (target=next instr)
+0x316: 75 02           // jne    +2 -> 0x31a
+0x318: eb 02           // [skipped by jne]
+0x31a: 77 02           // jnbe   +2 -> 0x31e
+0x31c: eb 02           // [skipped by jnbe]
+0x31e: eb 02           // jmp    +2 -> 0x322
+0x320: 90 90           // [skipped]
+
+// --- Final dependency + branch combo ---
+// Load from memory, use result to set flags, then branch
+0x322: 8b 43 00        // mov    eax,[ebx+0x00]  ; load (may miss)
+0x325: 83 c0 00        // add    eax,0x0         ; set flags from loaded value
+0x328: 75 05           // jne    +5 -> 0x32f     ; branch depends on load result
+0x32a: 0d 00 00 00 ff  // [POISON]
+0x32f: 90              // nop
+
+// ============================================================
+// HLT
+// ============================================================
+0x330: f4              // hlt
+
+// ============================================================
+// Data memory initialization (physical addresses)
+// DS -> phys 0x2000 (offsets 0x000–0x23F = 576 bytes)
+// SS -> phys 0x4000 (stack at 0x4100)
+// ============================================================
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x20a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x20b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x20c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x20d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x20e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x20f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2110: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2120: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2130: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2140: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2150: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2160: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2170: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2180: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2190: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x21a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x21b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x21c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x21d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x21e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x21f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2210: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2220: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2230: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

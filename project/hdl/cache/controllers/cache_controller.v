@@ -73,7 +73,9 @@ bufferH16$  bufferH16$_Q0(Q0, Q0_prebuf);
 /*** STATE MACHINE OUTPUTS ***/
 
 wire          ARB_ACK_RECV;
-or3$  or3$_(ARB_ACK_RECV, ACKS[2], ACKS[1], ACKS[0]);
+wire          ARB_ACK_RECV_bar;
+nor3$ nor_3(ARB_ACK_RECV_bar, ACKS[2], ACKS[1], ACKS[0]);
+inv1$  inv_3$_(ARB_ACK_RECV, ARB_ACK_RECV_bar);
 
 /* DECLARATIONS */
 wire          FSM_LD_REGS, FSM_SHF_DATA_WR_MASK, FSM_TAG_WR_MASK_MUX,
@@ -460,8 +462,6 @@ wire Q2_bar;
 wire DATA_VALID_BAR_bar;
 inv1$ inv_1(DATA_VALID_BAR_bar, DATA_VALID_BAR);
 wire Q1_bar;
-wire ARB_ACK_RECV_bar;
-inv1$ inv_3(ARB_ACK_RECV_bar, ARB_ACK_RECV);
 wire CACHE_FILL_DONE_bar;
 inv1$ inv_4(CACHE_FILL_DONE_bar, CACHE_FILL_DONE);
 wire SB_FILL_DONE_bar;
