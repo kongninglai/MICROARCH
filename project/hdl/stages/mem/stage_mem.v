@@ -85,6 +85,8 @@ module stage_mem #(
   input   [GENERAL_DATA_BIT_WIDTH-1:0]        to_mem_oeip,
   input   [GENERAL_DATA_BIT_WIDTH-1:0]        to_mem_ieip,
   input   [GENERAL_DATA_BIT_WIDTH-1:0]        to_mem_pred_eip,
+  input                                       to_mem_pred_dir,
+  input   [3:0]                               to_mem_pht_idx,
 
   /*** Valid / exception inputs from pipeline registers ***/
   input   [1:0]                               to_mem_exception,
@@ -157,6 +159,8 @@ module stage_mem #(
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_oeip,
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_ieip,
   output  [GENERAL_DATA_BIT_WIDTH-1:0]        from_mem_pred_eip,
+  output                                      from_mem_pred_dir,
+  output  [3:0]                               from_mem_pht_idx,
   output  [1:0]                               from_mem_exception,
   output                                      from_mem_valid,
 
@@ -655,6 +659,8 @@ assign from_mem_cs          = to_mem_cs      ;
 assign from_mem_oeip        = to_mem_oeip    ;   
 assign from_mem_ieip        = to_mem_ieip    ;   
 assign from_mem_pred_eip    = to_mem_pred_eip;
+assign from_mem_pred_dir    = to_mem_pred_dir;
+assign from_mem_pht_idx     = to_mem_pht_idx ;
 
 bufferH16$ bufferH16$_from_mem_dstA_size[1:0](from_mem_dstA_size, dstA_size);
 bufferH16$ bufferH16$_from_mem_dstB_size[1:0](from_mem_dstB_size, dstB_size);

@@ -1,6 +1,6 @@
 module rr_to_ag #(
     parameter AG_CONTROL_SIGS_WIDTH=69,
-    parameter REG_SIZE=623+AG_CONTROL_SIGS_WIDTH
+    parameter REG_SIZE=628+AG_CONTROL_SIGS_WIDTH
 )(
     input clk,
     input rst_n,
@@ -30,6 +30,8 @@ module rr_to_ag #(
     input [31:0] from_rr_oeip,
     input [31:0] from_rr_ieip,
     input [31:0] from_rr_pred_eip,
+    input from_rr_pred_dir,
+    input [3:0]  from_rr_pht_idx,
     input [1:0]  from_rr_exception,
     input from_rr_valid,
     output [AG_CONTROL_SIGS_WIDTH-1:0] to_ag_control_sigs,
@@ -56,6 +58,8 @@ module rr_to_ag #(
     output [31:0] to_ag_oeip,
     output [31:0] to_ag_ieip,
     output [31:0] to_ag_pred_eip,
+    output to_ag_pred_dir,
+    output [3:0]  to_ag_pht_idx,
     output [1:0] to_ag_exception,
     output to_ag_valid
 );
@@ -64,9 +68,9 @@ wire [REG_SIZE-1:0] reg_din, reg_q, reg_qb;
 wire valid_with_flush;
 and2$ and2_valid(valid_with_flush, flush_bar, from_rr_valid);
 assign reg_din = {from_rr_control_sigs, from_rr_dstidA, from_rr_dstidB, from_rr_srcregA, from_rr_srcregB, from_rr_srcregC, from_rr_srcSREG, from_rr_MMA, from_rr_MMB, from_rr_imm, from_rr_sreg1, from_rr_slim1, from_rr_base1, from_rr_index1, from_rr_disp, from_rr_scale_mux, from_rr_sreg2, from_rr_slim2, from_rr_base2, from_rr_intex_vec, from_rr_cs, from_rr_oeip, from_rr_ieip, 
-                    from_rr_pred_eip, from_rr_exception, valid_with_flush};
+        from_rr_pred_eip, from_rr_pred_dir, from_rr_pht_idx, from_rr_exception, valid_with_flush};
 assign {to_ag_control_sigs, to_ag_dstidA, to_ag_dstidB, to_ag_srcregA, to_ag_srcregB, to_ag_srcregC, to_ag_srcSREG, to_ag_MMA, to_ag_MMB, to_ag_imm, to_ag_sreg1, to_ag_slim1, to_ag_base1, to_ag_index1, to_ag_disp, to_ag_scale_mux, to_ag_sreg2, to_ag_slim2, to_ag_base2, to_ag_intex_vec, to_ag_cs, to_ag_oeip, to_ag_ieip, 
-            to_ag_pred_eip, to_ag_exception, to_ag_valid} = reg_q;
+    to_ag_pred_eip, to_ag_pred_dir, to_ag_pht_idx, to_ag_exception, to_ag_valid} = reg_q;
 
 wire flush, we_with_flush_bar, we_with_flush;
 inv1$ inv_flush_bar(flush, flush_bar);

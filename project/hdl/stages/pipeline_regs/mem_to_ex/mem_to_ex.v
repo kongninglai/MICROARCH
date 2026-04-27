@@ -1,6 +1,6 @@
 module mem_to_ex #(
     parameter EX_CONTROL_SIGS_WIDTH=59,
-    parameter REG_SIZE=631+EX_CONTROL_SIGS_WIDTH
+    parameter REG_SIZE=636+EX_CONTROL_SIGS_WIDTH
 )(
     input clk,
     input rst_n,
@@ -36,6 +36,8 @@ module mem_to_ex #(
     input [31:0]     from_mem_oeip,
     input [31:0]     from_mem_ieip,
     input [31:0]     from_mem_pred_eip,
+    input            from_mem_pred_dir,
+    input [3:0]      from_mem_pht_idx,
     input [1:0]      from_mem_exception,
     input            from_mem_valid,
     
@@ -69,6 +71,8 @@ module mem_to_ex #(
     output [31:0]    to_ex_oeip,
     output [31:0]    to_ex_ieip,
     output [31:0]    to_ex_pred_eip,
+    output           to_ex_pred_dir,
+    output [3:0]     to_ex_pht_idx,
     output [1:0]     to_ex_exception,
     output           to_ex_valid
 );
@@ -104,6 +108,8 @@ module mem_to_ex #(
                       from_mem_oeip, 
                       from_mem_ieip, 
                       from_mem_pred_eip,
+                      from_mem_pred_dir,
+                      from_mem_pht_idx,
                       from_mem_exception,
                       valid_with_flush};
     assign {to_ex_control_sigs, 
@@ -133,6 +139,8 @@ module mem_to_ex #(
             to_ex_oeip, 
             to_ex_ieip, 
             to_ex_pred_eip,
+            to_ex_pred_dir,
+            to_ex_pht_idx,
             to_ex_exception,
             to_ex_valid} = reg_q;
     

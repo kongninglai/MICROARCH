@@ -4,6 +4,7 @@ module ex_control(
     input [63:0] load_result,
     input [31:0] rel_eip,
     input [31:0] pred_eip,
+    input pred_dir, //predicted direction of branch in decode stage
     input [31:0] ieip,
     input [31:0] iret_eip,
     input [1:0] sig_con_jump,
@@ -40,11 +41,19 @@ module ex_control(
     nor2$ nor_uncond(uncond_jmp, sig_con_jump[0], sig_con_jump[1]);
 
     // ldEIP_out = ldEIP & (uncond_jmp | jne | jnbe) & mispredict
-    or3$ or_jmp(branch_taken, uncond_jmp, jne, jnbe);
+    wire branch_taken_bar;
+    nor3$ or_jmp(branch_taken_bar, uncond_jmp, jne, jnbe);
+    bufferHInv64$ bufferHInv64$_branch_taken(branch_taken, branch_taken_bar);
     assign jump_eip = masked_eip;
     mux2_32 mux2_t_nt_eip(new_eip, ieip, masked_eip, branch_taken);
     wire accurate_predict;
-    big_eq #(.WIDTH(32)) eq_pred_eip(.eq(accurate_predict), .in0(pred_eip), .in1(new_eip));
+    // misprediction = (pred_dir == branch taken) | (branch_taken & )
+    wire equal_targets, equal_targets_bar, branch_taken_wrong_target, wrong_direction;
+    big_eq #(.WIDTH(32)) eq_pred_eip(.eq(equal_targets), .in0(pred_eip), .in1(new_eip));
+    inv1$ inv_equal_targets(equal_targets_bar, equal_targets);
+    and2$ and2_branch_taken_wrong_targets(branch_taken_wrong_target, equal_targets_bar, branch_taken);
+    xor2$ xor2_wrong_direction(wrong_direction, branch_taken, pred_dir);
+    nor2$ or2_mispredict(mispredict_bar, wrong_direction, branch_taken_wrong_target);
+    // big_eq #(.WIDTH(1)) eq_pred_dir(.eq(accurate_predict), .in0(pred_dir), .in1(branch_taken));
     // inv1$ inv_mispredict(mispredict, accurate_predict);
-    assign mispredict_bar = accurate_predict;
 endmodule 

@@ -1,0 +1,17 @@
+// Class Libraries
+/home/projects/courses/spring_22/ee382n19_16785/lib/time -v 
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib1 -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib2 -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib3 -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib4 -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib5 -v
+/home/projects/courses/spring_22/ee382n19_16785/lib/lib6
+
+// Search Extensions
++libext+.v
+
+-v /home/projects/courses/spring_22/ee382n19_16785/lib/lib4
+~/MICROARCH/project/hdl/local-lib/muxes/mux11_onehot.v
+~/MICROARCH/project/hdl/local-lib/muxes/mux11_onehot_slice.v
+~/MICROARCH/project/hvl/local-lib/muxes/mux11_onehot_tb/mux11_onehot_tb_behav.v
+~/MICROARCH/project/hvl/local-lib/muxes/mux11_onehot_tb/mux11_onehot_tb.v

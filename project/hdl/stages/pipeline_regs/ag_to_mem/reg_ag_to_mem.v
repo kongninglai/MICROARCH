@@ -1,5 +1,5 @@
 module reg_ag_to_mem #(
-    parameter REG_SIZE=757
+    parameter REG_SIZE=763
 )(CLK, Din, Q, QBAR, CLR, PRE,en);
     input  CLK;
     input  CLR;

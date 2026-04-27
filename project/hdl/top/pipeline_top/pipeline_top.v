@@ -19,6 +19,8 @@ wire [1:0] to_rr_addr_mode;
 wire [31:0] to_rr_oeip;
 wire [31:0] to_rr_ieip;
 wire [31:0] to_rr_pred_eip;
+wire to_rr_pred_dir;
+wire [3:0] to_rr_pht_idx;
 wire [31:0] to_pr_pred_eip;
 wire [1:0] to_rr_exception;
 wire to_rr_valid;
@@ -46,7 +48,6 @@ wire from_wb_flush;
 
 // frontend controls that are not currently surfaced by backend_top
 assign from_ex_ld_cs   = 1'b0;
-assign from_ex_pht_idx = 4'd0;
 
 fetch_decode_top FRONTEND_TOP (
     //inputs
@@ -84,6 +85,8 @@ fetch_decode_top FRONTEND_TOP (
     .to_rr_oeip(to_rr_oeip),
     .to_rr_ieip(to_rr_ieip),
     .to_rr_pred_eip(to_rr_pred_eip),
+    .to_rr_pred_dir(to_rr_pred_dir),
+    .to_rr_pht_idx(to_rr_pht_idx),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
     .to_rr_ucode_sigs(to_rr_ucode_sigs),
@@ -265,6 +268,8 @@ backend_top #(
     .to_rr_oeip(to_rr_oeip),
     .to_rr_ieip(to_rr_ieip),
     .to_rr_pred_eip(to_rr_pred_eip),
+    .to_rr_pred_dir(to_rr_pred_dir),
+    .to_rr_pht_idx(to_rr_pht_idx),
     .to_rr_exception(to_rr_exception),
     .to_rr_ucode_sigs(to_rr_ucode_sigs),
     .to_rr_valid(to_rr_valid),
@@ -277,6 +282,7 @@ backend_top #(
     .from_ex_br_t_nt(from_ex_br_t_nt),
     .from_ex_br_valid(from_ex_br_valid),
     .from_ex_eip_target(from_ex_eip_target),
+    .from_ex_pht_idx(from_ex_pht_idx),
     .from_wb_flush(from_wb_flush),
 
     //inputs for D$

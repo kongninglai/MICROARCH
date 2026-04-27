@@ -4,15 +4,20 @@ initial begin
   // $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
   // $vcdpluson(0, pipeline_top_auto_tb); 
   // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
-  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
-  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
+  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
+  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d_instr_len); 
+  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
 end
 
 /******* PERFORMANCE FEATURES ********/
+
+/* without the instruction queue the timing will be worse */
+/* To disable instruction queue, please increase the cycle time */
 localparam STREAM_BUFFER_EN    = 1'b1;
 localparam ROW_BUFFER_EN       = 1'b1;
 localparam FORWARD_EN          = 1'b1;
 localparam INSTR_Q_EN          = 1'b1;
+localparam BP_EN               = 1'b1;
 
 integer i;
 integer NUM_TESTS = 0;
@@ -26,6 +31,7 @@ reg auto_checker_done;
 `endif
 
 localparam CYCLE_TIME_X10 = 93;
+// localparam CYCLE_TIME_X10 = 120;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
@@ -58,6 +64,10 @@ wire [47:0] to_rr_imm;
 wire [2:0]  to_rr_imm_size;
 wire [1:0]  to_rr_addr_mode;
 
+wire        to_rr_pred_dir;
+wire  [3:0] to_rr_pht_idx;
+wire  [3:0] from_ex_pht_idx;
+
 wire  [31:0] to_rr_oeip;
 wire  [31:0] to_rr_ieip;
 wire  [31:0] to_rr_pred_eip;
@@ -78,7 +88,7 @@ wire [11:0]  F_PAGE_OFFSET;
 
 wire [15:0]  from_rr_cs;
 wire         from_ex_ld_cs;
-wire [3:0]   from_ex_pht_idx;
+// wire [3:0]   from_ex_pht_idx;
 wire [31:0]  to_pr_pred_eip;
 
 /*** CACHE / TLB INTERNAL WIRES ***/
@@ -142,7 +152,7 @@ wire from_wb_flush;
 
 assign from_rr_cs = from_regunit_CS;
 assign from_ex_ld_cs = 1'b0;
-assign from_ex_pht_idx = 4'd0;
+// assign from_ex_pht_idx = 4'd0;
 
 reg [31:0] wb_ieip;
 reg [31:0] wb_eflags;
@@ -180,7 +190,9 @@ backend_top #(
   .to_rr_exception(to_rr_exception),
   .to_rr_ucode_sigs(to_rr_ucode_sigs),
   .to_rr_valid(to_rr_valid),
-
+  .to_rr_pred_dir(to_rr_pred_dir),
+  .to_rr_pht_idx(to_rr_pht_idx),
+  .from_ex_pht_idx(from_ex_pht_idx),
   .from_rr_stall(from_rr_stall),
   .from_regunit_CS(from_regunit_CS),
   .from_regunit_cs_limit(from_regunit_cs_limit),
@@ -727,7 +739,8 @@ reg [31:0] stalled_cnt;
 localparam integer MAX_STREAM_CYCLES = 200000;
 
 fetch_decode_top #(
-  .INSTR_Q_EN(INSTR_Q_EN)
+  .INSTR_Q_EN(INSTR_Q_EN),
+  .BP_EN(BP_EN)
 ) FRONTEND_TOP(
     .clk(clk),
     .rst_bar(rst_n),
@@ -769,6 +782,8 @@ fetch_decode_top #(
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
     .to_rr_ucode_sigs(to_rr_ucode_sigs),
+    .to_rr_pred_dir(to_rr_pred_dir),
+    .to_rr_pht_idx(to_rr_pht_idx),
     .to_rr_valid(to_rr_valid)
 );
 

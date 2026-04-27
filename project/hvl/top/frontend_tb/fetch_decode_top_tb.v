@@ -116,6 +116,8 @@ fetch_decode_top DUT (
     .to_rr_oeip(to_rr_oeip),
     .to_rr_ieip(to_rr_ieip),
     .to_rr_pred_eip(to_rr_pred_eip),
+    .to_rr_pred_dir(),
+    .to_rr_pht_idx(),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
     .to_rr_ucode_sigs(to_rr_ucode_sigs),

@@ -501,6 +501,8 @@ module tb_block_decoder();
         check_decode(31, "jmp [eax]", "FF 20",
             1'b0, 1'b0, 3'b011, 1'b0, 8'hFF, 1'b1, 8'h20, 8'h00, 2'b00, 32'h0, 3'b000, 48'h00, 2'b01, 4'd2);
 
+        
+
         // Final Result Summary
         $display("===============================================================");
         if (error_count == 0) begin

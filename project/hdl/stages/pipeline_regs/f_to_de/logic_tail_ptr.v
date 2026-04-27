@@ -123,7 +123,7 @@ module logic_tail_ptr(
     );
 
     wire [7:0] we_cl_byte_cnt_temp;
-    assign we_cl_byte_cnt = we_cl_byte_cnt_temp[3:0];
+    assign we_cl_byte_cnt = we_cl_byte_cnt_temp[3:0]; //dont need to use an adder to add 16 bc can just set 5th bit to a 1
     mux2_8$ byte_cnt_mux(.Y(we_cl_byte_cnt_temp), .IN0({3'b0, 5'd16}), .IN1({4'b0, we_cl_byte_cnt_w}), .S0(unaligned_eip_redir));
 
 endmodule

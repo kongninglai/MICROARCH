@@ -1,0 +1,18 @@
+.i 3	
+.o 2	
+.ilb CurState1 CurState0 Incr_or_Decr
+.ob NextState1 NextState0
+
+000 00
+001 01
+010 00
+011 10
+100 01
+101 11
+110 10
+111 11
+
+where 00 - strongly not taken
+      01 - weakly not taken
+      10 - weakly taken
+      11 - strongly taken

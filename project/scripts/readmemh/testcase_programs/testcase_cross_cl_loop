@@ -1,0 +1,17 @@
+//program counts up
+0x00:  b0 fb       // mov   al,0xFB    (Counter starts at -5)
+0x02:  b3 00       // mov   bl,0x00    (Initialize dummy register)
+0x04:  b1 00       // mov   cl,0x00    (Initialize dummy register)
+0x06:  b2 00       // mov   dl,0x00    (Initialize dummy register)
+0x08:  80 c3 01    // add   bl,0x01    (-- LOOP START --)
+0x0B:  80 c1 01    // add   cl,0x01
+0x0E:  80 c2 01    // add   dl,0x01    (Crosses 16B boundary: 0x0E, 0x0F, 0x10)
+0x11:  80 c3 01    // add   bl,0x01
+0x14:  80 c1 01    // add   cl,0x01
+0x17:  80 c2 01    // add   dl,0x01
+0x1A:  80 c3 01    // add   bl,0x01
+0x1D:  04 00       // add   al,0x00    (Filler to align next instruction)
+0x1F:  80 c2 01    // add   dl,0x01    (Crosses 32B boundary: 0x1F, 0x20, 0x21)
+0x22:  04 01       // add   al,0x01    (Increment counter, updates ZF)
+0x24:  75 e2       // jne   0x08       (Jump if ZF=0. Offset: 0x08 - 0x26 = -0x1E = 0xE2)
+0x26:  f4          // hlt              (-- LOOP END --)

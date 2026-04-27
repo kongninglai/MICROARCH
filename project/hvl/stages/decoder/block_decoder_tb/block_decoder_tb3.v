@@ -81,7 +81,7 @@ module tb_exhaustive_decoder();
             $display("Make sure you ran the Python script first and the file is one directory above the simulation directory.");
             $finish;
         end
-
+        
         // Loop until end of file
         while (!$feof(file)) begin
             // Read 24 hex values per line (8 expected vals + 16 cache line bytes)
@@ -116,6 +116,9 @@ module tb_exhaustive_decoder();
                     $display("   ACTUAL  : Len=%0d OpSize=%b Rep=%b Ext=%b Op=%h ModV=%b ModRM=%h", 
                              instr_length, prefix_op_size, prefix_rep, prefix_ext, opcode, modrm_v, modrm);
                     $display("   DEBUG   : disp_size_mux=%b, imm_size=%b, sib=%h", disp_size_mux, imm_size, sib);
+                    $display("   DEBUG   : cache_line=%h, expected_cache_line=%x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x",
+                        cache_line, exp_len, exp_opsize, exp_rep, exp_ext, exp_opcode, exp_modrm_v, exp_modrm, exp_sib,
+                        b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15);
                     FAILURES = FAILURES + 1;
                 end
                 else begin

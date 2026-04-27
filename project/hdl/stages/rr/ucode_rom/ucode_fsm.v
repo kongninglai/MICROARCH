@@ -3,6 +3,7 @@ module ucode_fsm(
     input rst_n,
 
     input to_rr_valid,
+    input raw_to_rr_valid,
     input [95:0] to_rr_ucode_sigs,
     input rep,
     input stall,
@@ -104,7 +105,7 @@ module ucode_fsm(
     wire [95:0] ucode_sig_idle;
     wire to_rr_valid_buf16;
     bufferH16$  bufferH16$_to_rr_valid_buf16(to_rr_valid_buf16, to_rr_valid);
-    nand2$ nand2_valid_rep(valid_rep_bar, to_rr_valid_buf16, rep);
+    nand2$ nand2_valid_rep(valid_rep_bar, raw_to_rr_valid, rep);
     bufferHInv16$ buffer_valid_rep(valid_rep, valid_rep_bar);
     // mux2_8$ mux2_ucode_idle(ucode_idle, opcode, OPC_REP_READ_ECX, valid_rep);
 

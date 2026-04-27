@@ -1,5 +1,6 @@
 module fetch_decode_top #(
-    parameter INSTR_Q_EN=1'b1
+    parameter INSTR_Q_EN=1'b1,
+    parameter BP_EN=1'b1
 )(
     input wire clk,
     input wire rst_bar,
@@ -40,6 +41,8 @@ module fetch_decode_top #(
     output wire [31:0] to_rr_oeip,
     output wire [31:0] to_rr_ieip,
     output wire [31:0] to_rr_pred_eip,
+    output wire to_rr_pred_dir,
+    output wire [3:0] to_rr_pht_idx,
     output wire [31:0] to_pr_pred_eip,
     output wire [1:0] to_rr_exception,
     output wire [95:0] to_rr_ucode_sigs,
@@ -49,6 +52,10 @@ module fetch_decode_top #(
     //Internal Wires
     wire from_fetch_buffer_shft_reg_we, from_de_take_branch, from_de_take_branch_prebuf;
     bufferH16$    bufferH16$_from_de_take_branch(from_de_take_branch, from_de_take_branch_prebuf);
+
+    //TODO GATE UNLATCHED TAKE BRANCH SIGNAL AND VALID SIGNAL
+    // wire redir_valid_DEBUG;
+    // and2(redir_valid_DEBUG, , );
 
     stage_fetch_a STAGE_FETCH_FRONT_HALF(
         .clk(clk),
@@ -70,7 +77,9 @@ module fetch_decode_top #(
 
     generate 
         if (INSTR_Q_EN) begin : ENABLE_INSTRQ
-            intgr_fshifter_decode FETCHBUFF_DECODESTAGE_DEPR(
+            intgr_fshifter_decode #(
+                .BP_EN(BP_EN)
+            ) FETCHBUFF_DECODESTAGE_DEPR(
                 .clk(clk),
                 .rst_bar(rst_bar),
 
@@ -95,6 +104,8 @@ module fetch_decode_top #(
                 .to_rr_bp_target(to_rr_pred_eip), //post de latch
                 .to_pr_bp_target(to_pr_pred_eip), //pre de latch
                 .to_rr_pr_valid(to_rr_valid),
+                .to_rr_pred_dir(to_rr_pred_dir),
+                .to_rr_pht_idx(to_rr_pht_idx),
                 .to_rr_prefixes(to_rr_prefix), //{prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
                 .to_rr_opcode(to_rr_opcode),
                 .to_rr_modrm(to_rr_modrm),
@@ -110,7 +121,9 @@ module fetch_decode_top #(
                 .to_rr_ucode_sigs(to_rr_ucode_sigs)
             );
         end else begin : DISABLE_INSTRQ
-            intgr_fshifter_decode_no_instr_q FETCHBUFF_DECODESTAGE_DEPR(
+            intgr_fshifter_decode_no_instr_q #(
+                .BP_EN(BP_EN)
+            ) FETCHBUFF_DECODESTAGE_DEPR(
                 .clk(clk),
                 .rst_bar(rst_bar),
 
@@ -135,6 +148,8 @@ module fetch_decode_top #(
                 .to_rr_bp_target(to_rr_pred_eip), //post de latch
                 .to_pr_bp_target(to_pr_pred_eip), //pre de latch
                 .to_rr_pr_valid(to_rr_valid),
+                .to_rr_pred_dir(to_rr_pred_dir),
+                .to_rr_pht_idx(to_rr_pht_idx),
                 .to_rr_prefixes(to_rr_prefix), //{prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
                 .to_rr_opcode(to_rr_opcode),
                 .to_rr_modrm(to_rr_modrm),

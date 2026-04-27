@@ -1,4 +1,6 @@
-module intgr_fshifter_decode(
+module intgr_fshifter_decode #(
+    parameter BP_EN=1'b1
+)(
     input wire clk,
     input wire rst_bar,
 
@@ -22,6 +24,8 @@ module intgr_fshifter_decode(
     output wire [31:0] to_rr_bp_target, //after latch
     output wire [31:0] to_pr_bp_target, //before latch
     output wire to_rr_pr_valid, 
+    output wire to_rr_pred_dir,
+    output wire [3:0] to_rr_pht_idx,
     output wire [6:0] to_rr_prefixes, //{prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
     output wire [7:0] to_rr_opcode,
     output wire [7:0] to_rr_modrm,
@@ -76,9 +80,13 @@ module intgr_fshifter_decode(
     wire [2:0] to_pr_prefix_seg_ov_id, to_pr_imm_size;
     wire [7:0] to_pr_opcode, to_pr_modrm, to_pr_sib;
     wire [1:0] to_pr_disp_size_mux, to_pr_addressing_mode, to_pr_exception_flags;
+    wire to_pr_pred_dir;
+    wire [3:0] to_pr_pht_idx;
     wire [31:0] to_pr_disp;
     wire [47:0] to_pr_imm;
-    stage_decode STAGE_DECODE(
+    stage_decode #(
+        .BP_EN(BP_EN)
+    ) STAGE_DECODE(
         .cache_line(to_de_outbytes),
         .tail_ptr(tail_ptr),
         .eip_target_ex(from_ex_eip_target), //comes from execute stage
@@ -98,11 +106,13 @@ module intgr_fshifter_decode(
         .o_eip(to_pr_o_eip),
         .bp_eip_target(to_pr_bp_target),
         .pr_de_rr_valid(to_pr_pr_valid), //to rr stage pipeline regs are valid
+        .pred_dir(to_pr_pred_dir),
+        .pht_idx(to_pr_pht_idx),
 
         //to fetch output
         .ld_eip(), //unused in this tb (to fetch)
         .eip_true(), //unused in this tb (to fetch)
-        .to_f_take_branch(from_de_eip_redirection), //unused in this tb (to fetch)
+        .to_f_take_branch(from_de_eip_redirection), 
 
         //decoder output
         .prefix_rep(to_pr_prefix_rep),
@@ -142,6 +152,8 @@ module intgr_fshifter_decode(
         .from_de_o_eip(to_pr_o_eip),
         .from_de_bp_target(to_pr_bp_target),
         .from_de_pr_valid(to_pr_pr_valid_buf16),
+        .from_de_pred_dir(to_pr_pred_dir),
+        .from_de_pht_idx(to_pr_pht_idx),
 
         //decoder output
         .from_de_prefix_rep(to_pr_prefix_rep),
@@ -165,6 +177,8 @@ module intgr_fshifter_decode(
         .to_rr_o_eip(to_rr_o_eip),
         .to_rr_bp_target(to_rr_bp_target),
         .to_rr_pr_valid(), 
+        .to_rr_pred_dir(to_rr_pred_dir),
+        .to_rr_pht_idx(to_rr_pht_idx),
 
         //to rr output
         .to_rr_prefixes(to_rr_prefixes), //{prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}

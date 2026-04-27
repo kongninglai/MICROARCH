@@ -12,6 +12,7 @@
 // Automatic Directory Search
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/adders
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/comparators
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/decoders
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/extenders
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/gates
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/muxes
@@ -206,5 +207,4 @@
 // ~/MICROARCH/project/hvl/top/backend_top/backend_top_tb/dummy_fe.v
 
 //Test bench
-// ~/MICROARCH/project/hvl/top/pipeline_top_tb/pipeline_top_tb.v
 ~/MICROARCH/project/hvl/top/pipeline_top_tb/pipeline_top_auto_tb.v

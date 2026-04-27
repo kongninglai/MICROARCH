@@ -26,6 +26,8 @@ module stage_ag #(
     input [31:0]    to_ag_oeip,
     input [31:0]    to_ag_ieip,
     input [31:0]    to_ag_pred_eip,
+    input           to_ag_pred_dir,
+    input [3:0]     to_ag_pht_idx,
     input [1:0]     to_ag_exception,
     input           to_ag_valid,
 
@@ -73,6 +75,8 @@ module stage_ag #(
     output [31:0]    from_ag_oeip,
     output [31:0]    from_ag_ieip,
     output [31:0]    from_ag_pred_eip,
+    output           from_ag_pred_dir,
+    output [3:0]     from_ag_pht_idx,
     output [1:0]     from_ag_exception,
     output           from_ag_valid,
 
@@ -177,6 +181,8 @@ module stage_ag #(
     assign from_ag_oeip = to_ag_oeip;
     assign from_ag_ieip = to_ag_ieip;
     assign from_ag_pred_eip = to_ag_pred_eip;
+    assign from_ag_pred_dir = to_ag_pred_dir;
+    assign from_ag_pht_idx = to_ag_pht_idx;
     assign from_ag_exception = to_ag_exception;
     /* NOTE: moved from_ag_valid logic below. -VR, 3/31/2026 */
 
