@@ -74,15 +74,22 @@ module intgr_fshifter_decode(
 
     genvar i;
     generate
-        for (i = 8; i <= 31; i = i + 1) begin : gen_to_de_outbytes_buf_low
+        for (i = 0; i <= 31; i = i + 1) begin : gen_to_de_outbytes_buf_low
             bufferH16$ u_buf(to_de_outbytes[i], prebuf_to_de_outbytes[i]);
         end
     endgenerate
 
     genvar j;
     generate
-        for (i = 32; i <= 118; i = i + 1) begin : gen_to_de_outbytes_buf_high
-            bufferH64$ u_buf(to_de_outbytes[i], prebuf_to_de_outbytes[i]);
+        for (j = 32; j <= 118; j = j + 1) begin : gen_to_de_outbytes_buf_high
+            bufferH64$ u_buf(to_de_outbytes[j], prebuf_to_de_outbytes[j]);
+        end
+    endgenerate
+
+    genvar k;
+    generate
+        for (k = 119; k <= 127; k = k + 1) begin : gen_to_de_outbytes_buf_top
+            bufferH16$ u_buf(to_de_outbytes[k], prebuf_to_de_outbytes[k]);
         end
     endgenerate
 
