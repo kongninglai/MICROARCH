@@ -41,6 +41,8 @@ INDEX=0
 
 IPC_SUM="0"
 IPC_COUNT=0
+BP_MISS_RATE_SUM="0"
+BP_MISS_RATE_COUNT=0
 
 echo "Regression run: $(date)" > "$RESULTS_FILE"
 echo "========================================" >> "$RESULTS_FILE"
@@ -82,6 +84,15 @@ for testfile in "${TESTFILES[@]}"; do
         }
     ' "$testlog" | tail -n 1)"
 
+    # Extract only the total branch predictor miss rate.
+    # Expected line: Miss Rate (Total Miss / Total Branch) = 0.123456 (1 / 8)
+    bp_miss_rate="$(awk '
+        /^Miss Rate[[:space:]]/ {
+            sub(/^[^=]*=[[:space:]]*/, "")
+            print $1
+        }
+    ' "$testlog" | tail -n 1)"
+
     if [[ -z "$ipc" ]]; then
         ipc="N/A"
     else
@@ -89,20 +100,27 @@ for testfile in "${TESTFILES[@]}"; do
         IPC_COUNT=$((IPC_COUNT + 1))
     fi
 
+    if [[ -z "$bp_miss_rate" ]]; then
+        bp_miss_rate="N/A"
+    else
+        BP_MISS_RATE_SUM="$(awk -v a="$BP_MISS_RATE_SUM" -v b="$bp_miss_rate" 'BEGIN { printf "%.12f", a + b }')"
+        BP_MISS_RATE_COUNT=$((BP_MISS_RATE_COUNT + 1))
+    fi
+
     if [[ "$rc" -eq 0 ]] && grep -q "PASS: RESULTS MATCH" "$testlog"; then
-        echo "PASS: $testname  IPC=$ipc" >> "$RESULTS_FILE"
-        echo "[$INDEX/$TOTAL_TESTS] PASS  IPC=$ipc"
+        echo "PASS: $testname  IPC=$ipc  BP_Miss_Rate=$bp_miss_rate" >> "$RESULTS_FILE"
+        echo "[$INDEX/$TOTAL_TESTS] PASS  IPC=$ipc  BP_Miss_Rate=$bp_miss_rate"
         PASS=$((PASS + 1))
     else
         if [[ "$rc" -eq 124 ]]; then
-            echo "FAIL: $testname (TIMEOUT ${PER_TEST_TIMEOUT_SEC}s)  IPC=$ipc" >> "$RESULTS_FILE"
-            echo "[$INDEX/$TOTAL_TESTS] FAIL (timeout)  IPC=$ipc"
+            echo "FAIL: $testname (TIMEOUT ${PER_TEST_TIMEOUT_SEC}s)  IPC=$ipc  BP_Miss_Rate=$bp_miss_rate" >> "$RESULTS_FILE"
+            echo "[$INDEX/$TOTAL_TESTS] FAIL (timeout)  IPC=$ipc  BP_Miss_Rate=$bp_miss_rate"
         elif [[ "$rc" -ne 0 ]]; then
-            echo "FAIL: $testname (RC=$rc)  IPC=$ipc" >> "$RESULTS_FILE"
-            echo "[$INDEX/$TOTAL_TESTS] FAIL (rc=$rc)  IPC=$ipc"
+            echo "FAIL: $testname (RC=$rc)  IPC=$ipc  BP_Miss_Rate=$bp_miss_rate" >> "$RESULTS_FILE"
+            echo "[$INDEX/$TOTAL_TESTS] FAIL (rc=$rc)  IPC=$ipc  BP_Miss_Rate=$bp_miss_rate"
         else
-            echo "FAIL: $testname  IPC=$ipc" >> "$RESULTS_FILE"
-            echo "[$INDEX/$TOTAL_TESTS] FAIL  IPC=$ipc"
+            echo "FAIL: $testname  IPC=$ipc  BP_Miss_Rate=$bp_miss_rate" >> "$RESULTS_FILE"
+            echo "[$INDEX/$TOTAL_TESTS] FAIL  IPC=$ipc  BP_Miss_Rate=$bp_miss_rate"
         fi
         echo "  log: $testlog"
         FAIL=$((FAIL + 1))
@@ -115,9 +133,16 @@ else
     AVG_IPC="N/A"
 fi
 
+if [[ "$BP_MISS_RATE_COUNT" -gt 0 ]]; then
+    AVG_BP_MISS_RATE="$(awk -v sum="$BP_MISS_RATE_SUM" -v cnt="$BP_MISS_RATE_COUNT" 'BEGIN { printf "%.6f", sum / cnt }')"
+else
+    AVG_BP_MISS_RATE="N/A"
+fi
+
 echo "========================================" >> "$RESULTS_FILE"
 echo "Total: $((PASS + FAIL))  PASSED: $PASS  FAILED: $FAIL" >> "$RESULTS_FILE"
 echo "Average IPC over $IPC_COUNT tests: $AVG_IPC" >> "$RESULTS_FILE"
+echo "Average BP Miss Rate over $BP_MISS_RATE_COUNT tests: $AVG_BP_MISS_RATE" >> "$RESULTS_FILE"
 
 echo ""
 cat "$RESULTS_FILE"

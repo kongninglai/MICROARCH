@@ -23,6 +23,23 @@ print_ipc() {
     echo "---------------"
 }
 
+print_bp_metrics() {
+    echo ""
+    echo "----- BP Metrics -----"
+    awk '
+        /Miss Rate/ {
+            print
+            found = 1
+        }
+        END {
+            if (!found) {
+                print "BP metrics not found in simulator log"
+            }
+        }
+    ' "$SIM_LOG"
+    echo "----------------------"
+}
+
 sim_rc=0
 (
     cd "$SCRIPT_DIR/sim"
@@ -60,6 +77,7 @@ if diff "$RESULTS_SCRIPT" "$RESULTS_CMP" > "$DIFF_OUTPUT"; then
     echo ""
     echo "PASS: RESULTS MATCH"
     print_ipc
+    print_bp_metrics
     echo ""
 else
     echo "FAIL: RESULTS MISMATCH"

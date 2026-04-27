@@ -16,7 +16,11 @@ module ex_control(
     output [31:0] jump_eip,
     output [31:0] new_eip,
     output branch_taken,
-    output mispredict_bar
+    output mispredict_bar,
+
+    output direction_mispredict,
+    output target_mispredict,
+    output rel_target_mispredict
 ); 
     wire [31:0] unmasked_eip, eip_mask, masked_eip;
 
@@ -56,4 +60,8 @@ module ex_control(
     nor2$ or2_mispredict(mispredict_bar, wrong_direction, branch_taken_wrong_target);
     // big_eq #(.WIDTH(1)) eq_pred_dir(.eq(accurate_predict), .in0(pred_dir), .in1(branch_taken));
     // inv1$ inv_mispredict(mispredict, accurate_predict);
+
+    assign direction_mispredict = wrong_direction;
+    assign target_mispredict = branch_taken_wrong_target;
+    assign rel_target_mispredict = (target_mispredict) & (sig_eip_mux == 3'b010);
 endmodule 

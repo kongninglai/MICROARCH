@@ -427,6 +427,9 @@ module stage_ex #(
     bufferH16$  bufferH16$_target_eip_buf16[31:0](target_eip_buf16, target_eip);
     wire branch_taken, mispredict_bar;
     wire [31:0] jump_eip;
+
+    wire direction_mispredict_wo_valid, target_mispredict_wo_valid, rel_target_mispredict_wo_valid;
+    reg  [31:0] num_direction_mispredict, num_target_mispredict, num_rel_target_mispredict, total_valid_branch, total_mispredict;
     ex_control control (
         .r_m(regA_rm),
         .imm(to_ex_imm),
@@ -444,8 +447,27 @@ module stage_ex #(
         .jump_eip(jump_eip),
         .new_eip(target_eip),
         .branch_taken(branch_taken),
-        .mispredict_bar(mispredict_bar)
+        .mispredict_bar(mispredict_bar),
+        .direction_mispredict(direction_mispredict_wo_valid),
+        .target_mispredict(target_mispredict_wo_valid),
+        .rel_target_mispredict(rel_target_mispredict_wo_valid)
     ); 
+
+    always @(posedge clk) begin
+        if (!rst_n) begin 
+            num_direction_mispredict    <= 32'h0;
+            num_target_mispredict       <= 32'h0;
+            num_rel_target_mispredict   <= 32'h0;
+            total_valid_branch          <= 32'h0;
+            total_mispredict            <= 32'h0;
+        end else if (from_ex_br_valid) begin 
+            total_valid_branch          <= total_valid_branch + 1;
+            num_direction_mispredict    <= (direction_mispredict_wo_valid) ? (num_direction_mispredict+1) : num_direction_mispredict;
+            num_target_mispredict       <= (target_mispredict_wo_valid) ? (num_target_mispredict+1) : num_target_mispredict;
+            num_rel_target_mispredict   <= (rel_target_mispredict_wo_valid) ? (num_rel_target_mispredict+1) : num_rel_target_mispredict;
+            total_mispredict            <= mispredict_bar ? total_mispredict :  (total_mispredict+1);
+        end
+    end
 
     wire is_taken_branch;
     and2$ and2_is_taken_branch(is_taken_branch, branch_taken, sig_ldEIP);

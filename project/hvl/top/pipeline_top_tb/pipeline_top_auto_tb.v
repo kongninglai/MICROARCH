@@ -608,6 +608,11 @@ end
 integer ipc_cycles;
 real ipc;
 
+real bp_mispredict_rate;
+real bp_dir_mispredict_rate;
+real bp_target_mispredict_rate;
+real bp_rel_target_mispredict_rate;
+
 always @(posedge clk) begin
   if (!rst_n) begin
     ipc_cycles <= 0;
@@ -642,6 +647,20 @@ always @(posedge clk) begin
     $display("Committed instrs = %0d", NUM_TESTS);
     $display("IPC              = %f", ipc);
 
+    $display("\n-------BP Metric---------\n");
+    bp_mispredict_rate = (dut.inst_stage_ex.total_valid_branch == 0) ? 0.0 :
+                          dut.inst_stage_ex.total_mispredict * 1.0 / dut.inst_stage_ex.total_valid_branch;
+    bp_dir_mispredict_rate = (dut.inst_stage_ex.total_mispredict == 0) ? 0.0 :
+                              dut.inst_stage_ex.num_direction_mispredict * 1.0 / dut.inst_stage_ex.total_mispredict;
+    bp_target_mispredict_rate = (dut.inst_stage_ex.total_mispredict == 0) ? 0.0 :
+                                 dut.inst_stage_ex.num_target_mispredict * 1.0 / dut.inst_stage_ex.total_mispredict;
+    bp_rel_target_mispredict_rate = (dut.inst_stage_ex.num_target_mispredict == 0) ? 0.0 :
+                                     dut.inst_stage_ex.num_rel_target_mispredict * 1.0 / dut.inst_stage_ex.num_target_mispredict;
+    $display("Miss Rate (Total Miss / Total Branch)                = %f (%0d / %0d)", bp_mispredict_rate, dut.inst_stage_ex.total_mispredict, dut.inst_stage_ex.total_valid_branch);
+    $display("Direction Miss Rate (Direction Miss / Total Miss)    = %f (%0d / %0d)", bp_dir_mispredict_rate, dut.inst_stage_ex.num_direction_mispredict, dut.inst_stage_ex.total_mispredict);
+    $display("Target Miss Rate (Target Miss / Total Miss)          = %f (%0d / %0d)", bp_target_mispredict_rate, dut.inst_stage_ex.num_target_mispredict, dut.inst_stage_ex.total_mispredict);
+    $display("Rel Target Miss Rate (Rel Target Miss / Target Miss) = %f (%0d / %0d)", bp_rel_target_mispredict_rate, dut.inst_stage_ex.num_rel_target_mispredict, dut.inst_stage_ex.num_target_mispredict);
+    $display("\n");
     $finish;
 
   end
