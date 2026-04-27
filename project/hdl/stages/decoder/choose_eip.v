@@ -34,7 +34,7 @@ module choose_eip(
         .incr_eip(i_eip_prebuf)
     );
 
-    bufferH16$  bufferH16$_i_eip[31:0](i_eip, i_eip_prebuf);
+    bufferH256$  bufferH256$_i_eip[31:0](i_eip, i_eip_prebuf);
 
     /*
     Load EIP if: 

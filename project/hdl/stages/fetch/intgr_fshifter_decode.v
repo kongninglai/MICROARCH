@@ -47,7 +47,7 @@ module intgr_fshifter_decode(
     wire to_pr_pr_valid, to_pr_pr_valid_buf16;
     bufferH16$  bufferH16$_to_pr_pr_valid_buf16(to_pr_pr_valid_buf16, to_pr_pr_valid);
 
-    wire [127:0] to_de_outbytes;
+    wire [127:0] to_de_outbytes, prebuf_to_de_outbytes;
     wire [15:0] to_de_pf_expn_bytes_out;
     wire [31:0] to_pr_i_eip, to_pr_o_eip;
     wire iq_full;
@@ -67,10 +67,24 @@ module intgr_fshifter_decode(
         .offset(to_pr_o_eip[3:0]), //lower bits of current eip
         .shft_reg_we(shft_reg_we), //output to first half of fetch
         .tail_ptr(tail_ptr),
-        .to_de_outbytes(to_de_outbytes),
+        .to_de_outbytes(prebuf_to_de_outbytes),
         .to_de_pf_expn_bytes_out(to_de_pf_expn_bytes_out), 
         .ready() //unused
     );    
+
+    genvar i;
+    generate
+        for (i = 8; i <= 31; i = i + 1) begin : gen_to_de_outbytes_buf_low
+            bufferH16$ u_buf(to_de_outbytes[i], prebuf_to_de_outbytes[i]);
+        end
+    endgenerate
+
+    genvar j;
+    generate
+        for (i = 32; i <= 118; i = i + 1) begin : gen_to_de_outbytes_buf_high
+            bufferH64$ u_buf(to_de_outbytes[i], prebuf_to_de_outbytes[i]);
+        end
+    endgenerate
 
     wire to_pr_ld_pr_rr, to_pr_ld_pr_rr_prebuf;
     wire to_f_ld_eip;
@@ -134,7 +148,6 @@ module intgr_fshifter_decode(
     );
 
     bufferH256$   bufferH256$_to_pr_ld_pr_rr(to_pr_ld_pr_rr, to_pr_ld_pr_rr_prebuf);
-
     
     //decoder output
     de_to_rr PR_DE_RR(
