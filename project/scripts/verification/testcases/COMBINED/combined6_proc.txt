@@ -1,0 +1,348 @@
+// ============================================================
+// COMBINED6: Underrepresented instruction stress test
+// Focus: MMX (PACKSS, PADD, PAVG, MOVQ boundary cases),
+//        XCHG memory, SBB CF=1 all forms, REP edge cases,
+//        REPE CMPS mismatch, NOT memory, segment overrides
+// DS=0x200->phys 0x2000, ES=0x400->phys 0x5000, SS=0xb00->phys 0x4000
+// ============================================================
+
+// --- Setup ---
+0x0:   ba 00 02 00 00  // mov    edx,0x200
+0x5:   8e da           // mov    ds,edx
+0x7:   ba 00 04 00 00  // mov    edx,0x400
+0xc:   8e c2           // mov    es,edx
+0xe:   ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2           // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+
+// ============================================================
+// SECTION 1: MMX — PACKSSWB boundary cases
+// Pack signed words to signed bytes with saturation
+// Saturation: >127 -> 127 (0x7F), <-128 -> -128 (0x80)
+// ============================================================
+
+// Test A: all-positive saturation
+// MM0 = [0x0001, 0x007F, 0x0080, 0x7FFF]  (1, 127, 128, 32767)
+// MM1 = [0xFF80, 0xFF7F, 0x0000, 0x8000]  (-128, -129, 0, -32768)
+// Expected PACKSSWB result:
+//   low4 from MM0: 01, 7F, 7F, 7F  (128->sat 7F, 32767->sat 7F)
+//   hi4 from MM1:  80, 80, 00, 80  (-129->sat 80, -32768->sat 80)
+0x24:  c7 43 00 01 00 7f 00  // mov [ebx+0x00], 0x007F0001  ; words: 0x0001, 0x007F
+0x2b:  c7 43 04 80 00 ff 7f  // mov [ebx+0x04], 0x7FFF0080  ; words: 0x0080, 0x7FFF
+0x32:  0f 6f 03              // movq mm0, [ebx]
+0x35:  c7 43 08 80 ff 7f ff  // mov [ebx+0x08], 0xFF7FFF80  ; words: 0xFF80, 0xFF7F
+0x3c:  c7 43 0c 00 00 00 80  // mov [ebx+0x0c], 0x80000000  ; words: 0x0000, 0x8000
+0x43:  0f 6f 4b 08           // movq mm1, [ebx+0x08]
+0x47:  0f 63 c1              // packsswb mm0, mm1
+0x4a:  0f 7f 43 10           // movq [ebx+0x10], mm0        ; store result
+
+// Test B: all zeros and all ones
+// MM2 = [0x0000, 0x0000, 0x0000, 0x0000]
+// MM3 = [0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF]  (all -1)
+// Expected: low4=00,00,00,00  hi4=FF,FF,FF,FF
+0x4e:  c7 43 18 00 00 00 00  // mov [ebx+0x18], 0x00000000
+0x55:  c7 43 1c 00 00 00 00  // mov [ebx+0x1c], 0x00000000
+0x5c:  0f 6f 53 18           // movq mm2, [ebx+0x18]
+0x60:  c7 43 20 ff ff ff ff  // mov [ebx+0x20], 0xFFFFFFFF
+0x67:  c7 43 24 ff ff ff ff  // mov [ebx+0x24], 0xFFFFFFFF
+0x6e:  0f 6f 5b 20           // movq mm3, [ebx+0x20]
+0x72:  0f 63 d3              // packsswb mm2, mm3
+0x75:  0f 7f 53 28           // movq [ebx+0x28], mm2
+
+// ============================================================
+// SECTION 2: MMX — PACKSSDW boundary cases
+// Pack signed dwords to signed words with saturation
+// Saturation: >32767 -> 32767 (0x7FFF), <-32768 -> -32768 (0x8000)
+// ============================================================
+
+// MM4 = [0x00000001, 0x00007FFF]  (1, 32767 — no sat)
+// MM5 = [0x00008000, 0xFFFF7FFF]  (32768 -> sat 7FFF, -32769 -> sat 8000)
+0x79:  c7 43 30 01 00 00 00  // mov [ebx+0x30], 0x00000001
+0x80:  c7 43 34 ff 7f 00 00  // mov [ebx+0x34], 0x00007FFF
+0x87:  0f 6f 63 30           // movq mm4, [ebx+0x30]
+0x8b:  c7 43 38 00 80 00 00  // mov [ebx+0x38], 0x00008000
+0x92:  c7 43 3c ff 7f ff ff  // mov [ebx+0x3c], 0xFFFF7FFF
+0x99:  0f 6f 6b 38           // movq mm5, [ebx+0x38]
+0x9d:  0f 6b e5              // packssdw mm4, mm5
+0xa0:  0f 7f 63 40           // movq [ebx+0x40], mm4
+// Expected: low2 words: 0x0001, 0x7FFF  hi2 words: 0x7FFF, 0x8000
+
+// ============================================================
+// SECTION 3: MMX — PADDW overflow/wrap
+// Packed word addition wraps (no saturation)
+// ============================================================
+
+// MM0 = [0x7FFF, 0x8000, 0xFFFF, 0x0001]
+// MM1 = [0x0001, 0x8000, 0x0001, 0xFFFF]
+// Expected: [0x8000, 0x0000, 0x0000, 0x0000]
+0xa4:  c7 43 48 ff 7f 00 80  // mov [ebx+0x48], 0x80007FFF
+0xab:  c7 43 4c ff ff 01 00  // mov [ebx+0x4c], 0x0001FFFF
+0xb2:  0f 6f 43 48           // movq mm0, [ebx+0x48]
+0xb6:  c7 43 50 01 00 00 80  // mov [ebx+0x50], 0x80000001
+0xbd:  c7 43 54 01 00 ff ff  // mov [ebx+0x54], 0xFFFF0001
+0xc4:  0f 6f 4b 50           // movq mm1, [ebx+0x50]
+0xc8:  0f fd c1              // paddw mm0, mm1
+0xcb:  0f 7f 43 58           // movq [ebx+0x58], mm0
+
+// ============================================================
+// SECTION 4: MMX — PADDD overflow/wrap
+// ============================================================
+
+// MM2 = [0x7FFFFFFF, 0x80000000]
+// MM3 = [0x00000001, 0x80000000]
+// Expected: [0x80000000, 0x00000000]
+0xcf:  c7 43 60 ff ff ff 7f  // mov [ebx+0x60], 0x7FFFFFFF
+0xd6:  c7 43 64 00 00 00 80  // mov [ebx+0x64], 0x80000000
+0xdd:  0f 6f 53 60           // movq mm2, [ebx+0x60]
+0xe1:  c7 43 68 01 00 00 00  // mov [ebx+0x68], 0x00000001
+0xe8:  c7 43 6c 00 00 00 80  // mov [ebx+0x6c], 0x80000000
+0xef:  0f 6f 5b 68           // movq mm3, [ebx+0x68]
+0xf3:  0f fe d3              // paddd mm2, mm3
+0xf6:  0f 7f 53 70           // movq [ebx+0x70], mm2
+
+// ============================================================
+// SECTION 5: MMX — PAVGB rounding cases
+// PAVGB: for each byte pair (a,b): result = (a+b+1)>>1
+// Tests odd+even sums to verify +1 rounding
+// ============================================================
+
+// MM0 = [0x01, 0x02, 0xFF, 0x00, 0xFE, 0x01, 0x80, 0x7F]
+// MM1 = [0x02, 0x03, 0xFF, 0x01, 0xFF, 0x00, 0x80, 0x80]
+// Expected PAVGB:
+//   (1+2+1)>>1=2, (2+3+1)>>1=3, (255+255+1)>>1=255(0xFF),
+//   (0+1+1)>>1=1, (254+255+1)>>1=255, (1+0+1)>>1=1,
+//   (128+128+1)>>1=128(0x80+1>>1=128), (127+128+1)>>1=128
+0xfa:  c7 43 00 01 02 ff 00  // mov [ebx+0x00], 0x00FF0201
+0x101: c7 43 04 fe 01 80 7f  // mov [ebx+0x04], 0x7F8001FE
+0x108: 0f 6f 03              // movq mm0, [ebx]
+0x10b: c7 43 08 02 03 ff 01  // mov [ebx+0x08], 0x01FF0302
+0x112: c7 43 0c ff 00 80 80  // mov [ebx+0x0c], 0x808000FF
+0x119: 0f 6f 4b 08           // movq mm1, [ebx+0x08]
+0x11d: 0f e0 c1              // pavgb mm0, mm1
+0x120: 0f 7f 43 10           // movq [ebx+0x10], mm0
+
+// ============================================================
+// SECTION 6: MMX — PAVGW rounding cases
+// PAVGW: for each word pair (a,b): result = (a+b+1)>>1
+// ============================================================
+
+// MM2 = [0x0001, 0xFFFF, 0x7FFF, 0x8000]
+// MM3 = [0x0002, 0xFFFF, 0x8000, 0x7FFF]
+// Expected: [(1+2+1)>>1=2, (FFFF+FFFF+1)>>1=FFFF,
+//            (7FFF+8000+1)>>1=8000, (8000+7FFF+1)>>1=8000]
+0x124: c7 43 18 01 00 ff ff  // mov [ebx+0x18], 0xFFFF0001
+0x12b: c7 43 1c ff 7f 00 80  // mov [ebx+0x1c], 0x80007FFF
+0x132: 0f 6f 53 18           // movq mm2, [ebx+0x18]
+0x136: c7 43 20 02 00 ff ff  // mov [ebx+0x20], 0xFFFF0002
+0x13d: c7 43 24 00 80 ff 7f  // mov [ebx+0x24], 0x7FFF8000
+0x144: 0f 6f 5b 20           // movq mm3, [ebx+0x20]
+0x148: 0f e3 d3              // pavgw mm2, mm3
+0x14b: 0f 7f 53 28           // movq [ebx+0x28], mm2
+
+// ============================================================
+// SECTION 7: MMX — MOVQ reg-to-reg chain + memory round-trip
+// Test all 8 MM registers
+// ============================================================
+0x14f: c7 43 30 de ad be ef  // mov [ebx+0x30], 0xEFBEADDE
+0x156: c7 43 34 ca fe ba be  // mov [ebx+0x34], 0xBEBAFECA
+0x15d: 0f 6f 43 30           // movq mm0, [ebx+0x30]   ; load
+0x161: 0f 6f c8              // movq mm1, mm0           ; mm1=mm0
+0x164: 0f 6f d1              // movq mm2, mm1           ; mm2=mm1
+0x167: 0f 6f da              // movq mm3, mm2           ; mm3=mm2
+0x16a: 0f 6f e3              // movq mm4, mm3           ; mm4=mm3
+0x16d: 0f 6f ec              // movq mm5, mm4           ; mm5=mm4
+0x170: 0f 6f f5              // movq mm6, mm5           ; mm6=mm5
+0x173: 0f 6f fe              // movq mm7, mm6           ; mm7=mm6
+0x176: 0f 7f 7b 38           // movq [ebx+0x38], mm7   ; store mm7 (should = original)
+
+// ============================================================
+// SECTION 8: XCHG with memory operands
+// ============================================================
+
+// XCHG r/m32, r32 — memory form
+0x17a: c7 43 40 78 56 34 12  // mov [ebx+0x40], 0x12345678
+0x181: b8 ef be ad de        // mov eax, 0xDEADBEEF
+0x186: 87 43 40              // xchg [ebx+0x40], eax    ; eax=0x12345678, [0x40]=0xDEADBEEF
+
+// XCHG r/m16, r16 — memory form
+0x189: 66 c7 43 44 34 12     // mov WORD [ebx+0x44], 0x1234
+0x18f: 66 b9 78 56           // mov cx, 0x5678
+0x193: 66 87 4b 44           // xchg [ebx+0x44], cx     ; cx=0x1234, [0x44]=0x5678
+
+// XCHG r/m8, r8 — memory form
+0x197: c6 43 46 aa           // mov BYTE [ebx+0x46], 0xAA
+0x19b: b2 55                 // mov dl, 0x55
+0x19d: 86 53 46              // xchg [ebx+0x46], dl     ; dl=0xAA, [0x46]=0x55
+
+// ============================================================
+// SECTION 9: SBB all 4 forms with CF=1
+// ============================================================
+
+// Set CF=1
+0x1a0: b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x1a5: 05 01 00 00 00  // add    eax,0x1        ; CF=1
+
+// SBB r/m32, imm32 (81 /3) CF=1: 0x10 - 0x03 - 1 = 0x0C
+0x1aa: b8 10 00 00 00  // mov    eax,0x10
+0x1af: 81 d8 03 00 00 00  // sbb eax,0x3        ; eax=0x0C
+
+// Set CF=1 again
+0x1b5: b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x1ba: 05 01 00 00 00  // add    eax,0x1        ; CF=1
+
+// SBB r/m32, imm8 (83 /3) CF=1: 0x20 - 0x05 - 1 = 0x1A
+0x1bf: b9 20 00 00 00  // mov    ecx,0x20
+0x1c4: 83 d9 05        // sbb    ecx,0x5        ; ecx=0x1A
+
+// Set CF=1
+0x1c7: b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x1cc: 05 01 00 00 00  // add    eax,0x1        ; CF=1
+
+// SBB r/m32, r32 (19 /r) CF=1: 0x30 - 0x0A - 1 = 0x25
+0x1d1: ba 30 00 00 00  // mov    edx,0x30
+0x1d6: be 0a 00 00 00  // mov    esi,0x0A
+0x1db: 19 f2           // sbb    edx,esi        ; edx=0x25
+
+// Set CF=1
+0x1dd: b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x1e2: 05 01 00 00 00  // add    eax,0x1        ; CF=1
+
+// SBB r32, r/m32 (1b /r) CF=1: 0x40 - 0x0F - 1 = 0x30
+0x1e7: bf 40 00 00 00  // mov    edi,0x40
+0x1ec: b9 0f 00 00 00  // mov    ecx,0x0F
+0x1f1: 1b f9           // sbb    edi,ecx        ; edi=0x30
+
+// ============================================================
+// SECTION 10: REP MOVS edge cases
+// ============================================================
+
+// REP MOVS m32 with ECX=0 (should be a no-op)
+0x1f3: fc              // cld
+0x1f4: b9 00 00 00 00  // mov    ecx,0x0
+0x1f9: be 00 00 00 00  // mov    esi,0x0
+0x1fe: bf 00 00 00 00  // mov    edi,0x0
+0x203: f3 a5           // rep movs m32          ; ECX=0, no-op
+
+// REP MOVS m32 with ECX=1 (single dword copy)
+0x205: c7 43 48 aa bb cc dd  // mov [ebx+0x48], 0xDDCCBBAA
+0x20c: b9 01 00 00 00  // mov    ecx,0x1
+0x211: be 48 00 00 00  // mov    esi,0x48
+0x216: bf 00 00 00 00  // mov    edi,0x0        ; ES:0x00
+0x21b: f3 a5           // rep movs m32          ; copy 1 dword DS:0x48 -> ES:0x00
+
+// ============================================================
+// SECTION 11: REPE CMPS with mismatch at different positions
+// ============================================================
+
+// Setup: DS:0x50-0x5F = AA BB CC DD, ES:0x50-0x5F = AA BB CC EE
+// Mismatch at 3rd dword (offset 0x58)
+0x21d: c7 43 50 aa aa aa aa  // mov [ebx+0x50], 0xAAAAAAAA
+0x224: c7 43 54 bb bb bb bb  // mov [ebx+0x54], 0xBBBBBBBB
+0x22b: c7 43 58 cc cc cc cc  // mov [ebx+0x58], 0xCCCCCCCC
+0x232: c7 43 5c dd dd dd dd  // mov [ebx+0x5c], 0xDDDDDDDD
+0x239: 26 c7 45 50 aa aa aa aa  // mov ES:[ebp+0x50], 0xAAAAAAAA
+0x241: 26 c7 45 54 bb bb bb bb  // mov ES:[ebp+0x54], 0xBBBBBBBB
+0x249: 26 c7 45 58 ee ee ee ee  // mov ES:[ebp+0x58], 0xEEEEEEEE  ; MISMATCH
+0x251: 26 c7 45 5c dd dd dd dd  // mov ES:[ebp+0x5c], 0xDDDDDDDD
+
+0x259: fc              // cld
+0x25a: b9 04 00 00 00  // mov    ecx,0x4
+0x25f: be 50 00 00 00  // mov    esi,0x50
+0x264: bf 50 00 00 00  // mov    edi,0x50
+0x269: f3 a7           // repe cmps m32
+// After: ECX=1 (stopped after 3rd compare), ZF=0, ESI=0x5C, EDI=0x5C
+
+// ============================================================
+// SECTION 12: NOT with memory operands (all sizes)
+// ============================================================
+
+// NOT r/m8 memory
+0x26b: c6 43 60 aa     // mov BYTE [ebx+0x60], 0xAA
+0x26f: f6 53 60        // not BYTE [ebx+0x60]   ; -> 0x55
+
+// NOT r/m16 memory
+0x272: 66 c7 43 62 f0 0f  // mov WORD [ebx+0x62], 0x0FF0
+0x278: 66 f7 53 62     // not WORD [ebx+0x62]   ; -> 0xF00F
+
+// NOT r/m32 memory
+0x27c: c7 43 64 78 56 34 12  // mov [ebx+0x64], 0x12345678
+0x283: f7 53 64        // not DWORD [ebx+0x64]  ; -> 0xEDCBA987
+
+// ============================================================
+// SECTION 13: Segment override on ALU memory ops
+// ES:[ebp+xx] uses different physical memory than DS:[ebx+xx]
+// ============================================================
+
+// AND with ES override
+0x286: 26 c7 45 00 ff 0f ff 0f  // mov ES:[ebp+0x00], 0x0FFF0FFF
+0x28e: b8 f0 f0 f0 f0  // mov eax, 0xF0F0F0F0
+0x293: 26 21 45 00     // and ES:[ebp+0x00], eax  ; -> 0x00F000F0
+
+// OR with ES override
+0x297: 26 c7 45 04 00 f0 00 f0  // mov ES:[ebp+0x04], 0xF000F000
+0x29f: b9 0f 0f 0f 0f  // mov ecx, 0x0F0F0F0F
+0x2a4: 26 09 4d 04     // or  ES:[ebp+0x04], ecx  ; -> 0xFF0FFF0F
+
+// ADD with ES override
+0x2a8: 26 c7 45 08 01 00 00 00  // mov ES:[ebp+0x08], 0x00000001
+0x2b0: ba 02 00 00 00  // mov edx, 0x2
+0x2b5: 26 01 55 08     // add ES:[ebp+0x08], edx  ; -> 0x00000003
+
+// Read back to verify
+0x2b9: 26 8b 45 00     // mov eax, ES:[ebp+0x00]  ; should be 0x00F000F0
+0x2bd: 26 8b 4d 04     // mov ecx, ES:[ebp+0x04]  ; should be 0xFF0FFF0F
+0x2c1: 26 8b 55 08     // mov edx, ES:[ebp+0x08]  ; should be 0x00000003
+
+// ============================================================
+// SECTION 14: MMX with memory source operands (not just reg-reg)
+// Tests PADDW/PADDD/PAVGB/PAVGW/PACKSSWB/PACKSSDW from memory
+// ============================================================
+
+// PADDW mm0, [mem]
+0x2c5: c7 43 68 01 00 02 00  // mov [ebx+0x68], 0x00020001
+0x2cc: c7 43 6c 03 00 04 00  // mov [ebx+0x6c], 0x00040003
+0x2d3: 0f 6f 43 68           // movq mm0, [ebx+0x68]
+0x2d7: c7 43 70 10 00 20 00  // mov [ebx+0x70], 0x00200010
+0x2de: c7 43 74 30 00 40 00  // mov [ebx+0x74], 0x00400030
+0x2e5: 0f fd 43 70           // paddw mm0, [ebx+0x70]   ; mm0 += mem (word-wise)
+0x2e9: 0f 7f 43 78           // movq [ebx+0x78], mm0    ; store result
+
+// PADDD mm1, [mem]
+0x2ed: c7 43 00 ff ff ff 7f  // mov [ebx+0x00], 0x7FFFFFFF
+0x2f4: c7 43 04 01 00 00 00  // mov [ebx+0x04], 0x00000001
+0x2fb: 0f 6f 0b              // movq mm1, [ebx]
+0x2fe: c7 43 08 01 00 00 00  // mov [ebx+0x08], 0x00000001
+0x305: c7 43 0c ff ff ff ff  // mov [ebx+0x0c], 0xFFFFFFFF
+0x30c: 0f fe 4b 08           // paddd mm1, [ebx+0x08]   ; mm1 += mem (dword-wise)
+0x310: 0f 7f 4b 10           // movq [ebx+0x10], mm1
+
+// PAVGB mm2, [mem]
+0x314: c7 43 18 00 ff 80 7f  // mov [ebx+0x18], 0x7F80FF00
+0x31b: c7 43 1c 01 fe 40 bf  // mov [ebx+0x1c], 0xBF40FE01
+0x322: 0f 6f 53 18           // movq mm2, [ebx+0x18]
+0x326: c7 43 20 02 01 80 81  // mov [ebx+0x20], 0x81800102
+0x32d: c7 43 24 ff 02 c0 41  // mov [ebx+0x24], 0x41C002FF
+0x334: 0f 6f 5b 20           // movq mm3, [ebx+0x20]
+0x338: 0f e0 d3              // pavgb mm2, mm3
+0x33b: 0f 7f 53 28           // movq [ebx+0x28], mm2
+
+// PACKSSWB mm4, [mem] (memory source)
+0x33f: c7 43 30 00 01 00 ff  // mov [ebx+0x30], 0xFF000100  ; words: 0x0100, 0xFF00
+0x346: c7 43 34 80 00 7f 00  // mov [ebx+0x34], 0x007F0080  ; words: 0x0080, 0x007F
+0x34d: 0f 6f 63 30           // movq mm4, [ebx+0x30]
+0x351: 0f 63 63 38           // packsswb mm4, [ebx+0x38]    ; pack with mem source
+// (ebx+0x38 still has 0x00008000 from section 2)
+0x355: 0f 7f 63 40           // movq [ebx+0x40], mm4
+
+// ============================================================
+// HLT
+// ============================================================
+0x359: f4              // hlt
+
+// ============================================================
+// Data memory (physical addresses)
+// DS -> phys 0x2000, ES -> phys 0x5000
+// ============================================================
+0x2000:

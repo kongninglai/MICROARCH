@@ -10,7 +10,7 @@
 0x30:  64 0f 6f 43 10  // movq mm0,QWORD PTR fs:[ebx+0x10]
 0x35:  64 0f 6f 4b 18  // movq mm1,QWORD PTR fs:[ebx+0x18]
 0x3a:  64 c6 43 1c 01  // mov BYTE PTR fs:[ebx+0x1c],0x1
-0x3f:  b9 00 02 00 00  // mov ecx,0x200
+0x3f:  b9 80 03 00 00  // mov ecx,0x380
 0x44:  83 c1 ff  // add ecx,0xffffffff
 0x47:  75 fb  // jne loop
 0x49:  f4  // hlt
