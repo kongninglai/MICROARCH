@@ -19,17 +19,20 @@ module return_address_stack(
 
     // flush: do nothing; 
     // stask is full: flush the stack;
+    wire ras_we;
     wire flush_ras;
     wire push, pop, empty, full;
 
-    assign push = ((opcode==8'hE8) | ((opcode==8'hFF) & (modrm[5:3]==2'b10))) & (ld_pr_rr & instr_valid & ~flush_ex);
-    assign pop = ((opcode==8'hC2) | (opcode==8'hC3)) & (ld_pr_rr & instr_valid & ~flush_ex);
-    assign flush_ras = (full & push);
+    assign ras_we = ld_pr_rr & instr_valid & ~flush_ex;
+    assign push = ((opcode==8'hE8) | ((opcode==8'hFF) & (modrm[5:3]==2'b10)));
+    assign pop = ((opcode==8'hC2) | (opcode==8'hC3));
+    assign flush_ras = full & push & ras_we;
     assign valid_ret = pop & ~empty;
     
     stack_bh RAS(
         .clk(clk),
         .rst_n(rst_n),
+        .we(ras_we),
         .push(push),
         .pop(pop),
         .flush(flush_ras),

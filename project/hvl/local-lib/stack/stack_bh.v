@@ -6,6 +6,7 @@ module stack_bh #(
     input clk,
     input rst_n,
 
+    input we,
     input push,
     input pop,
     input flush,
@@ -27,20 +28,14 @@ module stack_bh #(
 
     wire push_ok;
     wire pop_ok;
-    wire push_only;
-    wire pop_only;
-    wire push_pop;
     wire [PTR_WIDTH:0] top_idx;
 
     assign empty = (sp == ZERO);
     assign full = (sp == DEPTH_VALUE);
     assign count = sp;
 
-    assign push_ok = push && (!full || pop);
-    assign pop_ok = pop && !empty;
-    assign push_only = push_ok && !pop_ok;
-    assign pop_only = pop_ok && !push_ok;
-    assign push_pop = push_ok && pop_ok;
+    assign push_ok = we && push && !full;
+    assign pop_ok = we && pop && !empty;
 
     assign top_idx = sp - ONE;
     assign top_data = empty ? {WIDTH{1'b0}} : stack[top_idx[PTR_WIDTH-1:0]];
@@ -56,12 +51,10 @@ module stack_bh #(
         end else begin
             if (flush) begin
                 sp <= ZERO;
-            end else if (push_pop) begin
-                stack[top_idx[PTR_WIDTH-1:0]] <= push_data;
-            end else if (push_only) begin
+            end else if (push_ok) begin
                 stack[sp[PTR_WIDTH-1:0]] <= push_data;
                 sp <= sp + ONE;
-            end else if (pop_only) begin
+            end else if (pop_ok) begin
                 sp <= sp - ONE;
             end
         end

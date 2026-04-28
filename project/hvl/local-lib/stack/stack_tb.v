@@ -11,6 +11,7 @@ localparam PTR_WIDTH = 2;
 
 reg clk;
 reg rst_n;
+reg we;
 reg push;
 reg pop;
 reg flush;
@@ -29,6 +30,7 @@ stack_bh #(
 ) DUT (
   .clk(clk),
   .rst_n(rst_n),
+  .we(we),
   .push(push),
   .pop(pop),
   .flush(flush),
@@ -88,6 +90,7 @@ task check_ref;
 endtask
 
 task update_ref;
+  input do_we;
   input do_push;
   input do_pop;
   input do_flush;
@@ -99,13 +102,11 @@ task update_ref;
   begin
     ref_empty = (ref_sp == 0);
     ref_full = (ref_sp == DEPTH);
-    push_ok = do_push && (!ref_full || do_pop);
-    pop_ok = do_pop && !ref_empty;
+    push_ok = do_we && do_push && !ref_full;
+    pop_ok = do_we && do_pop && !ref_empty;
 
     if (do_flush) begin
       ref_sp = 0;
-    end else if (push_ok && pop_ok) begin
-      ref_stack[ref_sp-1] = data;
     end else if (push_ok) begin
       ref_stack[ref_sp] = data;
       ref_sp = ref_sp + 1;
@@ -116,12 +117,14 @@ task update_ref;
 endtask
 
 task step;
+  input do_we;
   input do_push;
   input do_pop;
   input do_flush;
   input [WIDTH-1:0] data;
   begin
     @(negedge clk);
+    we = do_we;
     push = do_push;
     pop = do_pop;
     flush = do_flush;
@@ -130,7 +133,7 @@ task step;
     check_ref;
 
     @(posedge clk);
-    update_ref(do_push, do_pop, do_flush, data);
+    update_ref(do_we, do_push, do_pop, do_flush, data);
     #1;
     check_ref;
   end
@@ -139,6 +142,7 @@ endtask
 initial begin
   clk = 1'b0;
   rst_n = 1'b0;
+  we = 1'b0;
   push = 1'b0;
   pop = 1'b0;
   flush = 1'b0;
@@ -156,22 +160,26 @@ initial begin
   #1;
   check_ref;
 
-  step(1'b0, 1'b1, 1'b0, 8'h00);  // Pop empty: ignored.
-  step(1'b1, 1'b0, 1'b0, 8'h11);
-  step(1'b1, 1'b0, 1'b0, 8'h22);
-  step(1'b1, 1'b0, 1'b0, 8'h33);
-  step(1'b1, 1'b0, 1'b0, 8'h44);  // Full after this push.
-  step(1'b1, 1'b0, 1'b0, 8'h55);  // Push full: ignored.
-  step(1'b1, 1'b1, 1'b0, 8'h66);  // Full push/pop: replace top.
-  step(1'b1, 1'b1, 1'b1, 8'h99);  // Flush wins over push/pop.
-  step(1'b0, 1'b1, 1'b0, 8'h00);  // Pop empty after flush: ignored.
-  step(1'b1, 1'b0, 1'b0, 8'h21);
-  step(1'b1, 1'b0, 1'b0, 8'h32);
-  step(1'b0, 1'b1, 1'b0, 8'h00);
-  step(1'b0, 1'b1, 1'b0, 8'h00);
-  step(1'b1, 1'b1, 1'b0, 8'h88);  // Empty push/pop: acts like push.
+  step(1'b1, 1'b0, 1'b1, 1'b0, 8'h00);  // Pop empty: ignored.
+  step(1'b1, 1'b1, 1'b0, 1'b0, 8'h11);
+  step(1'b0, 1'b1, 1'b0, 1'b0, 8'h12);  // Write disabled: push ignored.
+  step(1'b1, 1'b1, 1'b0, 1'b0, 8'h22);
+  step(1'b1, 1'b1, 1'b0, 1'b0, 8'h33);
+  step(1'b1, 1'b1, 1'b0, 1'b0, 8'h44);  // Full after this push.
+  step(1'b1, 1'b1, 1'b0, 1'b0, 8'h55);  // Push full: ignored.
+  step(1'b0, 1'b0, 1'b1, 1'b0, 8'h00);  // Write disabled: pop ignored.
+  step(1'b1, 1'b0, 1'b1, 1'b0, 8'h00);
+  step(1'b0, 1'b1, 1'b1, 1'b0, 8'h77);  // Write disabled: push/pop ignored.
+  step(1'b1, 1'b1, 1'b0, 1'b1, 8'h99);  // Flush wins over push.
+  step(1'b1, 1'b0, 1'b1, 1'b0, 8'h00);  // Pop empty after flush: ignored.
+  step(1'b1, 1'b1, 1'b0, 1'b0, 8'h21);
+  step(1'b1, 1'b1, 1'b0, 1'b0, 8'h32);
+  step(1'b1, 1'b0, 1'b1, 1'b0, 8'h00);
+  step(1'b1, 1'b0, 1'b1, 1'b0, 8'h00);
+  step(1'b1, 1'b1, 1'b0, 1'b0, 8'h88);
 
   @(negedge clk);
+  we = 1'b0;
   push = 1'b0;
   pop = 1'b0;
   flush = 1'b0;
