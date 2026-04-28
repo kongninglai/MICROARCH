@@ -54,6 +54,9 @@ module stage_decode #(
     wire [31:0] bp_imm;
     wire [2:0] sum_1_lower;
     wire [31:0] i_eip_br;
+    wire [31:0] ras_eip;
+    wire valid_ret;
+
     block_decoder DECODER(
         .cache_line(cache_line),
         .prefix_rep(prefix_rep),
@@ -116,6 +119,7 @@ module stage_decode #(
     wire hit;
     wire cur_instr_prediction;
     wire bp_pred_dir;
+    wire [31:0] bp_rel_eip_target;
     choose_eip #(
         .BP_EN(BP_EN)
     ) EIP_LOGIC(
@@ -131,7 +135,7 @@ module stage_decode #(
         .cur_instr_prediction(cur_instr_prediction),
         .flush_ex(flush_ex),
         
-        .bp_eip_target(bp_eip_target),
+        .bp_eip_target(bp_rel_eip_target),
         .ex_eip_target(eip_target_ex),
         .branch_type(branch_type),
         .hit(hit),
@@ -141,8 +145,27 @@ module stage_decode #(
         .o_eip(o_eip),
         .ld_eip(ld_eip),
         .eip_true(eip_true),
-        .take_branch(to_f_take_branch)
+        .take_branch(to_f_take_branch),
+
+        .valid_ret(valid_ret),
+        .ras_eip(ras_eip),
+        .bp_eip_target_with_ret(bp_eip_target)
     );
+
+    return_address_stack RAS(
+        .clk(clk),
+        .rst_n(rst_bar),
+
+        .opcode(opcode),
+        .modrm(modrm),
+        .ieip(i_eip),
+        .ld_pr_rr(ld_pr_rr),
+        .instr_valid(pr_de_rr_valid),
+        .flush_ex(flush_ex),
+
+        .target_eip(ras_eip),
+        .valid_ret(valid_ret)                
+    ); 
 
     bp BP(
         .clk(clk),
@@ -158,7 +181,7 @@ module stage_decode #(
         .br_valid_ex_d(br_valid_ex_d), //used to update pht for instr in execute stage
         .ext_pht_idx(pht_idx_ex_d), //used to update pht for instr in execute stage
 
-        .bp_eip_target(bp_eip_target), 
+        .bp_eip_target(bp_rel_eip_target), 
         .hit(hit),
 
         .cur_instr_prediction(bp_pred_dir),
@@ -166,7 +189,7 @@ module stage_decode #(
         .ghr_out() //used internally only
     );
 
-    assign pred_dir = cur_instr_prediction;
+    assign pred_dir = to_f_take_branch;
 
     generate
         if (BP_EN) begin 

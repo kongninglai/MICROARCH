@@ -27,7 +27,11 @@ module choose_eip #(
     output wire [31:0] o_eip,
     output wire ld_eip,
     output wire [31:0] eip_true,
-    output wire take_branch
+    output wire take_branch,
+
+    input  wire [31:0] ras_eip,
+    input  wire        valid_ret,
+    output wire [31:0] bp_eip_target_with_ret
 
 );  
     wire [31:0] i_eip_prebuf;
@@ -65,7 +69,7 @@ module choose_eip #(
     wire stall, is_branch, cond_take, uncond_take, branch_type_0_bar, take_branch_w;
     inv1$ INV_lower(branch_type_0_bar, branch_type[0]); //if branch type is not 00, then it's a branch
     nand3$ AND_COND_PRED(cond_take, cur_instr_prediction, ld_eip, branch_type[1]); //if branch can be resolved AND predictor says taken AND unconditional
-    nand2$ AND_UNCOND_PRED(uncond_take, branch_type[0], ld_eip); //if unconditional branch AND resolvable
+    nand2$ AND_UNCOND_PRED(uncond_take, (branch_type[0] | valid_ret), ld_eip); //if unconditional branch AND resolvable
     nand2$ OR_TAKE_BRANCH(bp_take_branch, uncond_take, cond_take); //if unconditional branch OR (resolvable conditional branch AND predictor says taken)
     
     generate 
@@ -76,9 +80,11 @@ module choose_eip #(
         end
     endgenerate
 
+    wire [31:0] bp_eip_target_with_ret;
+    assign bp_eip_target_with_ret = valid_ret ? ras_eip : bp_eip_target;
     mux4_32 MUX_CHOOSE_EIP(
         .in0(i_eip), 
-        .in1(bp_eip_target), 
+        .in1(bp_eip_target_with_ret), 
         .in2(ex_eip_target), 
         .in3(ex_eip_target), 
         .s0(take_branch), //Select incremented EIP if we're loading RR pipeline registers

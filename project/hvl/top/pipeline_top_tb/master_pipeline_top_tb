@@ -19,6 +19,7 @@
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/regs
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shifters
 -y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shift_reg
+~/MICROARCH/project/hvl/local-lib/stack/stack_bh.v
 ~/MICROARCH/project/hdl/stages/rr/ucode_rom/ucoderom.v
 
 // Test Logic

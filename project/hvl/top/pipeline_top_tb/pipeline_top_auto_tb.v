@@ -1,8 +1,8 @@
 module pipeline_top_auto_tb;
 
 initial begin
-  // $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
-  // $vcdpluson(0, pipeline_top_auto_tb); 
+  $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
+  $vcdpluson(0, pipeline_top_auto_tb); 
   // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d_instr_len); 
