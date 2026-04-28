@@ -355,8 +355,8 @@ module stage_rr #(
     nand2$ nand_base_none_bar(base_none_bar, rm_101, mod_00);
     bufferHInv64$  bufferHInv64$_base_none(base_none, base_none_bar);
 
-    inv1$ inv_index2(index2_inv, to_rr_sib[2]);
-    or3$ or_index100(index_100_inv, index2_inv, to_rr_sib[1], to_rr_sib[0]);
+    inv1$ inv_index2(index2_inv, to_rr_sib[5]);
+    or3$ or_index100(index_100_inv, index2_inv, to_rr_sib[4], to_rr_sib[3]);
     nand2$ nand_index_none(index_none_prebuf, to_rr_addr_mode[1], index_100_inv);
     bufferH64$  bufferH64$_index_none(index_none, index_none_prebuf);
 
