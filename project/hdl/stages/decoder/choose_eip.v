@@ -70,7 +70,7 @@ module choose_eip #(
     
     generate 
         if (BP_EN) begin 
-            assign take_branch = bp_take_branch;
+            bufferH16$  bufferH16$_take_branch(take_branch, bp_take_branch);
         end else begin 
             assign take_branch = 1'b0;
         end
