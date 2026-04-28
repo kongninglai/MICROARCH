@@ -1,0 +1,100 @@
+// ============================================================
+// JNBE exhaustive: all CF/ZF combos × 3 sizes (rel8/rel16/rel32)
+// JNBE taken iff CF=0 AND ZF=0.
+// ecx accumulates OR bits. Expected final ecx = 0x00000FFF.
+// ============================================================
+
+0x0:   b9 00 00 00 00  // mov    ecx,0x0
+
+// --- rel8: CF=0,ZF=0 -> TAKEN ---
+0x5:   b8 01 00 00 00  // mov    eax,0x1
+0xa:   83 c0 00        // add    eax,0x0          ; CF=0, ZF=0
+0xd:   77 06           // jnbe   +6 -> 0x15
+// 0xd+2=0xf, 0xf+6=0x15 ✓
+0xf:   81 c9 00 00 00 ff  // POISON
+0x15:  81 c9 01 00 00 00  // or  ecx,0x1
+
+// --- rel8: CF=0,ZF=1 -> NOT TAKEN ---
+0x1b:  b8 00 00 00 00  // mov    eax,0x0
+0x20:  83 c0 00        // add    eax,0x0          ; CF=0, ZF=1
+0x23:  77 06           // jnbe   +6 -> 0x2b       ; NOT TAKEN
+// 0x23+2=0x25, 0x25+6=0x2b ✓
+0x25:  81 c9 02 00 00 00  // or  ecx,0x2          ; falls through ✓
+
+// --- rel8: CF=1,ZF=0 -> NOT TAKEN ---
+0x2b:  b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x30:  83 c0 02        // add    eax,0x2          ; CF=1, ZF=0
+0x33:  77 06           // jnbe   +6 -> 0x3b       ; NOT TAKEN
+// 0x33+2=0x35, 0x35+6=0x3b ✓
+0x35:  81 c9 04 00 00 00  // or  ecx,0x4          ; falls through ✓
+
+// --- rel8: CF=1,ZF=1 -> NOT TAKEN ---
+0x3b:  b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x40:  83 c0 01        // add    eax,0x1          ; CF=1, ZF=1
+0x43:  77 06           // jnbe   +6 -> 0x4b       ; NOT TAKEN
+// 0x43+2=0x45, 0x45+6=0x4b ✓
+0x45:  81 c9 08 00 00 00  // or  ecx,0x8          ; falls through ✓
+
+// --- rel16: CF=0,ZF=0 -> TAKEN ---
+0x4b:  b8 01 00 00 00  // mov    eax,0x1
+0x50:  83 c0 00        // add    eax,0x0          ; CF=0, ZF=0
+0x53:  66 0f 87 06 00  // jnbe   +6 -> 0x5e
+// 0x53+5=0x58, 0x58+6=0x5e ✓
+0x58:  81 c9 00 00 00 ff  // POISON
+0x5e:  81 c9 10 00 00 00  // or  ecx,0x10
+
+// --- rel16: CF=0,ZF=1 -> NOT TAKEN ---
+0x64:  b8 00 00 00 00  // mov    eax,0x0
+0x69:  83 c0 00        // add    eax,0x0          ; CF=0, ZF=1
+0x6c:  66 0f 87 06 00  // jnbe   +6 -> 0x77       ; NOT TAKEN
+// 0x6c+5=0x71, 0x71+6=0x77 ✓
+0x71:  81 c9 20 00 00 00  // or  ecx,0x20         ; falls through ✓
+
+// --- rel16: CF=1,ZF=0 -> NOT TAKEN ---
+0x77:  b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x7c:  83 c0 02        // add    eax,0x2          ; CF=1, ZF=0
+0x7f:  66 0f 87 06 00  // jnbe   +6 -> 0x8a       ; NOT TAKEN
+// 0x7f+5=0x84, 0x84+6=0x8a ✓
+0x84:  81 c9 40 00 00 00  // or  ecx,0x40         ; falls through ✓
+
+// --- rel16: CF=1,ZF=1 -> NOT TAKEN ---
+0x8a:  b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0x8f:  83 c0 01        // add    eax,0x1          ; CF=1, ZF=1
+0x92:  66 0f 87 06 00  // jnbe   +6 -> 0x9d       ; NOT TAKEN
+// 0x92+5=0x97, 0x97+6=0x9d ✓
+0x97:  81 c9 80 00 00 00  // or  ecx,0x80         ; falls through ✓
+
+// --- rel32: CF=0,ZF=0 -> TAKEN ---
+0x9d:  b8 01 00 00 00  // mov    eax,0x1
+0xa2:  83 c0 00        // add    eax,0x0          ; CF=0, ZF=0
+0xa5:  0f 87 06 00 00 00  // jnbe +6 -> 0xb1
+// 0xa5+6=0xab, 0xab+6=0xb1 ✓
+0xab:  81 c9 00 00 00 ff  // POISON
+0xb1:  81 c9 00 01 00 00  // or  ecx,0x100
+
+// --- rel32: CF=0,ZF=1 -> NOT TAKEN ---
+0xb7:  b8 00 00 00 00  // mov    eax,0x0
+0xbc:  83 c0 00        // add    eax,0x0          ; CF=0, ZF=1
+0xbf:  0f 87 06 00 00 00  // jnbe +6 -> 0xcb      ; NOT TAKEN
+// 0xbf+6=0xc5, 0xc5+6=0xcb ✓
+0xc5:  81 c9 00 02 00 00  // or  ecx,0x200        ; falls through ✓
+
+// --- rel32: CF=1,ZF=0 -> NOT TAKEN ---
+0xcb:  b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0xd0:  83 c0 02        // add    eax,0x2          ; CF=1, ZF=0
+0xd3:  0f 87 06 00 00 00  // jnbe +6 -> 0xdf      ; NOT TAKEN
+// 0xd3+6=0xd9, 0xd9+6=0xdf ✓
+0xd9:  81 c9 00 04 00 00  // or  ecx,0x400        ; falls through ✓
+
+// --- rel32: CF=1,ZF=1 -> NOT TAKEN ---
+0xdf:  b8 ff ff ff ff  // mov    eax,0xFFFFFFFF
+0xe4:  83 c0 01        // add    eax,0x1          ; CF=1, ZF=1
+0xe7:  0f 87 06 00 00 00  // jnbe +6 -> 0xf3      ; NOT TAKEN
+// 0xe7+6=0xed, 0xed+6=0xf3 ✓
+0xed:  81 c9 00 08 00 00  // or  ecx,0x800        ; falls through ✓
+
+// Expected ecx = 0x00000FFF
+// Taken bits: 0x001 + 0x010 + 0x100 = 0x111
+// Not-taken bits: 0x002+0x004+0x008 + 0x020+0x040+0x080 + 0x200+0x400+0x800 = 0xEEE
+// Total: 0xFFF
+0xf3:  f4              // hlt
