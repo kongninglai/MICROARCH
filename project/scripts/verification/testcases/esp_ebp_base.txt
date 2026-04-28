@@ -1,0 +1,80 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  bd 00 02 00 00  // mov    ebp,0x200
+0x29:  c7 43 10 ef be ad de  // mov    DWORD PTR [ebx+0x10],0xdeadbeef
+0x30:  c7 43 14 be ba fe ca  // mov    DWORD PTR [ebx+0x14],0xcafebabe
+0x37:  b8 78 56 34 12  // mov    eax,0x12345678
+0x3c:  89 45 00  // mov    DWORD PTR [ebp+0x0],eax
+0x3f:  b8 21 43 65 87  // mov    eax,0x87654321
+0x44:  89 45 04  // mov    DWORD PTR [ebp+0x4],eax
+0x47:  bb 14 00 00 00  // mov    ebx,0x14
+0x4c:  8b 43 fc  // mov    eax,DWORD PTR [ebx-0x4]
+0x4f:  89 43 ec  // mov    DWORD PTR [ebx-0x14],eax
+0x52:  b9 dd cc bb aa  // mov    ecx,0xaabbccdd
+0x57:  89 4b f8  // mov    DWORD PTR [ebx-0x8],ecx
+0x5a:  bb 20 00 00 00  // mov    ebx,0x20
+0x5f:  8b 83 f0 ff ff ff  // mov    eax,DWORD PTR [ebx-0x10]
+0x65:  89 43 00  // mov    DWORD PTR [ebx+0x0],eax
+0x68:  ba 44 33 22 11  // mov    edx,0x11223344
+0x6d:  89 93 ec ff ff ff  // mov    DWORD PTR [ebx-0x14],edx
+0x73:  8b 4d 00  // mov    ecx,DWORD PTR [ebp+0x0]
+0x76:  89 4b 04  // mov    DWORD PTR [ebx+0x4],ecx
+0x79:  8b 55 04  // mov    edx,DWORD PTR [ebp+0x4]
+0x7c:  89 53 08  // mov    DWORD PTR [ebx+0x8],edx
+0x7f:  b8 98 ba dc fe  // mov    eax,0xfedcba98
+0x84:  89 45 fc  // mov    DWORD PTR [ebp-0x4],eax
+0x87:  8b 75 fc  // mov    esi,DWORD PTR [ebp-0x4]
+0x8a:  b9 10 00 00 00  // mov    ecx,0x10
+0x8f:  b8 01 ef cd ab  // mov    eax,0xabcdef01
+0x94:  89 04 0c  // mov    DWORD PTR [esp+ecx*1],eax
+0x97:  8b 04 0c  // mov    eax,DWORD PTR [esp+ecx*1]
+0x9a:  ba aa 55 aa 55  // mov    edx,0x55aa55aa
+0x9f:  89 54 0c fc  // mov    DWORD PTR [esp+ecx*1-0x4],edx
+0xa3:  8b 54 0c fc  // mov    edx,DWORD PTR [esp+ecx*1-0x4]
+0xa7:  b8 34 12 ad de  // mov    eax,0xdead1234
+0xac:  3e 89 45 00  // mov    DWORD PTR ds:[ebp+0x0],eax
+0xb0:  3e 8b 4d 00  // mov    ecx,DWORD PTR ds:[ebp+0x0]
+0xb4:  b8 78 56 ef be  // mov    eax,0xbeef5678
+0xb9:  36 89 45 00  // mov    DWORD PTR ss:[ebp+0x0],eax
+0xbd:  36 8b 55 00  // mov    edx,DWORD PTR ss:[ebp+0x0]
+0xc1:  b8 99 99 fe ca  // mov    eax,0xcafe9999
+0xc6:  36 89 03  // mov    DWORD PTR ss:[ebx],eax
+0xc9:  36 8b 0b  // mov    ecx,DWORD PTR ss:[ebx]
+0xcc:  ba 44 55 66 77  // mov    edx,0x77665544
+0xd1:  36 89 53 fc  // mov    DWORD PTR ss:[ebx-0x4],edx
+0xd5:  36 8b 73 fc  // mov    esi,DWORD PTR ss:[ebx-0x4]
+0xd9:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4110: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x41f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4210: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
