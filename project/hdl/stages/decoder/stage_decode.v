@@ -166,12 +166,12 @@ module stage_decode #(
         .ghr_out() //used internally only
     );
 
-    assign pred_dir = cur_instr_prediction;
-
     generate
         if (BP_EN) begin 
+            assign pred_dir = to_f_take_branch;
             assign cur_instr_prediction = bp_pred_dir;
         end else begin 
+            assign pred_dir = 1'b0;
             assign cur_instr_prediction = 1'b0;
         end
     endgenerate
