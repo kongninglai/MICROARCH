@@ -194,9 +194,9 @@ wire ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, movs0, movs1, cmps0, cmps1, cm
 wire [1:0] ldAB, dstA_size, dstB_size, cs_mux, mmx_op, con_jmp, mm_dst_mux, rw, ds, shf_srcb_mux, mem_ds;
 wire [2:0] ldREGS, eflags_mux, eip_mux, alu_op, gp_dstb_mux;
 wire [3:0] gp_dsta_mux, store_data_mux;
-wire [8:0] MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
+wire [11:0] MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
 
-wire [1:0] fw_A, fw_B, fw_C;
+wire [2:0] fw_A, fw_B, fw_C;
 wire fw_SREG, fw_MMA, fw_MMB;
 
 assign {fw_A, fw_B, fw_C, fw_SREG, fw_MMA, fw_MMB} = MEM_FW_CONTROL_SIGS;

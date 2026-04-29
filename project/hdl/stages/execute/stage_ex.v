@@ -143,7 +143,7 @@ module stage_ex #(
    
     wire [3:0] sig_gp_dsta_mux, sig_store_data_mux;
 
-    wire [8:0] EX_FW_CONTROL_SIGS;
+    wire [11:0] EX_FW_CONTROL_SIGS;
 
     ex_sig #(.EX_CONTROL_SIGS_WIDTH(EX_CONTROL_SIGS_WIDTH)) ex_sig_parsing (
         .ucode_sig(to_ex_control_sigs),.ldAB(sig_ldAB),.dstA_size(sig_dstA_size),.dstB_size(sig_dstB_size),
@@ -155,7 +155,7 @@ module stage_ex #(
         .EX_FW_CONTROL_SIGS(EX_FW_CONTROL_SIGS)
     );
 
-    wire [1:0] fw_A, fw_B, fw_C;
+    wire [2:0] fw_A, fw_B, fw_C;
     wire fw_SREG, fw_MMA, fw_MMB;
 
     assign {fw_A, fw_B, fw_C, fw_SREG, fw_MMA, fw_MMB} = EX_FW_CONTROL_SIGS;
@@ -174,7 +174,7 @@ module stage_ex #(
     bufferH16$  bufferH16$_to_ex_srcregB_buf16[31:0](to_ex_srcregB_buf16, to_ex_srcregB);
     wire [31:0] to_ex_srcregC_buf16;
     bufferH16$  bufferH16$_to_ex_srcregC_buf16[31:0](to_ex_srcregC_buf16, to_ex_srcregC);
-    gp_forwarding gp_forward_A(
+    gp_forwarding #(.SHIFT_HIGH_EIGHT(1'b1)) gp_forward_A(
         .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
         .from_wb_gpwr0_data(from_wb_gpwr0_data),
         .from_wb_gpwr0_size(from_wb_gpwr0_size),
@@ -188,7 +188,7 @@ module stage_ex #(
         .f_reg(f_srcregA)
     );
 
-    gp_forwarding gp_forward_B(
+    gp_forwarding #(.SHIFT_HIGH_EIGHT(1'b1)) gp_forward_B(
         .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
         .from_wb_gpwr0_data(from_wb_gpwr0_data),
         .from_wb_gpwr0_size(from_wb_gpwr0_size),
@@ -202,7 +202,7 @@ module stage_ex #(
         .f_reg(f_srcregB)
     );
 
-    gp_forwarding gp_forward_C(
+    gp_forwarding #(.SHIFT_HIGH_EIGHT(1'b1)) gp_forward_C(
         .from_wb_gpwr0_idx_bit_2(from_wb_gpwr0_idx_bit_2),
         .from_wb_gpwr0_data(from_wb_gpwr0_data),
         .from_wb_gpwr0_size(from_wb_gpwr0_size),
