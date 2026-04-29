@@ -1,0 +1,113 @@
+// ============================================================
+// Set TLB line 4 to 000000000000000100011001101
+// Set CS limit to 0xFFFFF
+// opsz_eip_clear: operand-size override EIP top-16 clearing
+//
+// Testbench must configure before running:
+//   CS limit = 0xFFFFF
+//   TLB: VPN 0x00000 -> PFN 0x0  (page 0: main code, phys 0x0000)
+//        VPN 0x00011 -> PFN 0x4  (page 1: trampolines, phys 0x4000)
+//        VPN 0x0C000 -> PFN 0x7  (DS data, phys 0x7000)
+//        VPN 0x04000 -> PFN 0x5  (SS stack, phys 0x5000)
+//   DS = 0x0C00, SS = 0x0400, ESP = 0x100
+//
+// Tests (all 6 must pass for ECX = 0x07 at DS:0x00):
+//
+//   TEST1: JMP rel32  (E9)  page0 -> page1_A @ 0x11000
+//          32-bit displacement, EIP not masked, lands in page 1
+//
+//   TEST2: 66 JMP rel16  (66 E9)  page1_A -> after_test1 @ 0x029
+//          16-bit displacement, EIP masked to 16 bits
+//          EIP was 0x11004 (top 16 = 0x0001), after mask = 0x0029
+//
+//   TEST3: CALL rel32  (E8)  page0 -> page1_B @ 0x11004
+//          32-bit displacement, pushes 32-bit return addr 0x00000034
+//
+//   TEST4: 66 RET  (66 C3)  page1_B -> after_test3 @ 0x034
+//          Pops 2 bytes (0x0034) from stack, EIP = 0x0034 & 0xFFFF = 0x0034
+//          (top 16 cleared; return addr low16 = 0x0034 which is in page 0)
+//
+//   TEST5: 66 CALL rel16  (66 E8)  page0 -> page0_sub @ 0x047
+//          16-bit displacement, pushes 16-bit return addr 0x003E
+//
+//   TEST6: 66 RET  (66 C3)  page0_sub -> after_test5 @ 0x03E
+//          Pops 2 bytes (0x003E), EIP = 0x003E (within page 0)
+//
+// Expected final state: ECX = 0x07, DS:0x00 = 0x00000007
+// ============================================================
+
+// ── PAGE 0 (VA 0x000..0x048, phys 0x0000) ──
+
+// Preamble
+0x0:   ba 00 0c 00 00  // mov    edx,0xc00
+0x5:   8e da           // mov    ds,edx          ; DS=0x0C00 -> phys 0x7000
+0x7:   ba 00 04 00 00  // mov    edx,0x400
+0xc:   8e c2           // mov    es,edx          ; ES=0x0400 (unused)
+0xe:   ba 00 04 00 00  // mov    edx,0x400
+0x13:  8e d2           // mov    ss,edx          ; SS=0x0400 -> phys 0x5000
+0x15:  bc 00 01 00 00  // mov    esp,0x100       ; stack at SS:0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0         ; DS base offset
+0x1f:  b9 00 00 00 00  // mov    ecx,0x0         ; result accumulator
+
+// TEST1: JMP rel32 -> page1_A @ VA 0x11000
+// next EIP = 0x029, rel32 = 0x11000 - 0x029 = 0x10FD7
+0x24:  e9 d7 0f 01 00  // jmp    0x11000         ; TEST1: 32-bit jump to page 1
+
+// [after_test1 @ 0x029] -- arrived here via TEST2 (66 JMP rel16 from page1_A)
+// EIP was 0x11004, 66 JMP rel16 masked to 16 bits -> EIP = 0x0029
+0x29:  81 c9 01 00 00 00  // or     ecx,0x1      ; TEST1+TEST2 passed
+
+// TEST3: CALL rel32 -> page1_B @ VA 0x11004
+// next EIP = 0x034, rel32 = 0x11004 - 0x034 = 0x10FD0
+// Pushes 32-bit return address 0x00000034
+0x2f:  e8 d0 0f 01 00  // call   0x11004         ; TEST3: 32-bit call to page 1
+
+// [after_test3 @ 0x034] -- arrived here via TEST4 (66 RET from page1_B)
+// 66 RET popped 2 bytes (0x0034), EIP = 0x0034 & 0xFFFF = 0x0034
+0x34:  81 c9 02 00 00 00  // or     ecx,0x2      ; TEST3+TEST4 passed
+
+// TEST5: 66 CALL rel16 -> page0_sub @ 0x047
+// Instruction: 66 E8 09 00 (4 bytes), next EIP = 0x03E
+// rel16 = 0x047 - 0x03E = 0x009
+// Pushes 16-bit return address 0x003E
+0x3a:  66 e8 09 00     // call16  0x047          ; TEST5: 16-bit call within page 0
+
+// [after_test5 @ 0x03E] -- arrived here via TEST6 (66 RET from page0_sub)
+// 66 RET popped 2 bytes (0x003E), EIP = 0x003E
+0x3e:  81 c9 04 00 00 00  // or     ecx,0x4      ; TEST5+TEST6 passed
+
+// Store result and halt
+0x44:  89 0b           // mov    DWORD PTR [ebx],ecx  ; DS:0x00 = ECX = 0x07
+0x46:  f4              // hlt
+
+// ── page0_sub @ 0x047 ──
+// Called via TEST5 (66 CALL rel16 from 0x03A, next=0x03E, rel16=0x009)
+// (0x03E + 0x009) & 0xFFFF = 0x047 ✓
+0x47:  66 c3           // ret16                  ; TEST6: 16-bit ret, EIP=0x003E
+
+// ── PAGE 1 (VA 0x11000..0x11005, phys 0x4000) ──
+
+// page1_A @ VA 0x11000 (phys 0x4000)
+// Arrived here via TEST1 (JMP rel32 from 0x024)
+// TEST2: 66 JMP rel16 -> after_test1 @ 0x029
+// Instruction: 66 E9 25 F0 (4 bytes), next EIP = 0x11004
+// rel16 = 0xF025 (signed: -0x0FDB)
+// Check: (0x11004 + 0xFFFFF025) & 0xFFFF = 0x10029 & 0xFFFF = 0x0029 ✓
+0x4000:  66 e9 25 f0   // jmp16   0x0029         ; TEST2: 16-bit jump, clears top 16
+
+// page1_B @ VA 0x11004 (phys 0x4004)
+// Arrived here via TEST3 (CALL rel32 from 0x02F, pushed ret=0x00000034)
+// TEST4: 66 RET -> after_test3 @ 0x034
+// Pops 2 bytes from stack: low16(0x00000034) = 0x0034
+// EIP = 0x0034 & 0xFFFF = 0x0034 ✓
+0x4004:  66 c3         // ret16                  ; TEST4: 16-bit ret, clears top 16
+
+// ── Memory initialization ──
+
+// DS data (phys 0x7000): scratch area
+0x7000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+// SS stack (phys 0x5000): ESP=0x100, grows down
+// Stack area around 0x5100 (SS:0x100 = phys 0x5100)
+0x50f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
