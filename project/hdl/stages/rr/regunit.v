@@ -126,26 +126,30 @@ module regunit(
     mux2_32 mux2_32_srcregA(.out(to_rr_srcregA), .in0(gprd0_data), .in1(gprd2_data), .s0(from_rr_sig_srcregA_mux));
     // mux2$ mux2_sregA_ds[1:0](srcregA_ds, gprd0_ds, gprd2_ds, from_rr_sig_srcregA_mux);
 
-    wire [2:0] dummy_srcregA_idx_size;
+    wire [2:0] dummy_srcregA_idx_size, to_dep_srcregA_idx_prebuf;
     mux2_8$ mux2_8$_srcregA_idx_size
     (
-      {dummy_srcregA_idx_size, to_dep_srcregA_idx, to_dep_srcA_size},
+      {dummy_srcregA_idx_size, to_dep_srcregA_idx_prebuf, to_dep_srcA_size},
       {3'd0, gprd0_idx, gprd0_ds},
-      {3'd0, gprd2_idx, gprd1_ds},
+      {3'd0, gprd2_idx, gprd2_ds},
       from_rr_sig_srcregA_mux
     );
+
+    bufferH16$  bufferH16$_to_dep_srcregA_idx[2:0](to_dep_srcregA_idx, to_dep_srcregA_idx_prebuf);
 
     mux2_32 mux2_32_srcregB(.out(to_rr_srcregB), .in0(gprd0_data), .in1(gprd1_data), .s0(from_rr_sig_srcregB_mux));
     // mux2$ mux2_sregB_ds[1:0](srcregB_ds, gprd0_ds, gprd1_ds, from_rr_sig_srcregB_mux);
 
-    wire [2:0] dummy_srcregB_idx_size;
+    wire [2:0] dummy_srcregB_idx_size, to_dep_srcregB_idx_prebuf;
     mux2_8$ mux2_8$_srcregB_idx_size
     (
-      {dummy_srcregB_idx_size, to_dep_srcregB_idx, to_dep_srcB_size},
+      {dummy_srcregB_idx_size, to_dep_srcregB_idx_prebuf, to_dep_srcB_size},
       {3'd0, gprd0_idx, gprd0_ds},
       {3'd0, gprd1_idx, gprd1_ds},
       from_rr_sig_srcregB_mux
     );
+
+    bufferH16$  bufferH16$_to_dep_srcregB_idx[2:0](to_dep_srcregB_idx, to_dep_srcregB_idx_prebuf);
 
     assign to_rr_srcregC = gprd0_data;
     // assign srcregC_ds = gprd0_ds;

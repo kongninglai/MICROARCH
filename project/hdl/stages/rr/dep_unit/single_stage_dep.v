@@ -28,9 +28,9 @@ module single_stage_dep(
     output          dep_bar,
 
     output          addr_src_dep_bar,
-    output  [1:0]   fw_mux_A,
-    output  [1:0]   fw_mux_B,
-    output  [1:0]   fw_mux_C,
+    output  [2:0]   fw_mux_A,
+    output  [2:0]   fw_mux_B,
+    output  [2:0]   fw_mux_C,
     output          fw_SREG,
     output          fw_MMA,
     output          fw_MMB

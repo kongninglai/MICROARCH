@@ -24,9 +24,9 @@ module stage_rr #(
 
     input from_ag_stall_bar,
     input from_dep_unit_data_dep,
-    input [8:0] from_dep_ag_fw_control_sigs,
-    input [8:0] from_dep_mem_fw_control_sigs,
-    input [8:0] from_dep_ex_fw_control_sigs,
+    input [11:0] from_dep_ag_fw_control_sigs,
+    input [11:0] from_dep_mem_fw_control_sigs,
+    input [11:0] from_dep_ex_fw_control_sigs,
 
     input from_ex_flush,
     input from_wb_flush,

@@ -2,9 +2,9 @@ module backend_top #(
   parameter FORWARD_EN=1'b1,
   parameter CYCLE_TIME_X10=98,
   parameter TRUE_LRU=1,
-  parameter AG_CONTROL_SIGS_WIDTH=98,
-  parameter MEM_CONTROL_SIGS_WIDTH=81,
-  parameter EX_CONTROL_SIGS_WIDTH=70,
+  parameter AG_CONTROL_SIGS_WIDTH=107,
+  parameter MEM_CONTROL_SIGS_WIDTH=87,
+  parameter EX_CONTROL_SIGS_WIDTH=73,
   parameter WB_CONTROL_SIGS_WIDTH=17
 ) (
     input clk,
@@ -455,7 +455,7 @@ module backend_top #(
     wire [1:0]  to_rr_temp_exception;
     /*** DEP UNIT ***/
     wire from_dep_unit_data_dep;
-    wire [8:0] AG_FW_CONTROL_SIGS, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
+    wire [11:0] AG_FW_CONTROL_SIGS, MEM_FW_CONTROL_SIGS, EX_FW_CONTROL_SIGS;
     /*** FLUSH LOGIC ***/
     wire ex_or_wb_flush_bar_prebuf, ex_or_wb_flush_bar, wb_flush_bar;
     nor2$ or2_ex_or_wb_flush(ex_or_wb_flush_bar_prebuf, from_ex_flush, from_wb_flush);

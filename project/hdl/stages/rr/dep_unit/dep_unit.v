@@ -54,11 +54,11 @@ module dep_unit #(
     input           from_mem_valid_mem_inst,
 
     output          data_dep,
-    output  [8:0]   AG_FW_CONTROL_SIGS,
-    output  [8:0]   MEM_FW_CONTROL_SIGS,
-    output  [8:0]   EX_FW_CONTROL_SIGS
+    output  [11:0]   AG_FW_CONTROL_SIGS,
+    output  [11:0]   MEM_FW_CONTROL_SIGS,
+    output  [11:0]   EX_FW_CONTROL_SIGS
 );
-    wire [1:0] AG_FW_A, AG_FW_B, AG_FW_C, MEM_FW_A, MEM_FW_B, MEM_FW_C, EX_FW_A, EX_FW_B, EX_FW_C;
+    wire [2:0] AG_FW_A, AG_FW_B, AG_FW_C, MEM_FW_A, MEM_FW_B, MEM_FW_C, EX_FW_A, EX_FW_B, EX_FW_C;
     wire AG_FW_SREG, AG_FW_MMA, AG_FW_MMB, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB;
     wire from_ag_ld_gp0, from_ag_ld_gp1, from_ag_ld_seg, from_ag_ld_mmx;
     wire from_mem_ld_gp0, from_mem_ld_gp1, from_mem_ld_seg, from_mem_ld_mmx;
@@ -221,14 +221,20 @@ module dep_unit #(
 
             wire [6:0] MEM_FW_CONTROL_SIGS_DUMMY, AG_FW_CONTROL_SIGS_DUMMY, EX_FW_CONTROL_SIGS_DUMMY;
 
-            mux2_16$ mux2_16_mem_fw_A({MEM_FW_CONTROL_SIGS_DUMMY, MEM_FW_CONTROL_SIGS}, {7'd0, MEM_FW_A, MEM_FW_B, MEM_FW_C, MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB}, 16'd0, mem_fw_en);
-            mux2_16$ mux2_16_ag_fw_A ({ AG_FW_CONTROL_SIGS_DUMMY,  AG_FW_CONTROL_SIGS}, {7'd0, EX_FW_A, EX_FW_B, EX_FW_C, EX_FW_SREG, EX_FW_MMA, EX_FW_MMB},       16'd0, ex_fw_en);
-            mux2_16$ mux2_16_ex_fw_A ({ EX_FW_CONTROL_SIGS_DUMMY,  EX_FW_CONTROL_SIGS}, {7'd0, AG_FW_A, AG_FW_B, AG_FW_C, AG_FW_SREG, AG_FW_MMA, AG_FW_MMB},       16'd0, ag_fw_en);
+            mux2_16$ mux2_16_mem_fw_A({ MEM_FW_CONTROL_SIGS_DUMMY, MEM_FW_CONTROL_SIGS[10:9], MEM_FW_CONTROL_SIGS[7:6], MEM_FW_CONTROL_SIGS[4:0]}, {7'd0, MEM_FW_A[1:0], MEM_FW_B[1:0], MEM_FW_C[1:0], MEM_FW_SREG, MEM_FW_MMA, MEM_FW_MMB}, 16'd0, mem_fw_en);
+            mux2_16$ mux2_16_ag_fw_A ({ AG_FW_CONTROL_SIGS_DUMMY,  AG_FW_CONTROL_SIGS[10:9], AG_FW_CONTROL_SIGS[7:6], AG_FW_CONTROL_SIGS[4:0]}, {7'd0, EX_FW_A[1:0], EX_FW_B[1:0], EX_FW_C[1:0], EX_FW_SREG, EX_FW_MMA, EX_FW_MMB},       16'd0, ex_fw_en);
+            mux2_16$ mux2_16_ex_fw_A ({ EX_FW_CONTROL_SIGS_DUMMY,  EX_FW_CONTROL_SIGS[10:9], EX_FW_CONTROL_SIGS[7:6], EX_FW_CONTROL_SIGS[4:0]}, {7'd0, AG_FW_A[1:0], AG_FW_B[1:0], AG_FW_C[1:0], AG_FW_SREG, AG_FW_MMA, AG_FW_MMB},       16'd0, ag_fw_en);
+            assign {MEM_FW_CONTROL_SIGS[11], MEM_FW_CONTROL_SIGS[8], MEM_FW_CONTROL_SIGS[5]} = {MEM_FW_A[2], MEM_FW_B[2], MEM_FW_C[2]};
+            assign {AG_FW_CONTROL_SIGS[11], AG_FW_CONTROL_SIGS[8], AG_FW_CONTROL_SIGS[5]} = {EX_FW_A[2], EX_FW_B[2], EX_FW_C[2]};
+            assign {EX_FW_CONTROL_SIGS[11], EX_FW_CONTROL_SIGS[8], EX_FW_CONTROL_SIGS[5]} = {AG_FW_A[2], AG_FW_B[2], AG_FW_C[2]};
         end else begin 
             assign data_dep = any_dep;
-            assign MEM_FW_CONTROL_SIGS = 9'b0;
-            assign AG_FW_CONTROL_SIGS = 9'b0;
-            assign EX_FW_CONTROL_SIGS = 9'b0;
+            assign {MEM_FW_CONTROL_SIGS[10:9], MEM_FW_CONTROL_SIGS[7:6], MEM_FW_CONTROL_SIGS[4:0]} = 9'b0;
+            assign {AG_FW_CONTROL_SIGS[10:9], AG_FW_CONTROL_SIGS[7:6], AG_FW_CONTROL_SIGS[4:0]} = 9'b0;
+            assign {EX_FW_CONTROL_SIGS[10:9], EX_FW_CONTROL_SIGS[7:6], EX_FW_CONTROL_SIGS[4:0]} = 9'b0;
+            assign {MEM_FW_CONTROL_SIGS[11], MEM_FW_CONTROL_SIGS[8], MEM_FW_CONTROL_SIGS[5]} = {MEM_FW_A[2], MEM_FW_B[2], MEM_FW_C[2]};
+            assign {AG_FW_CONTROL_SIGS[11], AG_FW_CONTROL_SIGS[8], AG_FW_CONTROL_SIGS[5]} = {EX_FW_A[2], EX_FW_B[2], EX_FW_C[2]};
+            assign {EX_FW_CONTROL_SIGS[11], EX_FW_CONTROL_SIGS[8], EX_FW_CONTROL_SIGS[5]} = {AG_FW_A[2], AG_FW_B[2], AG_FW_C[2]};
         end
     endgenerate
 
