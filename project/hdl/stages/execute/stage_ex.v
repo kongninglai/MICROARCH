@@ -337,9 +337,9 @@ module stage_ex #(
         .neq_32(neq_32)
     );
     // from_ex_cmps_found = sig_cmps1 & zf=0 & valid_instruction
-    wire cmp_zf_is_0;
+    wire cmp_zf_is_0, valid_instruction_exclude_branch_gp;
     inv1$ inv1_cmps_zf(cmp_zf_is_0, cmp_eflags_buf16[6]);
-    and3$ and_cmps_found(from_ex_cmps_found, sig_cmps2, neq_32, valid_instruction);
+    and3$ and_cmps_found(from_ex_cmps_found, sig_cmps2, neq_32, valid_instruction_exclude_branch_gp);
     // NOT
     wire [31:0] not_out;
     ex_not not_inst (
@@ -417,7 +417,7 @@ module stage_ex #(
                                                   sig_store_data_mux[0], sig_store_data_mux[1], sig_store_data_mux[2], sig_store_data_mux[3]);
 
     wire valid_iret0;
-    and2$ and4_valid_iret0(valid_iret0, sig_iret0, to_ex_valid);
+    and2$ and4_valid_iret0(valid_iret0, sig_iret0, from_ex_valid); // Need to reduce fanout of to_ex_valid by 1, but from and to are same
 
     wire [31:0] iret_eip, iret_eip_bar;
     wire [15:0] iret_cs, iret_cs_bar;
@@ -462,14 +462,16 @@ module stage_ex #(
 
     // TODO: How to filter out the exceptions/uncod ? do we need that? hurt performance, but rare
     // valid_instruction = ~to_ex_exception[0] & ~to_ex_exception[1] & ~jmp_gp_exception & to_ex_valid
-    wire no_exception;
+    wire no_exception, no_exception_exclude_branch_gp;
     nor3$ nor3_no_exception(no_exception, to_ex_exception[0], to_ex_exception[1], branch_gp_exception);
+    nor2$ nor2_no_exception_exclude_branch_gp(no_exception_exclude_branch_gp, to_ex_exception[0], to_ex_exception[1]);
     wire wb_flush_bar;
     inv1$ inv1_wb_flush(wb_flush_bar, from_wb_flush);
 
-    wire valid_instruction_bar;
+    wire valid_instruction_bar, valid_instruction_bar_exclude_branch_gp;
     nand3$ nand_valid_instruction_bar(valid_instruction_bar, to_ex_valid, no_exception, wb_flush_bar);
     bufferHInv16$ bufferHInv16$_valid_instruction(valid_instruction, valid_instruction_bar);
+    and3$ and_valid_instruction_exclude_branch_gp(valid_instruction_exclude_branch_gp, to_ex_valid, no_exception_exclude_branch_gp, wb_flush_bar);
 
     or2$ or_from_ex_exception(from_ex_exception[1], to_ex_exception[1], branch_gp_exception);
     assign from_ex_exception[0] = to_ex_exception[0];
