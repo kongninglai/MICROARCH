@@ -187,15 +187,15 @@ mux2$   mux2$_final_dcache_wr_en_bar_one_hot[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_
 /* You can also just gate DCACHE_HIT with whether or not SET[2:0] changed from last cycle using a reg_n and a 3-bit comparator...
    can force STOREQ writes to take 2 cycles if really necessary */
 
-wire    clk_bar, clk_bar_buf4096, clk_buf4096;
+wire    inverted, clk_bar_buf4096, buffered4096;
 
 bufferHInv4096$   bufferHInv4096$_clk_bar_buf4096(clk_bar_buf4096, clk);
 
-bufferHInv4096$   bufferHInv4096$_clk_buf4096(clk_buf4096, clk_bar_buf4096);
+bufferHInv4096$   bufferHInv4096$_clk_buf4096(buffered4096, clk_bar_buf4096);
 
-inv1$   inv1$_clk_bar(clk_bar, clk);
+bufferHInv256$   bufferHInv256$_clk_bar(inverted, clk);
 
-or3$    or3$_final_dcache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](final_dcache_wr_en_bar_one_hot_gated, final_dcache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}}, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk_buf4096}});
+or3$    or3$_final_dcache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](final_dcache_wr_en_bar_one_hot_gated, final_dcache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}}, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){buffered4096}});
 
 wire    [RANK_BIT_WIDTH-1:0]  FINAL_DCACHE_WR_DATA_OUT, STOREQ_DATA_REG;
 
@@ -203,7 +203,7 @@ reg_n #(
   .WIDTH(RANK_BIT_WIDTH),
   .USE_EN_BAR(0)
 ) reg_n_STOREQ_DATA_REG (
-  .clk(clk_bar), .rst(rst),
+  .clk(inverted), .rst(rst),
   .en({RANK_BIT_WIDTH{1'b1}}), .d(STOREQ_DATA),
   .q(STOREQ_DATA_REG)
 );
@@ -624,7 +624,7 @@ wire  [MEM_ADDR_WIDTH-1:RANK_BURST_SIZE]  ICC_ADDR_OUT_buf256;
 
 bufferH256$    bufferH256$_ICC_ADDR_OUT_buf256[MEM_ADDR_WIDTH-1:RANK_BURST_SIZE](ICC_ADDR_OUT_buf256, ICC_ADDR_OUT);
 
-or3$    or3$_icache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](icache_wr_en_bar_one_hot_gated, icache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}}, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk_buf4096}});
+or3$    or3$_icache_wr_en_bar_one_hot_gated[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](icache_wr_en_bar_one_hot_gated, icache_wr_en_bar_one_hot, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){clk}}, {(NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS){buffered4096}});
 
 mux2$   mux2$_icache_wr_en_bar_one_hot_gated_rst[NUM_WAYS*RANK_BURST_SIZE*BYTES_PER_BUS-1:0](
                                                                                                 icache_wr_en_bar_one_hot_gated_rst,
