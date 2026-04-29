@@ -81,7 +81,7 @@ module logic_imm(
     mux4_16$  mux4_16$_bp_imm_low
     (
       bp_imm[15:0],
-      {{8{rel8_sign}}, rel8},
+      {{{6{rel8_sign}},{2{rel8[7]}}}, rel8},
       rel16,
       rel32[15:0],
       ,
