@@ -474,9 +474,10 @@ module stage_ex #(
     or2$ or_from_ex_exception(from_ex_exception[1], to_ex_exception[1], branch_gp_exception);
     assign from_ex_exception[0] = to_ex_exception[0];
 
-    wire valid_ld_CS, valid_ld_EIP, sig_ldEIP_bar;
+    wire valid_ld_CS, valid_ld_EIP, sig_ldEIP_bar, sig_ldCS_bar;
     inv1$ inv1_sig_ldEIP_bar(sig_ldEIP_bar, sig_ldEIP);
-    and2$ and2_valid_ldCS(valid_ld_CS, valid_instruction, sig_ldCS);
+    inv1$ inv1_sig_ldCS_bar(sig_ldCS_bar, sig_ldCS);
+    nor2$ nor2_valid_ldCS(valid_ld_CS, valid_instruction_bar, sig_ldCS_bar);
     nor3$ nor3_valid_ldEIP(valid_ld_EIP, valid_instruction_bar, sig_ldEIP_bar, mispredict_bar);
     wire from_ex_flush_bar;
     nor3$ nor_flush_bar(from_ex_flush_bar, valid_ld_CS, valid_ld_EIP, from_ex_cmps_found);
