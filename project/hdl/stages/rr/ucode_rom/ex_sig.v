@@ -37,7 +37,7 @@ module ex_sig #(
     output palu_size,
     output sbb_dir,
     output iret0,
-    output [8:0] EX_FW_CONTROL_SIGS
+    output [11:0] EX_FW_CONTROL_SIGS
 );
     assign {
         ldEFLAGS, ldEIP, ldCS, alu_srcb_mux, shf_op, movs0, movs1, cmps0, cmps1, cmps2, cmpxchg, cmovc, seg_dst_mux,

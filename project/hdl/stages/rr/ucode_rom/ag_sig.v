@@ -43,9 +43,9 @@ module ag_sig #(
     output palu_size,
     output sbb_dir,
     output iret0,
-    output [8:0] AG_FW_CONTROL_SIGS,
-    output [8:0] MEM_FW_CONTROL_SIGS,
-    output [8:0] EX_FW_CONTROL_SIGS
+    output [11:0] AG_FW_CONTROL_SIGS,
+    output [11:0] MEM_FW_CONTROL_SIGS,
+    output [11:0] EX_FW_CONTROL_SIGS
 ); 
     assign {ldAB, dstA_size, dstB_size, ldREGS, ldEFLAGS,
             ldEIP, ldCS, alu_srcb_mux, shf_srcb_mux, eflags_mux, eip_mux, cs_mux,

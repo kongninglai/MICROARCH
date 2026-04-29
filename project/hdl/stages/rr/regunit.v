@@ -131,7 +131,7 @@ module regunit(
     (
       {dummy_srcregA_idx_size, to_dep_srcregA_idx, to_dep_srcA_size},
       {3'd0, gprd0_idx, gprd0_ds},
-      {3'd0, gprd2_idx, gprd1_ds},
+      {3'd0, gprd2_idx, gprd2_ds},
       from_rr_sig_srcregA_mux
     );
 

@@ -205,9 +205,13 @@ module regfile_gp (
     mux4_32 mux_reg2(rd2_data, rd_reg2_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit21, hit20);
     mux4_32 mux_reg3(rd3_data, rd_reg3_raw, wr1_wrdata, wr0_wrdata, wr0_wrdata_final, hit31, hit30);
 
-    gpr_shifter extract_r0(rd_reg0_data, rd_reg0_ds, rd_reg0_idx, rd0_data);
-    gpr_shifter extract_r1(rd_reg1_data, rd_reg1_ds, rd_reg1_idx, rd1_data);
-    gpr_shifter extract_r2(rd_reg2_data, rd_reg2_ds, rd_reg2_idx, rd2_data);
-    gpr_shifter extract_r3(rd_reg3_data, rd_reg3_ds, rd_reg3_idx, rd3_data);
+    // gpr_shifter extract_r0(rd_reg0_data, rd_reg0_ds, rd_reg0_idx, rd0_data);
+    // gpr_shifter extract_r1(rd_reg1_data, rd_reg1_ds, rd_reg1_idx, rd1_data);
+    // gpr_shifter extract_r2(rd_reg2_data, rd_reg2_ds, rd_reg2_idx, rd2_data);
+    // gpr_shifter extract_r3(rd_reg3_data, rd_reg3_ds, rd_reg3_idx, rd3_data);
+    assign rd_reg0_data = rd0_data;
+    assign rd_reg1_data = rd1_data;
+    assign rd_reg2_data = rd2_data;
+    assign rd_reg3_data = rd3_data;
 
 endmodule
