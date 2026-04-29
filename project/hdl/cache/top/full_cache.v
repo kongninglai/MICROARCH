@@ -604,7 +604,26 @@ wire                                                   ICC_FSM_VALID_WR_EN_GLOBA
 /************************ EASY  ONES ************************/
 /************************************************************/
 
-assign ICACHE_PHYS_ADDR = {ITLB_PFN_OUT, F_PAGE_OFFSET[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]};
+wire [4:0] ICACHE_PHYS_ADDR_DUMMY;
+wire changed_icache_phys_addr;
+
+reg16e reg16e_ICACHE_PHYS_ADDR (
+  .CLK(clk), 
+  .Din({5'd0, {ITLB_PFN_OUT, F_PAGE_OFFSET[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]}}), 
+  .Q({ICACHE_PHYS_ADDR_DUMMY, ICACHE_PHYS_ADDR}), 
+  .QBAR(), 
+  .CLR(rst), 
+  .PRE(1'b1),
+  .en(1'b1)
+);
+
+big_neq #(
+  .WIDTH(11)
+) big_neq_changed_icache_phys_addr (
+  .in0({ITLB_PFN_OUT, F_PAGE_OFFSET[PAGE_BIT_WIDTH-1:RANK_BURST_SIZE]}), .in1(ICACHE_PHYS_ADDR),
+  .neq(changed_icache_phys_addr)
+);
+
 assign ICACHE_HIT_DATA = ICC_HIT_DATA_OUT;
 
 /************************************************************/
@@ -791,7 +810,7 @@ nor3$     nor3$_ICACHE_VALID_INT(ICACHE_VALID_INT, ICACHE_GENERAL_MISS, ICC_FSM_
 mux2$     mux2$_ICACHE_VALID(ICACHE_VALID, ICACHE_VALID_INT, 1'b0, clk);
 */
 
-nor3$     nor3$_ICACHE_VALID(ICACHE_VALID, ICACHE_GENERAL_MISS, ICC_FSM_FILL_BUSY, ICC_FSM_VALID_WR_EN_GLOBAL_buf16);
+nor4$     nor4$_ICACHE_VALID(ICACHE_VALID, ICACHE_GENERAL_MISS, ICC_FSM_FILL_BUSY, ICC_FSM_VALID_WR_EN_GLOBAL_buf16, changed_icache_phys_addr);
 
 inv1$     inv1$_ITLB_NO_PAGE_FAULT_OUT(ITLB_NO_PAGE_FAULT_OUT, ITLB_PAGE_FAULT_OUT);
 and2$     and2$_ICACHE_HIT_WITH_ACCESS(ICACHE_HIT_WITH_ACCESS, ICACHE_HIT, ITLB_NO_PAGE_FAULT_OUT);

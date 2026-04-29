@@ -379,10 +379,11 @@ or2$    or2$_STORE_EXCEPTION_MASK[1:0](STORE_EXCEPTION_MASK, STORE_EXCEPTION_MAS
 /* LOADS */
 
 wire  [GENERAL_DATA_BIT_WIDTH-1:RANK_BURST_SIZE] to_mem_ld_addr_next_line_aligned_top;
+wire  [31:4] next_line_addr_saved;
 wire  [GENERAL_DATA_BIT_WIDTH-1:0] to_mem_ld_addr_aligned, to_mem_ld_addr_next_line_aligned;
 
 assign to_mem_ld_addr_aligned = {to_mem_ld_addr[GENERAL_DATA_BIT_WIDTH-1:RANK_BURST_SIZE], 4'd0};
-assign to_mem_ld_addr_next_line_aligned = {to_mem_ld_addr_next_line_aligned_top, 4'd0};
+assign to_mem_ld_addr_next_line_aligned = {next_line_addr_saved, 4'd0};
 
 big_increment #(
   .WIDTH(GENERAL_DATA_BIT_WIDTH-RANK_BURST_SIZE)
@@ -583,6 +584,18 @@ reg64e$ reg64e$_SAVED_LINE_0_LOAD_DATA(
   .CLK(clk), 
   .Din(DCACHE_HIT_DATA_buf64[RANK_BIT_WIDTH-1:STORE_DATA_BIT_WIDTH]), 
   .Q(SAVED_LINE_0_LOAD_DATA), 
+  .QBAR(), 
+  .CLR(rst_n), 
+  .PRE(1'b1),
+  .en(LINE_0_LOAD_DONE)
+);
+
+wire [3:0] next_line_addr_dummy;
+
+reg32e$ reg32e$_next_line_addr_saved (
+  .CLK(clk), 
+  .Din({4'd0, to_mem_ld_addr_next_line_aligned_top}), 
+  .Q({next_line_addr_dummy, next_line_addr_saved}), 
   .QBAR(), 
   .CLR(rst_n), 
   .PRE(1'b1),

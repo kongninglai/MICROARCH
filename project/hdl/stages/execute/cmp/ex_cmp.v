@@ -5,8 +5,24 @@ module ex_cmp(
 
     output [31:0] cmp_eflags,
     output [31:0] cmp_eflags_mask,
-    output        neq_32
+    output        neq
 ); 
+
+    wire neq_8, neq_16, neq_32;
+    
+    big_neq #(
+      .WIDTH(8)
+    ) big_neq_neq_8 (
+      .in0(in0[7:0]), .in1(in1[7:0]),
+      .neq(neq_8)
+    );
+
+    big_neq #(
+      .WIDTH(16)
+    ) big_neq_neq_16 (
+      .in0(in0[15:0]), .in1(in1[15:0]),
+      .neq(neq_16)
+    );
 
     big_neq #(
       .WIDTH(32)
@@ -14,6 +30,8 @@ module ex_cmp(
       .in0(in0), .in1(in1),
       .neq(neq_32)
     );
+
+    mux4$ mux4$_neq(neq, neq_8, neq_16, neq_32, , ds[0], ds[1]);
     
     wire [31:0] sbb_out, sbb_out_buf16, sbb_cout;
     SUB_32b SUB32_SBB(.in0(in0), .in1(in1), .cin(1'b0), .s(sbb_out), .cout(sbb_cout));

@@ -323,23 +323,25 @@ module stage_ex #(
     wire [31:0] temp_cmps1;
     reg32e$ reg32e$_temp_cmps1(clk, to_ex_load_result_buf16[31:0], temp_cmps1, , rst_n, 1'b1, sig_cmps1);
 
-    wire [31:0] cmp_in0, cmp_in1;
-    mux2_32 mux2_cmp_in0(cmp_in0, f_srcregC, temp_cmps0, sig_cmps2);
+    wire [31:0] cmp_in0, cmp_in0_prebuf, cmp_in1;
+    mux2_32 mux2_cmp_in0(cmp_in0_prebuf, f_srcregC, temp_cmps0, sig_cmps2);
     mux2_32 mux2_cmp_in1(cmp_in1, regA_rm_buf64, temp_cmps1, sig_cmps2);
 
-    wire neq_32;
+    bufferH16$  bufferH16$_cmp_in0[31:0](cmp_in0, cmp_in0_prebuf);
+
+    wire neq;
     ex_cmp cmp (
         .ds(sig_ds_buf64),
         .in0(cmp_in0),
         .in1(cmp_in1),
         .cmp_eflags(cmp_eflags),
         .cmp_eflags_mask(cmp_eflags_mask),
-        .neq_32(neq_32)
+        .neq(neq)
     );
     // from_ex_cmps_found = sig_cmps1 & zf=0 & valid_instruction
     wire cmp_zf_is_0, valid_instruction_exclude_branch_gp;
     inv1$ inv1_cmps_zf(cmp_zf_is_0, cmp_eflags_buf16[6]);
-    and3$ and_cmps_found(from_ex_cmps_found, sig_cmps2, neq_32, valid_instruction_exclude_branch_gp);
+    and3$ and_cmps_found(from_ex_cmps_found, sig_cmps2, neq, valid_instruction_exclude_branch_gp);
     // NOT
     wire [31:0] not_out;
     ex_not not_inst (
@@ -523,12 +525,13 @@ module stage_ex #(
     mux2$ mux2_store_queue_alloc_line_0(from_ex_store_queue_alloc_line_0, to_ex_store_queue_alloc_line_0, cmpxchg_store_queue_alloc_line_0, cmpxchg_m);
     mux2$ mux2_store_queue_alloc_line_1(from_ex_store_queue_alloc_line_1, to_ex_store_queue_alloc_line_1, cmpxchg_store_queue_alloc_line_1, cmpxchg_m);
 
-    wire ldA_cmpxchg_r;
-    and2$ and2_ldA_cmpxchg_r(ldA_cmpxchg_r, sig_ldAB[1], cmp_eflags_buf16[6]);
+    wire ldA_cmpxchg_r, neq_bar;
+    inv1$ inv1_neq_bar(neq_bar, neq);
+    and2$ and2_ldA_cmpxchg_r(ldA_cmpxchg_r, sig_ldAB[1], neq_bar);
     mux2$ mux2_ldA_cmpxchg(ldA_cmpxchg, sig_ldAB[1], ldA_cmpxchg_r, cmpxchg_r);
     mux2$ mux2_ldA_cond(ldA_cond, ldA_cmpxchg, eflags_cf, sig_cmovc);
 
-    inv1$ inv1_cmpxchg_ZF(cmpxchg_ZF_inv, cmp_eflags_buf16[6]);
+    inv1$ inv1_cmpxchg_ZF(cmpxchg_ZF_inv, neq_bar);
     mux2$ mux2_ldB_cond(ldB_cond, sig_ldAB[0], cmpxchg_ZF_inv, sig_cmpxchg);
 
     wire gpwr0_en, gpwr1_en, mmxwr_en, segwr_en;
