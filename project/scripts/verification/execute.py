@@ -152,15 +152,19 @@ class Executor:
             if calc_flags:
                 self.state.eflags["CF"] = 0
                 self.state.eflags["OF"] = 0
-        elif op == 2:
+        elif op == 2 or op == 6:
             res = v1 + v2 + self.state.eflags["CF"]
             v2_with_carry = v2 + self.state.eflags["CF"]
+            af1 = ((v2 ^ 1 ^ v2_with_carry) >> 4) & 1
             if calc_flags:
                 self.state.eflags["CF"] = 1 if res > mask else 0
                 self.state.eflags["OF"] = (
                     1 if ((v1 ^ res) & (v2_with_carry ^ res) & sign_bit) else 0
                 )
-                self.state.eflags["AF"] = ((v1 ^ v2_with_carry ^ res) >> 4) & 1
+                if (af1 == 1):
+                    self.state.eflags["AF"] = 1
+                else:
+                    self.state.eflags["AF"] = ((v1 ^ v2_with_carry ^ res) >> 4) & 1
         elif op == 3:
             res = v1 - v2 - self.state.eflags["CF"]
             v2_twos = (~(v2 + self.state.eflags["CF"]) + 1) & mask
@@ -501,7 +505,7 @@ class Executor:
                 ):  # ADD r/m8, r8; ADD r8, r/m8, ADD AL, imm8, same for OR/AND/ADC/SBB
                     alu_op = (
                         op >> 3
-                    ) & 7  # 000 = ADD, 001 = OR, 010 = ADC, 011 = SBB, 100 = AND
+                    ) & 7  # 000 = ADD, 001 = OR, 010/110 = ADC, 011 = SBB, 100 = AND
                     size = (
                         1 if (op & 1) == 0 else (2 if self.oso else 4)
                     )  # even = 1, odd = 2 or 4
