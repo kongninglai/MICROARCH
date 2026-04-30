@@ -136,14 +136,25 @@ module PA_32b (
 			  // k = 0 should be 6:-1
 			  // k = 3 should be 30:23
 
-			  gen_prop_2 gp3_im7 (
-					Gi_im7[k],
-					Pi_im7[k],
-					Pi_im3_buf16[2*k + 1],
-					Pi_im3_buf16[2*k],
-					Gi_im3_buf16[2*k + 1],
-					Gi_im3_buf16[2*k]
-			  );
+        if (k < 2) begin : unbuffered_gen
+          gen_prop_2 gp3_im7 (
+            Gi_im7[k],
+            Pi_im7[k],
+            Pi_im3[2*k + 1],
+            Pi_im3[2*k],
+            Gi_im3[2*k + 1],
+            Gi_im3[2*k]
+          );
+        end else begin : buffered_gen
+          gen_prop_2 gp3_im7 (
+            Gi_im7[k],
+            Pi_im7[k],
+            Pi_im3_buf16[2*k + 1],
+            Pi_im3_buf16[2*k],
+            Gi_im3_buf16[2*k + 1],
+            Gi_im3_buf16[2*k]
+          );
+        end
 
 		 end
 	endgenerate
@@ -272,10 +283,10 @@ module PA_32b (
 			  gen_prop_2 gp4_im15 (
 					Gi_im15[l],
 					Pi_im15[l],
-					Pi_im7_buf16[2*l + 1],
-					Pi_im7_buf16[2*l],
-					Gi_im7_buf16[2*l + 1],
-					Gi_im7_buf16[2*l]
+					Pi_im7[2*l + 1],
+					Pi_im7[2*l],
+					Gi_im7[2*l + 1],
+					Gi_im7[2*l]
 			  );
 
 		 end

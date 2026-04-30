@@ -15,10 +15,6 @@ module logic_prefix_combadder(
 );
 
 /* Inverters */
-wire P2_bar;
-inv1$ inv_0(P2_bar, P2);
-wire P1_bar;
-inv1$ inv_1(P1_bar, P1);
 wire P0_bar;
 inv1$ inv_2(P0_bar, P0);
 
@@ -26,10 +22,10 @@ inv1$ inv_2(P0_bar, P0);
 wire nand_0_0_0_out;
 nand2$ nand_0_0_0(nand_0_0_0_out,P2,P0);
 wire nand_2_0_0_out;
-nand2$ nand_2_0_0(nand_2_0_0_out,P1_bar,P0);
+nand2$ nand_2_0_0(nand_2_0_0_out,P1,P0);
 
 /* Sum Expressions */
-nor2$ nand_1_0_0(OUT1,P1_bar,P0_bar);
+nor2$ nand_1_0_0(OUT1,P1,P0_bar);
 nand2$ nand_2_0_1(OUT0,nand_0_0_0_out,nand_2_0_0_out);
 
 

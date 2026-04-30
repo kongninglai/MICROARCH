@@ -90,7 +90,7 @@ module logic_true_prefix(
     
     logic_prefix_combadder PREFIX_ADDER( //Critical Path 1.24ns
         .P0(is_any0_actual),
-        .P1(is_any1_actual),
+        .P1(is_any1_actual_bar),
         .P2(is_any2_actual),
         .OUT1(prefix_num[1]),
         .OUT0(prefix_num[0])

@@ -339,8 +339,7 @@ module stage_ex #(
         .neq(neq)
     );
     // from_ex_cmps_found = sig_cmps1 & zf=0 & valid_instruction
-    wire cmp_zf_is_0, valid_instruction_exclude_branch_gp;
-    inv1$ inv1_cmps_zf(cmp_zf_is_0, cmp_eflags_buf16[6]);
+    wire valid_instruction_exclude_branch_gp;
     and3$ and_cmps_found(from_ex_cmps_found, sig_cmps2, neq, valid_instruction_exclude_branch_gp);
     // NOT
     wire [31:0] not_out;
@@ -517,16 +516,18 @@ module stage_ex #(
     and2$ and2_cmpxchg_m(cmpxchg_m, sig_cmpxchg, sig_rm_buf16);
     
     wire cmpxchg_store_is_io_line_0, cmpxchg_store_queue_alloc_line_0, cmpxchg_store_queue_alloc_line_1;
-    and2$ and2_cmpxchg_store_is_io_line_0(cmpxchg_store_is_io_line_0, to_ex_store_is_io_line_0, cmp_eflags_buf16[6]);
-    and2$ and2_cmpxchg_store_queue_alloc_line_0(cmpxchg_store_queue_alloc_line_0, to_ex_store_queue_alloc_line_0, cmp_eflags_buf16[6]);
-    and2$ and2_cmpxchg_store_queue_alloc_line_1(cmpxchg_store_queue_alloc_line_1, to_ex_store_queue_alloc_line_1, cmp_eflags_buf16[6]);
+    wire neq_bar;
+    
+    bufferHInv16$ bufferHInv16_neq_bar(neq_bar, neq);
+    and2$ and2_cmpxchg_store_is_io_line_0(cmpxchg_store_is_io_line_0, to_ex_store_is_io_line_0, neq_bar);
+    and2$ and2_cmpxchg_store_queue_alloc_line_0(cmpxchg_store_queue_alloc_line_0, to_ex_store_queue_alloc_line_0, neq_bar);
+    and2$ and2_cmpxchg_store_queue_alloc_line_1(cmpxchg_store_queue_alloc_line_1, to_ex_store_queue_alloc_line_1, neq_bar);
 
     mux2$ mux2_store_is_io_line_0(from_ex_store_is_io_line_0, to_ex_store_is_io_line_0, cmpxchg_store_is_io_line_0, cmpxchg_m);
     mux2$ mux2_store_queue_alloc_line_0(from_ex_store_queue_alloc_line_0, to_ex_store_queue_alloc_line_0, cmpxchg_store_queue_alloc_line_0, cmpxchg_m);
     mux2$ mux2_store_queue_alloc_line_1(from_ex_store_queue_alloc_line_1, to_ex_store_queue_alloc_line_1, cmpxchg_store_queue_alloc_line_1, cmpxchg_m);
 
-    wire ldA_cmpxchg_r, neq_bar;
-    inv1$ inv1_neq_bar(neq_bar, neq);
+    wire ldA_cmpxchg_r;
     and2$ and2_ldA_cmpxchg_r(ldA_cmpxchg_r, sig_ldAB[1], neq_bar);
     mux2$ mux2_ldA_cmpxchg(ldA_cmpxchg, sig_ldAB[1], ldA_cmpxchg_r, cmpxchg_r);
     mux2$ mux2_ldA_cond(ldA_cond, ldA_cmpxchg, eflags_cf, sig_cmovc);
