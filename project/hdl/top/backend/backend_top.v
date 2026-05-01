@@ -472,7 +472,7 @@ module backend_top #(
         .from_ag_dstB_size(from_ag_dstB_size),
         .from_ag_ldAB(from_ag_ldAB),
         .from_ag_ldREGS(from_ag_ldREGS),
-        .from_ag_valid(from_ag_valid),
+        .from_ag_valid(to_ag_valid), // Special case
         .from_mem_dstidA(from_mem_dstidA),
         .from_mem_dstidB(from_mem_dstidB),
         .from_mem_dstA_size(from_mem_dstA_size),

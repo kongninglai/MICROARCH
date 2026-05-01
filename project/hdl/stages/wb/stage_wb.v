@@ -264,7 +264,7 @@ and3$   and3$_rd(rd, STOREQ_STORING, DCACHE_HIT, WBE_BUSY_BAR);
     (2) (a) The store queue is not empty, AND
         (b) There is nothing using the D$ in the memory or writeback stage.
  */
-inv1$   inv1$_STOREQ_STORING(STOREQ_STORING, empty);
+bufferHInv16$   bufferHInv16$_STOREQ_STORING(STOREQ_STORING, empty);
 
 /* 
    This comparator tells if the store queue has only 1 entry left.
