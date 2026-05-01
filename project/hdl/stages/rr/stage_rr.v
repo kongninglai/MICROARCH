@@ -220,8 +220,10 @@ module stage_rr #(
 
     assign stack_push = gp_dstb_mux_is_010;
 
+    wire mod_00, rm1_inv, rm_101, base_none, base_none_bar;
     bufferH64$  bufferH64$_to_regunit_opcode[7:0](to_regunit_opcode, to_rr_opcode); 
-    bufferH16$  bufferH16$_to_regunit_modrm[5:0](to_regunit_modrm, to_rr_modrm[5:0]);
+    bufferH16$  bufferH16$_to_regunit_modrm[5:3](to_regunit_modrm[5:3], to_rr_modrm[5:3]);
+    mux2$ mux2_base_idx[2:0](to_regunit_modrm[2:0], to_rr_modrm[2:0], 3'b0, base_none);
     assign to_regunit_sib = to_rr_sib[5:0];
     bufferH16$ bufferH16$_to_regunit_has_sib(to_regunit_has_sib, to_rr_addr_mode[1]);
     assign to_regunit_sig_gprd0_mux = gprd0_mux;
@@ -347,11 +349,11 @@ module stage_rr #(
     assign to_regunit_has_seg_prefix=to_rr_prefix[6];
     // assign from_rr_slim1=from_regunit_SLIM1;
 
-    wire mod_00, rm1_inv, rm_101, base_none, base_none_bar;
+    
     wire index2_inv, index_100_inv, index_none, index_none_prebuf;
     nor2$ nor_mod00(mod_00, to_rr_modrm[7], to_rr_modrm[6]);
-    inv1$ inv_rm1(rm1_inv, to_regunit_modrm[1]);
-    and3$ and_rm101(rm_101, to_regunit_modrm[2], rm1_inv, to_regunit_modrm[0]);
+    inv1$ inv_rm1(rm1_inv, to_rr_modrm[1]);
+    and3$ and_rm101(rm_101, to_rr_modrm[2], rm1_inv, to_rr_modrm[0]);
     nand2$ nand_base_none_bar(base_none_bar, rm_101, mod_00);
     bufferHInv64$  bufferHInv64$_base_none(base_none, base_none_bar);
 
