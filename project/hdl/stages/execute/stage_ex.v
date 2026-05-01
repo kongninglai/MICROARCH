@@ -459,8 +459,7 @@ module stage_ex #(
     
     wire branch_gp_exception, gp_exception;
     cmp_gt_32b cs_limit_cmp(.in0(jump_eip), .in1(to_ex_cs_limit), .gt(gp_exception));
-    // and2$ and_valid_gp_ex(branch_gp_exception, gp_exception, is_taken_branch);
-    assign branch_gp_exception = 1'b0;
+    and2$ and_valid_gp_ex(branch_gp_exception, gp_exception, is_taken_branch);
 
     // TODO: How to filter out the exceptions/uncod ? do we need that? hurt performance, but rare
     // valid_instruction = ~to_ex_exception[0] & ~to_ex_exception[1] & ~jmp_gp_exception & to_ex_valid

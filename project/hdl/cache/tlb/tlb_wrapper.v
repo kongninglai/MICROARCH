@@ -55,7 +55,7 @@ reg [TLB_ENTRY_BIT_WIDTH-1:0]   TLB_ENTRIES_BEHAV_prebuf[0:NUM_TLB_ENTRIES-1];
 wire [TLB_ENTRY_BIT_WIDTH-1:0]  TLB_ENTRIES_BEHAV_INV[0:NUM_TLB_ENTRIES-1];
 
 initial begin
-  $readmemb("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/cache/tlb/tlb_init.txt", TLB_ENTRIES_BEHAV_prebuf);
+  $readmemb("/home/ecelrc/students/var2427/MICROARCH/project/hdl/cache/tlb/tlb_init.txt", TLB_ENTRIES_BEHAV_prebuf);
 end
 
 wire  [TLB_ENTRY_BIT_WIDTH-1:0] TLB_ENTRIES_BEHAV[0:NUM_TLB_ENTRIES-1];
