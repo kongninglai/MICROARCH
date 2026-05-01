@@ -1,0 +1,87 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  ba 00 0a 00 00  // mov    edx,0xa00
+0x29:  8e e2  // mov    fs,edx
+0x2b:  c7 03 aa aa aa aa  // mov    DWORD PTR [ebx],0xaaaaaaaa
+0x31:  c7 43 04 bb bb aa aa  // mov    DWORD PTR [ebx+0x4],0xaaaabbbb
+0x38:  c7 43 08 cc cc aa aa  // mov    DWORD PTR [ebx+0x8],0xaaaacccc
+0x3f:  26 c7 45 00 aa aa bb bb  // mov    DWORD PTR es:[ebp+0x0],0xbbbbaaaa
+0x47:  26 c7 45 04 bb bb bb bb  // mov    DWORD PTR es:[ebp+0x4],0xbbbbbbbb
+0x4f:  26 c7 45 08 cc cc bb bb  // mov    DWORD PTR es:[ebp+0x8],0xbbbbcccc
+0x57:  26 c7 45 20 00 00 00 00  // mov    DWORD PTR es:[ebp+0x20],0x0
+0x5f:  26 c7 45 24 00 00 00 00  // mov    DWORD PTR es:[ebp+0x24],0x0
+0x67:  26 c7 45 28 00 00 00 00  // mov    DWORD PTR es:[ebp+0x28],0x0
+0x6f:  fc  // cld
+0x70:  be 00 00 00 00  // mov    esi,0x0
+0x75:  bf 20 00 00 00  // mov    edi,0x20
+0x7a:  b9 03 00 00 00  // mov    ecx,0x3
+0x7f:  26 f3 a5  // rep movs DWORD PTR es:[edi],DWORD PTR es:[esi]
+0x82:  26 8b 45 20  // mov    eax,DWORD PTR es:[ebp+0x20]
+0x86:  89 03  // mov    DWORD PTR [ebx],eax
+0x88:  be 00 00 00 00  // mov    esi,0x0
+0x8d:  bf 30 00 00 00  // mov    edi,0x30
+0x92:  b9 03 00 00 00  // mov    ecx,0x3
+0x97:  64 f3 a5  // rep movs DWORD PTR es:[edi],DWORD PTR fs:[esi]
+0x9a:  26 8b 45 30  // mov    eax,DWORD PTR es:[ebp+0x30]
+0x9e:  89 43 04  // mov    DWORD PTR [ebx+0x4],eax
+0xa1:  be 00 00 00 00  // mov    esi,0x0
+0xa6:  bf 20 00 00 00  // mov    edi,0x20
+0xab:  b9 03 00 00 00  // mov    ecx,0x3
+0xb0:  26 f3 a7  // repz cmps DWORD PTR es:[esi],DWORD PTR es:[edi]
+0xb3:  75 07  // jne    bc <_main+0xbc>
+0xb5:  c7 43 08 ba ad db ba  // mov    DWORD PTR [ebx+0x8],0xbadbadba
+0xbc:  c7 43 08 01 00 00 00  // mov    DWORD PTR [ebx+0x8],0x1
+0xc3:  be 00 00 00 00  // mov    esi,0x0
+0xc8:  bf 20 00 00 00  // mov    edi,0x20
+0xcd:  b9 03 00 00 00  // mov    ecx,0x3
+0xd2:  64 f3 a7  // repz cmps DWORD PTR fs:[esi],DWORD PTR es:[edi]
+0xd5:  75 07  // jne    de <_main+0xde>
+0xd7:  c7 43 0c ba ad db ba  // mov    DWORD PTR [ebx+0xc],0xbadbadba
+0xde:  c7 43 0c 02 00 00 00  // mov    DWORD PTR [ebx+0xc],0x2
+0xe5:  26 ff 75 04  // push   DWORD PTR es:[ebp+0x4]
+0xe9:  58  // pop    eax
+0xea:  89 43 10  // mov    DWORD PTR [ebx+0x10],eax
+0xed:  64 ff 75 08  // push   DWORD PTR fs:[ebp+0x8]
+0xf1:  58  // pop    eax
+0xf2:  89 43 14  // mov    DWORD PTR [ebx+0x14],eax
+0xf5:  68 ef be ad de  // push   0xdeadbeef
+0xfa:  26 8f 45 40  // pop    DWORD PTR es:[ebp+0x40]
+0xfe:  26 8b 45 40  // mov    eax,DWORD PTR es:[ebp+0x40]
+0x102:  89 43 18  // mov    DWORD PTR [ebx+0x18],eax
+0x105:  68 be ba fe ca  // push   0xcafebabe
+0x10a:  64 8f 45 44  // pop    DWORD PTR fs:[ebp+0x44]
+0x10e:  64 8b 45 44  // mov    eax,DWORD PTR fs:[ebp+0x44]
+0x112:  89 43 1c  // mov    DWORD PTR [ebx+0x1c],eax
+0x115:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x5040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
