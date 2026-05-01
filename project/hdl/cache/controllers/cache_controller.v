@@ -59,12 +59,12 @@ assign          W_CT_SB_FILL_DONE          = V_CT_SB_FILL_DONE        ;
 wire  [2:0] STATE, NEXT_STATE;
 wire        Q2,Q1,Q0;
 wire        D2,D1,D0;
+wire        Q2_prebuf,Q1_prebuf,Q0_prebuf;
+wire        Q2_bar_prebuf,Q1_bar_prebuf,Q0_bar_prebuf;
 
 assign STATE        = {Q2, Q1, Q0};
 assign NEXT_STATE   = {D2, D1, D0};
 
-wire        Q2_prebuf,Q1_prebuf,Q0_prebuf;
-wire        Q2_bar_prebuf,Q1_bar_prebuf,Q0_bar_prebuf;
 
 bufferH16$  bufferH16$_Q2(Q2, Q2_prebuf);
 bufferH16$  bufferH16$_Q1(Q1, Q1_prebuf);
@@ -489,44 +489,49 @@ tristate_bus_driver1$   tristate_bus_driver1$_REQS[2:0]
         nand3$ nand_7_0_0(nand_7_0_0_out,Q2_bar,Q1_bar,Q0_bar);
         wire nand_8_0_0_out;
         nand4$ nand_8_0_0(nand_8_0_0_out,Q2_bar,Q1_bar,Q0,ARB_ACK_RECV_bar);
-        wire nand_9_0_0_out;
+        wire nand_9_0_0_out, nand_9_0_0_out_buf16;
         nand3$ nand_9_0_0(nand_9_0_0_out,Q2,Q1,Q0);
-        wire nand_10_0_0_out;
+        bufferH16$  bufferH16$_nand_9_0_0_out_buf16(nand_9_0_0_out_buf16, nand_9_0_0_out);
+        wire nand_10_0_0_out, nand_10_0_0_out_buf16;
         nand4$ nand_10_0_0(nand_10_0_0_out,Q2_bar,Q1,Q0,CACHE_FILL_DONE);
-        wire nand_11_0_0_out;
+        bufferH16$  bufferH16$_nand_10_0_0_out_buf16(nand_10_0_0_out_buf16, nand_10_0_0_out);
+        wire nand_11_0_0_out, nand_11_0_0_out_buf16;
         nand4$ nand_11_0_0(nand_11_0_0_out,Q2_bar,Q1,Q0,CACHE_FILL_DONE_bar);
-        wire nand_12_0_0_out;
+        bufferH16$  bufferH16$_nand_11_0_0_out_buf16(nand_11_0_0_out_buf16, nand_11_0_0_out);
+        wire nand_12_0_0_out, nand_12_0_0_out_buf16;
         nand3$ nand_12_0_0(nand_12_0_0_out,Q2_bar,Q1,Q0_bar);
-        wire nand_13_0_0_out;
+        bufferH16$  bufferH16$_nand_12_0_0_out_buf16(nand_12_0_0_out_buf16, nand_12_0_0_out);
+        wire nand_13_0_0_out, nand_13_0_0_out_buf16;
         nand3$ nand_13_0_0(nand_13_0_0_out,Q2,Q1_bar,Q0_bar);
+        bufferH16$  bufferH16$_nand_13_0_0_out_buf16(nand_13_0_0_out_buf16, nand_13_0_0_out);
 
         /* Sum Expressions */
         wire nand_0_1_1_out;
         nand4$ nand_0_0_1(D2,nand_0_1_1_out,nand_0_0_0_out,nand_3_0_0_out,nand_4_0_0_out);
-        and2$ nand_0_1_1(nand_0_1_1_out,nand_10_0_0_out,nand_13_0_0_out);
+        and2$ nand_0_1_1(nand_0_1_1_out,nand_10_0_0_out_buf16,nand_13_0_0_out_buf16);
         wire nand_1_1_1_out;
         nand4$ nand_1_0_1(D1,nand_1_1_1_out,nand_0_0_0_out,nand_3_0_0_out,nand_6_0_0_out);
-        and2$ nand_1_1_1(nand_1_1_1_out,nand_11_0_0_out,nand_12_0_0_out);
+        and2$ nand_1_1_1(nand_1_1_1_out,nand_11_0_0_out_buf16,nand_12_0_0_out_buf16);
         wire nand_2_1_1_out;
         nand4$ nand_2_0_1(D0,nand_2_1_1_out,nand_1_0_0_out,nand_2_0_0_out,nand_4_0_0_out);
-        and3$ nand_2_1_1(nand_2_1_1_out,nand_8_0_0_out,nand_11_0_0_out,nand_13_0_0_out);
+        and3$ nand_2_1_1(nand_2_1_1_out,nand_8_0_0_out,nand_11_0_0_out_buf16,nand_13_0_0_out_buf16);
         inv1$ nand_3_0_1(FSM_LD_REGS, nand_2_0_0_out);
-        nand3$ nand_4_0_1(FSM_SHF_DATA_WR_MASK,nand_1_0_0_out,nand_10_0_0_out,nand_11_0_0_out);
-        nand4$ nand_5_0_1(FSM_DATA_WR_MASK_MUX[0],nand_10_0_0_out,nand_11_0_0_out,nand_12_0_0_out,nand_13_0_0_out);
-        inv1$ nand_6_0_1(FSM_DATA_WR_MASK_MUX[1], nand_9_0_0_out);
-        nand2$ nand_7_0_1(FSM_TAG_WR_MASK_MUX,nand_9_0_0_out,nand_13_0_0_out);
+        nand3$ nand_4_0_1(FSM_SHF_DATA_WR_MASK,nand_1_0_0_out,nand_10_0_0_out_buf16,nand_11_0_0_out_buf16);
+        nand4$ nand_5_0_1(FSM_DATA_WR_MASK_MUX[0],nand_10_0_0_out_buf16,nand_11_0_0_out_buf16,nand_12_0_0_out_buf16,nand_13_0_0_out_buf16);
+        inv1$ nand_6_0_1(FSM_DATA_WR_MASK_MUX[1], nand_9_0_0_out_buf16);
+        nand2$ nand_7_0_1(FSM_TAG_WR_MASK_MUX,nand_9_0_0_out_buf16,nand_13_0_0_out_buf16);
         nand3$ nand_8_0_1(FSM_SB_WR_EN,nand_3_0_0_out,nand_4_0_0_out,nand_5_0_0_out);
         inv1$ nand_9_0_1(FSM_SET_SB_VALID, nand_5_0_0_out);
-        inv1$ nand_10_0_1(FSM_WR_DATA_MUX, nand_9_0_0_out);
+        inv1$ nand_10_0_1(FSM_WR_DATA_MUX, nand_9_0_0_out_buf16);
         wire nand_11_1_1_out;
-        nand4$ nand_11_0_1(FSM_ADDR_MUX,nand_11_1_1_out,nand_9_0_0_out,nand_10_0_0_out,nand_11_0_0_out);
-        and2$ nand_11_1_1(nand_11_1_1_out,nand_12_0_0_out,nand_13_0_0_out);
+        nand4$ nand_11_0_1(FSM_ADDR_MUX,nand_11_1_1_out,nand_9_0_0_out_buf16,nand_10_0_0_out_buf16,nand_11_0_0_out_buf16);
+        and2$ nand_11_1_1(nand_11_1_1_out,nand_12_0_0_out_buf16,nand_13_0_0_out_buf16);
         nand2$ nand_12_0_1(FSM_GATE_RQ,nand_6_0_0_out,nand_8_0_0_out);
-        nand3$ nand_13_0_1(FSM_ADDR_BUS_ENBAR,nand_7_0_0_out,nand_8_0_0_out,nand_9_0_0_out);
+        nand3$ nand_13_0_1(FSM_ADDR_BUS_ENBAR,nand_7_0_0_out,nand_8_0_0_out,nand_9_0_0_out_buf16);
         wire nand_14_1_1_out;
-        nand4$ nand_14_0_1(CC_FSM_FILL_BUSY,nand_14_1_1_out,nand_6_0_0_out,nand_8_0_0_out,nand_10_0_0_out);
-        and3$ nand_14_1_1(nand_14_1_1_out,nand_11_0_0_out,nand_12_0_0_out,nand_13_0_0_out);
-        inv1$ nand_15_0_1(FSM_IN_010, nand_12_0_0_out);
+        nand4$ nand_14_0_1(CC_FSM_FILL_BUSY,nand_14_1_1_out,nand_6_0_0_out,nand_8_0_0_out,nand_10_0_0_out_buf16);
+        and3$ nand_14_1_1(nand_14_1_1_out,nand_11_0_0_out_buf16,nand_12_0_0_out_buf16,nand_13_0_0_out_buf16);
+        inv1$ nand_15_0_1(FSM_IN_010, nand_12_0_0_out_buf16);
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);

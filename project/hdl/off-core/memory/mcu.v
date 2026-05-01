@@ -106,7 +106,7 @@ bufferH256$ bufferH256$_DATA_BUS_GATE_buf256(DATA_BUS_GATE_buf256, DATA_BUS_GATE
 wire    ANY_STATE_SET, MEM_BUSY_DRIVER_VALUE_buf1024, MEM_BUSY_DRIVER_VALUE_inv_prebuf;
 // Membusy = (Q2|Q1|Q0) & ~(Q2&Q1&Q1&CTR1&CTR0)
 // ~Membusy = ~(Q2|Q1|Q0) | (Q2&Q1&Q1&CTR1&CTR0)
-or3$    or3$_ANY_STATE_SET(ANY_STATE_SET, Q2, Q1, Q0);
+or3$    or3$_ANY_STATE_SET(ANY_STATE_SET, Q2_prebuf, Q1, Q0);
 
 wire ctr0_bar, first4nands, extra_term;
 inv1$ inv1$_ctr0_bar(ctr0_bar, counter_buf1024[0]);
@@ -838,20 +838,23 @@ wire nand_7_0_0_out;
 nand4$ nand_7_0_0(nand_7_0_0_out,Q2_bar,Q1_bar,Q0_bar,IC_MEM_RD_ACK);
 wire nand_8_0_0_out;
 nand4$ nand_8_0_0(nand_8_0_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_RD_ACK);
-wire nand_9_0_0_out;
+wire nand_9_0_0_out, nand_9_0_0_out_buf16;
 nand4$ nand_9_0_0(nand_9_0_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
+bufferH16$  bufferH16$_nand_9_0_0_out_buf16(nand_9_0_0_out_buf16, nand_9_0_0_out);
 wire nand_10_0_0_out;
 nand3$ nand_10_0_0(nand_10_0_0_out,Q2_bar,Q1,Q0_bar);
-wire nand_11_0_0_out;
+wire nand_11_0_0_out, nand_11_0_0_out_buf16;
 nand4$ nand_11_0_0(nand_11_0_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
+bufferH16$  bufferH16$_nand_11_0_0_out_buf16(nand_11_0_0_out_buf16, nand_11_0_0_out);
 wire nand_12_0_0_out;
 nand3$ nand_12_0_0(nand_12_0_0_out,Q2,Q1,L2B_CTR_bar);
 wire nand_13_0_0_out;
 nand3$ nand_13_0_0(nand_13_0_0_out,Q2,Q1,Q0_bar);
 wire nand_14_0_0_out;
 nand2$ nand_14_0_0(nand_14_0_0_out,Q2,Q0_bar);
-wire nand_15_0_0_out;
+wire nand_15_0_0_out, nand_15_0_0_out_buf16;
 nand3$ nand_15_0_0(nand_15_0_0_out,Q2_bar,Q1,Q0);
+bufferH16$  bufferH16$_nand_15_0_0_out_buf16(nand_15_0_0_out_buf16, nand_15_0_0_out);
 wire nand_16_0_0_out;
 nand2$ nand_16_0_0(nand_16_0_0_out,Q1_bar,Q0_bar);
 wire nand_17_0_0_out;
@@ -860,26 +863,26 @@ inv1$ nand_17_0_0(nand_17_0_0_out, Q2);
 /* Sum Expressions */
 wire nand_0_1_1_out;
 nand4$ nand_0_0_1(D2,nand_0_1_1_out,nand_2_0_0_out,nand_3_0_0_out,nand_12_0_0_out);
-and2$ nand_0_1_1(nand_0_1_1_out,nand_14_0_0_out,nand_15_0_0_out);
+and2$ nand_0_1_1(nand_0_1_1_out,nand_14_0_0_out,nand_15_0_0_out_buf16);
 wire nand_1_1_1_out;
 nand4$ nand_1_0_1(D1,nand_1_1_1_out,nand_1_0_0_out,nand_2_0_0_out,nand_7_0_0_out);
-and4$ nand_1_1_1(nand_1_1_1_out,nand_8_0_0_out,nand_9_0_0_out,nand_12_0_0_out,nand_13_0_0_out);
+and4$ nand_1_1_1(nand_1_1_1_out,nand_8_0_0_out,nand_9_0_0_out_buf16,nand_12_0_0_out,nand_13_0_0_out);
 wire nand_2_1_1_out;
 wire nand_2_2_1_out;
 nand4$ nand_2_0_1(D0,nand_2_1_1_out,nand_2_2_1_out,nand_3_0_0_out,nand_4_0_0_out);
 and4$ nand_2_1_1(nand_2_1_1_out,nand_0_0_0_out,nand_5_0_0_out,nand_6_0_0_out,nand_7_0_0_out);
-and4$ nand_2_2_1(nand_2_2_1_out,nand_8_0_0_out,nand_11_0_0_out,nand_12_0_0_out,nand_13_0_0_out);
-nand3$ nand_3_0_1(MEM_ADDR_GATE_ST,nand_15_0_0_out,nand_16_0_0_out,nand_17_0_0_out);
-nand3$ nand_4_0_1(MEM_ADDR_GATE_LD,nand_9_0_0_out,nand_10_0_0_out,nand_11_0_0_out);
+and4$ nand_2_2_1(nand_2_2_1_out,nand_8_0_0_out,nand_11_0_0_out_buf16,nand_12_0_0_out,nand_13_0_0_out);
+nand3$ nand_3_0_1(MEM_ADDR_GATE_ST,nand_15_0_0_out_buf16,nand_16_0_0_out,nand_17_0_0_out);
+nand3$ nand_4_0_1(MEM_ADDR_GATE_LD,nand_9_0_0_out_buf16,nand_10_0_0_out,nand_11_0_0_out_buf16);
 wire nand_5_1_1_out;
-nand4$ nand_5_0_1(MEM_DIO_GATE,nand_5_1_1_out,nand_9_0_0_out,nand_11_0_0_out,nand_15_0_0_out);
+nand4$ nand_5_0_1(MEM_DIO_GATE,nand_5_1_1_out,nand_9_0_0_out_buf16,nand_11_0_0_out_buf16,nand_15_0_0_out_buf16);
 and2$ nand_5_1_1(nand_5_1_1_out,nand_16_0_0_out,nand_17_0_0_out);
 wire nand_6_1_1_out;
-nand4$ nand_6_0_1(DATA_BUS_GATE,nand_6_1_1_out,nand_9_0_0_out,nand_10_0_0_out,nand_11_0_0_out);
-and2$ nand_6_1_1(nand_6_1_1_out,nand_15_0_0_out,nand_16_0_0_out);
-nand2$ nand_7_0_1(STORE_BUF_LD_EN,nand_9_0_0_out,nand_11_0_0_out);
+nand4$ nand_6_0_1(DATA_BUS_GATE,nand_6_1_1_out,nand_9_0_0_out_buf16,nand_10_0_0_out,nand_11_0_0_out_buf16);
+and2$ nand_6_1_1(nand_6_1_1_out,nand_15_0_0_out_buf16,nand_16_0_0_out);
+nand2$ nand_7_0_1(STORE_BUF_LD_EN,nand_9_0_0_out_buf16,nand_11_0_0_out_buf16);
 inv1$ nand_8_0_1(LOAD_BUF_LD_EN, nand_14_0_0_out);
-inv1$ nand_9_0_1(LOAD_ADDR_LD_EN, nand_15_0_0_out);
+inv1$ nand_9_0_1(LOAD_ADDR_LD_EN, nand_15_0_0_out_buf16);
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);
