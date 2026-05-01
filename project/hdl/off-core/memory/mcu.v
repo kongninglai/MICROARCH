@@ -30,7 +30,7 @@ module mcu #(
   parameter CYCLE_TIME_X10            = 100,
 
   /* Next few parameters are in units of cycles */
-  parameter RD_EN_CYCLES              = ((DOE_TIME_X10 / CYCLE_TIME_X10)   + 1),
+  parameter RD_EN_CYCLES              = ((DOE_TIME_X10 / CYCLE_TIME_X10)   + 1) - 1,
   parameter ADDR_EN_TO_WR_EN_CYCLES   = ((ADDR_SETUP_X10  / CYCLE_TIME_X10)   + 1),
   parameter WR_AND_DATA_EN_CYCLES     = ((CE_SETUP_X10  / CYCLE_TIME_X10)   + 1),
 
@@ -103,8 +103,16 @@ bufferH1024$  bufferH1024$_MEM_ADDR_GATE_LD_buf1024(MEM_ADDR_GATE_LD_buf1024, ME
 bufferH256$ bufferH256$_MEM_DIO_GATE_buf256(MEM_DIO_GATE_buf256, MEM_DIO_GATE);
 bufferH256$ bufferH256$_DATA_BUS_GATE_buf256(DATA_BUS_GATE_buf256, DATA_BUS_GATE);
 
-wire    MEM_BUSY_DRIVER_VALUE_buf1024, MEM_BUSY_DRIVER_VALUE_inv_prebuf;
-nor3$    nor3$_MEM_BUSY_DRIVER_VALUE_inv_prebuf(MEM_BUSY_DRIVER_VALUE_inv_prebuf, Q2, Q1, Q0);
+wire    ANY_STATE_SET, MEM_BUSY_DRIVER_VALUE_buf1024, MEM_BUSY_DRIVER_VALUE_inv_prebuf;
+// Membusy = (Q2|Q1|Q0) & ~(Q2&Q1&Q1&CTR1&CTR0)
+// ~Membusy = ~(Q2|Q1|Q0) | (Q2&Q1&Q1&CTR1&CTR0)
+or3$    or3$_ANY_STATE_SET(ANY_STATE_SET, Q2, Q1, Q0);
+
+wire ctr0_bar, first4nands, extra_term;
+inv1$ inv1$_ctr0_bar(ctr0_bar, counter_buf1024[0]);
+and4$  and4$_first4nands(first4nands, Q2, Q1, Q0, counter_buf1024[1]);
+nand2$ nand2$_extra_term(extra_term, first4nands, counter_buf1024[0]);
+nand2$ nand2$_MEM_BUSY_DRIVER_VALUE_inv_prebuf(MEM_BUSY_DRIVER_VALUE_inv_prebuf, extra_term, ANY_STATE_SET);
 bufferHInv1024$ bufferHInv1024$_MEM_BUSY_DRIVER_VALUE_buf1024(MEM_BUSY_DRIVER_VALUE_buf1024, MEM_BUSY_DRIVER_VALUE_inv_prebuf);
 tristate_bus_driver1$  tristate_bus_driver1$_MEM_BUSY(.enbar(1'b0), 
                                                       .in(MEM_BUSY_DRIVER_VALUE_buf1024), 
@@ -463,8 +471,8 @@ generate
   end
 endgenerate
 
-tristateL$  tristateL$_LOAD_BUFFER_A_RANK0 [RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD_buf1024), .in(LOAD_BUFFER_A_RANK0),  .out(A_RANK0));
-tristateL$  tristateL$_LOAD_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD_buf1024), .in(LOAD_BUFFER_A_OTHERS), .out(A_OTHERS));
+tristateL$  tristateL$_LOAD_BUFFER_A_RANK0 [RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD_buf1024), .in(LOAD_BUFFER_A_RANK0_CALC),  .out(A_RANK0));
+tristateL$  tristateL$_LOAD_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_LD_buf1024), .in(ADDR_BUS[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-RANK_ADDR_WIDTH]), .out(A_OTHERS));
 
 tristateL$  tristateL$_STORE_BUFFER_A_RANK0 [RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_ST_buf16), .in(STORE_BUFFER_A_RANK0),  .out(A_RANK0));
 tristateL$  tristateL$_STORE_BUFFER_A_OTHERS[RANK_ADDR_WIDTH-1:0](.enbar(MEM_ADDR_GATE_ST_buf16), .in(STORE_BUFFER_A_OTHERS), .out(A_OTHERS));
@@ -801,21 +809,21 @@ main_memory #(
 /*** BEGIN AUTO-GENERATED CODE ***/
 
 /* Inverters */
-wire Q0_bar;
-wire WRITE_DONE_bar;
-inv1$ inv_1(WRITE_DONE_bar, WRITE_DONE);
-wire L2B_CTR_bar;
-inv1$ inv_2(L2B_CTR_bar, L2B_CTR);
 wire SHORT_BRST_DONE_bar;
-inv1$ inv_3(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
+inv1$ inv_0(SHORT_BRST_DONE_bar, SHORT_BRST_DONE);
+wire Q0_bar;
 wire Q2_bar;
+wire WRITE_DONE_bar;
+inv1$ inv_3(WRITE_DONE_bar, WRITE_DONE);
 wire Q1_bar;
+wire L2B_CTR_bar;
+inv1$ inv_5(L2B_CTR_bar, L2B_CTR);
 
 /* Product Expressions */
 wire nand_0_0_0_out;
-nand3$ nand_0_0_0(nand_0_0_0_out,Q1,Q0_bar,WRITE_DONE_bar);
+nand4$ nand_0_0_0(nand_0_0_0_out,Q2_bar,Q1,Q0,SKIP_STATE);
 wire nand_1_0_0_out;
-nand4$ nand_1_0_0(nand_1_0_0_out,Q2_bar,Q1,Q0,SKIP_STATE);
+nand3$ nand_1_0_0(nand_1_0_0_out,Q1,Q0_bar,WRITE_DONE_bar);
 wire nand_2_0_0_out;
 nand4$ nand_2_0_0(nand_2_0_0_out,Q2,Q1_bar,Q0,SHORT_BRST_DONE);
 wire nand_3_0_0_out;
@@ -825,17 +833,17 @@ nand4$ nand_4_0_0(nand_4_0_0_out,Q2_bar,Q1_bar,Q0_bar,DMA_MEM_WR_ACK);
 wire nand_5_0_0_out;
 nand4$ nand_5_0_0(nand_5_0_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_WR_ACK);
 wire nand_6_0_0_out;
-nand4$ nand_6_0_0(nand_6_0_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
+nand3$ nand_6_0_0(nand_6_0_0_out,Q2,Q0_bar,RD_EN_DONE);
 wire nand_7_0_0_out;
-nand4$ nand_7_0_0(nand_7_0_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
+nand4$ nand_7_0_0(nand_7_0_0_out,Q2_bar,Q1_bar,Q0_bar,IC_MEM_RD_ACK);
 wire nand_8_0_0_out;
-nand3$ nand_8_0_0(nand_8_0_0_out,Q2,Q0_bar,RD_EN_DONE);
+nand4$ nand_8_0_0(nand_8_0_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_RD_ACK);
 wire nand_9_0_0_out;
-nand4$ nand_9_0_0(nand_9_0_0_out,Q2_bar,Q1_bar,Q0_bar,IC_MEM_RD_ACK);
+nand4$ nand_9_0_0(nand_9_0_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR);
 wire nand_10_0_0_out;
-nand4$ nand_10_0_0(nand_10_0_0_out,Q2_bar,Q1_bar,Q0_bar,DC_MEM_RD_ACK);
+nand3$ nand_10_0_0(nand_10_0_0_out,Q2_bar,Q1,Q0_bar);
 wire nand_11_0_0_out;
-nand3$ nand_11_0_0(nand_11_0_0_out,Q2_bar,Q1,Q0);
+nand4$ nand_11_0_0(nand_11_0_0_out,Q2_bar,Q1_bar,Q0,L2B_CTR_bar);
 wire nand_12_0_0_out;
 nand3$ nand_12_0_0(nand_12_0_0_out,Q2,Q1,L2B_CTR_bar);
 wire nand_13_0_0_out;
@@ -843,33 +851,35 @@ nand3$ nand_13_0_0(nand_13_0_0_out,Q2,Q1,Q0_bar);
 wire nand_14_0_0_out;
 nand2$ nand_14_0_0(nand_14_0_0_out,Q2,Q0_bar);
 wire nand_15_0_0_out;
-nand2$ nand_15_0_0(nand_15_0_0_out,Q1_bar,Q0_bar);
+nand3$ nand_15_0_0(nand_15_0_0_out,Q2_bar,Q1,Q0);
 wire nand_16_0_0_out;
-inv1$ nand_16_0_0(nand_16_0_0_out, Q2_bar);
+nand2$ nand_16_0_0(nand_16_0_0_out,Q1_bar,Q0_bar);
 wire nand_17_0_0_out;
 inv1$ nand_17_0_0(nand_17_0_0_out, Q2);
 
 /* Sum Expressions */
 wire nand_0_1_1_out;
-nand4$ nand_0_0_1(D2,nand_0_1_1_out,nand_2_0_0_out,nand_3_0_0_out,nand_11_0_0_out);
-and2$ nand_0_1_1(nand_0_1_1_out,nand_12_0_0_out,nand_14_0_0_out);
+nand4$ nand_0_0_1(D2,nand_0_1_1_out,nand_2_0_0_out,nand_3_0_0_out,nand_12_0_0_out);
+and2$ nand_0_1_1(nand_0_1_1_out,nand_14_0_0_out,nand_15_0_0_out);
 wire nand_1_1_1_out;
-nand4$ nand_1_0_1(D1,nand_1_1_1_out,nand_0_0_0_out,nand_2_0_0_out,nand_6_0_0_out);
-and4$ nand_1_1_1(nand_1_1_1_out,nand_9_0_0_out,nand_10_0_0_out,nand_12_0_0_out,nand_13_0_0_out);
+nand4$ nand_1_0_1(D1,nand_1_1_1_out,nand_1_0_0_out,nand_2_0_0_out,nand_7_0_0_out);
+and4$ nand_1_1_1(nand_1_1_1_out,nand_8_0_0_out,nand_9_0_0_out,nand_12_0_0_out,nand_13_0_0_out);
 wire nand_2_1_1_out;
 wire nand_2_2_1_out;
-nand4$ nand_2_0_1(D0,nand_2_1_1_out,nand_1_0_0_out,nand_3_0_0_out,nand_4_0_0_out);
-and4$ nand_2_1_1(nand_2_1_1_out,nand_2_2_1_out,nand_5_0_0_out,nand_7_0_0_out,nand_8_0_0_out);
-and4$ nand_2_2_1(nand_2_2_1_out,nand_9_0_0_out,nand_10_0_0_out,nand_12_0_0_out,nand_13_0_0_out);
-nand3$ nand_3_0_1(MEM_ADDR_GATE_ST,nand_11_0_0_out,nand_15_0_0_out,nand_17_0_0_out);
-inv1$ nand_4_0_1(MEM_ADDR_GATE_LD, nand_16_0_0_out);
+nand4$ nand_2_0_1(D0,nand_2_1_1_out,nand_2_2_1_out,nand_3_0_0_out,nand_4_0_0_out);
+and4$ nand_2_1_1(nand_2_1_1_out,nand_0_0_0_out,nand_5_0_0_out,nand_6_0_0_out,nand_7_0_0_out);
+and4$ nand_2_2_1(nand_2_2_1_out,nand_8_0_0_out,nand_11_0_0_out,nand_12_0_0_out,nand_13_0_0_out);
+nand3$ nand_3_0_1(MEM_ADDR_GATE_ST,nand_15_0_0_out,nand_16_0_0_out,nand_17_0_0_out);
+nand3$ nand_4_0_1(MEM_ADDR_GATE_LD,nand_9_0_0_out,nand_10_0_0_out,nand_11_0_0_out);
 wire nand_5_1_1_out;
-nand4$ nand_5_0_1(MEM_DIO_GATE,nand_5_1_1_out,nand_6_0_0_out,nand_7_0_0_out,nand_11_0_0_out);
-and2$ nand_5_1_1(nand_5_1_1_out,nand_15_0_0_out,nand_17_0_0_out);
-nand2$ nand_6_0_1(DATA_BUS_GATE,nand_15_0_0_out,nand_16_0_0_out);
-nand2$ nand_7_0_1(STORE_BUF_LD_EN,nand_6_0_0_out,nand_7_0_0_out);
+nand4$ nand_5_0_1(MEM_DIO_GATE,nand_5_1_1_out,nand_9_0_0_out,nand_11_0_0_out,nand_15_0_0_out);
+and2$ nand_5_1_1(nand_5_1_1_out,nand_16_0_0_out,nand_17_0_0_out);
+wire nand_6_1_1_out;
+nand4$ nand_6_0_1(DATA_BUS_GATE,nand_6_1_1_out,nand_9_0_0_out,nand_10_0_0_out,nand_11_0_0_out);
+and2$ nand_6_1_1(nand_6_1_1_out,nand_15_0_0_out,nand_16_0_0_out);
+nand2$ nand_7_0_1(STORE_BUF_LD_EN,nand_9_0_0_out,nand_11_0_0_out);
 inv1$ nand_8_0_1(LOAD_BUF_LD_EN, nand_14_0_0_out);
-inv1$ nand_9_0_1(LOAD_ADDR_LD_EN, nand_11_0_0_out);
+inv1$ nand_9_0_1(LOAD_ADDR_LD_EN, nand_15_0_0_out);
 
 /* State Flip Flops */
 dff$ dff_0(clk, D0, Q0_prebuf, Q0_bar_prebuf, rst, 1'b1);

@@ -559,7 +559,7 @@ nand2$  nand2$_io_load_miss_cond(io_load_miss_cond, D_RD_TLB_CACHE_DISABLE, STIC
 nand4$  nand4$_load_miss_cond(load_miss_cond, non_io_load_miss_cond, io_load_miss_cond, WBE_BUSY_BAR, w1);
 nand2$  nand2$_DCACHE_STALL_UNCOND_BAR(DCACHE_STALL_UNCOND_BAR, MEM_VALID_LOAD_INST_buf16, load_miss_cond);
 
-nand3$   nor3$_DCACHE_STALL_IF_MEM_BAR(DCACHE_STALL_IF_MEM_BAR, NEITHER_BUSY, STOREQ_STORING_bar, w1);
+nand3$   nor3$_DCACHE_STALL_IF_MEM_BAR(DCACHE_STALL_IF_MEM_BAR, NEITHER_BUSY, STOREQ_STALL_CONDITION, w1);
 
 wire DCACHE_VALID_INT;
 nor4$   nor4$_DCACHE_VALID_INT(DCACHE_VALID_INT, THREE_STALL_REASONS, STOREQ_MISS, MEM_NO_IO_MISS, MEM_IO_MISS);

@@ -243,7 +243,7 @@ initial begin
         ACKS <= REQS;
         #(CYCLE_TIME);
         ACKS <= 3'd0;
-        check(3'b001, {MEM_ADDR_WIDTH{1'bz}}, REQS, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
+        check(3'b001, {CACHE_PHYS_ADDR_SAVED,4'b0000}, REQS, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
               {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
@@ -267,7 +267,7 @@ initial begin
         DATA_driver                 = $random;
         DATA_BUS_SAVED[1]           = DATA_driver;
         #(CYCLE_TIME);
-        check(3'b011, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY + 1)),
+        check(3'b011, {CACHE_PHYS_ADDR_SAVED,4'b0000}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY + 1)),
               {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
@@ -276,7 +276,7 @@ initial begin
         DATA_driver                 = $random;
         DATA_BUS_SAVED[2]           = DATA_driver;
         #(CYCLE_TIME);
-        check(3'b011, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY + 2)),
+        check(3'b011, {CACHE_PHYS_ADDR_SAVED,4'b0000}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY + 2)),
               {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
@@ -285,7 +285,7 @@ initial begin
         DATA_driver                 = $random;
         DATA_BUS_SAVED[3]           = DATA_driver;
         #(CYCLE_TIME);
-        check(3'b100, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY + 3)),
+        check(3'b100, {CACHE_PHYS_ADDR_SAVED,4'b0000}, 3'd0, 1'b0, 1'b1, CACHE_RD_DATA, CACHE_PHYS_ADDR_SAVED, ~(16'd1 << (NUM_WAYS * CACHE_VICT_WAY + 3)),
               ~(4'd1 << (CACHE_VICT_WAY)),
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {CACHE_PHYS_ADDR_SAVED[RANK_BURST_SIZE+INDEX_WIDTH-1:RANK_BURST_SIZE], CACHE_VICT_WAY}, 1'b1);
@@ -294,7 +294,7 @@ initial begin
         DATA_driver                 = $random;
         DATA_BUS_SAVED[4]           = DATA_driver;
         #(CYCLE_TIME);
-        check(3'b101, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
+        check(3'b101, {CACHE_PHYS_ADDR_SAVED,4'b0000}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
               {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
@@ -304,7 +304,7 @@ initial begin
         DATA_driver                 = $random;
         DATA_BUS_SAVED[5]           = DATA_driver;
         #(CYCLE_TIME);
-        check(3'b101, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
+        check(3'b101, {CACHE_PHYS_ADDR_SAVED,4'b0000}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
               {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
@@ -313,7 +313,7 @@ initial begin
         DATA_driver                 = $random;
         DATA_BUS_SAVED[6]           = DATA_driver;
         #(CYCLE_TIME);
-        check(3'b101, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
+        check(3'b101, {CACHE_PHYS_ADDR_SAVED,4'b0000}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
               {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
@@ -322,7 +322,7 @@ initial begin
         DATA_driver                 = $random;
         DATA_BUS_SAVED[7]           = DATA_driver;
         #(CYCLE_TIME);
-        check(3'b110, {MEM_ADDR_WIDTH{1'bz}}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
+        check(3'b110, {CACHE_PHYS_ADDR_SAVED,4'b0000}, 3'd0, 1'b0, 1'b0, CACHE_RD_DATA, CACHE_PHYS_ADDR, CC_DATA_WR_MASK_DEFAULT,
               {NUM_WAYS{1'b1}},
               CACHE_PHYS_ADDR_SAVED[MEM_ADDR_WIDTH-1:MEM_ADDR_WIDTH-1-7], 1'b1, 
               {INDEX_WIDTH+WAY_WIDTH{1'b0}}, 1'b0);
