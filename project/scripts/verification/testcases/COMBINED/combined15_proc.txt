@@ -1,0 +1,108 @@
+0x0:  ba 00 02 00 00  // mov    edx,0x200
+0x5:  8e da  // mov    ds,edx
+0x7:  ba 00 04 00 00  // mov    edx,0x400
+0xc:  8e c2  // mov    es,edx
+0xe:  ba 00 0b 00 00  // mov    edx,0xb00
+0x13:  8e d2  // mov    ss,edx
+0x15:  bc 00 01 00 00  // mov    esp,0x100
+0x1a:  bb 00 00 00 00  // mov    ebx,0x0
+0x1f:  bd 00 00 00 00  // mov    ebp,0x0
+0x24:  c7 03 00 00 00 00  // mov    DWORD PTR [ebx],0x0
+0x2a:  c7 43 04 00 00 00 00  // mov    DWORD PTR [ebx+0x4],0x0
+0x31:  c7 43 08 00 00 00 00  // mov    DWORD PTR [ebx+0x8],0x0
+0x38:  c7 43 0c 00 00 00 00  // mov    DWORD PTR [ebx+0xc],0x0
+0x3f:  b8 08 00 00 00  // mov    eax,0x8
+0x44:  04 01  // add    al,0x1
+0x46:  37  // aaa
+0x47:  89 03  // mov    DWORD PTR [ebx],eax
+0x49:  b8 09 00 00 00  // mov    eax,0x9
+0x4e:  04 07  // add    al,0x7
+0x50:  37  // aaa
+0x51:  89 43 04  // mov    DWORD PTR [ebx+0x4],eax
+0x54:  b8 00 00 00 00  // mov    eax,0x0
+0x59:  b0 0c  // mov    al,0xc
+0x5b:  37  // aaa
+0x5c:  89 43 08  // mov    DWORD PTR [ebx+0x8],eax
+0x5f:  b8 00 00 00 00  // mov    eax,0x0
+0x64:  b0 09  // mov    al,0x9
+0x66:  04 09  // add    al,0x9
+0x68:  37  // aaa
+0x69:  b0 09  // mov    al,0x9
+0x6b:  04 09  // add    al,0x9
+0x6d:  37  // aaa
+0x6e:  b0 09  // mov    al,0x9
+0x70:  04 09  // add    al,0x9
+0x72:  37  // aaa
+0x73:  89 43 0c  // mov    DWORD PTR [ebx+0xc],eax
+0x76:  c7 43 10 fe ff ff ff  // mov    DWORD PTR [ebx+0x10],0xfffffffe
+0x7d:  b9 03 00 00 00  // mov    ecx,0x3
+0x82:  b8 ff ff ff ff  // mov    eax,0xffffffff
+0x87:  05 01 00 00 00  // add    eax,0x1
+0x8c:  11 4b 10  // adc    DWORD PTR [ebx+0x10],ecx
+0x8f:  8b 43 10  // mov    eax,DWORD PTR [ebx+0x10]
+0x92:  c7 43 14 05 00 00 00  // mov    DWORD PTR [ebx+0x14],0x5
+0x99:  81 5b 14 03 00 00 00  // sbb    DWORD PTR [ebx+0x14],0x3
+0xa0:  8b 53 14  // mov    edx,DWORD PTR [ebx+0x14]
+0xa3:  c7 43 18 0f 00 00 00  // mov    DWORD PTR [ebx+0x18],0xf
+0xaa:  b8 f0 ff ff ff  // mov    eax,0xfffffff0
+0xaf:  b9 ff ff ff ff  // mov    ecx,0xffffffff
+0xb4:  83 c1 01  // add    ecx,0x1
+0xb7:  13 43 18  // adc    eax,DWORD PTR [ebx+0x18]
+0xba:  89 43 1c  // mov    DWORD PTR [ebx+0x1c],eax
+0xbd:  c7 43 20 05 00 00 00  // mov    DWORD PTR [ebx+0x20],0x5
+0xc4:  b8 10 00 00 00  // mov    eax,0x10
+0xc9:  1b 43 20  // sbb    eax,DWORD PTR [ebx+0x20]
+0xcc:  89 43 24  // mov    DWORD PTR [ebx+0x24],eax
+0xcf:  66 b8 fe ff  // mov    ax,0xfffe
+0xd3:  66 b9 03 00  // mov    cx,0x3
+0xd7:  66 05 00 00  // add    ax,0x0
+0xdb:  66 03 c1  // add    ax,cx
+0xde:  66 89 43 28  // mov    WORD PTR [ebx+0x28],ax
+0xe2:  66 b8 ff ff  // mov    ax,0xffff
+0xe6:  66 b9 00 00  // mov    cx,0x0
+0xea:  66 13 c1  // adc    ax,cx
+0xed:  66 89 43 2a  // mov    WORD PTR [ebx+0x2a],ax
+0xf1:  66 b8 ff ff  // mov    ax,0xffff
+0xf5:  66 13 c1  // adc    ax,cx
+0xf8:  66 89 43 2c  // mov    WORD PTR [ebx+0x2c],ax
+0xfc:  66 b8 ff ff  // mov    ax,0xffff
+0x100:  66 13 c1  // adc    ax,cx
+0x103:  66 89 43 2e  // mov    WORD PTR [ebx+0x2e],ax
+0x107:  66 b8 00 00  // mov    ax,0x0
+0x10b:  66 b9 01 00  // mov    cx,0x1
+0x10f:  66 05 00 00  // add    ax,0x0
+0x113:  66 1b c1  // sbb    ax,cx
+0x116:  66 89 43 30  // mov    WORD PTR [ebx+0x30],ax
+0x11a:  66 b8 00 00  // mov    ax,0x0
+0x11e:  66 b9 00 00  // mov    cx,0x0
+0x122:  66 1b c1  // sbb    ax,cx
+0x125:  66 89 43 32  // mov    WORD PTR [ebx+0x32],ax
+0x129:  66 b8 00 00  // mov    ax,0x0
+0x12d:  66 1b c1  // sbb    ax,cx
+0x130:  66 89 43 34  // mov    WORD PTR [ebx+0x34],ax
+0x134:  66 b8 00 00  // mov    ax,0x0
+0x138:  66 1b c1  // sbb    ax,cx
+0x13b:  66 89 43 36  // mov    WORD PTR [ebx+0x36],ax
+0x13f:  f4  // hlt
+
+0x2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x2030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x40f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0x4100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
