@@ -22,7 +22,7 @@
 # DVE build date: May 31 2022 20:53:03
 
 
-#<Session mode="Full" path="/home/ecelrc/students/var2427/MICROARCH/project/hvl/top/pipeline_top_tb/checkout_debug.pipeline_top_auto_tb.dump.vpd.tcl" type="Debug">
+#<Session mode="Full" path="/home/ecelrc/students/aak3265/MICROARCH/project/hvl/top/pipeline_top_tb/checkout_debug.pipeline_top_auto_tb.dump.vpd.tcl" type="Debug">
 
 gui_set_loading_session_type Post
 gui_continuetime_set
