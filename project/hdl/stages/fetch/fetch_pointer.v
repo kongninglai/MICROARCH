@@ -14,7 +14,7 @@ module fetch_pointer(
 );
 
     //FEIP Logic
-    wire [31:0] feip_reg_out32, feip_reg_out32_prebuf, ld_feip_val, i_eip;
+    wire [31:0] feip_reg_out32, ld_feip_val, i_eip;
 
     big_increment #(.WIDTH(32)) FEIP_INCR(
         .a({4'd0, feip_reg_out32[31:4]}), .s(i_eip)
@@ -31,22 +31,17 @@ module fetch_pointer(
         .out(eip_true) 
     );
 
-    wire shft_reg_we_buf64;
-    bufferH64$    bufferH64$_shft_reg_we_buf64(shft_reg_we_buf64, shft_reg_we);
-
     reg_n #(.WIDTH(32), .USE_EN_BAR(1'b0), .RESET_TO_ONES(1'b0)) FEIP_REG (
         .clk(clk),
         .rst(rst_bar),
-        .en({{28{shft_reg_we_buf64}}, 4'd0}),
+        .en({{28{shft_reg_we}}, 4'd0}),
         .d(eip_true),
-        .q(feip_reg_out32_prebuf)
+        .q(feip_reg_out32)
     );
-
-    bufferH16$    bufferH16$_feip_reg_out32[31:0](feip_reg_out32, feip_reg_out32_prebuf);
 
     PA_32b CS_FEIP_ADDER(
         .in0({from_rr_cs_reg, 16'h0000}), .in1({feip_reg_out32[31:4], 4'd0}),
-	      .s(ic_addr)
+	    .s(ic_addr)
     );
 
 endmodule
