@@ -148,12 +148,12 @@ module stage_decode #(
         .clk(clk),
         .rst_bar(rst_bar),
         .opcode(opcode),
-        .imm(bp_imm),
+        .imm(imm),
         .op_size_overload(prefix_op_size),
         .prefix_ext(prefix_ext),
         .is_branch(is_branch),
         .o_eip(o_eip), //used to predict cur instruction in decode
-        .i_eip(i_eip_br),
+        .i_eip(i_eip),
         .br_t_nt_ex_d(br_t_nt_ex_d), //used to update pht for instr in execute stage
         .br_valid_ex_d(br_valid_ex_d), //used to update pht for instr in execute stage
         .ext_pht_idx(pht_idx_ex_d), //used to update pht for instr in execute stage
@@ -161,20 +161,12 @@ module stage_decode #(
         .bp_eip_target(bp_eip_target), 
         .hit(hit),
 
-        .cur_instr_prediction(bp_pred_dir),
+        .cur_instr_prediction(cur_instr_prediction),
         .pht_idx(pht_idx),
         .ghr_out() //used internally only
     );
 
-    generate
-        if (BP_EN) begin 
-            assign pred_dir = to_f_take_branch;
-            assign cur_instr_prediction = bp_pred_dir;
-        end else begin 
-            assign pred_dir = 1'b0;
-            assign cur_instr_prediction = 1'b0;
-        end
-    endgenerate
+    assign pred_dir = cur_instr_prediction;
 
 endmodule
 

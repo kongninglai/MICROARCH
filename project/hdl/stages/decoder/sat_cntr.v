@@ -7,37 +7,25 @@ module sat_cntr(
 	output wire NextState0
 );
 
-  wire [1:0] incr, decr;
-  wire [5:0] incr_dummy, decr_dummy;
-  mux4_8$ mux4_8$_incr
-  (
-    {incr_dummy, incr},
-    {6'd0, 2'b01},
-    {6'd0, 2'b10},
-    {6'd0, 2'b11},
-    {6'd0, 2'b11},
-    CurState0,
-    CurState1
-  );
-  mux4_8$ mux4_8$_decr
-  (
-    {decr_dummy, decr},
-    {6'd0, 2'b00},
-    {6'd0, 2'b00},
-    {6'd0, 2'b01},
-    {6'd0, 2'b10},
-    CurState0,
-    CurState1
-  );
-  
-  wire [5:0] next_dummy;
-  mux2_8$ mux2_8$_next
-  (
-    {next_dummy, NextState1, NextState0},
-    {6'd0, decr},
-    {6'd0, incr},
-    Incr_or_Decr
-  );
+	/* Inverters (Delay: 0.15) */
+	wire CurState0_bar;
+	inv1$ inv_0(CurState0_bar, CurState0);
+
+	/* Level 1: Product Terms (NAND Gates) */
+	wire nand_0_0_out;
+	nand2$ nand_0_0(nand_0_0_out,CurState1,CurState0);
+	wire nand_1_0_out;
+	nand2$ nand_1_0(nand_1_0_out,CurState0,Incr_or_Decr);
+	wire nand_2_0_out;
+	nand2$ nand_2_0(nand_2_0_out,CurState1,CurState0_bar);
+	wire nand_3_0_out;
+	nand2$ nand_3_0(nand_3_0_out,CurState0_bar,Incr_or_Decr);
+	wire nand_4_0_out;
+	nand2$ nand_4_0(nand_4_0_out,CurState1,Incr_or_Decr);
+
+	/* Level 2: Sum Terms (NAND Gates - SOP Equivalence) */
+	nand3$ nand_0_0_0(NextState1,nand_0_0_out,nand_1_0_out,nand_4_0_out);
+	nand3$ nand_1_0_0(NextState0,nand_2_0_out,nand_3_0_out,nand_4_0_out);
 
 endmodule
 

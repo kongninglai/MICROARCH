@@ -4,11 +4,12 @@ set -u
 set -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TESTCASES_DIR="/home/ecelrc/students/aak3265/MICROARCH/project/scripts/performance/workload_suites"
+TESTCASES_DIR="/home/ecelrc/students/aak3265/MICROARCH/project/scripts/verification/testcases"
 PROGRAM_TXT="/home/ecelrc/students/aak3265/MICROARCH/project/scripts/readmemh/program.txt"
-RESULTS_DIR="/home/ecelrc/students/aak3265/MICROARCH/project/scripts/performance/sim_results"
-LOG_DIR="$RESULTS_DIR/test_logs"
-LOCK_FILE="$RESULTS_DIR/.test_all_instructions.lock"
+RESULTS_DIR="/home/ecelrc/students/aak3265/MICROARCH/project/scripts/regression"
+RESULTS_FILE="$RESULTS_DIR/regression_results_auto.txt"
+LOG_DIR="$RESULTS_DIR/test_logs_auto"
+LOCK_FILE="$RESULTS_DIR/.test_all_instructions_auto.lock"
 PER_TEST_TIMEOUT_SEC="${PER_TEST_TIMEOUT_SEC:-0}"
 
 if [[ "$#" -ne 1 ]]; then

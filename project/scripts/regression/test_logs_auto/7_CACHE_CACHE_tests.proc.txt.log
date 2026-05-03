@@ -1,0 +1,202 @@
+FAIL: RESULTS MISMATCH
+Diff written to: /home/ecelrc/students/var2427/MICROARCH/project/hvl/top/pipeline_top_tb/diff_output.txt
+2695,6459d2694
+< Read  0x31 from va = 0x020000d0 and pa = 0x20d0
+< Read  0xb6 from va = 0x020000d1 and pa = 0x20d1
+< Read  0xa8 from va = 0x020000d2 and pa = 0x20d2
+< Read  0xf8 from va = 0x020000d3 and pa = 0x20d3
+< Architectural State 182
+< EAX: 0xf8a8b631    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x00000640
+< ----------------------------------------
+< Read  0x0e from va = 0x020000e0 and pa = 0x20e0
+< Read  0x2a from va = 0x020000e1 and pa = 0x20e1
+< Read  0xc6 from va = 0x020000e2 and pa = 0x20e2
+< Read  0x8f from va = 0x020000e3 and pa = 0x20e3
+< Architectural State 183
+< EAX: 0x8fc62a0e    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x00000646
+< ----------------------------------------
+< Read  0x33 from va = 0x020000f0 and pa = 0x20f0
+< Read  0x05 from va = 0x020000f1 and pa = 0x20f1
+< Read  0x17 from va = 0x020000f2 and pa = 0x20f2
+< Read  0x40 from va = 0x020000f3 and pa = 0x20f3
+< Architectural State 184
+< EAX: 0x40170533    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x0000064c
+< ----------------------------------------
+< Read  0xbe from va = 0x02000100 and pa = 0x2100
+< Read  0x29 from va = 0x02000101 and pa = 0x2101
+< Read  0x7c from va = 0x02000102 and pa = 0x2102
+< Read  0xd5 from va = 0x02000103 and pa = 0x2103
+< Architectural State 185
+< EAX: 0xd57c29be    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x00000652
+< ----------------------------------------
+< Read  0x82 from va = 0x02000110 and pa = 0x2110
+< Read  0x39 from va = 0x02000111 and pa = 0x2111
+< Read  0x71 from va = 0x02000112 and pa = 0x2112
+< Read  0x75 from va = 0x02000113 and pa = 0x2113
+< Architectural State 186
+< EAX: 0x75713982    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x00000658
+< ----------------------------------------
+< Read  0x22 from va = 0x02000120 and pa = 0x2120
+< Read  0x4b from va = 0x02000121 and pa = 0x2121
+< Read  0xe9 from va = 0x02000122 and pa = 0x2122
+< Read  0x5a from va = 0x02000123 and pa = 0x2123
+< Architectural State 187
+< EAX: 0x5ae94b22    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x0000065e
+< ----------------------------------------
+< Read  0xee from va = 0x02000130 and pa = 0x2130
+< Read  0xc7 from va = 0x02000131 and pa = 0x2131
+< Read  0x2d from va = 0x02000132 and pa = 0x2132
+< Read  0x09 from va = 0x02000133 and pa = 0x2133
+< Architectural State 188
+< EAX: 0x092dc7ee    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x00000664
+< ----------------------------------------
+< Read  0x89 from va = 0x02000140 and pa = 0x2140
+< Read  0x74 from va = 0x02000141 and pa = 0x2141
+< Read  0xab from va = 0x02000142 and pa = 0x2142
+< Read  0x13 from va = 0x02000143 and pa = 0x2143
+< Architectural State 189
+< EAX: 0x13ab7489    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x0000066a
+< ----------------------------------------
+< Read  0x38 from va = 0x02000150 and pa = 0x2150
+< Read  0x53 from va = 0x02000151 and pa = 0x2151
+< Read  0x6f from va = 0x02000152 and pa = 0x2152
+< Read  0xdc from va = 0x02000153 and pa = 0x2153
+< Architectural State 190
+< EAX: 0xdc6f5338    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x00000670
+< ----------------------------------------
+< Read  0xbc from va = 0x02000160 and pa = 0x2160
+< Read  0x29 from va = 0x02000161 and pa = 0x2161
+< Read  0x7d from va = 0x02000162 and pa = 0x2162
+< Read  0xdf from va = 0x02000163 and pa = 0x2163
+< Architectural State 191
+< EAX: 0xdf7d29bc    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x00000676
+< ----------------------------------------
+< Read  0x8b from va = 0x02000170 and pa = 0x2170
+< Read  0x5a from va = 0x02000171 and pa = 0x2171
+< Read  0x2e from va = 0x02000172 and pa = 0x2172
+< Read  0xbb from va = 0x02000173 and pa = 0x2173
+< Architectural State 192
+< EAX: 0xbb2e5a8b    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x0000067c
+< ----------------------------------------
+< Read  0x3b from va = 0x02000180 and pa = 0x2180
+< Read  0x9b from va = 0x02000181 and pa = 0x2181
+< Read  0xac from va = 0x02000182 and pa = 0x2182
+< Read  0x02 from va = 0x02000183 and pa = 0x2183
+< Architectural State 193
+< EAX: 0x02ac9b3b    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x00000682
+< ----------------------------------------
+< Read  0xef from va = 0x02000190 and pa = 0x2190
+< Read  0x1e from va = 0x02000191 and pa = 0x2191
+< Read  0x76 from va = 0x02000192 and pa = 0x2192
+< Read  0x20 from va = 0x02000193 and pa = 0x2193
+< Architectural State 194
+< EAX: 0x20761eef    ECX: 0x00000000    EDX: 0x00000b00    EBX: 0x00000000
+< ESP: 0x00000100    EBP: 0x00000000    ESI: 0x00000000    EDI: 0x00000000
+< MM0: 0x0000000000000000               MM1: 0x0000000000000000          
+< MM2: 0x0000000000000000               MM3: 0x0000000000000000          
+< MM4: 0x0000000000000000               MM5: 0x0000000000000000          
+< MM6: 0x0000000000000000               MM7: 0x0000000000000000          
+<  ES: 0x0400 CS: 0x0000 SS: 0x0b00 DS: 0x0200 FS: 0x0000 GS: 0x0000
+<  CF: 0      PF: 0      AF: 0      ZF: 0      SF: 0      OF: 0      DF: 0
+< EIP: 0x00000688
+< ----------------------------------------
+< Read  0x39 from va = 0x020001a0 and pa = 0x21a0
+< Read  0xbc from va = 0x020001a1 and pa = 0x21a1
+< Read  0x58 from va = 0x020001a2 and pa = 0x21a2
+< Read  0x9e from va = 0x020001a3 and pa = 0x21a3

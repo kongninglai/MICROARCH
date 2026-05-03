@@ -60,13 +60,13 @@ module choose_eip #(
     nand2$ NAND_FINAL(ld_eip, not_flush, nand_valid_ld);
 
     //Generating Signals for Mux Select
-    wire [1:0] eip_sel;
-    wire bp_take_branch; 
+    wire [1:0] eip_sel; 
     wire stall, is_branch, cond_take, uncond_take, branch_type_0_bar, take_branch_w;
     inv1$ INV_lower(branch_type_0_bar, branch_type[0]); //if branch type is not 00, then it's a branch
-    nand3$ AND_COND_PRED(cond_take, cur_instr_prediction, ld_eip, branch_type[1]); //if branch can be resolved AND predictor says taken AND unconditional
-    nand2$ AND_UNCOND_PRED(uncond_take, branch_type[0], ld_eip); //if unconditional branch AND resolvable
-    nand2$ OR_TAKE_BRANCH(bp_take_branch, uncond_take, cond_take); //if unconditional branch OR (resolvable conditional branch AND predictor says taken)
+    and4$ AND_COND_PRED(cond_take, cur_instr_prediction, hit, branch_type[1], branch_type_0_bar); //if branch can be resolved AND predictor says taken AND unconditional
+    and2$ AND_UNCOND_PRED(uncond_take, branch_type[0], hit); //if unconditional branch AND resolvable
+    or2$ OR_TAKE_BRANCH(take_branch_w, uncond_take, cond_take); //if unconditional branch OR (resolvable conditional branch AND predictor says taken)
+    and2$ BR_VALID_AND(take_branch, take_branch_w, instr_valid);
     
     generate 
         if (BP_EN) begin 

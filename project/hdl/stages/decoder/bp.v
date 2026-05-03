@@ -10,7 +10,7 @@ module bp(
     input wire rst_bar,
 
     input wire [7:0] opcode,
-    input wire [31:0] imm,
+    input wire [47:0] imm,
     input wire op_size_overload,
     input wire prefix_ext,
 

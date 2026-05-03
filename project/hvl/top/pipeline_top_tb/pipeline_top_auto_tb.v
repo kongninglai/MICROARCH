@@ -1,13 +1,23 @@
 module pipeline_top_auto_tb;
 
-initial begin
-  // $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
-  // $vcdpluson(0, pipeline_top_auto_tb); 
-  // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
-  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
-  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d_instr_len); 
-  // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.ENABLE_INSTRQ.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
-end
+// initial begin
+//     $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
+//     $vcdpluson(0, pipeline_top_auto_tb); 
+    
+//     //Set a timeout limit (adjust the number to give your TB enough time)
+//     // #100000; 
+    
+//     // $display("WATCHDOG TIMEOUT: Forcing finish to save VPD file.");
+//     // $finish;
+// end
+
+// initial begin
+//   $vcdplusfile("pipeline_top_auto_tb.dump.vpd");
+//   $vcdpluson(0, pipeline_top_auto_tb); 
+//   // $vcdpluson(0, pipeline_top_auto_tb.full_cache_inst.full_cc_off_core_inst.off_core_top_inst.mcu_inst.DIO_PER_RANK); 
+//   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.d); 
+//   // $vcdpluson(0, pipeline_top_auto_tb.FRONTEND_TOP.FETCHBUFF_DECODESTAGE_DEPR.FETCH_BUFF.FETCH_BUFFER.updated_q_buf16); 
+// end
 
 /******* PERFORMANCE FEATURES ********/
 
@@ -30,29 +40,28 @@ reg auto_checker_ready;
 reg auto_checker_done;
 `endif
 
-localparam CYCLE_TIME_X10 = 93;
-// localparam CYCLE_TIME_X10 = 120;
+localparam CYCLE_TIME_X10 = 109;
 localparam CYCLE_TIME = CYCLE_TIME_X10 / 10.0;
 localparam TRUE_LRU = 1;
 
 reg clk;
 reg rst_n;
 
-wire [6:0]  from_de_prefix;
-wire [7:0]  from_de_opcode;
-wire [7:0]  from_de_modrm;
-wire [7:0]  from_de_sib;
-wire [31:0] from_de_disp;
-wire [1:0]  from_de_dispsize;
-wire [47:0] from_de_imm;
-wire [2:0]  from_de_imm_size;
-wire [1:0]  from_de_addr_mode;
+// wire [6:0]  from_de_prefix;
+// wire [7:0]  from_de_opcode;
+// wire [7:0]  from_de_modrm;
+// wire [7:0]  from_de_sib;
+// wire [31:0] from_de_disp;
+// wire [1:0]  from_de_dispsize;
+// wire [47:0] from_de_imm;
+// wire [2:0]  from_de_imm_size;
+// wire [1:0]  from_de_addr_mode;
 
-wire  [31:0] from_de_oeip;
-wire  [31:0] from_de_ieip;
-wire  [31:0] from_de_pred_eip;
-wire  [1:0]  from_de_exception;
-wire         from_de_valid;
+// wire  [31:0] from_de_oeip;
+// wire  [31:0] from_de_ieip;
+// wire  [31:0] from_de_pred_eip;
+// wire  [1:0]  from_de_exception;
+// wire         from_de_valid;
 
 wire [6:0]  to_rr_prefix;
 wire [7:0]  to_rr_opcode;
@@ -71,6 +80,8 @@ wire  [3:0] from_ex_pht_idx;
 wire  [31:0] to_rr_oeip;
 wire  [31:0] to_rr_ieip;
 wire  [31:0] to_rr_pred_eip;
+wire         to_rr_pred_dir;
+wire  [3:0]  to_rr_pht_idx;
 wire  [1:0]  to_rr_exception;
 wire  [95:0] to_rr_ucode_sigs;
 wire         to_rr_valid;
@@ -152,7 +163,6 @@ wire from_wb_flush;
 
 assign from_rr_cs = from_regunit_CS;
 assign from_ex_ld_cs = 1'b0;
-// assign from_ex_pht_idx = 4'd0;
 
 reg [31:0] wb_ieip;
 reg [31:0] wb_eflags;
@@ -187,6 +197,8 @@ backend_top #(
   .to_rr_oeip(to_rr_oeip),
   .to_rr_ieip(to_rr_ieip),
   .to_rr_pred_eip(to_rr_pred_eip),
+  .to_rr_pred_dir(to_rr_pred_dir),
+  .to_rr_pht_idx(to_rr_pht_idx),
   .to_rr_exception(to_rr_exception),
   .to_rr_ucode_sigs(to_rr_ucode_sigs),
   .to_rr_valid(to_rr_valid),
@@ -200,6 +212,7 @@ backend_top #(
   .from_ex_br_t_nt(from_ex_br_t_nt),
   .from_ex_br_valid(from_ex_br_valid),
   .from_ex_eip_target(from_ex_eip_target),
+  .from_ex_pht_idx(from_ex_pht_idx),
   .from_wb_flush(from_wb_flush),
 
   /*** CACHE INTERFACE ***/
@@ -359,6 +372,24 @@ begin
 end
 endtask
 
+// //DEBUG
+// always @(posedge clk) begin
+//   if (rst_n) begin
+//     // Check if the execute stage is resolving a branch
+//     if (from_ex_br_valid) begin
+//       // Note: adjust 'dut.to_ex_oeip' if your execute stage EIP signal is named differently
+//       // (e.g., it might be dut.inst_stage_ex.oeip or dut.from_mem_oeip depending on your pipeline)
+//       $display("[BRANCH_RES] cyc=%0d | Branch EIP: 0x%08X | Target EIP: 0x%08X | Taken: %b | Flush: %b", 
+//                dbg_cycle, dut.to_ex_oeip, from_ex_eip_target, from_ex_br_t_nt, from_ex_flush);
+//     end
+    
+//     // Check if the pipeline is stuck in a continuous flush state
+//     if (from_ex_flush) begin
+//       $display("[PIPELINE_FLUSH] Execute stage is flushing the pipeline at cyc=%0d!", dbg_cycle);
+//     end
+//   end
+// end
+
 always @(posedge clk) begin
   if (!rst_n) begin
     dbg_cycle <= 0;
@@ -368,6 +399,18 @@ always @(posedge clk) begin
     dbg_seen_icache_x <= 1'b0;
   end else if (dbg_fetch_en) begin
     dbg_cycle <= dbg_cycle + 1;
+
+    //DEBUG
+    // if (to_rr_valid && !from_rr_stall) begin
+    //   // This means the instruction successfully moved from Decode to the Backend
+    //   $display("[ISSUE] cyc=%0d | OEIP: 0x%08X | Opcode: %02h", 
+    //            dbg_cycle, to_rr_oeip, to_rr_opcode);
+    // end else if (to_rr_valid && from_rr_stall) begin
+    //   // Optional: Print periodically if the backend is refusing to accept instructions
+    //   if ((dbg_cycle % 100) == 0)
+    //     $display("[STALL] cyc=%0d | Backend is stalling Frontend at OEIP: 0x%08X", 
+    //              dbg_cycle, to_rr_oeip);
+    // end
 
     if ((dbg_cycle % 5000) == 0) begin
       $display("[FETCH-DBG] cyc=%0d ITLB_VPN=%05h ITLB_PFN=%0h PF=%0b ICV=%0b RRV=%0b STALL=%0b IEIP=%08h",
@@ -600,7 +643,6 @@ endtask
 integer load_iters, k, m, n, difference, starting_point;
 
 reg handle_hlt;
-
 initial begin
   handle_hlt = 0;
 end
@@ -736,7 +778,7 @@ end
 reg        stream_done;
 reg [31:0] accepted_cnt;
 reg [31:0] stalled_cnt;
-localparam integer MAX_STREAM_CYCLES = 200000;
+localparam integer MAX_STREAM_CYCLES = 50000;
 
 fetch_decode_top #(
   .INSTR_Q_EN(INSTR_Q_EN),
@@ -779,6 +821,8 @@ fetch_decode_top #(
     .to_rr_oeip(to_rr_oeip),
     .to_rr_ieip(to_rr_ieip),
     .to_rr_pred_eip(to_rr_pred_eip),
+    .to_rr_pred_dir(to_rr_pred_dir),
+    .to_rr_pht_idx(to_rr_pht_idx),
     .to_pr_pred_eip(to_pr_pred_eip),
     .to_rr_exception(to_rr_exception),
     .to_rr_ucode_sigs(to_rr_ucode_sigs),
@@ -861,7 +905,28 @@ always @(posedge clk) begin
         // Print the finalized snapshot to the text file.
         flush_pending_for_oeip(arch_snap_oeip);
         print_arch_status(0); 
+
+        //DEBUG
+        // if ((NUM_TESTS % 100) == 0) begin
+        //     $display("[HEARTBEAT] Pipeline is moving! Reached Architectural State %0d / 12146", NUM_TESTS);
+        // end
+
+        // if (NUM_TESTS >= 7600) begin
+        //     if ((NUM_TESTS % 5) == 0) begin
+        //         // Print a highly visible alert to your terminal
+        //         $display("==================================================");
+        //         $display("[DEEP DEBUG] State %0d committed! EIP: 0x%08X", NUM_TESTS, arch_snap_oeip);
+        //         $display("==================================================");
+                
+        //         // This calls your existing task to dump the full register state to results_cmp.txt
+        //         print_arch_status(0); 
+        //     end
+        // end
+        
         NUM_TESTS = NUM_TESTS + 1;
+
+        //$display("[COMMIT] Macro-op finished at OEIP: 0x%08X", arch_snap_oeip); //DEBUG
+        // $display("EIP: 0x%08X | ECX: %0d", arch_snap_oeip, arch_snap_gpr[1]);
 
         // Start recording the new instruction's snapshot
         take_arch_snapshot(wb_commit_oeip, wb_commit_ieip, wb_commit_eflags);

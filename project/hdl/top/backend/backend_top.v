@@ -462,10 +462,7 @@ module backend_top #(
     bufferH16$  bufferH16$_ex_or_wb_flush_bar(ex_or_wb_flush_bar, ex_or_wb_flush_bar_prebuf);
     inv1$ inv1_wb_flush_bar(wb_flush_bar, from_wb_flush);
 
-
-    dep_unit #(
-        .FORWARD_EN(FORWARD_EN)
-    ) dep_dut (
+    dep_unit dut (
         .from_ag_dstidA(from_ag_dstidA),
         .from_ag_dstidB(from_ag_dstidB),
         .from_ag_dstA_size(from_ag_dstA_size),

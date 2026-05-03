@@ -97,6 +97,7 @@ module fetch_decode_top #(
                 .from_ex_pht_idx(from_ex_pht_idx),
                 .from_f_cl_pf(ITLB_PAGE_FAULT_OUT), //the cache line loaded had a page fault
 
+<<<<<<< HEAD
                 //outputs
                 .to_rr_exception_flags(to_rr_exception),
                 .to_rr_i_eip(to_rr_ieip),
@@ -167,6 +168,31 @@ module fetch_decode_top #(
         end
     endgenerate
       
+=======
+        //outputs
+        .to_rr_exception_flags(to_rr_exception),
+        .to_rr_i_eip(to_rr_ieip),
+        .to_rr_o_eip(to_rr_oeip),
+        .to_rr_bp_target(to_rr_pred_eip), //post de latch
+        .to_pr_bp_target(to_pr_pred_eip), //pre de latch
+        .to_rr_pr_valid(to_rr_valid),
+        .to_rr_pred_dir(to_rr_pred_dir),
+        .to_rr_pht_idx(to_rr_pht_idx),
+        .to_rr_prefixes(to_rr_prefix), //{prefix_seg, prefix_rep, prefix_op_size, prefix_seg_ov_id, prefix_ext}
+        .to_rr_opcode(to_rr_opcode),
+        .to_rr_modrm(to_rr_modrm),
+        .to_rr_sib(to_rr_sib),
+        .to_rr_disp_size_mux(to_rr_dispsize),
+        .to_rr_disp(to_rr_disp),
+        .to_rr_imm_size(to_rr_imm_size),
+        .to_rr_imm(to_rr_imm),
+        .to_rr_addressing_mode(to_rr_addr_mode),
+        .to_rr_instr_length(), //unused in top
+        .from_de_eip_redirection(from_de_take_branch_prebuf),
+        .shft_reg_we(from_fetch_buffer_shft_reg_we),
+        .to_rr_ucode_sigs(to_rr_ucode_sigs)
+    );  
+>>>>>>> bp
 
 
 endmodule
