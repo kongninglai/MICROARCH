@@ -10,11 +10,12 @@ module bp(
     input wire rst_bar,
 
     input wire [7:0] opcode,
-    input wire [47:0] imm,
+    input wire [127:0] cache_line,
     input wire op_size_overload,
     input wire prefix_ext,
 
     input wire is_branch, //predict current instruction in decode (if branch)
+    input wire [3:0] total_offset,
     input wire [31:0] o_eip, 
     input wire [31:0] i_eip, //predict current instruction in decode (if branch)
     input wire br_t_nt_ex_d, //comes from execute stage (taken not taken signal)
@@ -59,18 +60,16 @@ module bp(
         .br_t_nt_out(cur_instr_prediction)
     );
 
-    wire [31:0] bp_eip_target_ungated;
     br_target BR_TARGET(
         .i_eip (i_eip),
+        .total_offset(total_offset),
         .opcode (opcode),
-        .imm(imm),
+        .cache_bits(cache_line),
         .op_size_overload(op_size_overload),
         .prefix_ext(prefix_ext),
         .hit(hit), //currently not used since we're hardcoding to not hit
-        .bp_eip_target (bp_eip_target_ungated)
+        .bp_eip_target (bp_eip_target)
     );
-    wire [31:0] bp_eip_target_bar;
-    nand2$ nand2$_bp_eip_target_bar[31:0](bp_eip_target_bar, bp_eip_target_ungated, is_branch);
-    bufferHInv16$ bufferHInv16$_bp_eip_target[31:0](bp_eip_target, bp_eip_target_bar);
+    
 endmodule
 

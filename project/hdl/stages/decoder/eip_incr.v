@@ -22,28 +22,3 @@ module eip_incr(
     );
 
 endmodule
-
-module eip_incr_br(
-    input wire [2:0] incr_amt,
-    input wire [31:0] eip,
-    output wire [31:0] incr_eip
-);
-    wire [31:0] mux_in [7:0];
-    genvar i;
-    generate
-        for (i = 2; i < 8; i= i+ 1) begin: gen_eip_adders
-            PA_32b eip_adders(
-                .in0(eip), .in1(i),
-                .s(mux_in[i])
-            );
-        end
-    endgenerate
-
-    mux8_32 CHOOSE_INCR
-    (
-        .out(incr_eip),
-        .in0(), .in1(), .in2(mux_in[2]), .in3(mux_in[3]), .in4(mux_in[4]), .in5(mux_in[5]), .in6(mux_in[6]), .in7(mux_in[7]),
-        .s0(incr_amt[0]), .s1(incr_amt[1]), .s2(incr_amt[2])
-    );
-
-endmodule

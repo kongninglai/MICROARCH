@@ -11,6 +11,7 @@ module block_decoder(
     output wire [7:0] sib, 
     output wire [1:0] disp_size_mux,
     output wire [31:0] disp, 
+    output wire [3:0] disp_offset,
     output wire [2:0] imm_size, //in bytes
     output wire [47:0] imm,
     output wire [1:0] addressing_mode,
@@ -167,10 +168,6 @@ module block_decoder(
                                           {7'd0, is_sib_true_prelim, disp_size_prelim, disp_size_inbytes_prelim, disp_plus_sib}, 
                                           is_modrm_true);
 
-
-    wire [3:0] instr_length_prebuf;
-
-
     wire [3:0] instr_length_prebuf;
 
     logic_incr_amt EIP_INCR_AMT(
@@ -190,3 +187,4 @@ module block_decoder(
         .to_rr_ucode_sigs(ucode_sigs)
     );
 endmodule
+
