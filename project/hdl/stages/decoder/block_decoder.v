@@ -151,23 +151,6 @@ module block_decoder(
     assign imm_size = imm_size_inbytes_true;
     assign imm = imm_bytes;
 
-    wire [2:0] disp_plus_sib, disp_plus_sib_final;
-    wire [1:0] disp_size_prelim;
-    wire [2:0] disp_size_inbytes_prelim;
-    wire is_sib_true_prelim;
-    logic_sib_disp LOGIC_SIB_DISP(
-        .modrm_byte(modrm),
-        .disp_plus_sib(disp_plus_sib),
-        .disp_size(disp_size_prelim),
-        .disp_size_inbytes(disp_size_inbytes_prelim),
-        .is_sib_true(is_sib_true_prelim)
-    );  
-    wire [6:0] dummy_mux_output;
-    mux2_16$   mux2_16$_disp_plus_sib_final({dummy_mux_output, is_sib_true, disp_size, disp_size_inbytes, disp_plus_sib_final}, 
-                                          {16'd0}, 
-                                          {7'd0, is_sib_true_prelim, disp_size_prelim, disp_size_inbytes_prelim, disp_plus_sib}, 
-                                          is_modrm_true);
-
     wire [3:0] instr_length_prebuf;
 
     logic_incr_amt EIP_INCR_AMT(
