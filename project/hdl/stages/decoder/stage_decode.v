@@ -74,13 +74,10 @@ module stage_decode(
     bufferH16$   bufferH16$_addressing_mode[1:0](addressing_mode, addressing_mode_prebuf);
 
     logic_stall_flush LOGIC_STALL_FLUSH(
-        .clk(clk),
-        .rst_bar(rst_bar),
         .i_eip(i_eip),
         .tail_ptr(tail_ptr),
         .incr_amt(instr_length),
         .flush_ex(flush_ex), //comes from execute stage
-        .flush_wb(from_wb_flush), //comes from writeback stage
         .stall_rr(stall_rr), //comes from register read stage
 
         .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal

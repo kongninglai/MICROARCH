@@ -9,25 +9,21 @@ Delay: 3.1ns
 */
 module logic_incr_amt(
     input wire [2:0] rom_sum, //Ready at 4.2ns
-    input wire [2:0] disp_plus_sib, //Ready at 5.05ns
+    input wire [2:0] disp_size_inbytes, //Ready at 5.05ns
     input wire [1:0] prefix_amount, //Ready at 3.38ns
+    input wire sib_present, //Ready at 4.55ns
     output wire [3:0] incr_amt
 );
-    wire [3:0] sum_1_rom, sum_1_true;
-    rom4b32w$ ROM_sum_1 (.A({rom_sum, prefix_amount}), .OE(1'b1), .DOUT(sum_1_rom));
 
-    initial begin
-        $readmemb("/home/ecelrc/students/aak3265/MICROARCH/project/hdl/rom/rom_sum_1.data", ROM_sum_1.mem);
-    end
-
-    PA_4b PA_4b_sum1 (
-      .in0({1'b0,rom_sum}), .in1({2'd0,prefix_amount}),
-      .s(sum_1_true)
+    wire [4:0] csa_sum, csa_carry;
+    csa CSA( //1.2ns
+        .in0({2'd0, rom_sum}), .in1({2'd0, disp_size_inbytes}), .in2({2'd0, prefix_amount}),
+        .sum_vec(csa_sum), .carry_vec(csa_carry)
     );
-    
-    PA_4b PA_4b_incr_amt (
-      .in0({sum_1_rom[3:2], sum_1_true[1:0]}), .in1({1'b0,disp_plus_sib}),
-      .s(incr_amt)
+
+    FA_4b FA_4b_uut( //1.9ns
+        .in0(csa_sum), .in1(csa_carry), .cin(sib_present),
+        .s(incr_amt)
     );
 
 endmodule

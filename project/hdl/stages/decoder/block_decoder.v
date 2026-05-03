@@ -172,8 +172,9 @@ module block_decoder(
 
     logic_incr_amt EIP_INCR_AMT(
         .rom_sum(sum_modrm_imm_true), //Ready at 4.2ns
-        .disp_plus_sib(disp_plus_sib_final), //Ready at 5.05ns
+        .disp_size_inbytes(disp_size_inbytes), //Ready at 5.05ns
         .prefix_amount(prefix_num), //Ready at 3.38ns
+        .sib_present(is_sib_true), //Ready at 4.55ns
         .incr_amt(instr_length_prebuf)
     );
     
