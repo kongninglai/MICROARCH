@@ -1,6 +1,4 @@
-module intgr_fshifter_decode #(
-    parameter BP_EN=1'b1
-)(
+module intgr_fshifter_decode(
     input wire clk,
     input wire rst_bar,
 
@@ -84,9 +82,7 @@ module intgr_fshifter_decode #(
     wire [3:0] to_pr_pht_idx;
     wire [31:0] to_pr_disp;
     wire [47:0] to_pr_imm;
-    stage_decode #(
-        .BP_EN(BP_EN)
-    ) STAGE_DECODE(
+    stage_decode STAGE_DECODE(
         .cache_line(to_de_outbytes),
         .tail_ptr(tail_ptr),
         .eip_target_ex(from_ex_eip_target), //comes from execute stage

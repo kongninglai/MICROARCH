@@ -1,6 +1,4 @@
-module stage_decode #(
-    parameter BP_EN=1'b1
-)(
+module stage_decode(
     input wire [127:0] cache_line,
     input wire [4:0] tail_ptr,
     input wire [31:0] eip_target_ex, //comes from execute stage
@@ -51,9 +49,6 @@ module stage_decode #(
     bufferH16$  bufferH16$_modrm[7:0](modrm, modrm_prebuf);
     wire modrm_v;
     wire [1:0] addressing_mode_prebuf;
-    wire [31:0] bp_imm;
-    wire [2:0] sum_1_lower;
-    wire [31:0] i_eip_br;
     block_decoder DECODER(
         .cache_line(cache_line),
         .prefix_rep(prefix_rep),
@@ -69,9 +64,7 @@ module stage_decode #(
         .disp(disp),
         .imm_size(imm_size),
         .imm(imm),
-        .bp_imm(bp_imm),
         .addressing_mode(addressing_mode_prebuf),
-        .sum_1_lower(sum_1_lower),
         .instr_length(instr_length),
         .ucode_sigs(ucode_sigs)
     );     
@@ -102,9 +95,7 @@ module stage_decode #(
     //Decode logic tells what type of branch is currently being decoded
     wire [1:0] branch_type;
     wire is_branch;
-    logic_branch #(
-        .BP_EN(BP_EN)
-    ) BRANCH_TYPE( //for instruction in decode (if branch)
+    logic_branch BRANCH_TYPE( //for instruction in decode (if branch)
         .opcode(opcode),
         .modrm(modrm), 
         .v_modrm(modrm_v),
@@ -115,15 +106,11 @@ module stage_decode #(
 
     wire hit;
     wire cur_instr_prediction;
-    wire bp_pred_dir;
-    choose_eip #(
-        .BP_EN(BP_EN)
-    ) EIP_LOGIC(
+    choose_eip EIP_LOGIC(
         .clk(clk),
         .rst_bar(rst_bar),
 
         //eip incr logic
-        .sum_1_lower(sum_1_lower),
         .instr_length(instr_length),
 
         .ld_pr_rr(ld_pr_rr), //to load register read pipeline registers signal
@@ -136,7 +123,6 @@ module stage_decode #(
         .branch_type(branch_type),
         .hit(hit),
         
-        .i_eip_br(i_eip_br),
         .i_eip(i_eip),
         .o_eip(o_eip),
         .ld_eip(ld_eip),
@@ -169,4 +155,3 @@ module stage_decode #(
     assign pred_dir = cur_instr_prediction;
 
 endmodule
-

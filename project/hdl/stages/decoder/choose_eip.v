@@ -2,14 +2,11 @@
 Branch Type: 00 (not a branch), 01 (unconditional near), 10 (conditional near), 11(far)
 */
 
-module choose_eip #(
-    parameter BP_EN=1'b1
-)(
+module choose_eip(
     input wire clk,
     input wire rst_bar, 
 
     //eip incr logic
-    input wire [2:0] sum_1_lower,
     input wire [3:0] instr_length,    
 
     input wire ld_pr_rr, //to load register read pipeline registers signal
@@ -22,7 +19,6 @@ module choose_eip #(
     input wire [1:0] branch_type,
     input wire hit, //from btb to indicate if we have a bp target or not (currently hardcoded to 0)
 
-    output wire [31:0] i_eip_br,
     output wire [31:0] i_eip,
     output wire [31:0] o_eip,
     output wire ld_eip,
@@ -40,12 +36,6 @@ module choose_eip #(
 
     bufferH16$  bufferH16$_i_eip[31:0](i_eip, i_eip_prebuf);
 
-    eip_incr_br EIP_INCR_LOGIC_BR(
-        .incr_amt(sum_1_lower),
-        .eip(o_eip),
-        .incr_eip(i_eip_br)
-    );
-
     /*
     Load EIP if: 
     1. Instruction is valid AND not stalling (LD_RR is high)
@@ -57,7 +47,8 @@ module choose_eip #(
     wire ld_eip_prebuf;
     inv1$ INV_FLUSH(not_flush, flush_ex);
     nand2$ NAND_VALID_LD(nand_valid_ld, instr_valid, ld_pr_rr);
-    nand2$ NAND_FINAL(ld_eip, not_flush, nand_valid_ld);
+    nand2$ NAND_FINAL(ld_eip_prebuf, not_flush, nand_valid_ld);
+    bufferH64$ bufferH64$_ld_eip(ld_eip, ld_eip_prebuf);
 
     //Generating Signals for Mux Select
     wire [1:0] eip_sel; 
@@ -68,14 +59,6 @@ module choose_eip #(
     or2$ OR_TAKE_BRANCH(take_branch_w, uncond_take, cond_take); //if unconditional branch OR (resolvable conditional branch AND predictor says taken)
     and2$ BR_VALID_AND(take_branch, take_branch_w, instr_valid);
     
-    generate 
-        if (BP_EN) begin 
-            bufferH16$  bufferH16$_take_branch(take_branch, bp_take_branch);
-        end else begin 
-            assign take_branch = 1'b0;
-        end
-    endgenerate
-
     mux4_32 MUX_CHOOSE_EIP(
         .in0(i_eip), 
         .in1(bp_eip_target), 
@@ -88,22 +71,12 @@ module choose_eip #(
 
     wire [31:0] o_eip_prebuf;
 
-    reg_n_16 #(.WIDTH(16), .USE_EN_BAR(1'b0), .RESET_TO_ONES(1'b0)) FEIP_REG_high (
-        .clk(clk),
-        .rst(rst_bar),
-        .en(ld_eip),
-        .d(eip_true[31:16]),
-        .q(o_eip_prebuf[31:16])
+    reg_n #(.WIDTH(32)) EIP_REG(
+        .clk(clk), .rst(rst_bar),
+        .en({32{ld_eip}}), .d(eip_true),
+        .q(o_eip_prebuf)
     );
 
-    reg_n_16 #(.WIDTH(16), .USE_EN_BAR(1'b0), .RESET_TO_ONES(1'b0)) FEIP_REG_low (
-        .clk(clk),
-        .rst(rst_bar),
-        .en(ld_eip),
-        .d(eip_true[15:0]),
-        .q(o_eip_prebuf[15:0])
-    );
-
-    bufferH256$    bufferH256$_o_eip[31:0](o_eip, o_eip_prebuf);
+    bufferH64$    bufferH64$_o_eip[31:0](o_eip, o_eip_prebuf);
 
 endmodule

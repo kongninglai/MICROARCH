@@ -13,9 +13,7 @@ module block_decoder(
     output wire [31:0] disp, 
     output wire [2:0] imm_size, //in bytes
     output wire [47:0] imm,
-    output wire [31:0] bp_imm,
     output wire [1:0] addressing_mode,
-    output wire [2:0] sum_1_lower,
     output wire [3:0] instr_length,
     output wire [95:0] ucode_sigs
 );      
@@ -147,9 +145,7 @@ module block_decoder(
         .cache_bits(cache_line_buf[127:8]), 
         .total_offset(disp_offset),
         .imm_size(imm_size_true),
-        .sum_1_lower(sum_1_lower[1:0]),
-        .imm_bytes(imm_bytes),
-        .bp_imm(bp_imm)
+        .imm_bytes(imm_bytes)
     );  
     assign imm_size = imm_size_inbytes_true;
     assign imm = imm_bytes;
@@ -174,11 +170,13 @@ module block_decoder(
 
     wire [3:0] instr_length_prebuf;
 
+
+    wire [3:0] instr_length_prebuf;
+
     logic_incr_amt EIP_INCR_AMT(
         .rom_sum(sum_modrm_imm_true), //Ready at 4.2ns
         .disp_plus_sib(disp_plus_sib_final), //Ready at 5.05ns
         .prefix_amount(prefix_num), //Ready at 3.38ns
-        .sum_1_lower(sum_1_lower),
         .incr_amt(instr_length_prebuf)
     );
     
@@ -192,4 +190,3 @@ module block_decoder(
         .to_rr_ucode_sigs(ucode_sigs)
     );
 endmodule
-
