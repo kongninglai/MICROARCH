@@ -11,18 +11,18 @@
 +libext+.v
 
 // Automatic Directory Search 
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/adders
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/comparators
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/extenders
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/gates
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/muxes
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/regs
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shifters
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/local-lib/shift_reg
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/adders
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/comparators
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/extenders
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/gates
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/muxes
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/regs
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shifters
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/local-lib/shift_reg
 
 // Test Logic 
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/decoder
--y /home/ecelrc/students/aak3265/MICROARCH/project/hdl/stages/fetch
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/decoder
+-y /home/ecelrc/students/var2427/MICROARCH/project/hdl/stages/fetch
 
 // Testbench for Test Logic 
-/home/ecelrc/students/aak3265/MICROARCH/project/hvl/stages/fetch/stage_fetch_a_tb/stage_fetch_a_tb.v
+/home/ecelrc/students/var2427/MICROARCH/project/hvl/stages/fetch/stage_fetch_a_tb/stage_fetch_a_tb.v
